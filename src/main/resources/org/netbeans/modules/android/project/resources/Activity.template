@@ -1,0 +1,26 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+import android.app.Activity;
+import android.os.Bundle;
+
+</#if>
+/**
+ *
+ * @author ${user}
+ */
+public class ${name} extends Activity {
+
+    /** Called when the activity is first created. */
+    @Override
+    public void onCreate(Bundle icicle) {
+        super.onCreate(icicle);
+        // ToDo add your GUI initialization code here        
+    }
+
+}

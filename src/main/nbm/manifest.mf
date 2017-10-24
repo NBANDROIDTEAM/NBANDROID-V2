@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+OpenIDE-Module-Layer: sk/arsi/netbeans/gradle/android/gradle/android/support/layer.xml
+OpenIDE-Module-Localizing-Bundle: sk/arsi/netbeans/gradle/android/gradle/android/support/Bundle.properties
+
