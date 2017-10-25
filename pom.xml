@@ -12,23 +12,7 @@
                 <artifactId>nbm-maven-plugin</artifactId>
                 <version>3.13</version>
                 <extensions>true</extensions>
-                <configuration>
-                    <publicPackages>
-                    </publicPackages>
-                    <moduleDependencies>
-                        <dependency>
-                            <!--Private Package Reference-->
-                            <id>org.netbeans.modules:org-netbeans-modules-gsf-testrunner</id>
-                            <type>impl</type>
-                        </dependency>
-                        <dependency>
-                            <!--Private Package Reference-->
-                            <id>com.github.kelemen:netbeans-gradle-plugin</id>
-                            <type>impl</type>
-                        </dependency>
-                    </moduleDependencies>
-                    <netbeansInstallation>/ssd/nb/netbeans-8.1-e3/</netbeansInstallation>
-                </configuration>
+               
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -54,6 +38,115 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>Default-no-gradle</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>nbm-maven-plugin</artifactId>
+                        <version>3.13</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publicPackages>
+                            </publicPackages>
+                            <moduleDependencies>
+                                <dependency>
+                                    <!--Private Package Reference-->
+                                    <id>org.netbeans.modules:org-netbeans-modules-gsf-testrunner</id>
+                                    <type>impl</type>
+                                </dependency>
+                                <dependency>
+                                    <!--Private Package Reference-->
+                                    <id>com.github.kelemen:netbeans-gradle-plugin</id>
+                                    <type>impl</type>
+                                </dependency>
+                            </moduleDependencies>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+            <properties>
+                <version.nb>RELEASE81</version.nb>
+            </properties>
+        </profile>
+        <profile>
+            <id>Arsi-NB81</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>nbm-maven-plugin</artifactId>
+                        <version>3.13</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publicPackages>
+                            </publicPackages>
+                            <moduleDependencies>
+                                <dependency>
+                                    <!--Private Package Reference-->
+                                    <id>org.netbeans.modules:org-netbeans-modules-gsf-testrunner</id>
+                                    <type>impl</type>
+                                </dependency>
+                                <dependency>
+                                    <!--Private Package Reference-->
+                                    <id>com.github.kelemen:netbeans-gradle-plugin</id>
+                                    <type>impl</type>
+                                </dependency>
+                            </moduleDependencies>
+                            <netbeansInstallation>/ssd/nb/netbeans-8.1-e3/</netbeansInstallation>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+            <properties>
+                <version.nb>RELEASE81</version.nb>
+            </properties>
+        </profile>
+        <profile>
+            <id>Arsi-NB82</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>nbm-maven-plugin</artifactId>
+                        <version>3.13</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publicPackages>
+                            </publicPackages>
+                            <moduleDependencies>
+                                <dependency>
+                                    <!--Private Package Reference-->
+                                    <id>org.netbeans.modules:org-netbeans-modules-gsf-testrunner</id>
+                                    <type>impl</type>
+                                </dependency>
+                                <dependency>
+                                    <!--Private Package Reference-->
+                                    <id>com.github.kelemen:netbeans-gradle-plugin</id>
+                                    <type>impl</type>
+                                </dependency>
+                            </moduleDependencies>
+                            <netbeansInstallation>/ssd/nb/netbeans-8.2-e3/</netbeansInstallation>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+            <properties>
+                <version.nb>RELEASE82</version.nb>
+            </properties>
+        </profile>
+    </profiles>
     <repositories>
         <repository>
             <id>netbeans</id>
@@ -436,7 +529,6 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <version.android>24.0.0</version.android>
-        <version.nb>RELEASE81</version.nb>
         <version.nb.gradle>1.4.2</version.nb.gradle>
         <!--1.4.2-->
     </properties>
