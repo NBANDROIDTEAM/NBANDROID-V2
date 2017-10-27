@@ -29,6 +29,7 @@ import org.nbandroid.netbeans.gradle.query.GradleAndroidManifest;
 import org.nbandroid.netbeans.gradle.query.GradleAndroidSources;
 import org.nbandroid.netbeans.gradle.query.GradlePlatformResolver;
 import org.nbandroid.netbeans.gradle.query.GradleSourceForBinaryQuery;
+import org.nbandroid.netbeans.gradle.query.SourceLevelQueryImpl2;
 import org.nbandroid.netbeans.gradle.ui.AndroidTestsProvider;
 import org.nbandroid.netbeans.gradle.ui.BuildCustomizerProvider;
 import org.netbeans.api.project.Project;
@@ -63,6 +64,7 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
     private final Lookup projectAddOnLookup;
     private final List<Object> items = Lists.newArrayList();
     private final GradleProjectOpenedHook openHook;
+    private final SourceLevelQueryImpl2 levelQuery = new SourceLevelQueryImpl2();
     // testing support
     @VisibleForTesting
     public final CountDownLatch loadedSignal = new CountDownLatch(1);
@@ -80,6 +82,7 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         AndroidTestRunConfiguration testCfg = new AndroidTestRunConfiguration(props);
         items.add(buildCfg);
         items.add(testCfg);
+        items.add(levelQuery);
         items.add(new GradlePlatformResolver());
         items.add(new GradleAndroidSources(project, buildCfg));
         items.add(new GradleAndroidManifest(project, buildCfg));
@@ -164,6 +167,7 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         for (GradleBuildAware gpa : projectAddOnLookup.lookupAll(GradleBuildAware.class)) {
             gpa.setGradleBuild(build);
         }
+        levelQuery.setProject(aPrj);
         this.aPrj = aPrj;
         this.gradleBuild = build;
         StatsCollector.getDefault().incrementCounter("gradleproject");
@@ -190,6 +194,7 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         for (Object item : items) {
             ic.remove(item);
         }
+        levelQuery.setProject(null);
         // unregister from global path
         openHook.projectClosed();
     }
