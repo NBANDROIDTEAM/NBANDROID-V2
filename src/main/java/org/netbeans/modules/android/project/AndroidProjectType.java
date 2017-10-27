@@ -49,9 +49,10 @@ public final class AndroidProjectType implements ProjectFactory2 {
     }
   }
 
+    //ARSI: org.netbeans.modules.android.project.AndroidProjectImpl is created for not gradle folders android cache etc..
   @Override
-  public boolean isProject(FileObject prjDir) {
-    // XXX perhaps also make sure src/ exists, so we do not pick up resources dir for a Maven-Android project
+    public boolean isProject(FileObject prjDir) {
+      // XXX perhaps also make sure src/ exists, so we do not pick up resources dir for a Maven-Android project
     if (prjDir.getFileObject(AndroidConstants.ANDROID_MANIFEST_XML) == null) {
       return false;
     }

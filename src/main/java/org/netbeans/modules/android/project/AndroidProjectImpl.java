@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.nbandroid.netbeans.gradle.query.SourceLevelQueryImpl2;
 import org.netbeans.modules.android.core.sdk.DalvikPlatform;
 import org.netbeans.modules.android.core.sdk.DalvikPlatformManager;
 import org.netbeans.modules.android.core.sdk.SdkLogProvider;
@@ -31,18 +32,17 @@ import org.netbeans.modules.android.project.launch.AndroidLauncherImpl;
 import org.netbeans.modules.android.project.queries.AndroidAntProjectDebugInfo;
 import org.netbeans.modules.android.project.queries.AndroidFileBuiltQuery;
 import org.netbeans.modules.android.project.queries.AndroidManifestSourceAnt;
+import org.netbeans.modules.android.project.queries.AndroidProjectEncodingQueryImpl;
 import org.netbeans.modules.android.project.queries.AndroidSharabilityQuery;
 import org.netbeans.modules.android.project.queries.AndroidSources;
 import org.netbeans.modules.android.project.queries.AndroidTemplateAttributesProvider;
-import org.netbeans.modules.android.project.queries.ClassPathProviderImpl;
-import org.netbeans.modules.android.project.queries.CompiledSourceForBinaryQuery;
-import org.netbeans.modules.android.project.queries.SourceLevelQueryImpl;
-import org.netbeans.modules.android.project.queries.UnitTestForSourceQueryImpl;
-import org.netbeans.modules.android.project.queries.AndroidProjectEncodingQueryImpl;
 import org.netbeans.modules.android.project.queries.AuxiliaryConfigImpl;
 import org.netbeans.modules.android.project.queries.AuxiliaryPropertiesImpl;
 import org.netbeans.modules.android.project.queries.BinaryForSourceQueryImpl;
+import org.netbeans.modules.android.project.queries.ClassPathProviderImpl;
+import org.netbeans.modules.android.project.queries.CompiledSourceForBinaryQuery;
 import org.netbeans.modules.android.project.queries.TemplateAttributesProvider;
+import org.netbeans.modules.android.project.queries.UnitTestForSourceQueryImpl;
 import org.netbeans.modules.android.project.spi.AndroidProjectDirectory;
 import org.netbeans.modules.android.project.spi.ProjectRefResolver;
 import org.netbeans.modules.android.project.ui.AndroidLogicalViewProvider;
@@ -56,7 +56,8 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 /**
- * Represents one plain android project.
+ * Represents one plain android project. ARSI: AndroidProjectType creates
+ * AndroidProjectImpl for nod gradle folders android cache etc..
  */
 @VisibleForTesting
 public final class AndroidProjectImpl implements AndroidProject {
@@ -133,9 +134,9 @@ public final class AndroidProjectImpl implements AndroidProject {
             new BinaryForSourceQueryImpl(this),
             new UnitTestForSourceQueryImpl(this),
             new AndroidFileBuiltQuery(this),
-            new SourceLevelQueryImpl(propertyHelper.evaluator()),
-            new AndroidSources(this),
-            new AndroidManifestSourceAnt(this),
+                new SourceLevelQueryImpl2(propertyHelper.evaluator()),
+                new AndroidSources(this),
+                new AndroidManifestSourceAnt(this),
             LookupProviderSupport.createSourcesMerger(),
             new AndroidSharabilityQuery(this),
             new AndroidSubprojectProvider(this),

@@ -64,6 +64,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -94,6 +95,21 @@ public final class GradleAndroidClassPathProvider
     private final Set<Refreshable> refreshables = Sets.newHashSet();
     private AndroidProject project = null;
     private GradleBuild gradleBuild = null;
+
+    //ARSI: Create virtual java package to override NB java 8 support check
+    private static final File virtualJava8root = Places.getCacheSubdirectory("android_virtual_java8");
+
+    static {
+        String absolutePath = virtualJava8root.getAbsolutePath();
+        absolutePath = absolutePath + File.separator + "java" + File.separator + "util" + File.separator + "stream";
+        File streamDir = new File(absolutePath);
+        streamDir.mkdirs();
+        absolutePath = absolutePath + File.separator + "Streams.class";
+        try {
+            new File(absolutePath).createNewFile();
+        } catch (IOException ex) {
+        }
+    }
 
     public GradleAndroidClassPathProvider(BuildVariant buildConfig) {
         this.buildConfig = Preconditions.checkNotNull(buildConfig);
@@ -355,6 +371,21 @@ public final class GradleAndroidClassPathProvider
             if (project == null) {
                 return new URL[0]; // broken platform
             }
+            //ARSI: add virtual java package to boot classpath to override NB java 8 support check
+            String sourceCompatibility = project.getJavaCompileOptions().getSourceCompatibility();
+            if ("1.8".equals(sourceCompatibility)) {
+                URL root = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(virtualJava8root));
+                URL[] basic = getBootUrls();
+                URL[] exttendet = new URL[basic.length + 1];
+                System.arraycopy(basic, 0, exttendet, 0, basic.length);
+                exttendet[basic.length] = root;
+                return exttendet;
+            } else {
+                return getBootUrls();
+            }
+        }
+
+        private URL[] getBootUrls() {
             return Iterables.toArray(
                     Iterables.transform(
                             project.getBootClasspath(),
