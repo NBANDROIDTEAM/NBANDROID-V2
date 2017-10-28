@@ -97,10 +97,10 @@ public final class GradleAndroidClassPathProvider
     private GradleBuild gradleBuild = null;
 
     //ARSI: Create virtual java package to override NB java 8 support check
-    private static final File virtualJava8root = Places.getCacheSubdirectory("android_virtual_java8");
+    public static final File VIRTUALJAVA8ROOT_DIR = Places.getCacheSubdirectory("android_virtual_java8");
 
     static {
-        String absolutePath = virtualJava8root.getAbsolutePath();
+        String absolutePath = VIRTUALJAVA8ROOT_DIR.getAbsolutePath();
         absolutePath = absolutePath + File.separator + "java" + File.separator + "util" + File.separator + "stream";
         File streamDir = new File(absolutePath);
         streamDir.mkdirs();
@@ -374,7 +374,7 @@ public final class GradleAndroidClassPathProvider
             //ARSI: add virtual java package to boot classpath to override NB java 8 support check
             String sourceCompatibility = project.getJavaCompileOptions().getSourceCompatibility();
             if ("1.8".equals(sourceCompatibility)) {
-                URL root = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(virtualJava8root));
+                URL root = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(VIRTUALJAVA8ROOT_DIR));
                 URL[] basic = getBootUrls();
                 URL[] exttendet = new URL[basic.length + 1];
                 System.arraycopy(basic, 0, exttendet, 0, basic.length);

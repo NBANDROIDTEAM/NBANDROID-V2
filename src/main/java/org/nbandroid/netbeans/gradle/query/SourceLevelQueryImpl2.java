@@ -49,7 +49,6 @@ public class SourceLevelQueryImpl2 implements SourceLevelQueryImplementation2 {
                     return source != null ? source : "1.5";
                 } else if (project != null && fo.toString().contains("/src/main")) {
                     String sourceCompatibility = project.getJavaCompileOptions().getSourceCompatibility();
-                    System.out.println("**********" + sourceCompatibility + "  " + project.getName() + "   " + fo);
                     return project.getJavaCompileOptions().getSourceCompatibility();
                 }
                 return "1.7";
