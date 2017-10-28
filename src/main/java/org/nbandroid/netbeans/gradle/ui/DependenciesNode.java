@@ -83,7 +83,7 @@ public final class DependenciesNode extends AbstractNode {
               ClassPathSupport.createProxyClassPath(Lists.newArrayList(compileCPs).toArray(new ClassPath[0]));
           for (FileObject cpRoot : compileCP.getRoots()) {
             final FileObject archiveFile = FileUtil.getArchiveFile(cpRoot);
-              result.add(new Key(AndroidNodes.createLibrarySourceGroup(archiveFile.getNameExt(), cpRoot, project)));
+              result.add(new Key(AndroidNodes.createLibrarySourceGroup(archiveFile.getNameExt(), cpRoot)));
           }
         }
       }
@@ -134,7 +134,7 @@ public final class DependenciesNode extends AbstractNode {
             if (cpRoot.isFolder()) {
               final FileObject archiveFile = FileUtil.getArchiveFile(cpRoot);
               if (archiveFile != null) {
-                  result.add(new Key(AndroidNodes.createLibrarySourceGroup(archiveFile.getNameExt(), cpRoot, project)));
+                  result.add(new Key(AndroidNodes.createLibrarySourceGroup(archiveFile.getNameExt(), cpRoot)));
               } else {
                 LOG.log(Level.FINE, "test classpath entry for {0} cannot be mapped to file object", cpRoot);
               }

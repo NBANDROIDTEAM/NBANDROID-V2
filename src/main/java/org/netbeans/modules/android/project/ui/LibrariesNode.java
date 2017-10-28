@@ -233,7 +233,7 @@ final class LibrariesNode extends AbstractNode {
                 // TODO we only support JAR archives so all entries should be archives.
                 FileObject rootFile = FileUtil.getArchiveFile(cpRoot);
                 String name = rootFile != null ? rootFile.getNameExt() : cpRoot.getNameExt();
-                  result.add(new Key(AndroidNodes.createLibrarySourceGroup(name, cpRoot, null)));
+                  result.add(new Key(AndroidNodes.createLibrarySourceGroup(name, cpRoot)));
               }
             }
           }

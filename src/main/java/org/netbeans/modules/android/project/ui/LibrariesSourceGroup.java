@@ -14,15 +14,14 @@
 package org.netbeans.modules.android.project.ui;
 
 import java.beans.PropertyChangeListener;
-import java.net.URL;
 import javax.swing.Icon;
 import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.JarFileSystem;
 
 /**
  * LibrariesSourceGroup {@link SourceGroup} implementation passed to
@@ -43,24 +42,26 @@ public final class LibrariesSourceGroup implements SourceGroup {
      * @param icon closed icon
      * @param openIcon opened icon
      */
-    public LibrariesSourceGroup(FileObject root, String displayName, Icon icon, Icon openIcon, final Project owner) {
+    public LibrariesSourceGroup(FileObject root, String displayName, Icon icon, Icon openIcon) {
         assert root != null;
         this.root = root;
         this.icon = icon;
         this.openIcon = openIcon;
+        Object attribute;
+        try {
+            FileSystem fileSystem = root.getFileSystem();
+            if (fileSystem instanceof JarFileSystem) {
+                FileObject jar = FileUtil.toFileObject(((JarFileSystem) fileSystem).getJarFile());
+                attribute = jar.getAttribute(GradleAndroidClassPathProvider.ANDROID_LIB_NAME);
+                if (attribute instanceof String) {
+                    displayName = (String) attribute;
+                }
 
-        if (owner != null) {
-            GradleAndroidClassPathProvider classPathProvider = owner.getLookup().lookup(GradleAndroidClassPathProvider.class);
-            if (classPathProvider != null) {
-                URL url = root.toURL();
-                this.displayName = classPathProvider.getLibName(url, displayName);
-            } else {
-                this.displayName = displayName;
             }
-        } else {
-            this.displayName = displayName;
+
+        } catch (FileStateInvalidException ex) {
         }
-        System.out.println("org.netbeans.modules.android.project.ui.LibrariesSourceGroup.<init>()");
+        this.displayName = displayName;
     }
 
     @Override
@@ -70,12 +71,7 @@ public final class LibrariesSourceGroup implements SourceGroup {
 
     @Override
     public String getName() {
-        try {
-            return root.getURL().toExternalForm();
-        } catch (FileStateInvalidException fsi) {
-            ErrorManager.getDefault().notify(fsi);
-            return root.toString();
-        }
+        return root.toURL().toExternalForm();
     }
 
     @Override
