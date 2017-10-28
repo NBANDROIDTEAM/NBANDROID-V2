@@ -25,7 +25,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -75,15 +74,7 @@ public final class GradleAndroidClassPathProvider
         implements ClassPathProvider, AndroidModelAware, GradleBuildAware, AndroidClassPath {
 
     private static final Logger LOG = Logger.getLogger(GradleAndroidClassPathProvider.class.getName());
-    private final Map<URL, String> libNames = new HashMap<>();
-
-    public String getLibName(URL url, String dflt) {
-        if (libNames.containsKey(url)) {
-            return libNames.get(url).replace("@aar", ".jar");
-        } else {
-            return dflt;
-        }
-    }
+    public static final String ANDROID_LIB_NAME = "ANDROID_LIB_NAME";
 
     private interface Refreshable {
 
@@ -236,7 +227,6 @@ public final class GradleAndroidClassPathProvider
 
         @Override
         public URL[] getRoots() {
-            libNames.clear();
             List<URL> roots = new ArrayList<URL>();
             if (project != null) {
                 Variant variant = buildConfig.getCurrentVariant();
@@ -300,7 +290,11 @@ public final class GradleAndroidClassPathProvider
             URL url = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(lib.getJarFile()));
             if (!roots.contains(url)) {
                 roots.add(url);
-                libNames.put(url, name);
+                FileObject toFileObject = FileUtil.toFileObject(lib.getJarFile());
+                try {
+                    toFileObject.setAttribute(ANDROID_LIB_NAME, name.replace("@aar", ".jar"));
+                } catch (IOException ex) {
+                }
             }
             List<? extends AndroidLibrary> libraryDependencies = lib.getLibraryDependencies();
             for (AndroidLibrary libraryDependencie : libraryDependencies) {

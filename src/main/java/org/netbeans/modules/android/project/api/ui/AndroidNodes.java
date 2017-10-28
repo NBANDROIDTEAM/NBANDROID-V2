@@ -40,13 +40,13 @@ public class AndroidNodes {
     return new ProjectNode(project);
   }
   
-    public static SourceGroup createLibrarySourceGroup(String name, FileObject cpRoot, final Project project) {
+    public static SourceGroup createLibrarySourceGroup(String name, FileObject cpRoot) {
     Icon openedIcon = cpRoot != null
         ? ImageUtilities.loadImageIcon(ARCHIVE_ICON, true)
         : ImageUtilities.image2Icon(UiUtils.getTreeFolderIcon(true));
     Icon closedIcon = cpRoot != null
         ? ImageUtilities.loadImageIcon(ARCHIVE_ICON, true)
         : ImageUtilities.image2Icon(UiUtils.getTreeFolderIcon(false));
-        return new LibrariesSourceGroup(cpRoot, name, closedIcon, openedIcon, project);
+        return new LibrariesSourceGroup(cpRoot, name, closedIcon, openedIcon);
   }
 }

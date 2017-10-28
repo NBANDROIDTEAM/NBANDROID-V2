@@ -166,7 +166,7 @@ public final class PlatformNode extends AbstractNode {
                     openedIcon = null;
                 }
                 if (file.isValid()) {
-                    result.add(new LibrariesSourceGroup(root, file.getNameExt(), icon, openedIcon, null));
+                    result.add(new LibrariesSourceGroup(root, file.getNameExt(), icon, openedIcon));
                 }
             }
             return result;
