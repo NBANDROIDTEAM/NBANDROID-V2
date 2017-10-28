@@ -18,7 +18,7 @@ import com.android.SdkConstants;
 import com.android.ide.common.rendering.LayoutLibrary;
 import com.android.ide.common.resources.FrameworkResources;
 import com.android.sdklib.IAndroidTarget;
-import com.android.sdklib.SdkManager;
+import com.android.sdklib.repository.AndroidSdkHandler;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -61,8 +61,8 @@ class DalvikPlatformImpl implements DalvikPlatform {
     return archiveRoot;
   }
 
-  private static URL findAnnotationsLib(SdkManager sdkManager)
-      throws MalformedURLException {
+    private static URL findAnnotationsLib(AndroidSdkHandler sdkManager)
+            throws MalformedURLException {
     File annotationsJar = FileUtil.normalizeFile(new File(sdkManager.getLocation(), SdkConstants.FD_TOOLS
         + File.separator + SdkConstants.FD_SUPPORT
         + File.separator + SdkConstants.FN_ANNOTATIONS_JAR));
@@ -74,16 +74,16 @@ class DalvikPlatformImpl implements DalvikPlatform {
     if (target == null) {
       return Collections.emptyList();
     }
-    IAndroidTarget.IOptionalLibrary[] libs = target.getOptionalLibraries();
+      List<IAndroidTarget.OptionalLibrary> libs = target.getOptionalLibraries();
     if (libs == null) {
       return Collections.emptyList();
     }
     List<URL> libUrls = new ArrayList<>();
-    for (IAndroidTarget.IOptionalLibrary lib : libs) {
+      for (IAndroidTarget.OptionalLibrary lib : libs) {
       try {
         LOG.log(Level.FINER, "Adding standard lib {0} to AndroidTarget@{1}",
-            new Object[]{lib.getJarPath(), target.getLocation()});
-        libUrls.add(FileUtil.getArchiveRoot(Utilities.toURI(new File(lib.getJarPath())).toURL()));
+                  new Object[]{lib.getJar(), target.getLocation()});
+          libUrls.add(FileUtil.getArchiveRoot(Utilities.toURI(lib.getJar()).toURL()));
       } catch (MalformedURLException ex) {
         Exceptions.printStackTrace(ex);
       }
@@ -91,7 +91,7 @@ class DalvikPlatformImpl implements DalvikPlatform {
     return libUrls;
   }
 
-  private static List<URL> findAllLibraries(SdkManager sdkManager, IAndroidTarget target) throws MalformedURLException {
+    private static List<URL> findAllLibraries(AndroidSdkHandler sdkManager, IAndroidTarget target) throws MalformedURLException {
     List<URL> libUrls = new ArrayList<>();
     libUrls.add(findPlatformJar(target));
     libUrls.addAll(findTargetLibraries(target));
@@ -103,15 +103,15 @@ class DalvikPlatformImpl implements DalvikPlatform {
 
   private final FileObject installFolder;
   private final List<URL> bootLibs;
-  private final SdkManager sdkManager;
+    private final AndroidSdkHandler sdkManager;
   private final IAndroidTarget androidTarget;
   private final LayoutLibLoader layoutLibLoader;
   private final Supplier<WidgetData> widgetDataLoader;
   //@GuardedBy (this)
   private ClassPath sources;
 
-  DalvikPlatformImpl(SdkManager sdkManager, IAndroidTarget androidTarget) 
-      throws IOException {
+    DalvikPlatformImpl(AndroidSdkHandler sdkManager, IAndroidTarget androidTarget)
+            throws IOException {
     Preconditions.checkNotNull(androidTarget);
     this.installFolder = FileUtil.toFileObject(new File(androidTarget.getLocation()));
 
@@ -133,7 +133,7 @@ class DalvikPlatformImpl implements DalvikPlatform {
   }
 
   @Override
-  public SdkManager getSdkManager() {
+    public AndroidSdkHandler getSdkManager() {
     return sdkManager;
   }
 
@@ -174,7 +174,7 @@ class DalvikPlatformImpl implements DalvikPlatform {
     return this.sources;
   }
 
-  private static void fillSourceFolders(SdkManager sdkManager, IAndroidTarget androidTarget, List<URL> srcURLs) {
+    private static void fillSourceFolders(AndroidSdkHandler sdkManager, IAndroidTarget androidTarget, List<URL> srcURLs) {
     if (androidTarget != null) {
       String srcs = androidTarget.getPath(IAndroidTarget.SOURCES);
       if (srcs != null) {

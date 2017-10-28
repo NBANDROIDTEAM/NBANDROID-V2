@@ -17,7 +17,7 @@ package org.netbeans.modules.android.project.launch;
 import com.android.ddmlib.Client;
 import com.android.ddmlib.IDevice;
 import com.android.sdklib.IAndroidTarget;
-import com.android.sdklib.SdkManager;
+import com.android.sdklib.repository.AndroidSdkHandler;
 import java.util.concurrent.Future;
 import org.netbeans.modules.android.core.sdk.DalvikPlatform;
 import org.netbeans.modules.android.project.AvdSelector;
@@ -50,7 +50,7 @@ public interface AndroidLauncher {
   Future<Client> launch(DalvikPlatform platform, Lookup context, String mode);
 
   AvdSelector.LaunchData configAvd(
-      SdkManager sdkManager, IAndroidTarget target, LaunchConfiguration launchCfg);
+            AndroidSdkHandler sdkManager, IAndroidTarget target, LaunchConfiguration launchCfg);
 
   /** Simple launch that can be used to launch a file from filesystem (APK). */
   boolean simpleLaunch(LaunchInfo launchInfo, IDevice device);

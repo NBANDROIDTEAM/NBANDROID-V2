@@ -14,8 +14,8 @@
 package org.netbeans.modules.android.core.sdk;
 
 import com.android.prefs.AndroidLocation.AndroidLocationException;
-import com.android.sdklib.SdkManager;
 import com.android.sdklib.internal.avd.AvdManager;
+import com.android.sdklib.repository.AndroidSdkHandler;
 import com.android.utils.ILogger;
 
 /**
@@ -24,9 +24,9 @@ import com.android.utils.ILogger;
  */
 public class PlatformUtilities {
 
-  public static AvdManager createAvdManager(SdkManager sdkMgr) throws AndroidLocationException {
+    public static AvdManager createAvdManager(AndroidSdkHandler sdkMgr) throws AndroidLocationException {
     final ILogger sdkLog = SdkLogProvider.createLogger(true);
-    final AvdManager avdMgr = AvdManager.getInstance(sdkMgr.getLocalSdk(), sdkLog);
+      final AvdManager avdMgr = AvdManager.getInstance(sdkMgr, sdkLog);
     return avdMgr;
   }
 }

@@ -14,8 +14,6 @@
 
 package org.netbeans.modules.android.project;
 
-import com.android.sdklib.SdkManager;
-import com.android.sdklib.internal.project.ProjectCreator;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -38,7 +36,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.android.core.sdk.DalvikPlatform;
 import org.netbeans.modules.android.core.sdk.DalvikPlatformManager;
-import org.netbeans.modules.android.core.sdk.SdkLogProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -142,18 +139,19 @@ public class AndroidProjectUtil {
   /**
    * Creates new Android project using {@code ProjectCreator} from SDK.
    */
-  public static void create(AndroidGeneralData data, String packageName, String activityEntry) {
-    SdkManager sdkManager = data.getPlatform().getSdkManager();
-    ProjectCreator prjCreator = new ProjectCreator(
-        sdkManager, sdkManager.getLocation(),
-        ProjectCreator.OutputLevel.NORMAL, SdkLogProvider.createLogger(true));
-    prjCreator.createProject(data.getProjectDirPath(),
-        data.getProjectName(),
-        packageName,
-        activityEntry,
-        data.getPlatform().getAndroidTarget(),
-        /*library*/false,
-        data.getMainProjectDirPath());
+    public static void create(AndroidGeneralData data, String packageName, String activityEntry) {
+        //TODO remove is for ant
+//    SdkManager sdkManager = data.getPlatform().getSdkManager();
+//    ProjectCreator prjCreator = new ProjectCreator(
+//        sdkManager, sdkManager.getLocation(),
+//        ProjectCreator.OutputLevel.NORMAL, SdkLogProvider.createLogger(true));
+//    prjCreator.createProject(data.getProjectDirPath(),
+//        data.getProjectName(),
+//        packageName,
+//        activityEntry,
+//        data.getPlatform().getAndroidTarget(),
+//        /*library*/false,
+//        data.getMainProjectDirPath());
   }
 
   /*@VisibleForTesting*/ static DalvikPlatform toDalvikPlatorm(String targetDir) {

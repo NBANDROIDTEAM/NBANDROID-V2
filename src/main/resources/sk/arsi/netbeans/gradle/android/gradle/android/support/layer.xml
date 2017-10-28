@@ -2,15 +2,7 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Actions">
-        <folder name="Window">
-            <file name="org-netbeans-modules-android-project-ui-layout-PreviewLayoutTopComponent.instance">
-                <!--org.netbeans.modules.android.project.ui.layout.PreviewLayoutTopComponent-->
-                <attr methodvalue="org.openide.windows.TopComponent.openAction" name="instanceCreate"/>
-                <attr name="component" newvalue="org.netbeans.modules.android.project.ui.layout.PreviewLayoutTopComponent"/>
-                <attr name="preferredID" stringvalue="PreviewLayoutTopComponent"/>
-                <attr bundlevalue="org.netbeans.modules.android.project.ui.layout.Bundle#CTL_PreviewLayoutAction" name="displayName"/>
-            </file>
-        </folder>
+     
 
         <folder name="Build">
             <file name="org-netbeans-modules-android-project-apk-InstallApkAction.instance">

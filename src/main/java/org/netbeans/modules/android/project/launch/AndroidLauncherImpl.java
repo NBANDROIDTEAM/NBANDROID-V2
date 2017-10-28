@@ -16,9 +16,9 @@ package org.netbeans.modules.android.project.launch;
 import com.android.ddmlib.*;
 import com.android.prefs.AndroidLocation.AndroidLocationException;
 import com.android.sdklib.IAndroidTarget;
-import com.android.sdklib.SdkManager;
 import com.android.sdklib.internal.avd.AvdInfo;
 import com.android.sdklib.internal.avd.AvdManager;
+import com.android.sdklib.repository.AndroidSdkHandler;
 import com.android.utils.ILogger;
 import com.google.common.base.Preconditions;
 import java.io.IOException;
@@ -124,14 +124,14 @@ public class AndroidLauncherImpl implements AndroidLauncher {
      */
     @Override
     public AvdSelector.LaunchData configAvd(
-            SdkManager sdkManager, IAndroidTarget target, LaunchConfiguration launchCfg) {
+            AndroidSdkHandler sdkManager, IAndroidTarget target, LaunchConfiguration launchCfg) {
         try {
             LaunchConfiguration.TargetMode mode = launchCfg.getTargetMode();
             String targetAvd = null;
             // targetAvd = this.project.evaluator().getProperty(AndroidProjectProperties.PROP_TARGET_PREFFERED_AVD);
 
             final ILogger sdkLog = SdkLogProvider.createLogger(false);
-            final AvdManager avdMgr = AvdManager.getInstance(sdkManager.getLocalSdk(), sdkLog);
+            final AvdManager avdMgr = AvdManager.getInstance(sdkManager, sdkLog);
             AvdSelector.AvdManagerMock avdMgrMock = new AvdSelector.AvdManagerMock() {
 
                 @Override
@@ -275,30 +275,18 @@ public class AndroidLauncherImpl implements AndroidLauncher {
     boolean installPackage(LaunchInfo launchInfo, String remotePackagePath, IDevice device) {
         initIO();
         try {
-            String out = device.installRemotePackage(remotePackagePath, launchInfo.reinstall);
-            if (out == null) {
-                // success
-                io.getOut().println("Package " + launchInfo.packageFile.getNameExt() + " deployed");
-                return true;
-            } else {
-                io.getOut().println("Package deployment failed with: " + out);
-                return false;
-            }
-        } catch (Exception ex) {
+            device.installRemotePackage(remotePackagePath, launchInfo.reinstall);
+            io.getOut().println("Package " + launchInfo.packageFile.getNameExt() + " deployed");
+            return true;
+        } catch (InstallException ex) {
             if (launchInfo.reinstall) {
                 try {
                     // maybe it is not installed. try again clean install
-                    String out2 = device.installRemotePackage(remotePackagePath, false);
-                    if (out2 == null) {
-                        // success
-                        io.getOut().println("Package " + launchInfo.packageFile.getNameExt() + " deployed");
-                        return true;
-                    } else {
-                        io.getOut().println("Package deployment failed with: " + out2);
-                        return false;
-                    }
-                } catch (Exception ex1) {
-                    Exceptions.printStackTrace(ex1);
+                     device.installRemotePackage(remotePackagePath, false);
+                    io.getOut().println("Package " + launchInfo.packageFile.getNameExt() + " deployed");
+                } catch (InstallException ex1) {
+                    io.getOut().println("Package deployment failed with: ");
+                    ex.printStackTrace(io.getOut());
                 }
             }
             Exceptions.printStackTrace(ex);

@@ -17,7 +17,7 @@ package org.netbeans.modules.android.core.sdk;
 import com.android.ide.common.rendering.LayoutLibrary;
 import com.android.ide.common.resources.FrameworkResources;
 import com.android.sdklib.IAndroidTarget;
-import com.android.sdklib.SdkManager;
+import com.android.sdklib.repository.AndroidSdkHandler;
 import com.google.common.base.Supplier;
 import java.net.URL;
 import java.util.List;
@@ -29,7 +29,7 @@ public interface DalvikPlatform {
 
   IAndroidTarget getAndroidTarget();
 
-  SdkManager getSdkManager();
+    AndroidSdkHandler getSdkManager();
 
   List<URL> getBootstrapLibraries();
 

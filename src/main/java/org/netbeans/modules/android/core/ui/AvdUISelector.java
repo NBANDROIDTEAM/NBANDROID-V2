@@ -14,7 +14,7 @@
 
 package org.netbeans.modules.android.core.ui;
 
-import com.android.sdklib.IAndroidTarget;
+import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.internal.avd.AvdInfo;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -83,10 +83,10 @@ public class AvdUISelector extends javax.swing.JPanel {
     DefaultTableModel tableModel = getTableModel();
     tableModel.setRowCount(0);
     for (AvdInfo info : infos) {
-      IAndroidTarget target = info.getTarget();
+        AndroidVersion target = info.getAndroidVersion();
       if (target != null) {
         tableModel.addRow(new Object[] {
-            info.getName(), target.getName(), target.getVersionName(), target.getVersion()
+            info.getName(), target.getApiLevel(), target.getCodename(), target.getFeatureLevel()
         });
       } else {
         LOG.log(Level.INFO, "Not valid AvdInfo {0}", info);

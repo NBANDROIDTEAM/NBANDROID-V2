@@ -15,9 +15,9 @@
 package org.netbeans.modules.android.project.ui.customizer;
 
 import com.android.prefs.AndroidLocation.AndroidLocationException;
-import com.android.sdklib.SdkManager;
 import com.android.sdklib.internal.avd.AvdInfo;
 import com.android.sdklib.internal.avd.AvdManager;
+import com.android.sdklib.repository.AndroidSdkHandler;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -39,7 +39,6 @@ import javax.swing.plaf.UIResource;
 import org.netbeans.modules.android.core.sdk.DalvikPlatformManager;
 import org.netbeans.modules.android.core.sdk.PlatformUtilities;
 import org.netbeans.modules.android.project.AndroidProject;
-import org.netbeans.modules.android.project.api.AndroidProjects;
 import org.netbeans.modules.android.project.configs.AndroidConfigProvider.Config;
 import org.netbeans.modules.android.project.configs.ConfigBuilder;
 import org.netbeans.modules.android.project.launch.LaunchConfiguration;
@@ -71,7 +70,7 @@ public class CustomizerTest extends JPanel implements HelpCtx.Provider {
 
     initComponents();
     try {
-      final SdkManager sdkManager = DalvikPlatformManager.getDefault().getSdkManager();
+        final AndroidSdkHandler sdkManager = DalvikPlatformManager.getDefault().getSdkManager();
       if (sdkManager != null) {
         AvdManager avdManager = PlatformUtilities.createAvdManager(sdkManager);
         avdUISelector.setAvdInfos(avdManager.getAllAvds());
