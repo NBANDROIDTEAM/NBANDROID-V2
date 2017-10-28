@@ -289,6 +289,7 @@
             <groupId>com.android.tools</groupId>
             <artifactId>sdklib</artifactId>
             <version>${version.android}</version>
+            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -473,7 +474,7 @@
         <dependency>
             <groupId>com.android.tools.analytics-library</groupId>
             <artifactId>protos</artifactId>
-            <version>25.3.0</version>
+            <version>${version.android}</version>
         </dependency>
         <dependency>
             <groupId>org.ow2.asm</groupId>
@@ -488,12 +489,12 @@
         <dependency>
             <groupId>com.android.tools.analytics-library</groupId>
             <artifactId>shared</artifactId>
-            <version>25.3.0</version>
+            <version>${version.android}</version>
         </dependency>
         <dependency>
             <groupId>com.android.tools.analytics-library</groupId>
             <artifactId>tracker</artifactId>
-            <version>25.3.0</version>
+            <version>${version.android}</version>
         </dependency>
         <dependency>
             <groupId>com.android.tools.jack</groupId>
@@ -525,10 +526,63 @@
             <artifactId>netbeans-gradle-default-models</artifactId>
             <version>${version.nb.gradle}</version>
         </dependency>
+        <dependency>
+            <groupId>com.android.tools</groupId>
+            <artifactId>repository</artifactId>
+            <version>${version.android}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.android.tools</groupId>
+            <artifactId>annotations</artifactId>
+            <version>${version.android}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.android.tools.layoutlib</groupId>
+            <artifactId>layoutlib-api</artifactId>
+            <version>${version.android}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.10</version>
+        </dependency>
+        <dependency>
+            <groupId>com.android.tools.build</groupId>
+            <artifactId>builder-test-api</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.kxml</groupId>
+            <artifactId>kxml2</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>1.48</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.android.tools</groupId>
+            <artifactId>dvlib</artifactId>
+            <version>${version.android}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.11</version>
+        </dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <version.android>24.0.0</version.android>
+        <version.android>25.3.0</version.android>
         <version.nb.gradle>1.4.2</version.nb.gradle>
         <!--1.4.2-->
     </properties>

@@ -18,9 +18,9 @@ package org.netbeans.modules.android.project;
 import com.android.ddmlib.IDevice;
 import com.android.prefs.AndroidLocation.AndroidLocationException;
 import com.android.sdklib.IAndroidTarget;
-import com.android.sdklib.internal.avd.AvdManager;
 import com.android.sdklib.internal.avd.AvdInfo;
-import com.android.sdklib.repository.local.LocalPlatformPkgInfo;
+import com.android.sdklib.internal.avd.AvdManager;
+import com.android.sdklib.repository.legacy.local.LocalPlatformPkgInfo;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -136,8 +136,8 @@ public class AvdSelector {
       if (prefferedAvdName != null) {
         AvdInfo candidateAvd =
             avdManager.getAvd(prefferedAvdName, true /*validAvdOnly*/);
-        // be optimistic if target is null
-        if (target != null && !target.canRunOn(candidateAvd.getTarget())) {
+          // be optimistic if target is null
+          if (target != null && !target.getVersion().canRun(candidateAvd.getAndroidVersion())) {
           candidateAvd = null;
         }
         if (candidateAvd != null) {
@@ -162,13 +162,14 @@ public class AvdSelector {
         String deviceAvd = device.getAvdName();
         if (deviceAvd != null) { // physical devices return null.
           AvdInfo info = avdManager.getAvd(deviceAvd, true /*validAvdOnly*/);
-          if (info != null && (target == null || target.canRunOn(info.getTarget()))) {
+            if (info != null && (target == null || target.getVersion().canRun(info.getAndroidVersion()))) {
             compatibleAvds.put(device, info);
           }
         } else {
           if (target == null || target.isPlatform()) {
             // means this can run on any device as long
             // as api level is high enough
+
             String apiString = device.getProperty(LocalPlatformPkgInfo.PROP_VERSION_SDK);
             try {
               int apiNumber = Integer.parseInt(apiString);
@@ -209,9 +210,9 @@ public class AvdSelector {
     AvdInfo[] avds = avdManager.getValidAvds();
     AvdInfo bestMatchAvd = null;
     for (AvdInfo avd : avds) {
-      if (target != null && target.canRunOn(avd.getTarget())) {
+        if (target != null && target.getVersion().canRun(avd.getAndroidVersion())) {
         if (bestMatchAvd == null ||
-            avd.getTarget().getVersion().getApiLevel() < bestMatchAvd.getTarget().getVersion().getApiLevel()) {
+ avd.getAndroidVersion().getApiLevel() < bestMatchAvd.getAndroidVersion().getApiLevel()) {
           bestMatchAvd = avd;
         }
       }

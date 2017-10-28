@@ -25,7 +25,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.android.project.api.AndroidFileTypes;
 import org.netbeans.modules.android.project.ui.AndroidLogicalViewProvider;
 import org.netbeans.modules.android.project.ui.PathFinder;
-import org.netbeans.modules.android.project.ui.PreviewLayoutAction;
 import org.netbeans.modules.android.project.ui.customizer.CustomizerProviderImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -72,7 +71,7 @@ public class AndroidResourceNode extends FilterNode implements PathFinder {
                 int previewLen = isLayout ? 1 : 0;
                 actions = new Action[superActions.length + previewLen + 2];
                 if (isLayout) {
-                    actions[0] = new PreviewLayoutAction(fo);
+                    //TODO layout editor  actions[0] = new PreviewLayoutAction(fo);
                 }
                 System.arraycopy(superActions, 0, actions, previewLen, superActions.length);
                 actions[superActions.length] = null;
@@ -200,7 +199,7 @@ public class AndroidResourceNode extends FilterNode implements PathFinder {
             actions = new Action[origActions.length + 1];
             System.arraycopy(origActions, 1, actions, 2, origActions.length - 1);
             actions[0] = origActions[0]; // open
-            actions[1] = new PreviewLayoutAction(fo);
+          //TODO layout editor  actions[1] = new PreviewLayoutAction(fo);
             return actions;
         }
     }

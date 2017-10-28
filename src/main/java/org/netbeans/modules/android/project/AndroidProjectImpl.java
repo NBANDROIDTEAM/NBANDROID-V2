@@ -14,9 +14,8 @@
 
 package org.netbeans.modules.android.project;
 
-import com.android.sdklib.SdkManager;
-import com.android.sdklib.internal.project.ProjectCreator;
 import com.android.sdklib.internal.project.ProjectProperties;
+import com.android.sdklib.repository.AndroidSdkHandler;
 import com.google.common.annotations.VisibleForTesting;
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +24,6 @@ import java.util.logging.Logger;
 import org.nbandroid.netbeans.gradle.query.SourceLevelQueryImpl2;
 import org.netbeans.modules.android.core.sdk.DalvikPlatform;
 import org.netbeans.modules.android.core.sdk.DalvikPlatformManager;
-import org.netbeans.modules.android.core.sdk.SdkLogProvider;
 import org.netbeans.modules.android.project.api.PropertyName;
 import org.netbeans.modules.android.project.configs.AndroidConfigProvider;
 import org.netbeans.modules.android.project.launch.AndroidLauncherImpl;
@@ -186,21 +184,21 @@ public final class AndroidProjectImpl implements AndroidProject {
     DalvikPlatform platform = data.getPlatform();
 
     LOG.log(Level.FINE, "Updating project to {0}", data);
-    SdkManager sdkManager = platform != null ? 
-        platform.getSdkManager() :
+      AndroidSdkHandler sdkManager = platform != null
+              ?        platform.getSdkManager() :
         DalvikPlatformManager.getDefault().getSdkManager();
     if (sdkManager == null) {
       throw new IllegalArgumentException("Cannot find SDK manager to update the project");
     }
-    ProjectCreator prjCreator = new ProjectCreator(
-        sdkManager, sdkManager.getLocation(),
-        ProjectCreator.OutputLevel.NORMAL, SdkLogProvider.createLogger(true));
+//    ProjectCreator prjCreator = new ProjectCreator(
+//        sdkManager, sdkManager.getLocation(),
+//        ProjectCreator.OutputLevel.NORMAL, SdkLogProvider.createLogger(true));
     if (data.getMainProjectDirPath() == null) {
       // regular project
-      prjCreator.updateProject(data.getProjectDirPath(),
-          platform != null ? platform.getAndroidTarget() : null,
-          data.getProjectName(),
-          /*library*/null);
+//      prjCreator.updateProject(data.getProjectDirPath(),
+//          platform != null ? platform.getAndroidTarget() : null,
+//          data.getProjectName(),
+//          /*library*/null);
       if (data.isLibrary()) {
         propertyHelper.setProperty(
           ProjectProperties.PropertyType.PROJECT, AndroidInfoImpl.ANDROID_LIBRARY_PROPERTY, Boolean.toString(true));
@@ -218,7 +216,7 @@ public final class AndroidProjectImpl implements AndroidProject {
       propertyHelper.setProperty(
         ProjectProperties.PropertyType.PROJECT, "android.library.reference." + String.valueOf(i), null);
     } else {
-      prjCreator.updateTestProject(data.getProjectDirPath(), data.getMainProjectDirPath(), sdkManager);
+        //prjCreator.updateTestProject(data.getProjectDirPath(), data.getMainProjectDirPath(), sdkManager);
     }
     getProjectDirectory().refresh();
   }
