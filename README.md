@@ -12,7 +12,7 @@ What Works:
 * Android emulator
 
 What Dont works:
-* SDK Manager - first open project in Android studio to download SDK
+* SDK Manager - first open project in Android studio to download Android platform
 * AVD Manager
 * we currently have no Visual Layout Editor 
 * and many other things
