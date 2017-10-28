@@ -27,6 +27,7 @@ import org.netbeans.modules.android.project.api.AndroidFileTypes;
 import org.netbeans.modules.android.project.api.AndroidProjects;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Provides the Android grammar for any documents whose root elements matches
@@ -34,6 +35,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Radim Kubacki
  */
+@ServiceProvider(service = AndroidFileTypes.class)
 public final class AndroidFileTypesImpl implements AndroidFileTypes {
 
   private static final Logger LOG = Logger.getLogger(AndroidFileTypesImpl.class.getName());
@@ -41,12 +43,13 @@ public final class AndroidFileTypesImpl implements AndroidFileTypes {
   public AndroidFileTypesImpl() {
   }
 
+    @Override
   public boolean isLayoutFile(@Nullable final FileObject fo) {
     if (fo == null  || !"xml".equals(fo.getExt())) {
       return false;
     }
     Project p = FileOwnerQuery.getOwner(fo);
-    if (!AndroidProjects.isAndroidProject(p)) {
+        if (!AndroidProjects.isAndroidProject(p) && !AndroidProjects.isAndroidMavenProject(p)) {
       return false;
     }
     return Iterables.any(
