@@ -131,7 +131,7 @@ public class AndroidProjects {
     return false;
   }
   
-  private static boolean isAndroidMavenProject(Project p) {
+    public static boolean isAndroidMavenProject(Project p) {
     DalvikPlatformResolver dpr = p != null ? p.getLookup().lookup(DalvikPlatformResolver.class) : null;
     if (dpr == null) {
       return false;
