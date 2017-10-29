@@ -17,24 +17,27 @@
  * under the License.
  */
 
-package org.nbandroid.netbeans.gradle.v2.sdk;
+package org.netbeans.modules.android.core.ui;
 
-import com.android.repository.api.RepoManager;
-import org.openide.util.Lookup;
+import java.awt.Image;
+import org.netbeans.api.annotations.common.StaticResource;
+import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author arsi
  */
-public abstract class SdkManager {
+public class IconProvider {
 
-    public static SdkManager getDefault() {
-        return Lookup.getDefault().lookup(SdkManager.class);
-    }
+    @StaticResource
+    private static final String RESOURCE_UPDATE = "org/nbandroid/netbeans/gradle/ui/update.png";
+    public static final Image IMG_UPDATE = ImageUtilities.loadImage(RESOURCE_UPDATE);
 
-    public abstract void addSdkPlatformChangeListener(SdkPlatformChangeListener l);
+    @StaticResource
+    private static final String RESOURCE_LOCAL = "org/nbandroid/netbeans/gradle/ui/local.png";
+    public static final Image IMG_LOCAL = ImageUtilities.loadImage(RESOURCE_LOCAL);
 
-    public abstract void removeSdkPlatformChangeListener(SdkPlatformChangeListener l);
-
-    public abstract RepoManager getRepoManager();
+    @StaticResource
+    private static final String RESOURCE_REMOTE = "org/nbandroid/netbeans/gradle/ui/remote.png";
+    public static final Image IMG_REMOTE = ImageUtilities.loadImage(RESOURCE_REMOTE);
 }

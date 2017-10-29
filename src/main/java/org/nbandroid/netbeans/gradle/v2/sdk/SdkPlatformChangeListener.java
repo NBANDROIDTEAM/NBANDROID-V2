@@ -16,25 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.nbandroid.netbeans.gradle.v2.sdk;
-
-import com.android.repository.api.RepoManager;
-import org.openide.util.Lookup;
 
 /**
  *
  * @author arsi
  */
-public abstract class SdkManager {
+public interface SdkPlatformChangeListener {
 
-    public static SdkManager getDefault() {
-        return Lookup.getDefault().lookup(SdkManager.class);
-    }
+    public void packageListChanged(PackageRoot platformPackages);
 
-    public abstract void addSdkPlatformChangeListener(SdkPlatformChangeListener l);
-
-    public abstract void removeSdkPlatformChangeListener(SdkPlatformChangeListener l);
-
-    public abstract RepoManager getRepoManager();
 }
