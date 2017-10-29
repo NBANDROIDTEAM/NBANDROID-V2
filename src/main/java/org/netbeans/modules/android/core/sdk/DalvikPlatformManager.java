@@ -14,7 +14,6 @@
 package org.netbeans.modules.android.core.sdk;
 
 import com.android.repository.Revision;
-import com.android.repository.api.ProgressIndicatorAdapter;
 import com.android.sdklib.BuildToolInfo;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.devices.Device;
@@ -138,16 +137,16 @@ public final class DalvikPlatformManager {
         if (mgr == null) {
             throw new IllegalArgumentException("Error parsing sdk.");
         }
-        AndroidTargetManager androidTargetManager = mgr.getAndroidTargetManager(new ProgressIndicatorAdapter() {
+        AndroidTargetManager androidTargetManager = mgr.getAndroidTargetManager(new NbOutputWindowProgressIndicator() {
         });
-        BuildToolInfo buildToolInfo = mgr.getBuildToolInfo(Revision.NOT_SPECIFIED, new ProgressIndicatorAdapter() {
+        BuildToolInfo buildToolInfo = mgr.getBuildToolInfo(Revision.NOT_SPECIFIED, new NbOutputWindowProgressIndicator() {
         });
         if (androidTargetManager == null && buildToolInfo == null) {
             throw new IllegalArgumentException("Error parsing sdk - missing build tool and platform tools.");
         }
         List<DalvikPlatform> oldPlatforms = platforms;
         List<DalvikPlatform> readPlatforms = new ArrayList<>();
-        Collection<IAndroidTarget> targets = androidTargetManager.getTargets(new ProgressIndicatorAdapter() {
+        Collection<IAndroidTarget> targets = androidTargetManager.getTargets(new NbOutputWindowProgressIndicator() {
         });
         for (IAndroidTarget t : targets) {
             try {

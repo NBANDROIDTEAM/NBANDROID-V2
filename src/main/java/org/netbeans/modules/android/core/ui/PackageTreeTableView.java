@@ -17,24 +17,22 @@
  * under the License.
  */
 
-package org.nbandroid.netbeans.gradle.v2.sdk;
+package org.netbeans.modules.android.core.ui;
 
-import com.android.repository.api.RepoManager;
-import org.openide.util.Lookup;
+import org.netbeans.swing.outline.Outline;
+import org.netbeans.swing.outline.OutlineModel;
 
 /**
  *
  * @author arsi
  */
-public abstract class SdkManager {
+public class PackageTreeTableView extends Outline {
 
-    public static SdkManager getDefault() {
-        return Lookup.getDefault().lookup(SdkManager.class);
+    public PackageTreeTableView() {
     }
 
-    public abstract void addSdkPlatformChangeListener(SdkPlatformChangeListener l);
+    public PackageTreeTableView(OutlineModel mdl) {
+        super(mdl);
+    }
 
-    public abstract void removeSdkPlatformChangeListener(SdkPlatformChangeListener l);
-
-    public abstract RepoManager getRepoManager();
 }
