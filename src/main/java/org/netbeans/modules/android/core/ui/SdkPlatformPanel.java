@@ -130,13 +130,13 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
             if (o instanceof UpdatablePackageDecorator) {
                 UpdatablePackage aPackage = ((UpdatablePackageDecorator) o).getPackage();
                 if (aPackage.isUpdate()) {
-                    return "Update available:"+ aPackage.getRemote().getVersion().getMajor();
+                    return "Update available:" + aPackage.getRemote().getVersion().getMajor();
                 } else if (aPackage.hasLocal()) {
                     return "Installed";
                 } else {
                     return "Not installed";
                 }
-            }else{
+            } else {
                 return o.toString();
             }
         }

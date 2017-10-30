@@ -132,6 +132,7 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
                     avd.addPackage(new UpdatablePackageDecorator(avd, info));
                 } else {
                     AndroidVersionDecorator avd = new AndroidVersionDecorator(androidVersion);
+                    avd.addPackage(new UpdatablePackageDecorator(avd, info));
                     tmp.put(androidVersion, avd);
                     tmpPackages.add(avd);
                 }
