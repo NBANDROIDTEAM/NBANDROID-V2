@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.netbeans.modules.android.core.sdk;
 
 import com.android.annotations.NonNull;
@@ -15,6 +14,7 @@ import org.netbeans.modules.android.project.AndroidIO;
 import org.openide.windows.InputOutput;
 
 /**
+ * ProgressIndicatorAdapter for Android tools APLI
  *
  * @author arsi
  */

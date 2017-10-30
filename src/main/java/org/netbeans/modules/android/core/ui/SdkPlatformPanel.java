@@ -18,20 +18,36 @@
  */
 package org.netbeans.modules.android.core.ui;
 
+import com.android.repository.api.Installer;
+import com.android.repository.api.LocalPackage;
+import com.android.repository.api.Uninstaller;
 import com.android.repository.api.UpdatablePackage;
+import com.android.repository.impl.installer.BasicInstallerFactory;
+import com.android.repository.io.FileOpUtils;
 import com.android.sdklib.repository.meta.DetailsTypes;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JTable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.DefaultTreeModel;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidVersionDecorator;
-import org.nbandroid.netbeans.gradle.v2.sdk.PackageRoot;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidVersionNode;
 import org.nbandroid.netbeans.gradle.v2.sdk.SdkManager;
+import org.nbandroid.netbeans.gradle.v2.sdk.SdkPackageNode;
 import org.nbandroid.netbeans.gradle.v2.sdk.SdkPlatformChangeListener;
-import org.nbandroid.netbeans.gradle.v2.sdk.UpdatablePackageDecorator;
+import org.nbandroid.netbeans.gradle.v2.sdk.SdkPlatformPackagesRootNode;
+import org.netbeans.modules.android.core.sdk.NbDownloader;
+import org.netbeans.modules.android.core.sdk.NbOutputWindowProgressIndicator;
 import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.OutlineModel;
 import org.netbeans.swing.outline.RenderDataProvider;
@@ -41,6 +57,7 @@ import org.openide.util.NbPreferences;
 import org.openide.windows.WindowManager;
 
 /**
+ * Visual Android SDK platform installer
  *
  * @author arsi
  */
@@ -49,15 +66,23 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
     private final ExplorerManager explorerManager = new ExplorerManager();
     private SdkManager manager = null;
     private OutlineModel model = null;
-    private PackageRoot platformPackages = null;
+    private SdkPlatformPackagesRootNode platformPackages = null;
     public static final String SHOW_DETAILS = "SHOW_DETAILS";
     private boolean detailsState;
+    private final JPopupMenu tableMenu = new JPopupMenu();
+    private final JMenuItem installMenuItem = new JMenuItem("Install package");
+    private final JMenuItem updateMenuItem = new JMenuItem("Update package");
+    private final JMenuItem unInstallMenuItem = new JMenuItem("Uninstall package");
+    private static final ExecutorService pool = Executors.newFixedThreadPool(1);
 
     /**
      * Creates new form SdkPlatformPanel
      */
     public SdkPlatformPanel() {
         initComponents();
+        tableMenu.add(installMenuItem);
+        tableMenu.add(updateMenuItem);
+        tableMenu.add(unInstallMenuItem);
         detailsState = NbPreferences.forModule(SdkPlatformPanel.class).getBoolean(SHOW_DETAILS, false);
         showDetails.setSelected(detailsState);
         showDetails.addChangeListener(new ChangeListener() {
@@ -75,6 +100,148 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
                 }
             }
         });
+        packageTreeTableView.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                int r = packageTreeTableView.rowAtPoint(e.getPoint());
+                if (r >= 0 && r < packageTreeTableView.getRowCount()) {
+                    packageTreeTableView.setRowSelectionInterval(r, r);
+                } else {
+                    packageTreeTableView.clearSelection();
+                }
+
+                int rowindex = packageTreeTableView.getSelectedRow();
+                if (rowindex < 0) {
+                    return;
+                }
+                if (platformPackages != null && e.getButton() == 3 && e.getComponent() instanceof JTable) {
+                    Object node = packageTreeTableView.getModel().getValueAt(rowindex, 0);
+                    if (rowindex != -1) {
+                        if (platformPackages.isFlatModel()) {
+                            if (node instanceof AndroidVersionNode) {
+                                Vector<SdkPackageNode> packages = ((AndroidVersionNode) node).getPackages();
+                                for (SdkPackageNode pkg : packages) {
+                                    if (pkg.getPackage().getRepresentative().getTypeDetails() instanceof DetailsTypes.PlatformDetailsType) {
+                                        updateMenuItem.setEnabled(pkg.getPackage().isUpdate());
+                                        installMenuItem.setEnabled(!pkg.getPackage().hasLocal());
+                                        unInstallMenuItem.setEnabled(pkg.getPackage().hasLocal());
+                                        break;
+                                    } else {
+                                        updateMenuItem.setEnabled(false);
+                                        installMenuItem.setEnabled(false);
+                                        unInstallMenuItem.setEnabled(false);
+                                    }
+                                }
+                                tableMenu.show(e.getComponent(), e.getX(), e.getY());
+                            }
+                        } else if (node instanceof SdkPackageNode) {
+                            updateMenuItem.setEnabled(((SdkPackageNode) node).getPackage().isUpdate());
+                            installMenuItem.setEnabled(!((SdkPackageNode) node).getPackage().hasLocal());
+                            unInstallMenuItem.setEnabled(((SdkPackageNode) node).getPackage().hasLocal());
+                            tableMenu.show(e.getComponent(), e.getX(), e.getY());
+                        }
+
+                    }
+
+                }
+            }
+        });
+        installMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int rowindex = packageTreeTableView.getSelectedRow();
+                if (rowindex < 0) {
+                    return;
+                }
+                Object node = packageTreeTableView.getModel().getValueAt(rowindex, 0);
+                if (node instanceof AndroidVersionNode) {
+                    Vector<SdkPackageNode> packages = ((AndroidVersionNode) node).getPackages();
+                    for (SdkPackageNode pkg : packages) {
+                        if (pkg.getPackage().getRepresentative().getTypeDetails() instanceof DetailsTypes.PlatformDetailsType) {
+                            installPackage(pkg.getPackage());
+                            break;
+                        }
+                    }
+
+                } else if (node instanceof SdkPackageNode) {
+                    installPackage(((SdkPackageNode) node).getPackage());
+                }
+            }
+        });
+
+        updateMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int rowindex = packageTreeTableView.getSelectedRow();
+                if (rowindex < 0) {
+                    return;
+                }
+                Object node = packageTreeTableView.getModel().getValueAt(rowindex, 0);
+                if (node instanceof AndroidVersionNode) {
+                    Vector<SdkPackageNode> packages = ((AndroidVersionNode) node).getPackages();
+                    for (SdkPackageNode pkg : packages) {
+                        if (pkg.getPackage().getRepresentative().getTypeDetails() instanceof DetailsTypes.PlatformDetailsType) {
+                            installPackage(pkg.getPackage());
+                            break;
+                        }
+                    }
+
+                } else if (node instanceof SdkPackageNode) {
+                    installPackage(((SdkPackageNode) node).getPackage());
+
+                }
+            }
+        });
+        unInstallMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int rowindex = packageTreeTableView.getSelectedRow();
+                if (rowindex < 0) {
+                    return;
+                }
+                Object node = packageTreeTableView.getModel().getValueAt(rowindex, 0);
+                if (node instanceof AndroidVersionNode) {
+                    Vector<SdkPackageNode> packages = ((AndroidVersionNode) node).getPackages();
+                    for (SdkPackageNode pkg : packages) {
+                        if (pkg.getPackage().getRepresentative().getTypeDetails() instanceof DetailsTypes.PlatformDetailsType) {
+                            uninstallPackage(pkg.getPackage().getLocal());
+                            break;
+                        }
+                    }
+
+                } else if (node instanceof SdkPackageNode) {
+                    uninstallPackage(((SdkPackageNode) node).getPackage().getLocal());
+                }
+            }
+
+        });
+    }
+
+    private void uninstallPackage(LocalPackage aPackage) {
+        BasicInstallerFactory installerFactory = new BasicInstallerFactory();
+        Uninstaller uninstaller = installerFactory.createUninstaller(aPackage, SdkManager.getDefault().getRepoManager(), FileOpUtils.create());
+        NbOutputWindowProgressIndicator indicator = new NbOutputWindowProgressIndicator();
+        if (uninstaller.prepare(indicator)) {
+            uninstaller.complete(indicator);
+        }
+        SdkManager.getDefault().updateSdkPlatformPackages();
+    }
+
+    private void installPackage(final UpdatablePackage aPackage) {
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                BasicInstallerFactory installerFactory = new BasicInstallerFactory();
+                Installer installer = installerFactory.createInstaller(aPackage.getRemote(), SdkManager.getDefault().getRepoManager(), new NbDownloader(), FileOpUtils.create());
+                NbOutputWindowProgressIndicator indicator = new NbOutputWindowProgressIndicator();
+                if (installer.prepare(indicator)) {
+                    installer.complete(indicator);
+                }
+                SdkManager.getDefault().updateSdkPlatformPackages();
+            }
+        };
+
+        pool.execute(runnable);
     }
 
     public void connect(SdkManager manager) {
@@ -157,8 +324,8 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
 
         @Override
         public javax.swing.Icon getIcon(Object o) {
-            if (o instanceof UpdatablePackageDecorator) {
-                UpdatablePackage aPackage = ((UpdatablePackageDecorator) o).getPackage();
+            if (o instanceof SdkPackageNode) {
+                UpdatablePackage aPackage = ((SdkPackageNode) o).getPackage();
                 if (aPackage.isUpdate()) {
                     return new ImageIcon(IconProvider.IMG_UPDATE);
                 } else if (aPackage.hasLocal()) {
@@ -166,10 +333,10 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
                 } else {
                     return new ImageIcon(IconProvider.IMG_REMOTE);
                 }
-            } else if (o instanceof AndroidVersionDecorator) {
-                if (((AndroidVersionDecorator) o).isFlatModel()) {
-                    Vector<UpdatablePackageDecorator> packages = ((AndroidVersionDecorator) o).getPackages();
-                    for (UpdatablePackageDecorator pkg : packages) {
+            } else if (o instanceof AndroidVersionNode) {
+                if (((AndroidVersionNode) o).isFlatModel()) {
+                    Vector<SdkPackageNode> packages = ((AndroidVersionNode) o).getPackages();
+                    for (SdkPackageNode pkg : packages) {
                         if (pkg.getPackage().getRepresentative().getTypeDetails() instanceof DetailsTypes.PlatformDetailsType) {
                             if (pkg.getPackage().isUpdate()) {
                                 return new ImageIcon(IconProvider.IMG_UPDATE);
@@ -181,9 +348,9 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
                         }
                     }
                     return new ImageIcon(IconProvider.IMG_REMOTE);
-                }else{
-                    Vector<UpdatablePackageDecorator> packages = ((AndroidVersionDecorator) o).getPackages();
-                    for (UpdatablePackageDecorator pkg : packages) {
+                } else {
+                    Vector<SdkPackageNode> packages = ((AndroidVersionNode) o).getPackages();
+                    for (SdkPackageNode pkg : packages) {
                         if (pkg.getPackage().getRepresentative().getTypeDetails() instanceof DetailsTypes.PlatformDetailsType) {
                             if (pkg.getPackage().isUpdate()) {
                                 return new ImageIcon(IconProvider.IMG_FOLDER_UPDATE);
@@ -202,8 +369,8 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
 
         @Override
         public String getTooltipText(Object o) {
-            if (o instanceof UpdatablePackageDecorator) {
-                UpdatablePackage aPackage = ((UpdatablePackageDecorator) o).getPackage();
+            if (o instanceof SdkPackageNode) {
+                UpdatablePackage aPackage = ((SdkPackageNode) o).getPackage();
                 if (aPackage.isUpdate()) {
                     return "Update available:" + aPackage.getRemote().getVersion().getMajor();
                 } else if (aPackage.hasLocal()) {
@@ -223,7 +390,7 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
     }
 
     @Override
-    public void packageListChanged(PackageRoot platformPackages) {
+    public void packageListChanged(SdkPlatformPackagesRootNode platformPackages) {
         this.platformPackages = platformPackages;
         platformPackages.setFlatModel(!showDetails.isSelected());
         Runnable runnable = new Runnable() {
@@ -239,7 +406,7 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
         WindowManager.getDefault().invokeWhenUIReady(runnable);
     }
 
-    private OutlineModel createModel(PackageRoot pkgs) {
+    private OutlineModel createModel(SdkPlatformPackagesRootNode pkgs) {
         return DefaultOutlineModel.createOutlineModel(new DefaultTreeModel(pkgs), new RowModel() {
             @Override
             public int getColumnCount() {
@@ -248,16 +415,16 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
 
             @Override
             public Object getValueFor(Object node, int column) {
-                if (node instanceof AndroidVersionDecorator) {
-                    if (((AndroidVersionDecorator) node).isFlatModel()) {
+                if (node instanceof AndroidVersionNode) {
+                    if (((AndroidVersionNode) node).isFlatModel()) {
                         switch (column) {
                             case 0: {
-                                return ((AndroidVersionDecorator) node).getVersion().getApiLevel();
+                                return ((AndroidVersionNode) node).getVersion().getApiLevel();
                             }
                             case 1: {
                                 int major = 0;
-                                Vector<UpdatablePackageDecorator> packages = ((AndroidVersionDecorator) node).getPackages();
-                                for (UpdatablePackageDecorator pkg : packages) {
+                                Vector<SdkPackageNode> packages = ((AndroidVersionNode) node).getPackages();
+                                for (SdkPackageNode pkg : packages) {
                                     if (pkg.getPackage().getRepresentative().getTypeDetails() instanceof DetailsTypes.PlatformDetailsType) {
                                         return pkg.getPackage().getRepresentative().getVersion().getMajor();
                                     }
@@ -270,13 +437,13 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
                         return null;
                     }
 
-                } else if (node instanceof UpdatablePackageDecorator) {
+                } else if (node instanceof SdkPackageNode) {
                     switch (column) {
                         case 0: {
-                            return ((AndroidVersionDecorator) ((UpdatablePackageDecorator) node).getParent()).getVersion().getApiLevel();
+                            return ((AndroidVersionNode) ((SdkPackageNode) node).getParent()).getVersion().getApiLevel();
                         }
                         case 1: {
-                            return ((UpdatablePackageDecorator) node).getPackage().getRepresentative().getVersion().getMajor();
+                            return ((SdkPackageNode) node).getPackage().getRepresentative().getVersion().getMajor();
                         }
                     }
                 }

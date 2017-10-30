@@ -25,8 +25,11 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import javax.annotation.Nullable;
+import javax.net.ssl.HttpsURLConnection;
 import org.netbeans.api.progress.ProgressHandle;
+
 /**
+ * NbDownloader for Android tools API
  *
  * @author arsi
  */
@@ -75,6 +78,13 @@ public class NbDownloader implements Downloader {
         indicator.setSecondaryText(url.toString());
         ProgressHandle handle = ProgressHandle.createHandle("Downloading " + url);
         URLConnection connection = url.openConnection();
+        if (connection instanceof HttpsURLConnection) {
+            ((HttpsURLConnection) connection).setInstanceFollowRedirects(true);
+            ((HttpsURLConnection) connection).setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; U; PPC; en-US; rv:1.3.1)");
+            ((HttpsURLConnection) connection).setRequestProperty("Accept-Charset", "UTF-8");
+            ((HttpsURLConnection) connection).setDoOutput(true);
+            ((HttpsURLConnection) connection).setDoInput(true);
+        }
         connection.setConnectTimeout(3000);
         connection.connect();
         int contentLength = connection.getContentLength();
@@ -101,7 +111,7 @@ public class NbDownloader implements Downloader {
             ProgressIndicator indicator) throws IOException {
         // TODO: caching
         String suffix = url.getPath();
-        suffix = suffix.substring(suffix.lastIndexOf("/") + 1);
+        suffix = suffix.substring(suffix.lastIndexOf('/') + 1);
         File tempFile = File.createTempFile("NbDownloader", suffix);
         tempFile.deleteOnExit();
         downloadFully(url, tempFile, null, indicator);

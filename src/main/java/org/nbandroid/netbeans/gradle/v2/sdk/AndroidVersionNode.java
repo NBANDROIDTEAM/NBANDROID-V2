@@ -26,22 +26,23 @@ import java.util.Vector;
 import javax.swing.tree.TreeNode;
 
 /**
+ * Node representing Android platform version
  *
  * @author arsi
  */
-public class AndroidVersionDecorator implements TreeNode {
+public class AndroidVersionNode implements TreeNode {
 
     private final AndroidVersion version;
     private final String codeName;
-    private final Vector<UpdatablePackageDecorator> packages = new Vector<>();
+    private final Vector<SdkPackageNode> packages = new Vector<>();
     private boolean flatModel = true;
 
-    public AndroidVersionDecorator(AndroidVersion version) {
+    public AndroidVersionNode(AndroidVersion version) {
         this.version = version;
         codeName = SdkVersionInfo.getVersionWithCodename(version);
     }
 
-    public void addPackage(UpdatablePackageDecorator pkg) {
+    protected void addPackage(SdkPackageNode pkg) {
         packages.add(pkg);
     }
 
@@ -50,10 +51,20 @@ public class AndroidVersionDecorator implements TreeNode {
         return codeName; //To change body of generated methods, choose Tools | Templates.
     }
 
+    /**
+     * Get Android version
+     *
+     * @return AndroidVersion
+     */
     public AndroidVersion getVersion() {
         return version;
     }
 
+    /**
+     * Get Android Code name
+     *
+     * @return String
+     */
     public String getCodeName() {
         return codeName;
     }
@@ -106,8 +117,8 @@ public class AndroidVersionDecorator implements TreeNode {
             return true;
         }
 
-        if (obj instanceof AndroidVersionDecorator) {
-            if (Objects.equals(this.version, ((AndroidVersionDecorator) obj).getVersion())) {
+        if (obj instanceof AndroidVersionNode) {
+            if (Objects.equals(this.version, ((AndroidVersionNode) obj).getVersion())) {
                 return true;
             }
         }
@@ -120,15 +131,30 @@ public class AndroidVersionDecorator implements TreeNode {
         return false;
     }
 
+    /**
+     * Get view type
+     *
+     * @return true-flat, false-full
+     */
     public boolean isFlatModel() {
         return flatModel;
     }
 
+    /**
+     * Set view type
+     *
+     * @param flatModel true-flat, false-full
+     */
     public void setFlatModel(boolean flatModel) {
         this.flatModel = flatModel;
     }
 
-    public Vector<UpdatablePackageDecorator> getPackages() {
+    /**
+     * Get available Sdk platform pakages
+     *
+     * @return Vector of packages
+     */
+    public Vector<SdkPackageNode> getPackages() {
         return packages;
     }
 
