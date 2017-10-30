@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.netbeans.modules.android.core.ui;
 
 import java.awt.Image;
@@ -40,4 +39,16 @@ public class IconProvider {
     @StaticResource
     private static final String RESOURCE_REMOTE = "org/nbandroid/netbeans/gradle/ui/remote.png";
     public static final Image IMG_REMOTE = ImageUtilities.loadImage(RESOURCE_REMOTE);
+
+    @StaticResource
+    private static final String RESOURCE_FOLDER_UPDATE = "org/nbandroid/netbeans/gradle/ui/folder_update.png";
+    public static final Image IMG_FOLDER_UPDATE = ImageUtilities.loadImage(RESOURCE_FOLDER_UPDATE);
+
+    @StaticResource
+    private static final String RESOURCE_FOLDER_LOCAL = "org/nbandroid/netbeans/gradle/ui/folder_local.png";
+    public static final Image IMG_FOLDER_LOCAL = ImageUtilities.loadImage(RESOURCE_FOLDER_LOCAL);
+
+    @StaticResource
+    private static final String RESOURCE_FOLDER_REMOTE = "org/nbandroid/netbeans/gradle/ui/folder.png";
+    public static final Image IMG_FOLDER_REMOTE = ImageUtilities.loadImage(RESOURCE_FOLDER_REMOTE);
 }

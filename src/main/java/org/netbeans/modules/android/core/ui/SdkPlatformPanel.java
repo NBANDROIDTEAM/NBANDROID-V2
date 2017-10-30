@@ -19,8 +19,13 @@
 package org.netbeans.modules.android.core.ui;
 
 import com.android.repository.api.UpdatablePackage;
+import com.android.sdklib.repository.meta.DetailsTypes;
 import java.awt.Color;
+import java.util.Vector;
+import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.tree.DefaultTreeModel;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidVersionDecorator;
 import org.nbandroid.netbeans.gradle.v2.sdk.PackageRoot;
@@ -32,6 +37,7 @@ import org.netbeans.swing.outline.OutlineModel;
 import org.netbeans.swing.outline.RenderDataProvider;
 import org.netbeans.swing.outline.RowModel;
 import org.openide.explorer.ExplorerManager;
+import org.openide.util.NbPreferences;
 import org.openide.windows.WindowManager;
 
 /**
@@ -42,12 +48,33 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
 
     private final ExplorerManager explorerManager = new ExplorerManager();
     private SdkManager manager = null;
+    private OutlineModel model = null;
+    private PackageRoot platformPackages = null;
+    public static final String SHOW_DETAILS = "SHOW_DETAILS";
+    private boolean detailsState;
 
     /**
      * Creates new form SdkPlatformPanel
      */
     public SdkPlatformPanel() {
         initComponents();
+        detailsState = NbPreferences.forModule(SdkPlatformPanel.class).getBoolean(SHOW_DETAILS, false);
+        showDetails.setSelected(detailsState);
+        showDetails.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                boolean selected = ((AbstractButton) e.getSource()).getModel().isSelected();
+                if (detailsState != selected) {
+                    detailsState = selected;
+                    NbPreferences.forModule(SdkPlatformPanel.class).putBoolean(SHOW_DETAILS, selected);
+                    if (model != null && platformPackages != null) {
+                        platformPackages.setFlatModel(!selected);
+                        model = createModel(platformPackages);
+                        packageTreeTableView.setModel(model);
+                    }
+                }
+            }
+        });
     }
 
     public void connect(SdkManager manager) {
@@ -74,18 +101,36 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
 
         jScrollPane1 = new javax.swing.JScrollPane();
         packageTreeTableView = new org.netbeans.modules.android.core.ui.PackageTreeTableView();
-
-        setLayout(new java.awt.BorderLayout());
+        showDetails = new javax.swing.JCheckBox();
 
         jScrollPane1.setViewportView(packageTreeTableView);
 
-        add(jScrollPane1, java.awt.BorderLayout.CENTER);
+        org.openide.awt.Mnemonics.setLocalizedText(showDetails, org.openide.util.NbBundle.getMessage(SdkPlatformPanel.class, "SdkPlatformPanel.showDetails.text")); // NOI18N
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 448, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(showDetails)
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 430, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(showDetails))
+        );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;
     private org.netbeans.modules.android.core.ui.PackageTreeTableView packageTreeTableView;
+    private javax.swing.JCheckBox showDetails;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -121,6 +166,36 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
                 } else {
                     return new ImageIcon(IconProvider.IMG_REMOTE);
                 }
+            } else if (o instanceof AndroidVersionDecorator) {
+                if (((AndroidVersionDecorator) o).isFlatModel()) {
+                    Vector<UpdatablePackageDecorator> packages = ((AndroidVersionDecorator) o).getPackages();
+                    for (UpdatablePackageDecorator pkg : packages) {
+                        if (pkg.getPackage().getRepresentative().getTypeDetails() instanceof DetailsTypes.PlatformDetailsType) {
+                            if (pkg.getPackage().isUpdate()) {
+                                return new ImageIcon(IconProvider.IMG_UPDATE);
+                            } else if (pkg.getPackage().hasLocal()) {
+                                return new ImageIcon(IconProvider.IMG_LOCAL);
+                            } else {
+                                return new ImageIcon(IconProvider.IMG_REMOTE);
+                            }
+                        }
+                    }
+                    return new ImageIcon(IconProvider.IMG_REMOTE);
+                }else{
+                    Vector<UpdatablePackageDecorator> packages = ((AndroidVersionDecorator) o).getPackages();
+                    for (UpdatablePackageDecorator pkg : packages) {
+                        if (pkg.getPackage().getRepresentative().getTypeDetails() instanceof DetailsTypes.PlatformDetailsType) {
+                            if (pkg.getPackage().isUpdate()) {
+                                return new ImageIcon(IconProvider.IMG_FOLDER_UPDATE);
+                            } else if (pkg.getPackage().hasLocal()) {
+                                return new ImageIcon(IconProvider.IMG_FOLDER_LOCAL);
+                            } else {
+                                return new ImageIcon(IconProvider.IMG_FOLDER_REMOTE);
+                            }
+                        }
+                    }
+                    return new ImageIcon(IconProvider.IMG_REMOTE);
+                }
             }
             return null;
         }
@@ -130,13 +205,13 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
             if (o instanceof UpdatablePackageDecorator) {
                 UpdatablePackage aPackage = ((UpdatablePackageDecorator) o).getPackage();
                 if (aPackage.isUpdate()) {
-                    return "Update available:"+ aPackage.getRemote().getVersion().getMajor();
+                    return "Update available:" + aPackage.getRemote().getVersion().getMajor();
                 } else if (aPackage.hasLocal()) {
                     return "Installed";
                 } else {
                     return "Not installed";
                 }
-            }else{
+            } else {
                 return o.toString();
             }
         }
@@ -149,68 +224,92 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
 
     @Override
     public void packageListChanged(PackageRoot platformPackages) {
+        this.platformPackages = platformPackages;
+        platformPackages.setFlatModel(!showDetails.isSelected());
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                OutlineModel mdl = DefaultOutlineModel.createOutlineModel(new DefaultTreeModel(platformPackages), new RowModel() {
-                    @Override
-                    public int getColumnCount() {
-                        return 2;
-                    }
-
-                    @Override
-                    public Object getValueFor(Object node, int column) {
-                        if (node instanceof AndroidVersionDecorator) {
-                            return null;
-                        } else if (node instanceof UpdatablePackageDecorator) {
-                            switch (column) {
-                                case 0: {
-                                    return ((AndroidVersionDecorator) ((UpdatablePackageDecorator) node).getParent()).getVersion().getApiLevel();
-                                }
-                                case 1: {
-                                    return ((UpdatablePackageDecorator) node).getPackage().getRepresentative().getVersion().getMajor();
-                                }
-                            }
-                        }
-                        return "Err";
-                    }
-
-                    @Override
-                    public Class getColumnClass(int column) {
-                        return String.class;
-                    }
-
-                    @Override
-                    public boolean isCellEditable(Object node, int column) {
-                        return false;
-                    }
-
-                    @Override
-                    public void setValueFor(Object node, int column, Object value) {
-                        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-                    }
-
-                    @Override
-                    public String getColumnName(int column) {
-                        switch (column) {
-                            case 0:
-                                return "API";
-                            case 1:
-                                return "REV";
-                            default:
-                                return "Err";
-                        }
-                    }
-                }, false, "Name");
-
+                model = createModel(platformPackages);
                 packageTreeTableView.setRenderDataProvider(new PackageRenderer());
                 packageTreeTableView.setRootVisible(false);
-                packageTreeTableView.setModel(mdl);
-                packageTreeTableView.invalidate();
-                packageTreeTableView.repaint();
+                packageTreeTableView.setModel(model);
             }
+
         };
         WindowManager.getDefault().invokeWhenUIReady(runnable);
+    }
+
+    private OutlineModel createModel(PackageRoot pkgs) {
+        return DefaultOutlineModel.createOutlineModel(new DefaultTreeModel(pkgs), new RowModel() {
+            @Override
+            public int getColumnCount() {
+                return 2;
+            }
+
+            @Override
+            public Object getValueFor(Object node, int column) {
+                if (node instanceof AndroidVersionDecorator) {
+                    if (((AndroidVersionDecorator) node).isFlatModel()) {
+                        switch (column) {
+                            case 0: {
+                                return ((AndroidVersionDecorator) node).getVersion().getApiLevel();
+                            }
+                            case 1: {
+                                int major = 0;
+                                Vector<UpdatablePackageDecorator> packages = ((AndroidVersionDecorator) node).getPackages();
+                                for (UpdatablePackageDecorator pkg : packages) {
+                                    if (pkg.getPackage().getRepresentative().getTypeDetails() instanceof DetailsTypes.PlatformDetailsType) {
+                                        return pkg.getPackage().getRepresentative().getVersion().getMajor();
+                                    }
+                                    major = pkg.getPackage().getRepresentative().getVersion().getMajor();
+                                }
+                                return major;
+                            }
+                        }
+                    } else {
+                        return null;
+                    }
+
+                } else if (node instanceof UpdatablePackageDecorator) {
+                    switch (column) {
+                        case 0: {
+                            return ((AndroidVersionDecorator) ((UpdatablePackageDecorator) node).getParent()).getVersion().getApiLevel();
+                        }
+                        case 1: {
+                            return ((UpdatablePackageDecorator) node).getPackage().getRepresentative().getVersion().getMajor();
+                        }
+                    }
+                }
+                return "Err";
+            }
+
+            @Override
+            public Class getColumnClass(int column) {
+                return String.class;
+            }
+
+            @Override
+            public boolean isCellEditable(Object node, int column) {
+                return false;
+            }
+
+            @Override
+            public void setValueFor(Object node, int column, Object value) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public String getColumnName(int column) {
+                switch (column) {
+                    case 0:
+                        return "API";
+                    case 1:
+                        return "REV";
+                    default:
+                        return "Err";
+                }
+            }
+        }, false, "Name");
     }
 
 }

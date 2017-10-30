@@ -31,6 +31,7 @@ import javax.swing.tree.TreeNode;
 public class PackageRoot implements TreeNode {
 
     private final Vector<AndroidVersionDecorator> decorators = new Vector<>();
+    private boolean flatModel = true;
 
     public PackageRoot(List<AndroidVersionDecorator> decorators) {
         this.decorators.addAll(decorators);
@@ -69,6 +70,17 @@ public class PackageRoot implements TreeNode {
     @Override
     public Enumeration children() {
         return decorators.elements();
+    }
+
+    public boolean isFlatModel() {
+        return flatModel;
+    }
+
+    public void setFlatModel(boolean flatModel) {
+        this.flatModel = flatModel;
+        for (AndroidVersionDecorator decorator : decorators) {
+            decorator.setFlatModel(flatModel);
+        }
     }
 
 }

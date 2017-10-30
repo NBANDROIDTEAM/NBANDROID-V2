@@ -67,26 +67,17 @@ public final class AndroidSdkManagerTopComponent extends TopComponent {
 
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
-        jCheckBox1 = new javax.swing.JCheckBox();
         sdkPlatformPanel = new org.netbeans.modules.android.core.ui.SdkPlatformPanel();
-
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(AndroidSdkManagerTopComponent.class, "AndroidSdkManagerTopComponent.jCheckBox1.text")); // NOI18N
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap(92, Short.MAX_VALUE)
-                .addComponent(jCheckBox1))
-            .addComponent(sdkPlatformPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+            .addComponent(sdkPlatformPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(sdkPlatformPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jCheckBox1))
+            .addComponent(sdkPlatformPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(AndroidSdkManagerTopComponent.class, "AndroidSdkManagerTopComponent.jPanel1.TabConstraints.tabTitle"), jPanel1); // NOI18N
@@ -104,7 +95,6 @@ public final class AndroidSdkManagerTopComponent extends TopComponent {
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JTabbedPane jTabbedPane1;
     private org.netbeans.modules.android.core.ui.SdkPlatformPanel sdkPlatformPanel;
@@ -118,7 +108,6 @@ public final class AndroidSdkManagerTopComponent extends TopComponent {
     public void componentClosed() {
         sdkPlatformPanel.disconnect();
     }
-
 
     void writeProperties(java.util.Properties p) {
         // better to version settings since initial version as advocated at
