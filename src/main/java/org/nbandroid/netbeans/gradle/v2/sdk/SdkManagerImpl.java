@@ -50,6 +50,7 @@ import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;
 
 /**
+ * Default SDK Manager implementation
  *
  * @author arsi
  */
@@ -59,29 +60,44 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
     private RepoManager repoManager;
     private static final ExecutorService pool = Executors.newFixedThreadPool(1);
     private final Vector<SdkPlatformChangeListener> listeners = new Vector<>();
-    private PackageRoot platformPackages = null;
+    private SdkPlatformPackagesRootNode platformPackages = null;
 
+    /**
+     * Get Android repo manager
+     *
+     * @return RepoManager or null if no SDK location is set
+     */
     @Override
     public RepoManager getRepoManager() {
         return repoManager;
     }
 
     /**
-     * Add SdkPlatformChangeListener if platform packages map exist, is listener
-     * called from this thread
+     * Add SdkPlatformChangeListener to listen of SDK platform pakages list
+     * changes. On add is listener called with actual package list. Listener is
+     * called from actual thread
      *
-     * @param l
+     * @param l SdkPlatformChangeListener
      */
     @Override
     public void addSdkPlatformChangeListener(SdkPlatformChangeListener l) {
         if (!listeners.contains(l)) {
             listeners.add(l);
             if (platformPackages != null) {
-                l.packageListChanged(platformPackages);
+                try {
+                    l.packageListChanged(platformPackages);
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(e);
+                }
             }
         }
     }
 
+    /**
+     * Remove SdkPlatformChangeListener
+     *
+     * @param l SdkPlatformChangeListener
+     */
     @Override
     public void removeSdkPlatformChangeListener(SdkPlatformChangeListener l) {
         listeners.remove(l);
@@ -96,10 +112,7 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
                     repoManager = sdkManager.getSdkManager(new NbOutputWindowProgressIndicator());
                     repoManager.registerLocalChangeListener(SdkManagerImpl.this);
                     repoManager.registerRemoteChangeListener(SdkManagerImpl.this);
-                    repoManager.load(5000, ImmutableList.of(),
-                            ImmutableList.of(),
-                            ImmutableList.of(new DownloadErrorCallback()),
-                            new NbProgressRunner(), new NbDownloader(), new NbSettingsController(), false);
+                    updateSdkPlatformPackages();
                 } else {
                     repoManager = null;
                 }
@@ -113,14 +126,28 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
         });
     }
 
+    /**
+     * Update SDK platform pakages list After update is called
+     * SdkPlatformChangeListener
+     */
+    @Override
+    public void updateSdkPlatformPackages() {
+        if (repoManager != null) {
+            repoManager.load(5000, ImmutableList.of(),
+                    ImmutableList.of(),
+                    ImmutableList.of(new DownloadErrorCallback()),
+                    new NbProgressRunner(), new NbDownloader(), new NbSettingsController(), false);
+        }
+    }
+
     @Override
     public void doRun(RepositoryPackages packages) {
         loadPackages(packages);
     }
 
     private void loadPackages(RepositoryPackages packages) {
-        List<AndroidVersionDecorator> tmpPackages = new ArrayList<>();
-        Map<AndroidVersion, AndroidVersionDecorator> tmp = new HashMap<>();
+        List<AndroidVersionNode> tmpPackages = new ArrayList<>();
+        Map<AndroidVersion, AndroidVersionNode> tmp = new HashMap<>();
         Set<UpdatablePackage> toolsPackages = Sets.newTreeSet();
         for (UpdatablePackage info : packages.getConsolidatedPkgs().values()) {
             RepoPackage p = info.getRepresentative();
@@ -128,11 +155,11 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
             if (details instanceof DetailsTypes.ApiDetailsType) {
                 AndroidVersion androidVersion = ((DetailsTypes.ApiDetailsType) details).getAndroidVersion();
                 if (tmp.containsKey(androidVersion)) {
-                    AndroidVersionDecorator avd = tmp.get(androidVersion);
-                    avd.addPackage(new UpdatablePackageDecorator(avd, info));
+                    AndroidVersionNode avd = tmp.get(androidVersion);
+                    avd.addPackage(new SdkPackageNode(avd, info));
                 } else {
-                    AndroidVersionDecorator avd = new AndroidVersionDecorator(androidVersion);
-                    avd.addPackage(new UpdatablePackageDecorator(avd, info));
+                    AndroidVersionNode avd = new AndroidVersionNode(androidVersion);
+                    avd.addPackage(new SdkPackageNode(avd, info));
                     tmp.put(androidVersion, avd);
                     tmpPackages.add(avd);
                 }
@@ -140,13 +167,13 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
                 toolsPackages.add(info);
             }
         }
-        Collections.sort(tmpPackages, new Comparator<AndroidVersionDecorator>() {
+        Collections.sort(tmpPackages, new Comparator<AndroidVersionNode>() {
             @Override
-            public int compare(AndroidVersionDecorator o1, AndroidVersionDecorator o2) {
+            public int compare(AndroidVersionNode o1, AndroidVersionNode o2) {
                 return o2.getCodeName().compareTo(o1.getCodeName());
             }
         });
-        platformPackages = new PackageRoot(tmpPackages);
+        platformPackages = new SdkPlatformPackagesRootNode(tmpPackages);
         for (SdkPlatformChangeListener listener : listeners) {
             try {
                 listener.packageListChanged(platformPackages);

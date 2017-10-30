@@ -19,11 +19,17 @@
 package org.nbandroid.netbeans.gradle.v2.sdk;
 
 /**
+ * SdkPlatformChangeListener to listen of SDK platform pakages list changes
  *
  * @author arsi
  */
 public interface SdkPlatformChangeListener {
 
-    public void packageListChanged(PackageRoot platformPackages);
+    /**
+     * Package list changed
+     *
+     * @param platformPackages SdkPlatformPackagesRootNode
+     */
+    public void packageListChanged(SdkPlatformPackagesRootNode platformPackages);
 
 }

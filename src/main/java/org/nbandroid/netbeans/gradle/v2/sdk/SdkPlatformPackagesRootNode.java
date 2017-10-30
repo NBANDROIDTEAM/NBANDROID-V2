@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.nbandroid.netbeans.gradle.v2.sdk;
 
 import java.util.Enumeration;
@@ -25,15 +24,16 @@ import java.util.Vector;
 import javax.swing.tree.TreeNode;
 
 /**
+ * Root Node of Sdk platform packages
  *
  * @author arsi
  */
-public class PackageRoot implements TreeNode {
+public class SdkPlatformPackagesRootNode implements TreeNode {
 
-    private final Vector<AndroidVersionDecorator> decorators = new Vector<>();
+    private final Vector<AndroidVersionNode> decorators = new Vector<>();
     private boolean flatModel = true;
 
-    public PackageRoot(List<AndroidVersionDecorator> decorators) {
+    public SdkPlatformPackagesRootNode(List<AndroidVersionNode> decorators) {
         this.decorators.addAll(decorators);
     }
 
@@ -72,13 +72,23 @@ public class PackageRoot implements TreeNode {
         return decorators.elements();
     }
 
+    /**
+     * Get view type
+     *
+     * @return true-flat, false-full
+     */
     public boolean isFlatModel() {
         return flatModel;
     }
 
+    /**
+     * Set view type
+     *
+     * @param flatModel true-flat, false-full
+     */
     public void setFlatModel(boolean flatModel) {
         this.flatModel = flatModel;
-        for (AndroidVersionDecorator decorator : decorators) {
+        for (AndroidVersionNode decorator : decorators) {
             decorator.setFlatModel(flatModel);
         }
     }

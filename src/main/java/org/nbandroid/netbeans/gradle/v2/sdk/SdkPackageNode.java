@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.nbandroid.netbeans.gradle.v2.sdk;
 
 import com.android.repository.api.UpdatablePackage;
@@ -24,31 +23,37 @@ import java.util.Enumeration;
 import javax.swing.tree.TreeNode;
 
 /**
+ * Node representing single Android platform package
  *
  * @author arsi
  */
-public class UpdatablePackageDecorator implements TreeNode {
+public class SdkPackageNode implements TreeNode {
 
-    private final AndroidVersionDecorator versionDecorator;
+    private final AndroidVersionNode versionDecorator;
     private final UpdatablePackage pkg;
 
-    public UpdatablePackageDecorator(AndroidVersionDecorator versionDecorator, UpdatablePackage pkg) {
+    public SdkPackageNode(AndroidVersionNode versionDecorator, UpdatablePackage pkg) {
         this.versionDecorator = versionDecorator;
         this.pkg = pkg;
     }
 
+    /**
+     * Get android package
+     *
+     * @return UpdatablePackage
+     */
     public UpdatablePackage getPackage() {
         return pkg;
     }
 
     @Override
     public TreeNode getChildAt(int childIndex) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public int getChildCount() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
@@ -58,7 +63,7 @@ public class UpdatablePackageDecorator implements TreeNode {
 
     @Override
     public int getIndex(TreeNode node) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
@@ -73,13 +78,12 @@ public class UpdatablePackageDecorator implements TreeNode {
 
     @Override
     public Enumeration children() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public String toString() {
-        return pkg.getRepresentative().getDisplayName(); //To change body of generated methods, choose Tools | Templates.
+        return pkg.getRepresentative().getDisplayName();
     }
-
 
 }
