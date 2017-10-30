@@ -18,6 +18,7 @@
  */
 package org.nbandroid.netbeans.gradle.v2.sdk;
 
+import com.android.SdkConstants;
 import com.android.repository.api.Channel;
 import com.android.repository.api.ProgressRunner;
 import com.android.repository.api.RepoManager;
@@ -29,8 +30,9 @@ import com.android.repository.impl.meta.RepositoryPackages;
 import com.android.repository.impl.meta.TypeDetails;
 import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.repository.AndroidSdkHandler;
+import com.android.sdklib.repository.installer.MavenInstallListener;
 import com.android.sdklib.repository.meta.DetailsTypes;
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -60,7 +62,16 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
     private RepoManager repoManager;
     private static final ExecutorService pool = Executors.newFixedThreadPool(1);
     private final Vector<SdkPlatformChangeListener> listeners = new Vector<>();
+    private final Vector<SdkToolsChangeListener> toolsListeners = new Vector<>();
     private SdkPlatformPackagesRootNode platformPackages = null;
+    private List<UpdatablePackage> toolsPackages = null;
+    private static final Set<String> MULTI_VERSION_PREFIXES
+            = ImmutableSet.of(SdkConstants.FD_BUILD_TOOLS, SdkConstants.FD_LLDB, SdkConstants.FD_CMAKE,
+                    String.join(String.valueOf(RepoPackage.PATH_SEPARATOR),
+                            SdkConstants.FD_EXTRAS,
+                            SdkConstants.FD_ANDROID_EXTRAS,
+                            SdkConstants.FD_GAPID));
+    private SdkToolsRootNode toolRoot;
 
     /**
      * Get Android repo manager
@@ -70,6 +81,21 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
     @Override
     public RepoManager getRepoManager() {
         return repoManager;
+    }
+
+    @Override
+    public void addSdkToolsChangeListener(SdkToolsChangeListener l) {
+        if (!toolsListeners.contains(l)) {
+            toolsListeners.add(l);
+            if (toolRoot != null) {
+                l.packageListChanged(toolRoot);
+            }
+        }
+    }
+
+    @Override
+    public void removeSdkToolsChangeListener(SdkToolsChangeListener l) {
+        toolsListeners.remove(l);
     }
 
     /**
@@ -148,7 +174,7 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
     private void loadPackages(RepositoryPackages packages) {
         List<AndroidVersionNode> tmpPackages = new ArrayList<>();
         Map<AndroidVersion, AndroidVersionNode> tmp = new HashMap<>();
-        Set<UpdatablePackage> toolsPackages = Sets.newTreeSet();
+        toolsPackages = new ArrayList<>();
         for (UpdatablePackage info : packages.getConsolidatedPkgs().values()) {
             RepoPackage p = info.getRepresentative();
             TypeDetails details = p.getTypeDetails();
@@ -180,6 +206,56 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
             } catch (Exception e) {
                 Exceptions.printStackTrace(e);
             }
+        }
+        Map<String, SdkToolsMultiPackageNode> tmpMulti = new HashMap<>();
+        Map<String, SdkToolsMultiPackageNode> tmpMultiSupport = new HashMap<>();
+        toolRoot = new SdkToolsRootNode();
+        SdkToolsSupportNode supportNode = new SdkToolsSupportNode(toolRoot);
+        for (UpdatablePackage p : toolsPackages) {
+            String prefix = p.getRepresentative().getPath();
+            int lastSegmentIndex = prefix.lastIndexOf(';');
+            boolean found = false;
+            if (lastSegmentIndex > 0) {
+                prefix = prefix.substring(0, lastSegmentIndex);
+                if (prefix.equals("patcher")) {
+                    // We don't want to show the patcher in the UI
+                    continue;
+                }
+                if (MULTI_VERSION_PREFIXES.contains(prefix) || p.getRepresentative().getTypeDetails() instanceof DetailsTypes.MavenType) {
+                    if (!(p.getRepresentative().getTypeDetails() instanceof DetailsTypes.MavenType)) {
+                        if (tmpMulti.containsKey(prefix)) {
+                            SdkToolsMultiPackageNode node = tmpMulti.get(prefix);
+                            node.addNode(new SdkToolsPackageNode(node, p));
+                        } else {
+                            SdkToolsMultiPackageNode node = new SdkToolsMultiPackageNode(toolRoot, prefix);
+                            node.addNode(new SdkToolsPackageNode(node, p));
+                            tmpMulti.put(prefix, node);
+                            toolRoot.addNode(node);
+                        }
+                    } else if (tmpMultiSupport.containsKey(prefix)) {
+                        SdkToolsMultiPackageNode node = tmpMultiSupport.get(prefix);
+                        node.addNode(new SdkToolsPackageNode(node, p));
+                    } else {
+                        SdkToolsMultiPackageNode node = new SdkToolsMultiPackageNode(supportNode, prefix);
+                        node.addNode(new SdkToolsPackageNode(node, p));
+                        tmpMultiSupport.put(prefix, node);
+                        supportNode.addNode(node);
+                    }
+                    found = true;
+                }
+            }
+            if (!found) {
+                if (p.getRepresentative().getPath().endsWith(RepoPackage.PATH_SEPARATOR + MavenInstallListener.MAVEN_DIR_NAME)) {
+                    supportNode.addNode(new SdkToolsPackageNode(toolRoot, p));
+                } else {
+                    toolRoot.addNode(new SdkToolsPackageNode(toolRoot, p));
+                }
+            }
+        }
+        toolRoot.addNode(supportNode);
+
+        for (SdkToolsChangeListener toolsListener : toolsListeners) {
+            toolsListener.packageListChanged(toolRoot);
         }
     }
 

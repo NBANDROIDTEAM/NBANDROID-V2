@@ -64,4 +64,8 @@ public abstract class SdkManager {
      * SdkPlatformChangeListener
      */
     public abstract void updateSdkPlatformPackages();
+
+    public abstract void addSdkToolsChangeListener(SdkToolsChangeListener l);
+
+    public abstract void removeSdkToolsChangeListener(SdkToolsChangeListener l);
 }
