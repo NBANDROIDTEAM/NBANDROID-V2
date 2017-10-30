@@ -34,6 +34,7 @@ public class AndroidVersionDecorator implements TreeNode {
     private final AndroidVersion version;
     private final String codeName;
     private final Vector<UpdatablePackageDecorator> packages = new Vector<>();
+    private boolean flatModel = true;
 
     public AndroidVersionDecorator(AndroidVersion version) {
         this.version = version;
@@ -84,7 +85,7 @@ public class AndroidVersionDecorator implements TreeNode {
 
     @Override
     public boolean isLeaf() {
-        return packages.isEmpty();
+        return packages.isEmpty() || flatModel;
     }
 
     @Override
@@ -117,6 +118,18 @@ public class AndroidVersionDecorator implements TreeNode {
             }
         }
         return false;
+    }
+
+    public boolean isFlatModel() {
+        return flatModel;
+    }
+
+    public void setFlatModel(boolean flatModel) {
+        this.flatModel = flatModel;
+    }
+
+    public Vector<UpdatablePackageDecorator> getPackages() {
+        return packages;
     }
 
 }
