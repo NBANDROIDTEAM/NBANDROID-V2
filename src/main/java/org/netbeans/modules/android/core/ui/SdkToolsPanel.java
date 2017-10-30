@@ -8,12 +8,16 @@ package org.netbeans.modules.android.core.ui;
 import java.awt.Color;
 import javax.swing.AbstractButton;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.DefaultTreeModel;
 import org.nbandroid.netbeans.gradle.v2.sdk.SdkManager;
 import org.nbandroid.netbeans.gradle.v2.sdk.SdkToolsChangeListener;
+import org.nbandroid.netbeans.gradle.v2.sdk.SdkToolsMultiPackageNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.SdkToolsPackageNode;
 import org.nbandroid.netbeans.gradle.v2.sdk.SdkToolsRootNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.SdkToolsSupportNode;
 import static org.netbeans.modules.android.core.ui.SdkPlatformPanel.SHOW_DETAILS;
 import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.OutlineModel;
@@ -152,6 +156,27 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
 
         @Override
         public Icon getIcon(Object o) {
+            //first support node
+            if (o instanceof SdkToolsSupportNode) {
+                return new ImageIcon(IconProvider.IMG_FOLDER_SUPPORT);
+            } else if (o instanceof SdkToolsMultiPackageNode) {
+                if (((SdkToolsMultiPackageNode) o).getNodes().get(0).getPackage().isUpdate()) {
+                    return new ImageIcon(IconProvider.IMG_FOLDER_UPDATE);
+                } else if (((SdkToolsMultiPackageNode) o).getNodes().get(0).getPackage().hasLocal()) {
+                    return new ImageIcon(IconProvider.IMG_FOLDER_LOCAL);
+                } else {
+                    return new ImageIcon(IconProvider.IMG_FOLDER_REMOTE);
+                }
+
+            } else if (o instanceof SdkToolsPackageNode) {
+                if (((SdkToolsPackageNode) o).getPackage().isUpdate()) {
+                    return new ImageIcon(IconProvider.IMG_UPDATE);
+                } else if (((SdkToolsPackageNode) o).getPackage().hasLocal()) {
+                    return new ImageIcon(IconProvider.IMG_LOCAL);
+                } else {
+                    return new ImageIcon(IconProvider.IMG_REMOTE);
+                }
+            }
             return null;
         }
 
@@ -166,7 +191,13 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
 
             @Override
             public Object getValueFor(Object node, int column) {
-
+                if (node instanceof SdkToolsSupportNode) {
+                    return null;
+                } else if (node instanceof SdkToolsMultiPackageNode) {
+                    return ((SdkToolsMultiPackageNode) node).getNodes().get(0).getPackage().getRepresentative().getVersion().toString();
+                } else if (node instanceof SdkToolsPackageNode) {
+                    return ((SdkToolsPackageNode) node).getPackage().getRepresentative().getVersion().toString();
+                }
                 return "Err";
             }
 
@@ -189,9 +220,7 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
             public String getColumnName(int column) {
                 switch (column) {
                     case 0:
-                        return "API";
-                    case 1:
-                        return "REV";
+                        return "Version";
                     default:
                         return "Err";
                 }
