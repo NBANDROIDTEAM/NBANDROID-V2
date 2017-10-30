@@ -51,4 +51,8 @@ public class IconProvider {
     @StaticResource
     private static final String RESOURCE_FOLDER_REMOTE = "org/nbandroid/netbeans/gradle/ui/folder.png";
     public static final Image IMG_FOLDER_REMOTE = ImageUtilities.loadImage(RESOURCE_FOLDER_REMOTE);
+
+    @StaticResource
+    private static final String RESOURCE_FOLDER_SUPPORT = "org/nbandroid/netbeans/gradle/ui/folder_support.png";
+    public static final Image IMG_FOLDER_SUPPORT = ImageUtilities.loadImage(RESOURCE_FOLDER_SUPPORT);
 }
