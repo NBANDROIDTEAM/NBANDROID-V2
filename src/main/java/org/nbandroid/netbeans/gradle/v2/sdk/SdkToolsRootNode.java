@@ -24,7 +24,7 @@ import java.util.Vector;
 import javax.swing.tree.TreeNode;
 
 /**
- * Root Node of Sdk platform packages
+ * Root Node of Sdk Tools packages
  *
  * @author arsi
  */

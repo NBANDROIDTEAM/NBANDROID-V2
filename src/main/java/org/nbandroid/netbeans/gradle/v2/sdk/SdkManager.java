@@ -18,7 +18,9 @@
  */
 package org.nbandroid.netbeans.gradle.v2.sdk;
 
+import com.android.repository.api.LocalPackage;
 import com.android.repository.api.RepoManager;
+import com.android.repository.api.UpdatablePackage;
 import org.openide.util.Lookup;
 
 /**
@@ -60,12 +62,39 @@ public abstract class SdkManager {
     public abstract RepoManager getRepoManager();
 
     /**
-     * Update SDK platform pakages list After update is called
-     * SdkPlatformChangeListener
+     * Update SDK platform pakages list After update is fired
+     * SdkPlatformChangeListener and SdkToolsChangeListener
      */
     public abstract void updateSdkPlatformPackages();
 
+    /**
+     * Add addSdkToolsChangeListener to listen of SDK tools pakages list changes
+     * On add is listener called with actual package list
+     *
+     * @param l addSdkToolsChangeListener
+     */
     public abstract void addSdkToolsChangeListener(SdkToolsChangeListener l);
 
+    /**
+     * Remove SdkToolsChangeListener
+     *
+     * @param l SdkToolsChangeListener
+     */
     public abstract void removeSdkToolsChangeListener(SdkToolsChangeListener l);
+
+    /**
+     * Uninstall android package After unistall is called
+     * updateSdkPlatformPackages()
+     *
+     * @param aPackage LocalPackage
+     */
+    public abstract void uninstallPackage(LocalPackage aPackage);
+
+    /**
+     * Install or Update Android package After istall is called
+     * updateSdkPlatformPackages()
+     *
+     * @param aPackage UpdatablePackage
+     */
+    public abstract void installPackage(final UpdatablePackage aPackage);
 }

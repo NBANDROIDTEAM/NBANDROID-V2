@@ -19,11 +19,17 @@
 package org.nbandroid.netbeans.gradle.v2.sdk;
 
 /**
+ * SdkToolsChangeListener to listen of SDK tools pakages list changes
  *
  * @author arsi
  */
 public interface SdkToolsChangeListener {
 
+    /**
+     * Package list changed
+     *
+     * @param sdkToolsRootNode SdkToolsRootNode
+     */
     public void packageListChanged(SdkToolsRootNode sdkToolsRootNode);
 
 }

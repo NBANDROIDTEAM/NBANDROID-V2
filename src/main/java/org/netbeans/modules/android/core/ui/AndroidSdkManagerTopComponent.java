@@ -26,7 +26,7 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
 /**
- * Top component which displays something.
+ * Top component which displays Android SDK Manager.
  */
 @ConvertAsProperties(
         dtd = "-//org.netbeans.modules.android.core.ui//AndroidSdkManager//EN",
