@@ -20,14 +20,19 @@ package org.nbandroid.netbeans.gradle.v2.sdk;
 
 import com.android.SdkConstants;
 import com.android.repository.api.Channel;
+import com.android.repository.api.Installer;
+import com.android.repository.api.LocalPackage;
 import com.android.repository.api.ProgressRunner;
 import com.android.repository.api.RepoManager;
 import com.android.repository.api.RepoManager.RepoLoadedCallback;
 import com.android.repository.api.RepoPackage;
 import com.android.repository.api.SettingsController;
+import com.android.repository.api.Uninstaller;
 import com.android.repository.api.UpdatablePackage;
+import com.android.repository.impl.installer.BasicInstallerFactory;
 import com.android.repository.impl.meta.RepositoryPackages;
 import com.android.repository.impl.meta.TypeDetails;
+import com.android.repository.io.FileOpUtils;
 import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.repository.AndroidSdkHandler;
 import com.android.sdklib.repository.installer.MavenInstallListener;
@@ -61,6 +66,8 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
 
     private RepoManager repoManager;
     private static final ExecutorService pool = Executors.newFixedThreadPool(1);
+    //max 3 paralel downloads
+    public static final ExecutorService DOWNLOAD_POOL = Executors.newFixedThreadPool(3);
     private final Vector<SdkPlatformChangeListener> listeners = new Vector<>();
     private final Vector<SdkToolsChangeListener> toolsListeners = new Vector<>();
     private SdkPlatformPackagesRootNode platformPackages = null;
@@ -83,6 +90,12 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
         return repoManager;
     }
 
+    /**
+     * Add addSdkToolsChangeListener to listen of SDK tools pakages list changes
+     * On add is listener called with actual package list
+     *
+     * @param l addSdkToolsChangeListener
+     */
     @Override
     public void addSdkToolsChangeListener(SdkToolsChangeListener l) {
         if (!toolsListeners.contains(l)) {
@@ -93,6 +106,11 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
         }
     }
 
+    /**
+     * Remove SdkToolsChangeListener
+     *
+     * @param l SdkToolsChangeListener
+     */
     @Override
     public void removeSdkToolsChangeListener(SdkToolsChangeListener l) {
         toolsListeners.remove(l);
@@ -257,6 +275,59 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
         for (SdkToolsChangeListener toolsListener : toolsListeners) {
             toolsListener.packageListChanged(toolRoot);
         }
+    }
+
+    /**
+     * Uninstall android package After unistall is called
+     * updateSdkPlatformPackages()
+     *
+     * @param aPackage LocalPackage
+     */
+    @Override
+    public void uninstallPackage(LocalPackage aPackage) {
+        if (aPackage == null) {
+            return;
+        }
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                BasicInstallerFactory installerFactory = new BasicInstallerFactory();
+                Uninstaller uninstaller = installerFactory.createUninstaller(aPackage, SdkManager.getDefault().getRepoManager(), FileOpUtils.create());
+                NbOutputWindowProgressIndicator indicator = new NbOutputWindowProgressIndicator();
+                if (uninstaller.prepare(indicator)) {
+                    uninstaller.complete(indicator);
+                }
+                updateSdkPlatformPackages();
+            }
+        };
+        DOWNLOAD_POOL.execute(runnable);
+    }
+
+    /**
+     * Install or Update Android package After istall is called
+     * updateSdkPlatformPackages()
+     *
+     * @param aPackage UpdatablePackage
+     */
+    @Override
+    public void installPackage(final UpdatablePackage aPackage) {
+        if (aPackage == null) {
+            return;
+        }
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                BasicInstallerFactory installerFactory = new BasicInstallerFactory();
+                Installer installer = installerFactory.createInstaller(aPackage.getRemote(), SdkManager.getDefault().getRepoManager(), new NbDownloader(), FileOpUtils.create());
+                NbOutputWindowProgressIndicator indicator = new NbOutputWindowProgressIndicator();
+                if (installer.prepare(indicator)) {
+                    installer.complete(indicator);
+                }
+                updateSdkPlatformPackages();
+            }
+        };
+
+        DOWNLOAD_POOL.execute(runnable);
     }
 
     private class DownloadErrorCallback implements Runnable {
