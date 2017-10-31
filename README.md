@@ -4,15 +4,20 @@ Netbeans Android support plugin
 This project aims to stabilize and update the discontinued Netbeans IDE plugin NBANDROID.
 The current version supports Netbeans 8.1 and 8.2
 
+**Many thanks to Radim Kubacki, the creator of the first NBANDROID!**</br>
+
 What Works:
 * Code Assistance
 * Build
 * Run
 * Debug
 * Android emulator
+* SDK Platform manager
+* SDK Tools manager
 
 What Dont works:
-* SDK Manager - first open project in Android studio to download Android platform
+* SDK Platform manager - Integration to Gradle build system
+* SDK Manager - Update sites configuration
 * AVD Manager
 * we currently have no Visual Layout Editor 
 * and many other things
