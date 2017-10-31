@@ -25,6 +25,7 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
 import javax.swing.tree.TreeNode;
+import org.nbandroid.netbeans.gradle.v2.ext.ComparableVersion;
 
 /**
  * SDK Tool node with more versions of single package
@@ -114,21 +115,7 @@ public class SdkToolsMultiPackageNode extends AbstractSdkToolNode {
             Collections.sort(nodes, new Comparator<SdkToolsPackageNode>() {
                 @Override
                 public int compare(SdkToolsPackageNode o1, SdkToolsPackageNode o2) {
-                    String name1 = o2.toString();
-                    if (name1.contains("-")) {
-                        name1 = o2.toString().substring(0, o2.toString().indexOf('-'));
-                    }
-                    if (name1.contains("(")) {
-                        name1 = name1.substring(0, name1.indexOf('('));
-                    }
-                    String name2 = o1.toString();
-                    if (name1.contains("-")) {
-                        name2 = o1.toString().substring(0, o1.toString().indexOf('-'));
-                    }
-                    if (name1.contains("(")) {
-                        name2 = name2.substring(0, name2.indexOf('('));
-                    }
-                    return name1.compareToIgnoreCase(name2);
+                    return new ComparableVersion(o2.toString()).compareTo(new ComparableVersion(o1.toString()));
                 }
             });
             RepoPackage maxPackage = nodes.get(0).getPackage().getRepresentative();

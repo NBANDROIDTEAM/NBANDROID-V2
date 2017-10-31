@@ -105,7 +105,9 @@ public class SdkToolsPackageNode extends AbstractSdkToolNode {
                     || (shortRevision != null && representative.getDisplayName().endsWith(shortRevision))) {
                 name = suffix;
             }
-
+            if (!name.matches(".*\\d+.*")) {
+                name = representative.getVersion().toString();
+            }
             if (pkg.getRepresentative().obsolete()) {
                 name += " (Obsolete)";
             }
