@@ -22,8 +22,8 @@ import org.netbeans.gradle.project.api.task.CommandCompleteListener;
 import org.netbeans.gradle.project.api.task.CustomCommandActions;
 import org.netbeans.gradle.project.api.task.GradleCommandTemplate;
 import org.netbeans.gradle.project.api.task.TaskKind;
-import org.netbeans.modules.android.project.api.AndroidConstants;
-import org.netbeans.modules.android.project.launch.Launches;
+import org.nbandroid.netbeans.gradle.api.AndroidConstants;
+import org.nbandroid.netbeans.gradle.launch.Launches;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 

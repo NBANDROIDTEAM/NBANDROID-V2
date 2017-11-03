@@ -8,9 +8,8 @@ import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.android.project.api.AndroidProjects;
-import org.netbeans.modules.android.project.launch.Launches;
-import org.netbeans.modules.android.project.spi.AndroidDebugInfo;
+import org.nbandroid.netbeans.gradle.api.AndroidProjects;
+import org.nbandroid.netbeans.gradle.spi.AndroidDebugInfo;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
 

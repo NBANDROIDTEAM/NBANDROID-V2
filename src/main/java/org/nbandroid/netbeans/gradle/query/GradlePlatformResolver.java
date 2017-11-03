@@ -4,9 +4,9 @@ import com.android.builder.model.AndroidProject;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.nbandroid.netbeans.gradle.AndroidModelAware;
-import org.netbeans.modules.android.core.sdk.DalvikPlatform;
-import org.netbeans.modules.android.core.sdk.DalvikPlatformManager;
-import org.netbeans.modules.android.project.spi.DalvikPlatformResolver;
+import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatform;
+import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatformManager;
+import org.nbandroid.netbeans.gradle.spi.DalvikPlatformResolver;
 
 /**
  *

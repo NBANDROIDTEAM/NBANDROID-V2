@@ -1,6 +1,6 @@
 package org.nbandroid.netbeans.ext.navigation;
 
-import org.netbeans.modules.android.project.api.ResourceRef;
+import org.nbandroid.netbeans.gradle.api.ResourceRef;
 
 /**
  *

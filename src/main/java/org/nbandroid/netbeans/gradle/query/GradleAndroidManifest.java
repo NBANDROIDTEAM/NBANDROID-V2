@@ -10,7 +10,7 @@ import java.io.File;
 import org.nbandroid.netbeans.gradle.AndroidModelAware;
 import org.nbandroid.netbeans.gradle.config.BuildVariant;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.android.project.api.AndroidManifestSource;
+import org.nbandroid.netbeans.gradle.api.AndroidManifestSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;

@@ -2,7 +2,7 @@ package org.nbandroid.netbeans.gradle;
 
 import com.android.builder.model.AndroidProject;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.android.project.api.AndroidClassPath;
+import org.nbandroid.netbeans.gradle.api.AndroidClassPath;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 
 public final class GradleProjectOpenedHook extends ProjectOpenedHook implements AndroidModelAware {
