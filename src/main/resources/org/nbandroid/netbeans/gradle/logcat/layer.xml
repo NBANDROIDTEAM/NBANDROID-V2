@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Actions">
+        <folder name="Window">
+            <file name="org-nyerel-nbandroid-logcat-LogAction.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nyerel.nbandroid.logcat.Bundle"/>
+                <attr name="iconBase" stringvalue="org/nyerel/nbandroid/logcat/androidIcon.png"/>
+                <attr name="component" methodvalue="org.nyerel.nbandroid.logcat.LogTopComponent.findInstance"/>
+                <attr name="displayName" bundlevalue="org.nyerel.nbandroid.logcat.Bundle#CTL_LogAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <folder name="Window">
+          <folder name="Output">
+            <file name="LogAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nyerel-nbandroid-logcat-LogAction.instance"/>
+                <attr name="position" intvalue="490"/>
+            </file>
+          </folder>
+        </folder>
+    </folder>
+    <folder name="Windows2">
+        <folder name="Components">
+            
+            <file name="LogTopComponent.settings" url="LogTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="output">
+
+                <file name="LogTopComponent.wstcref" url="LogTopComponentWstcref.xml"/>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>
