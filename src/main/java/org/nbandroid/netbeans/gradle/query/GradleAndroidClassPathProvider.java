@@ -39,6 +39,7 @@ import org.gradle.tooling.model.gradle.BasicGradleProject;
 import org.gradle.tooling.model.gradle.GradleBuild;
 import org.nbandroid.netbeans.gradle.AndroidModelAware;
 import org.nbandroid.netbeans.gradle.GradleBuildAware;
+import org.nbandroid.netbeans.gradle.api.AndroidClassPath;
 import org.nbandroid.netbeans.gradle.config.AndroidBuildVariants;
 import org.nbandroid.netbeans.gradle.config.BuildVariant;
 import org.nbandroid.netbeans.gradle.config.ProductFlavors;
@@ -50,7 +51,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.nbandroid.netbeans.gradle.api.AndroidClassPath;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -227,7 +227,7 @@ public final class GradleAndroidClassPathProvider
 
         @Override
         public URL[] getRoots() {
-            List<URL> roots = new ArrayList<URL>();
+            List<URL> roots = new ArrayList<>();
             if (project != null) {
                 Variant variant = buildConfig.getCurrentVariant();
                 if (variant != null) {
