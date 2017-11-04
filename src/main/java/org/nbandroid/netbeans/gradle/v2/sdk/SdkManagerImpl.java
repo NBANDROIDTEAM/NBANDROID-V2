@@ -70,6 +70,8 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
     public static final ExecutorService DOWNLOAD_POOL = Executors.newFixedThreadPool(3);
     private final Vector<SdkPlatformChangeListener> listeners = new Vector<>();
     private final Vector<SdkToolsChangeListener> toolsListeners = new Vector<>();
+    private final Vector<LocalPlatformChangeListener> localListeners = new Vector<>();
+    private Vector<UpdatablePackage> platforms = new Vector<>();
     private SdkPlatformPackagesRootNode platformPackages = null;
     private List<UpdatablePackage> toolsPackages = null;
     private static final Set<String> MULTI_VERSION_PREFIXES
@@ -79,6 +81,21 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
                             SdkConstants.FD_ANDROID_EXTRAS,
                             SdkConstants.FD_GAPID));
     private SdkToolsRootNode toolRoot;
+
+    @Override
+    public void addLocalPlatformChangeListener(LocalPlatformChangeListener l) {
+        if (!localListeners.contains(l)) {
+            localListeners.add(l);
+        }
+        if (!platforms.isEmpty()) {
+            l.platformListChanged(platforms);
+        }
+    }
+
+    @Override
+    public void removeLocalPlatformChangeListener(LocalPlatformChangeListener l) {
+        localListeners.add(l);
+    }
 
     /**
      * Get Android repo manager
@@ -193,9 +210,14 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
         List<AndroidVersionNode> tmpPackages = new ArrayList<>();
         Map<AndroidVersion, AndroidVersionNode> tmp = new HashMap<>();
         toolsPackages = new ArrayList<>();
+        Vector<UpdatablePackage> platformsTmp = new Vector<>();
         for (UpdatablePackage info : packages.getConsolidatedPkgs().values()) {
             RepoPackage p = info.getRepresentative();
             TypeDetails details = p.getTypeDetails();
+            if ((details instanceof DetailsTypes.PlatformDetailsType) && info.hasLocal()) {
+                platformsTmp.add(info);
+            }
+
             if (details instanceof DetailsTypes.ApiDetailsType) {
                 AndroidVersion androidVersion = ((DetailsTypes.ApiDetailsType) details).getAndroidVersion();
                 if (tmp.containsKey(androidVersion)) {
@@ -211,6 +233,7 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
                 toolsPackages.add(info);
             }
         }
+        platforms = platformsTmp;
         Collections.sort(tmpPackages, new Comparator<AndroidVersionNode>() {
             @Override
             public int compare(AndroidVersionNode o1, AndroidVersionNode o2) {
@@ -273,7 +296,18 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
         toolRoot.addNode(supportNode);
 
         for (SdkToolsChangeListener toolsListener : toolsListeners) {
-            toolsListener.packageListChanged(toolRoot);
+            try {
+                toolsListener.packageListChanged(toolRoot);
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        for (LocalPlatformChangeListener localListener : localListeners) {
+            try {
+                localListener.platformListChanged(platforms);
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+            }
         }
     }
 

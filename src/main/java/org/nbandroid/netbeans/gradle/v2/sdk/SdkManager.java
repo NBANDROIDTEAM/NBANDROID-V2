@@ -97,4 +97,8 @@ public abstract class SdkManager {
      * @param aPackage UpdatablePackage
      */
     public abstract void installPackage(final UpdatablePackage aPackage);
+
+    public abstract void addLocalPlatformChangeListener(LocalPlatformChangeListener l);
+
+    public abstract void removeLocalPlatformChangeListener(LocalPlatformChangeListener l);
 }
