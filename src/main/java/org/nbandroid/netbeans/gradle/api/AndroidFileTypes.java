@@ -17,12 +17,12 @@ import javax.annotation.Nullable;
 import org.openide.filesystems.FileObject;
 
 /**
- * Provides the Android grammar for any documents whose root elements matches
- * a standard pattern.
+ * Provides the Android grammar for any documents whose root elements matches a
+ * standard pattern.
  *
  * @author Radim Kubacki
  */
 public interface AndroidFileTypes {
 
-  boolean isLayoutFile(@Nullable final FileObject fo);
+    boolean isLayoutFile(@Nullable final FileObject fo);
 }

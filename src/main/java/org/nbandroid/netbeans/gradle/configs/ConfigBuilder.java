@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.nbandroid.netbeans.gradle.configs;
 
 import com.google.common.base.Preconditions;
@@ -23,66 +22,66 @@ import org.nbandroid.netbeans.gradle.launch.LaunchConfiguration.TargetMode;
  * Builder pattern for configs.
  */
 public final class ConfigBuilder {
-  private static final Logger LOGGER = Logger.getLogger(ConfigBuilder.class.getName());
 
+    private static final Logger LOGGER = Logger.getLogger(ConfigBuilder.class.getName());
 
-  public static ConfigBuilder builderForConfig(AndroidConfigProvider.Config cfg) {
-    ConfigBuilder b = new ConfigBuilder();
-    return b.withLaunchAction(cfg.getLaunchConfiguration().getLaunchAction())
-        .withActivityName(cfg.getLaunchConfiguration().getActivityName())
-        .withMode(cfg.getLaunchConfiguration().getMode())
-        .withTargetMode(cfg.getLaunchConfiguration().getTargetMode())
-        .withName(cfg.getDisplayName())
-        .withTestRunner(cfg.getLaunchConfiguration().getInstrumentationRunner());
-  }
+    public static ConfigBuilder builderForConfig(AndroidConfigProvider.Config cfg) {
+        ConfigBuilder b = new ConfigBuilder();
+        return b.withLaunchAction(cfg.getLaunchConfiguration().getLaunchAction())
+                .withActivityName(cfg.getLaunchConfiguration().getActivityName())
+                .withMode(cfg.getLaunchConfiguration().getMode())
+                .withTargetMode(cfg.getLaunchConfiguration().getTargetMode())
+                .withName(cfg.getDisplayName())
+                .withTestRunner(cfg.getLaunchConfiguration().getInstrumentationRunner());
+    }
 
-  public static ConfigBuilder builder() {
-    return new ConfigBuilder();
-  }
+    public static ConfigBuilder builder() {
+        return new ConfigBuilder();
+    }
 
-  private String name;
-  private LaunchConfigurationBean l;
+    private String name;
+    private LaunchConfigurationBean l;
 
-  private ConfigBuilder() {
-    l = new LaunchConfigurationBean();
-  }
+    private ConfigBuilder() {
+        l = new LaunchConfigurationBean();
+    }
 
-  public ConfigBuilder withLaunchAction(Action a) {
-    l.setLaunchAction(a);
-    return this;
-  }
+    public ConfigBuilder withLaunchAction(Action a) {
+        l.setLaunchAction(a);
+        return this;
+    }
 
-  public ConfigBuilder withActivityName(String activity) {
-    l.setActivityName(activity);
-    return this;
-  }
+    public ConfigBuilder withActivityName(String activity) {
+        l.setActivityName(activity);
+        return this;
+    }
 
-  public ConfigBuilder withMode(String mode) {
-    l.setMode(mode);
-    return this;
-  }
+    public ConfigBuilder withMode(String mode) {
+        l.setMode(mode);
+        return this;
+    }
 
-  public ConfigBuilder withTargetMode(TargetMode targetMode) {
-    l.setTargetMode(targetMode);
-    return this;
-  }
+    public ConfigBuilder withTargetMode(TargetMode targetMode) {
+        l.setTargetMode(targetMode);
+        return this;
+    }
 
-  public ConfigBuilder withName(String name) {
-    this.name = name;
-    return this;
-  }
+    public ConfigBuilder withName(String name) {
+        this.name = name;
+        return this;
+    }
 
-  public ConfigBuilder withEmulatorOption(String emulatorOptions) {
-    l.setEmulatorOptions(emulatorOptions);
-    return this;
-  }
+    public ConfigBuilder withEmulatorOption(String emulatorOptions) {
+        l.setEmulatorOptions(emulatorOptions);
+        return this;
+    }
 
-  public ConfigBuilder withTestRunner(String testRunner) {
-    l.setInstrumentationRunner(testRunner);
-    return this;
-  }
+    public ConfigBuilder withTestRunner(String testRunner) {
+        l.setInstrumentationRunner(testRunner);
+        return this;
+    }
 
-  public AndroidConfigProvider.Config config() {
-    return new AndroidConfigProvider.Config(Preconditions.checkNotNull(name), l);
-  }
+    public AndroidConfigProvider.Config config() {
+        return new AndroidConfigProvider.Config(Preconditions.checkNotNull(name), l);
+    }
 }

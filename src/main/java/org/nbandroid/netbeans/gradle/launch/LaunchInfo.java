@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.nbandroid.netbeans.gradle.launch;
 
 import com.android.ide.common.xml.ManifestData;
@@ -23,48 +22,51 @@ import org.openide.filesystems.FileObject;
  * @author radim
  */
 public class LaunchInfo {
-  // TODO(radim) add install retry mode, ...
+    // TODO(radim) add install retry mode, ...
 
-  public final FileObject packageFile;
-  public final boolean reinstall;
-  public final boolean debug;
-  public final LaunchConfiguration launchConfig;
-  public final ManifestData manifestData;
-  public final String clientName;
-  public final String testClass;
-  public final String testMethod;
+    public final FileObject packageFile;
+    public final boolean reinstall;
+    public final boolean debug;
+    public final LaunchConfiguration launchConfig;
+    public final ManifestData manifestData;
+    public final String clientName;
+    public final String testClass;
+    public final String testMethod;
 
-  public LaunchInfo(FileObject packageFile, boolean reinstall, boolean debug,
-      LaunchConfiguration launchConfig, ManifestData manifestData) {
-    this(packageFile, reinstall, debug, launchConfig, manifestData, null, null, null);
-  }
-  
-  private LaunchInfo(FileObject packageFile, boolean reinstall, boolean debug,
-      LaunchConfiguration launchConfig, ManifestData manifestData,
-      String clientName, String testClass, String testMethod) {
-    this.packageFile = packageFile;
-    this.reinstall = reinstall;
-    this.debug = debug;
-    this.launchConfig = launchConfig;
-    this.manifestData = manifestData;
-    this.clientName = clientName == null ? manifestData.getPackage() : clientName;
-    this.testClass = testClass;
-    this.testMethod = testMethod;
-  }
-  
-  public LaunchInfo withPackageFile(FileObject packageFile) {
-    return new LaunchInfo(
-        packageFile, reinstall, debug, launchConfig, manifestData, clientName, testClass, testMethod);
-  }
-  
-  /** Creates an instance with modified client name used for attaching to a process. */
-  public LaunchInfo withClientName(String clientName) {
-    return new LaunchInfo(
-        packageFile, reinstall, debug, launchConfig, manifestData, clientName, testClass, testMethod);
-  }
-  
-  public LaunchInfo withTestClass(String testClass) {
-    return new LaunchInfo(
-        packageFile, reinstall, debug, launchConfig, manifestData, clientName, testClass, testMethod);
-  }
+    public LaunchInfo(FileObject packageFile, boolean reinstall, boolean debug,
+            LaunchConfiguration launchConfig, ManifestData manifestData) {
+        this(packageFile, reinstall, debug, launchConfig, manifestData, null, null, null);
+    }
+
+    private LaunchInfo(FileObject packageFile, boolean reinstall, boolean debug,
+            LaunchConfiguration launchConfig, ManifestData manifestData,
+            String clientName, String testClass, String testMethod) {
+        this.packageFile = packageFile;
+        this.reinstall = reinstall;
+        this.debug = debug;
+        this.launchConfig = launchConfig;
+        this.manifestData = manifestData;
+        this.clientName = clientName == null ? manifestData.getPackage() : clientName;
+        this.testClass = testClass;
+        this.testMethod = testMethod;
+    }
+
+    public LaunchInfo withPackageFile(FileObject packageFile) {
+        return new LaunchInfo(
+                packageFile, reinstall, debug, launchConfig, manifestData, clientName, testClass, testMethod);
+    }
+
+    /**
+     * Creates an instance with modified client name used for attaching to a
+     * process.
+     */
+    public LaunchInfo withClientName(String clientName) {
+        return new LaunchInfo(
+                packageFile, reinstall, debug, launchConfig, manifestData, clientName, testClass, testMethod);
+    }
+
+    public LaunchInfo withTestClass(String testClass) {
+        return new LaunchInfo(
+                packageFile, reinstall, debug, launchConfig, manifestData, clientName, testClass, testMethod);
+    }
 }

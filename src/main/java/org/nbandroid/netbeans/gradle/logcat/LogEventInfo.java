@@ -39,10 +39,10 @@ public class LogEventInfo {
         if (pNameRef[0] != null) {
             return pNameRef[0];
         }
-        
+
         return '#' + Integer.toString(pid);
     }
-    
+
     public String[] getProcessNameRef() {
         return pNameRef;
     }
@@ -70,25 +70,25 @@ public class LogEventInfo {
 
     @Override
     public boolean equals(Object obj) {
-      if (obj == null) {
-        return false;
-      }
-      if (getClass() != obj.getClass()) {
-        return false;
-      }
-      final LogEventInfo other = (LogEventInfo) obj;
-      if (this.pid != other.pid) {
-        return false;
-      }
-      if ((this.time == null) ? (other.time != null) : !this.time.equals(other.time)) {
-        return false;
-      }
-      if ((this.tag == null) ? (other.tag != null) : !this.tag.equals(other.tag)) {
-        return false;
-      }
-      if (this.level != other.level) {
-        return false;
-      }
-      return true;
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final LogEventInfo other = (LogEventInfo) obj;
+        if (this.pid != other.pid) {
+            return false;
+        }
+        if ((this.time == null) ? (other.time != null) : !this.time.equals(other.time)) {
+            return false;
+        }
+        if ((this.tag == null) ? (other.tag != null) : !this.tag.equals(other.tag)) {
+            return false;
+        }
+        if (this.level != other.level) {
+            return false;
+        }
+        return true;
     }
 }

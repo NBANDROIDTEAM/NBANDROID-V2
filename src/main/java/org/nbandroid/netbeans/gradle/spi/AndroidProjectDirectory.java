@@ -20,6 +20,6 @@ import java.io.File;
  * @author radim
  */
 public interface AndroidProjectDirectory {
-  
-  File get();
+
+    File get();
 }

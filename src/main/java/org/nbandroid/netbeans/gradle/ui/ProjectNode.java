@@ -18,100 +18,100 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
-import org.netbeans.api.project.ProjectUtils;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.util.NbBundle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  * ProjectNode represents a dependent project under the Libraries Node.
  */
 public final class ProjectNode extends AbstractNode {
 
-  private static final String PROJECT_ICON = "org/netbeans/modules/android/project/ui/resources/androidProject.png";    //NOI18N
+    private static final String PROJECT_ICON = "org/netbeans/modules/android/project/ui/resources/androidProject.png";    //NOI18N
 
-  private final Project project;
-  private Image cachedIcon;
+    private final Project project;
+    private Image cachedIcon;
 
-  // TODO(radim): project or location or name
-  public ProjectNode(Project project) {
-    super(Children.LEAF);
-    this.project = project;
-  }
-
-  @Override
-  public String getDisplayName() {
-    ProjectInformation info = getProjectInformation();
-    if (info != null) {
-      return info.getDisplayName();
-    } else {
-      return NbBundle.getMessage(ProjectNode.class, "TXT_UnknownProjectName");
-    }
-  }
-
-  @Override
-  public String getName() {
-    return this.getDisplayName();
-  }
-
-  @Override
-  public Image getIcon(int type) {
-    if (cachedIcon == null) {
-      ProjectInformation info = getProjectInformation();
-      if (info != null) {
-        Icon icon = info.getIcon();
-        cachedIcon = ImageUtilities.icon2Image(icon);
-      } else {
-        cachedIcon = ImageUtilities.loadImage(PROJECT_ICON);
-      }
-    }
-    return cachedIcon;
-  }
-
-  @Override
-  public Image getOpenedIcon(int type) {
-    return this.getIcon(type);
-  }
-
-  @Override
-  public boolean canCopy() {
-    return false;
-  }
-
-  @Override
-  public Action[] getActions(boolean context) {
-    return new Action[]{
-      new OpenProjectAction(project), //            SystemAction.get (ShowJavadocAction.class),
-    //            SystemAction.get (RemoveClassPathRootAction.class),
-    };
-  }
-
-  @Override
-  public Action getPreferredAction() {
-    return getActions(false)[0];
-  }
-
-  private ProjectInformation getProjectInformation() {
-    return ProjectUtils.getInformation(project);
-  }
-
-  private static class OpenProjectAction extends AbstractAction {
-
-    private final Project p;
-
-    public OpenProjectAction(Project p) {
-      this.p = p;
-      putValue(NAME, NbBundle.getMessage(ProjectNode.class, "NAME_OpenDependentProject"));
+    // TODO(radim): project or location or name
+    public ProjectNode(Project project) {
+        super(Children.LEAF);
+        this.project = project;
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-      OpenProjects.getDefault().open(new Project[]{p}, false);
+    public String getDisplayName() {
+        ProjectInformation info = getProjectInformation();
+        if (info != null) {
+            return info.getDisplayName();
+        } else {
+            return NbBundle.getMessage(ProjectNode.class, "TXT_UnknownProjectName");
+        }
     }
-  }
+
+    @Override
+    public String getName() {
+        return this.getDisplayName();
+    }
+
+    @Override
+    public Image getIcon(int type) {
+        if (cachedIcon == null) {
+            ProjectInformation info = getProjectInformation();
+            if (info != null) {
+                Icon icon = info.getIcon();
+                cachedIcon = ImageUtilities.icon2Image(icon);
+            } else {
+                cachedIcon = ImageUtilities.loadImage(PROJECT_ICON);
+            }
+        }
+        return cachedIcon;
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return this.getIcon(type);
+    }
+
+    @Override
+    public boolean canCopy() {
+        return false;
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[]{
+            new OpenProjectAction(project), //            SystemAction.get (ShowJavadocAction.class),
+        //            SystemAction.get (RemoveClassPathRootAction.class),
+        };
+    }
+
+    @Override
+    public Action getPreferredAction() {
+        return getActions(false)[0];
+    }
+
+    private ProjectInformation getProjectInformation() {
+        return ProjectUtils.getInformation(project);
+    }
+
+    private static class OpenProjectAction extends AbstractAction {
+
+        private final Project p;
+
+        public OpenProjectAction(Project p) {
+            this.p = p;
+            putValue(NAME, NbBundle.getMessage(ProjectNode.class, "NAME_OpenDependentProject"));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            OpenProjects.getDefault().open(new Project[]{p}, false);
+        }
+    }
 
 }

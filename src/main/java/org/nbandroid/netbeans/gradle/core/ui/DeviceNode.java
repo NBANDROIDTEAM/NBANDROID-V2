@@ -12,13 +12,11 @@
  *  limitations under the License.
  *  under the License.
  */
-
 package org.nbandroid.netbeans.gradle.core.ui;
 
 import com.android.ddmlib.AdbCommandRejectedException;
 import com.android.ddmlib.AndroidDebugBridge;
 import com.android.ddmlib.Client;
-//import com.android.ddmlib.Device;
 import com.android.ddmlib.IDevice;
 import com.android.ddmlib.RawImage;
 import com.android.ddmlib.TimeoutException;
@@ -66,13 +64,14 @@ import org.openide.util.lookup.Lookups;
  * @author tom
  */
 public class DeviceNode extends AbstractNode implements AndroidDebugBridge.IDeviceChangeListener {
-  private static final Logger LOG = Logger.getLogger(DeviceNode.class.getName());
 
-  private final IDevice device;
-  private final EmulatorControlSupport emulatorControl;
+    private static final Logger LOG = Logger.getLogger(DeviceNode.class.getName());
 
-    DeviceNode (final IDevice device) {
-        super (new DeviceChildren(device),Lookups.fixed(device));
+    private final IDevice device;
+    private final EmulatorControlSupport emulatorControl;
+
+    DeviceNode(final IDevice device) {
+        super(new DeviceChildren(device), Lookups.fixed(device));
         assert device != null;
         this.device = device;
         emulatorControl = new EmulatorControlSupport(device);
@@ -100,18 +99,16 @@ public class DeviceNode extends AbstractNode implements AndroidDebugBridge.IDevi
         });
     }
 
-
-    private void updateDescription () {
+    private void updateDescription() {
         final String serNum = this.device.getSerialNumber();
         final IDevice.DeviceState state = this.device.getState();
-        this.setShortDescription(NbBundle.getMessage(DeviceNode.class, "HINT_Device", 
-            serNum, state != null ? state.toString() : "(unknown state)"));
+        this.setShortDescription(NbBundle.getMessage(DeviceNode.class, "HINT_Device",
+                serNum, state != null ? state.toString() : "(unknown state)"));
     }
 
-
     @Override
-    public Action[] getActions (boolean context) {
-        return new Action[] {
+    public Action[] getActions(boolean context) {
+        return new Action[]{
             SystemAction.get(ScreenShotAction.class),
             null,
             SystemAction.get(PropertiesAction.class)
@@ -166,8 +163,8 @@ public class DeviceNode extends AbstractNode implements AndroidDebugBridge.IDevi
             private final String name;
             private final String value;
 
-            public DeviceProperty (String name, String value) {
-                super (name, String.class, name, name);
+            public DeviceProperty(String name, String value) {
+                super(name, String.class, name, name);
                 assert name != null;
                 assert value != null;
                 this.name = name;
@@ -181,17 +178,16 @@ public class DeviceNode extends AbstractNode implements AndroidDebugBridge.IDevi
 
         }
 
-        final Map<String,String> props = device.getProperties();
-        for (Map.Entry<String,String> prop : props.entrySet()) {
+        final Map<String, String> props = device.getProperties();
+        for (Map.Entry<String, String> prop : props.entrySet()) {
             devset.put(new DeviceProperty(prop.getKey(), prop.getValue()));
         }
 
-        return new PropertySet[] {
+        return new PropertySet[]{
             defset,
             devset
         };
     }
-
 
     public void deviceConnected(IDevice device) {
     }
@@ -206,36 +202,35 @@ public class DeviceNode extends AbstractNode implements AndroidDebugBridge.IDevi
         }
     }
 
-  private void addEmulatorControls(Sheet.Set defset) {
-    if (!device.isEmulator()) {
-      return;
+    private void addEmulatorControls(Sheet.Set defset) {
+        if (!device.isEmulator()) {
+            return;
+        }
+
+        for (final EmulatorControlSupport.Control ctrl : EmulatorControlSupport.Control.values()) {
+            defset.put(new PropertySupport.ReadWrite<String>(
+                    ctrl.name(),
+                    String.class,
+                    ctrl.getDisplayName(),
+                    ctrl.getDescription()) {
+
+                @Override
+                public String getValue() throws IllegalAccessException, InvocationTargetException {
+                    return emulatorControl.getData(ctrl);
+                }
+
+                @Override
+                public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                    emulatorControl.setData(ctrl, val);
+                }
+
+                @Override
+                public PropertyEditor getPropertyEditor() {
+                    return PropertyUtils.stringPropertyEditorWithTags(emulatorControl.getTags(ctrl));
+                }
+            });
+        }
     }
-
-    for (final EmulatorControlSupport.Control ctrl : EmulatorControlSupport.Control.values()) {
-      defset.put(new PropertySupport.ReadWrite<String>(
-          ctrl.name(),
-          String.class,
-          ctrl.getDisplayName(),
-          ctrl.getDescription()) {
-
-        @Override
-        public String getValue() throws IllegalAccessException, InvocationTargetException {
-          return emulatorControl.getData(ctrl);
-        }
-
-        @Override
-        public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-          emulatorControl.setData(ctrl, val);
-        }
-
-        @Override
-        public PropertyEditor getPropertyEditor() {
-          return PropertyUtils.stringPropertyEditorWithTags(emulatorControl.getTags(ctrl));
-        }
-      });
-    }
-  }
-
 
     private static class DeviceChildren extends Children.Keys<ClientHolder> implements AndroidDebugBridge.IDeviceChangeListener {
 
@@ -267,11 +262,10 @@ public class DeviceNode extends AbstractNode implements AndroidDebugBridge.IDevi
             this.setKeys(new ClientHolder[0]);
         }
 
-
         @Override
         protected Node[] createNodes(ClientHolder key) {
             assert key != null;
-            return new Node[] {new ClientNode(key.client)};
+            return new Node[]{new ClientNode(key.client)};
         }
 
         public void deviceConnected(IDevice device) {
@@ -295,9 +289,10 @@ public class DeviceNode extends AbstractNode implements AndroidDebugBridge.IDevi
     }
 
     private static class ClientHolder {
+
         public final Client client;
 
-        public ClientHolder (final Client client) {
+        public ClientHolder(final Client client) {
             assert client != null;
             this.client = client;
         }
@@ -341,7 +336,7 @@ public class DeviceNode extends AbstractNode implements AndroidDebugBridge.IDevi
                 int imageType;
 
                 // determine image format
-                switch(image.bpp) {
+                switch (image.bpp) {
                     case 16: {
                         imageType = BufferedImage.TYPE_USHORT_565_RGB;
                         break;
@@ -355,15 +350,15 @@ public class DeviceNode extends AbstractNode implements AndroidDebugBridge.IDevi
 
                 final BufferedImage img = new BufferedImage(image.width, image.height, imageType);
                 final DataBuffer db = img.getRaster().getDataBuffer();
-                for (int y=0; y<image.height; y++) {
-                    for (int x=0; x<image.width; x++) {
+                for (int y = 0; y < image.height; y++) {
+                    for (int x = 0; x < image.width; x++) {
                         int color;
 
-                        switch(imageType) {
+                        switch (imageType) {
                             case BufferedImage.TYPE_USHORT_565_RGB: {
-                                byte l = image.data[2*(y*image.width+x)];
-                                byte h = image.data[2*(y*image.width+x)+1];
-                                color = ((h<<8)|(l&0xff)) & 0xffff;
+                                byte l = image.data[2 * (y * image.width + x)];
+                                byte h = image.data[2 * (y * image.width + x) + 1];
+                                color = ((h << 8) | (l & 0xff)) & 0xffff;
                                 break;
                             }
 
@@ -373,14 +368,14 @@ public class DeviceNode extends AbstractNode implements AndroidDebugBridge.IDevi
                             }
                         }
 
-                        db.setElem(y*image.width+x, color);
+                        db.setElem(y * image.width + x, color);
                     }
                 }
                 final String tmpVal = System.getProperty("java.io.tmpdir");   //NOI18N
                 final File tmpFile = FileUtil.normalizeFile(new File(tmpVal));
                 final String name = FileUtil.findFreeFileName(FileUtil.toFileObject(tmpFile),
                         device.getSerialNumber(), PNG);
-                final File pictureFile = new File (tmpFile,name+'.'+PNG);
+                final File pictureFile = new File(tmpFile, name + '.' + PNG);
                 ImageIO.write(img, PNG, pictureFile);
                 final FileObject pictureFileObj = FileUtil.toFileObject(pictureFile);
                 DataObject dobj = DataObject.find(pictureFileObj);
@@ -389,20 +384,20 @@ public class DeviceNode extends AbstractNode implements AndroidDebugBridge.IDevi
                     oc.open();
                 }
             } catch (IOException ioe) {
-              LOG.log(Level.INFO, null, ioe);
-              DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                  NbBundle.getMessage(DeviceNode.class, "ERROR_ScreenShot"),
-                  NotifyDescriptor.ERROR_MESSAGE));
+                LOG.log(Level.INFO, null, ioe);
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(DeviceNode.class, "ERROR_ScreenShot"),
+                        NotifyDescriptor.ERROR_MESSAGE));
             } catch (TimeoutException ex) {
-              LOG.log(Level.INFO, null, ex);
-              DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                  NbBundle.getMessage(DeviceNode.class, "ERROR_ScreenShot"),
-                  NotifyDescriptor.ERROR_MESSAGE));
+                LOG.log(Level.INFO, null, ex);
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(DeviceNode.class, "ERROR_ScreenShot"),
+                        NotifyDescriptor.ERROR_MESSAGE));
             } catch (AdbCommandRejectedException ex) {
-              LOG.log(Level.INFO, null, ex);
-              DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                  NbBundle.getMessage(DeviceNode.class, "ERROR_ScreenShot"),
-                  NotifyDescriptor.ERROR_MESSAGE));
+                LOG.log(Level.INFO, null, ex);
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(DeviceNode.class, "ERROR_ScreenShot"),
+                        NotifyDescriptor.ERROR_MESSAGE));
             }
         }
 

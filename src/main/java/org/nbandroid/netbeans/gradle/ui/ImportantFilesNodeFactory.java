@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.nbandroid.netbeans.gradle.ui;
 
 import java.awt.Image;
@@ -47,10 +46,12 @@ import org.openide.util.RequestProcessor;
  *
  * @author mkleint
  */
-@NodeFactory.Registration(projectType={"org-netbeans-modules-android-project"}, position=350)
+@NodeFactory.Registration(projectType = {"org-netbeans-modules-android-project"}, position = 350)
 public class ImportantFilesNodeFactory implements NodeFactory {
 
-    /** Package private for unit tests. */
+    /**
+     * Package private for unit tests.
+     */
     static final String IMPORTANT_FILES_NAME = "important.files"; // NOI18N
 
     private static final RequestProcessor RP = new RequestProcessor(ImportantFilesNodeFactory.class.getName());
@@ -64,9 +65,10 @@ public class ImportantFilesNodeFactory implements NodeFactory {
     }
 
     /**
-     * Public RP serving as queue of calls into org.openide.nodes.
-     * All such calls must be made outside ProjectManager#mutex(),
-     * this (shared) queue ensures ordering of calls.
+     * Public RP serving as queue of calls into org.openide.nodes. All such
+     * calls must be made outside ProjectManager#mutex(), this (shared) queue
+     * ensures ordering of calls.
+     *
      * @return Shared RP
      */
     public static RequestProcessor getNodesSyncRP() {
@@ -74,25 +76,30 @@ public class ImportantFilesNodeFactory implements NodeFactory {
     }
 
     private static class ImportantFilesNodeList implements NodeList<String> {
+
         private final Project project;
 
         public ImportantFilesNodeList(Project p) {
             project = p;
         }
 
-        @Override public List<String> keys() {
+        @Override
+        public List<String> keys() {
             return Collections.singletonList(IMPORTANT_FILES_NAME);
         }
 
-        @Override public void addChangeListener(ChangeListener l) {
+        @Override
+        public void addChangeListener(ChangeListener l) {
             //ignore, doesn't change
         }
 
-        @Override public void removeChangeListener(ChangeListener l) {
+        @Override
+        public void removeChangeListener(ChangeListener l) {
             //ignore, doesn't change
         }
 
-        @Override public Node node(String key) {
+        @Override
+        public Node node(String key) {
             assert key.equals(IMPORTANT_FILES_NAME);
 //            if (project instanceof AndroidProject) {
 //                return new ImportantFilesNode(project);
@@ -100,15 +107,18 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             return null;
         }
 
-        @Override public void addNotify() {
+        @Override
+        public void addNotify() {
         }
 
-        @Override public void removeNotify() {
+        @Override
+        public void removeNotify() {
         }
     }
 
     /**
-     * Show node "Important Files" with various config and docs files beneath it.
+     * Show node "Important Files" with various config and docs files beneath
+     * it.
      */
     static final class ImportantFilesNode extends AnnotatedNode {
 
@@ -118,7 +128,8 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             super(new ImportantFilesChildren(project), org.openide.util.lookup.Lookups.singleton(project));
         }
 
-        @Override public String getName() {
+        @Override
+        public String getName() {
             return IMPORTANT_FILES_NAME;
         }
 
@@ -127,19 +138,23 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             return ImageUtilities.mergeImages(UiUtils.getTreeFolderIcon(opened), badge, 8, 8);
         }
 
-        public @Override String getDisplayName() {
+        public @Override
+        String getDisplayName() {
             return annotateName(DISPLAY_NAME);
         }
 
-        public @Override String getHtmlDisplayName() {
+        public @Override
+        String getHtmlDisplayName() {
             return computeAnnotatedHtmlDisplayName(DISPLAY_NAME, getFiles());
         }
 
-        public @Override Image getIcon(int type) {
+        public @Override
+        Image getIcon(int type) {
             return annotateIcon(getIcon(false), type);
         }
 
-        public @Override Image getOpenedIcon(int type) {
+        public @Override
+        Image getOpenedIcon(int type) {
             return annotateIcon(getIcon(true), type);
         }
 
@@ -154,8 +169,11 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         private FileChangeListener fcl;
 
         // TODO(radim): change to enum
-        /** Abstract location to display name. */
-        private static final java.util.Map<String,String> FILES = new LinkedHashMap<>();
+        /**
+         * Abstract location to display name.
+         */
+        private static final java.util.Map<String, String> FILES = new LinkedHashMap<>();
+
         static {
             FILES.put("AndroidManifest.xml", NbBundle.getMessage(ImportantFilesNodeFactory.class, "LBL_AndroidManifest.xml"));
             FILES.put("build.xml", NbBundle.getMessage(ImportantFilesNodeFactory.class, "LBL_build.xml"));
@@ -171,13 +189,15 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             this.project = project;
         }
 
-        protected @Override void addNotify() {
+        protected @Override
+        void addNotify() {
             super.addNotify();
             attachListeners();
             refreshKeys();
         }
 
-        protected @Override void removeNotify() {
+        protected @Override
+        void removeNotify() {
             setKeys(Collections.<String>emptyList());
             visibleFiles = null;
             removeListeners();
@@ -191,13 +211,13 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                 FileObject file = project.getProjectDirectory().getFileObject(loc);
                 try {
                     Node orig = DataObject.find(file).getNodeDelegate();
-                    return new Node[] {new AndroidFileNode(orig, FILES.get(loc))};
+                    return new Node[]{new AndroidFileNode(orig, FILES.get(loc))};
                 } catch (DataObjectNotFoundException e) {
                     throw new AssertionError(e);
                 }
             } else {
                 throw new AssertionError(key);
-            } 
+            }
         }
 
         private void refreshKeys() {
@@ -226,13 +246,18 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             try {
                 if (fcl == null) {
                     fcl = new FileChangeAdapter() {
-                        public @Override void fileRenamed(FileRenameEvent fe) {
+                        public @Override
+                        void fileRenamed(FileRenameEvent fe) {
                             refreshKeys();
                         }
-                        public @Override void fileDataCreated(FileEvent fe) {
+
+                        public @Override
+                        void fileDataCreated(FileEvent fe) {
                             refreshKeys();
                         }
-                        public @Override void fileDeleted(FileEvent fe) {
+
+                        public @Override
+                        void fileDeleted(FileEvent fe) {
                             refreshKeys();
                         }
                     };
@@ -255,20 +280,20 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
 
     }
-  /**
-   * Annotates
-   * <code>htmlDisplayName</code>, if it is needed, and returns the result;
-   * <code>null</code> otherwise.
-   */
-  public static String computeAnnotatedHtmlDisplayName(
-      final String htmlDisplayName, final Set<? extends FileObject> files) {
 
-    String result = null;
-    if (files != null && files.iterator().hasNext()) {
-      StatusDecorator statusDecorator = Lookup.getDefault().lookup(StatusDecorator.class);
-      FileObject fo = (FileObject) files.iterator().next();
-      statusDecorator.annotateNameHtml(htmlDisplayName, files);
+    /**
+     * Annotates <code>htmlDisplayName</code>, if it is needed, and returns the
+     * result; <code>null</code> otherwise.
+     */
+    public static String computeAnnotatedHtmlDisplayName(
+            final String htmlDisplayName, final Set<? extends FileObject> files) {
+
+        String result = null;
+        if (files != null && files.iterator().hasNext()) {
+            StatusDecorator statusDecorator = Lookup.getDefault().lookup(StatusDecorator.class);
+            FileObject fo = (FileObject) files.iterator().next();
+            statusDecorator.annotateNameHtml(htmlDisplayName, files);
+        }
+        return result;
     }
-    return result;
-  }
 }

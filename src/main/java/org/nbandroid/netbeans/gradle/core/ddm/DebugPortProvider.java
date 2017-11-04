@@ -12,7 +12,6 @@
  *  limitations under the License.
  *  under the License.
  */
-
 package org.nbandroid.netbeans.gradle.core.ddm;
 
 import com.android.ddmlib.DebugPortManager.IDebugPortProvider;
@@ -26,7 +25,8 @@ final class DebugPortProvider implements IDebugPortProvider {
 
     private static DebugPortProvider instance;
 
-    private DebugPortProvider() {}
+    private DebugPortProvider() {
+    }
 
     public int getPort(IDevice device, String appName) {
         return DebugPortProvider.NO_STATIC_PORT;

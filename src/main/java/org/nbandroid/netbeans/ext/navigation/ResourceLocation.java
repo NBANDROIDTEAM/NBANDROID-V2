@@ -7,17 +7,18 @@ import org.openide.filesystems.FileObject;
  * @author radim
  */
 public class ResourceLocation {
-  public final FileObject resource;
-  public final int line;
 
-  public ResourceLocation(FileObject resource, int line) {
-    this.resource = resource;
-    this.line = line;
-  }
+    public final FileObject resource;
+    public final int line;
 
-  @Override
-  public String toString() {
-    return "ResourcePosition{" + "resource=" + resource + ", line=" + line + '}';
-  }
-    
+    public ResourceLocation(FileObject resource, int line) {
+        this.resource = resource;
+        this.line = line;
+    }
+
+    @Override
+    public String toString() {
+        return "ResourcePosition{" + "resource=" + resource + ", line=" + line + '}';
+    }
+
 }

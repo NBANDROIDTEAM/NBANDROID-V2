@@ -21,65 +21,68 @@ import com.google.common.collect.Iterables;
  * @author radim
  */
 public class UIClassDescriptors {
-  private static Predicate<UIClassDescriptor> simpleName(final String simpleName) {
-    return new Predicate<UIClassDescriptor>() {
 
-      @Override
-      public boolean apply(UIClassDescriptor input) {
-        return input.getSimpleName().equals(simpleName);
-      }
-    };
-  }
-  private static Predicate<UIClassDescriptor> fqName(final String fqName) {
-    return new Predicate<UIClassDescriptor>() {
+    private static Predicate<UIClassDescriptor> simpleName(final String simpleName) {
+        return new Predicate<UIClassDescriptor>() {
 
-      @Override
-      public boolean apply(UIClassDescriptor input) {
-        return input.getFQClassName().equals(fqName);
-      }
-    };
-  }
-  private static Predicate<UIClassDescriptor> outerClassName(final String outerName) {
-    return new Predicate<UIClassDescriptor>() {
+            @Override
+            public boolean apply(UIClassDescriptor input) {
+                return input.getSimpleName().equals(simpleName);
+            }
+        };
+    }
 
-      @Override
-      public boolean apply(UIClassDescriptor input) {
-        if (outerName == null) {
-          return false;
-        }
-        return input.getFQClassName().equals(outerName + ".LayoutParams");
-      }
-    };
-  }
+    private static Predicate<UIClassDescriptor> fqName(final String fqName) {
+        return new Predicate<UIClassDescriptor>() {
 
-  public static Iterable<UIClassDescriptor> findBySimpleName(
-      WidgetData classData, String simpleClassName) {
-    return findByName(Iterables.concat(classData.data.values()), simpleName(simpleClassName));
-  }
+            @Override
+            public boolean apply(UIClassDescriptor input) {
+                return input.getFQClassName().equals(fqName);
+            }
+        };
+    }
 
-  public static Iterable<UIClassDescriptor> findBySimpleName(
-      WidgetData classData, LayoutElementType type, String simpleClassName) {
-    return findByName(classData.data.get(type), simpleName(simpleClassName));
-  }
+    private static Predicate<UIClassDescriptor> outerClassName(final String outerName) {
+        return new Predicate<UIClassDescriptor>() {
 
-  public static UIClassDescriptor findByFQName(
-      WidgetData classData, String fqClassName) {
-    return Iterables.getOnlyElement(findByName(classData.classes, fqName(fqClassName)), null);
-  }
+            @Override
+            public boolean apply(UIClassDescriptor input) {
+                if (outerName == null) {
+                    return false;
+                }
+                return input.getFQClassName().equals(outerName + ".LayoutParams");
+            }
+        };
+    }
 
-  public static UIClassDescriptor findByFQName(
-      WidgetData classData, LayoutElementType type, String fqClassName) {
-    return Iterables.getOnlyElement(findByName(classData.data.get(type), fqName(fqClassName)), null);
-  }
+    public static Iterable<UIClassDescriptor> findBySimpleName(
+            WidgetData classData, String simpleClassName) {
+        return findByName(Iterables.concat(classData.data.values()), simpleName(simpleClassName));
+    }
 
-  public static UIClassDescriptor findParamsForName(
-      WidgetData classData, String viewGroupName) {
-    return Iterables.getOnlyElement(
-        findByName(classData.data.get(LayoutElementType.LAYOUT_PARAM), outerClassName(viewGroupName)), null);
-  }
+    public static Iterable<UIClassDescriptor> findBySimpleName(
+            WidgetData classData, LayoutElementType type, String simpleClassName) {
+        return findByName(classData.data.get(type), simpleName(simpleClassName));
+    }
 
-  private static Iterable<UIClassDescriptor> findByName(
-      Iterable<UIClassDescriptor> classes, Predicate<UIClassDescriptor> predicate) {
-    return Iterables.filter(classes, predicate);
-  }
+    public static UIClassDescriptor findByFQName(
+            WidgetData classData, String fqClassName) {
+        return Iterables.getOnlyElement(findByName(classData.classes, fqName(fqClassName)), null);
+    }
+
+    public static UIClassDescriptor findByFQName(
+            WidgetData classData, LayoutElementType type, String fqClassName) {
+        return Iterables.getOnlyElement(findByName(classData.data.get(type), fqName(fqClassName)), null);
+    }
+
+    public static UIClassDescriptor findParamsForName(
+            WidgetData classData, String viewGroupName) {
+        return Iterables.getOnlyElement(
+                findByName(classData.data.get(LayoutElementType.LAYOUT_PARAM), outerClassName(viewGroupName)), null);
+    }
+
+    private static Iterable<UIClassDescriptor> findByName(
+            Iterable<UIClassDescriptor> classes, Predicate<UIClassDescriptor> predicate) {
+        return Iterables.filter(classes, predicate);
+    }
 }

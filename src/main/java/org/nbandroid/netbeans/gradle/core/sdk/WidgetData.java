@@ -23,11 +23,11 @@ import java.util.Map;
  */
 public class WidgetData {
 
-  public final Map<LayoutElementType, Collection<UIClassDescriptor>> data;
-  public final Collection<UIClassDescriptor> classes;
+    public final Map<LayoutElementType, Collection<UIClassDescriptor>> data;
+    public final Collection<UIClassDescriptor> classes;
 
-  public WidgetData(Map<LayoutElementType, Collection<UIClassDescriptor>> data, Collection<UIClassDescriptor> classes) {
-    this.data = Collections.unmodifiableMap(data);
-    this.classes = Collections.unmodifiableCollection(classes);
-  }
+    public WidgetData(Map<LayoutElementType, Collection<UIClassDescriptor>> data, Collection<UIClassDescriptor> classes) {
+        this.data = Collections.unmodifiableMap(data);
+        this.classes = Collections.unmodifiableCollection(classes);
+    }
 }

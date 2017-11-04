@@ -65,7 +65,6 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
     private final JMenuItem updateMenuItem = new JMenuItem("Update package");
     private final JMenuItem unInstallMenuItem = new JMenuItem("Uninstall package");
 
-
     /**
      * Creates new form SdkPlatformPanel
      */
@@ -208,7 +207,6 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
         });
     }
 
-
     public void connect(SdkManager manager) {
         this.manager = manager;
         if (manager != null) {
@@ -257,7 +255,6 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
                 .addComponent(showDetails))
         );
     }// </editor-fold>//GEN-END:initComponents
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;

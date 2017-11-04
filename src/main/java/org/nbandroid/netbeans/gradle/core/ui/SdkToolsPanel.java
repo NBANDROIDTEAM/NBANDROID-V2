@@ -384,7 +384,6 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
         }, false, "Name");
     }
 
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;
     private org.nbandroid.netbeans.gradle.core.ui.PackageTreeTableView packageTreeTableView;

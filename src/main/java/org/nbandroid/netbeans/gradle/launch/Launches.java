@@ -11,17 +11,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.nbandroid.netbeans.gradle.launch;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.nbandroid.netbeans.gradle.configs.AndroidConfigProvider;
 import org.nbandroid.netbeans.gradle.launch.LaunchConfiguration.Action;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.Project;
-import org.nbandroid.netbeans.gradle.configs.AndroidConfigProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
@@ -33,61 +32,62 @@ import org.openide.filesystems.FileObject;
  */
 public class Launches {
 
-  public static AndroidLauncher createLauncher() {
-    return new AndroidLauncherImpl();
-  }
-  
-  public static LaunchAction testAction() {
-    return new TestLaunchAction();
-  }
-  
-  public static LaunchAction actionForProject(Project p) {
-
-    AndroidConfigProvider cfgProvider = p.getLookup().lookup(AndroidConfigProvider.class);
-    Action launchAction = cfgProvider != null ?
-        cfgProvider.getActiveConfiguration().getLaunchConfiguration().getLaunchAction() :
-        null;
-    if (Action.DO_NOTHING == launchAction) {
-      return new EmptyLaunchAction();
+    public static AndroidLauncher createLauncher() {
+        return new AndroidLauncherImpl();
     }
-    return defaultActionForProject(p);
-  }
 
-  private static LaunchAction defaultActionForProject(Project p) {
+    public static LaunchAction testAction() {
+        return new TestLaunchAction();
+    }
+
+    public static LaunchAction actionForProject(Project p) {
+
+        AndroidConfigProvider cfgProvider = p.getLookup().lookup(AndroidConfigProvider.class);
+        Action launchAction = cfgProvider != null
+                ? cfgProvider.getActiveConfiguration().getLaunchConfiguration().getLaunchAction()
+                : null;
+        if (Action.DO_NOTHING == launchAction) {
+            return new EmptyLaunchAction();
+        }
+        return defaultActionForProject(p);
+    }
+
+    private static LaunchAction defaultActionForProject(Project p) {
         return new ActivityLaunchAction();//TODO new TestLaunchAction()
     }
 
-  public static boolean isDebugCommand(String command) {
-    return ActionProvider.COMMAND_DEBUG.equals(command)
-        || ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(command);
-  }
-
-  public static boolean isTestCommand(String command) {
-    return ActionProvider.COMMAND_TEST.equals(command)
-        || ActionProvider.COMMAND_TEST_SINGLE.equals(command)
-        || ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(command);
-  }
-
-  public static boolean isLaunchingCommand(String command) {
-    return ActionProvider.COMMAND_DEBUG.equals(command)
-        || ActionProvider.COMMAND_RUN.equals(command)
-        || ActionProvider.COMMAND_TEST.equals(command)
-        || ActionProvider.COMMAND_TEST_SINGLE.equals(command)
-        || ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(command);
-  }
-
-  /**
-   * Tries to convert a classpath with classes into a classpath containing java source code.
-   *
-   * @param cp
-   * @return
-   */
-  public static ClassPath toSourcePath(final ClassPath cp) {
-    final List<FileObject> resources = new ArrayList<FileObject>();
-    for (ClassPath.Entry e : cp.entries()) {
-      final FileObject[] srcRoots = SourceForBinaryQuery.findSourceRoots(e.getURL()).getRoots();
-      resources.addAll(Arrays.asList(srcRoots));
+    public static boolean isDebugCommand(String command) {
+        return ActionProvider.COMMAND_DEBUG.equals(command)
+                || ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(command);
     }
-    return ClassPathSupport.createClassPath(resources.toArray(new FileObject[resources.size()]));
-  }
+
+    public static boolean isTestCommand(String command) {
+        return ActionProvider.COMMAND_TEST.equals(command)
+                || ActionProvider.COMMAND_TEST_SINGLE.equals(command)
+                || ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(command);
+    }
+
+    public static boolean isLaunchingCommand(String command) {
+        return ActionProvider.COMMAND_DEBUG.equals(command)
+                || ActionProvider.COMMAND_RUN.equals(command)
+                || ActionProvider.COMMAND_TEST.equals(command)
+                || ActionProvider.COMMAND_TEST_SINGLE.equals(command)
+                || ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(command);
+    }
+
+    /**
+     * Tries to convert a classpath with classes into a classpath containing
+     * java source code.
+     *
+     * @param cp
+     * @return
+     */
+    public static ClassPath toSourcePath(final ClassPath cp) {
+        final List<FileObject> resources = new ArrayList<FileObject>();
+        for (ClassPath.Entry e : cp.entries()) {
+            final FileObject[] srcRoots = SourceForBinaryQuery.findSourceRoots(e.getURL()).getRoots();
+            resources.addAll(Arrays.asList(srcRoots));
+        }
+        return ClassPathSupport.createClassPath(resources.toArray(new FileObject[resources.size()]));
+    }
 }

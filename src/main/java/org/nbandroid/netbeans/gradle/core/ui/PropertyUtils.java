@@ -29,81 +29,82 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  */
 public class PropertyUtils {
 
-  /**
-   * Creates delegating property editor that displays passed string as a representation of {@code null} value.
-   * In addition to this it is not paintable for {@code null} value.
-   */
-  public static PropertyEditor stringPropertyEditorWithTags(final String[] tags) {
-    final PropertyEditor delegate = PropertyEditorManager.findEditor(String.class);
-    ExPropertyEditor editor = new ExPropertyEditor() {
+    /**
+     * Creates delegating property editor that displays passed string as a
+     * representation of {@code null} value. In addition to this it is not
+     * paintable for {@code null} value.
+     */
+    public static PropertyEditor stringPropertyEditorWithTags(final String[] tags) {
+        final PropertyEditor delegate = PropertyEditorManager.findEditor(String.class);
+        ExPropertyEditor editor = new ExPropertyEditor() {
 
-      @Override
-      public void setValue(Object value) {
-        delegate.setValue(value);
-      }
+            @Override
+            public void setValue(Object value) {
+                delegate.setValue(value);
+            }
 
-      @Override
-      public Object getValue() {
-        return delegate.getValue();
-      }
+            @Override
+            public Object getValue() {
+                return delegate.getValue();
+            }
 
-      @Override
-      public boolean isPaintable() {
-        return getValue() == null ? false : delegate.isPaintable();
-      }
+            @Override
+            public boolean isPaintable() {
+                return getValue() == null ? false : delegate.isPaintable();
+            }
 
-      @Override
-      public void paintValue(Graphics gfx, Rectangle box) {
-        delegate.paintValue(gfx, box);
-      }
+            @Override
+            public void paintValue(Graphics gfx, Rectangle box) {
+                delegate.paintValue(gfx, box);
+            }
 
-      @Override
-      public String getJavaInitializationString() {
-        return delegate.getJavaInitializationString();
-      }
+            @Override
+            public String getJavaInitializationString() {
+                return delegate.getJavaInitializationString();
+            }
 
-      @Override
-      public String getAsText() {
-        return delegate.getAsText();
-      }
+            @Override
+            public String getAsText() {
+                return delegate.getAsText();
+            }
 
-      @Override
-      public void setAsText(String text) throws IllegalArgumentException {
-        delegate.setAsText(text);
-      }
+            @Override
+            public void setAsText(String text) throws IllegalArgumentException {
+                delegate.setAsText(text);
+            }
 
-      @Override
-      public String[] getTags() {
-        return tags;
-      }
+            @Override
+            public String[] getTags() {
+                return tags;
+            }
 
-      @Override
-      public Component getCustomEditor() {
-        return delegate.getCustomEditor();
-      }
+            @Override
+            public Component getCustomEditor() {
+                return delegate.getCustomEditor();
+            }
 
-      @Override
-      public boolean supportsCustomEditor() {
-        return delegate.supportsCustomEditor();
-      }
+            @Override
+            public boolean supportsCustomEditor() {
+                return delegate.supportsCustomEditor();
+            }
 
-      @Override
-      public void addPropertyChangeListener(PropertyChangeListener listener) {
-        delegate.addPropertyChangeListener(listener);
-      }
+            @Override
+            public void addPropertyChangeListener(PropertyChangeListener listener) {
+                delegate.addPropertyChangeListener(listener);
+            }
 
-      @Override
-      public void removePropertyChangeListener(PropertyChangeListener listener) {
-        delegate.removePropertyChangeListener(listener);
-      }
+            @Override
+            public void removePropertyChangeListener(PropertyChangeListener listener) {
+                delegate.removePropertyChangeListener(listener);
+            }
 
-      @Override
-      public void attachEnv(PropertyEnv env) {
-        if (delegate instanceof ExPropertyEditor) {
-          ((ExPropertyEditor) delegate).attachEnv(env);
-        }
-      }
-    };
-    return editor;
-  }
+            @Override
+            public void attachEnv(PropertyEnv env) {
+                if (delegate instanceof ExPropertyEditor) {
+                    ((ExPropertyEditor) delegate).attachEnv(env);
+                }
+            }
+        };
+        return editor;
+    }
 }

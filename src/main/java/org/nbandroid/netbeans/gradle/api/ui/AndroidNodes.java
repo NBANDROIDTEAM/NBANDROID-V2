@@ -15,12 +15,12 @@ package org.nbandroid.netbeans.gradle.api.ui;
 
 import javax.annotation.Nonnull;
 import javax.swing.Icon;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
 import org.nbandroid.netbeans.gradle.api.AndroidProjects;
 import org.nbandroid.netbeans.gradle.ui.LibrariesSourceGroup;
 import org.nbandroid.netbeans.gradle.ui.PlatformNode;
 import org.nbandroid.netbeans.gradle.ui.ProjectNode;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
@@ -30,23 +30,24 @@ import org.openide.util.ImageUtilities;
  * @author radim
  */
 public class AndroidNodes {
-  private static final String ARCHIVE_ICON = "org/netbeans/modules/android/project/ui/resources/jar.gif";//NOI18N        
-  
-  public static Node createPlatformNode(@Nonnull Project project) {
-    return new PlatformNode(project, AndroidProjects.projectPlatform(project));
-  }
 
-  public static Node createProjectNode(@Nonnull Project project) {
-    return new ProjectNode(project);
-  }
-  
+    private static final String ARCHIVE_ICON = "org/netbeans/modules/android/project/ui/resources/jar.gif";//NOI18N
+
+    public static Node createPlatformNode(@Nonnull Project project) {
+        return new PlatformNode(project, AndroidProjects.projectPlatform(project));
+    }
+
+    public static Node createProjectNode(@Nonnull Project project) {
+        return new ProjectNode(project);
+    }
+
     public static SourceGroup createLibrarySourceGroup(String name, FileObject cpRoot) {
-    Icon openedIcon = cpRoot != null
-        ? ImageUtilities.loadImageIcon(ARCHIVE_ICON, true)
-        : ImageUtilities.image2Icon(UiUtils.getTreeFolderIcon(true));
-    Icon closedIcon = cpRoot != null
-        ? ImageUtilities.loadImageIcon(ARCHIVE_ICON, true)
-        : ImageUtilities.image2Icon(UiUtils.getTreeFolderIcon(false));
+        Icon openedIcon = cpRoot != null
+                ? ImageUtilities.loadImageIcon(ARCHIVE_ICON, true)
+                : ImageUtilities.image2Icon(UiUtils.getTreeFolderIcon(true));
+        Icon closedIcon = cpRoot != null
+                ? ImageUtilities.loadImageIcon(ARCHIVE_ICON, true)
+                : ImageUtilities.image2Icon(UiUtils.getTreeFolderIcon(false));
         return new LibrariesSourceGroup(cpRoot, name, closedIcon, openedIcon);
-  }
+    }
 }

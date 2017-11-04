@@ -1,7 +1,25 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.nbandroid.netbeans.gradle.query;
 
-import com.android.builder.model.AndroidProject;
 import com.android.builder.model.AndroidLibrary;
+import com.android.builder.model.AndroidProject;
 import com.android.builder.model.BuildTypeContainer;
 import com.android.builder.model.ProductFlavorContainer;
 import com.android.builder.model.Variant;
@@ -26,163 +44,164 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- * Source lookup for classes found in exploded-bundles directory containing 
+ * Source lookup for classes found in exploded-bundles directory containing
  * AndroidLibrary dependencies.
- * 
+ *
  * @author radim
  */
 public class GradleSourceForBinaryQuery implements SourceForBinaryQueryImplementation2, AndroidModelAware {
-  private static final Logger LOG = Logger.getLogger(GradleSourceForBinaryQuery.class.getName());
 
-  private final BuildVariant buildConfig;
-  private AndroidProject project;
+    private static final Logger LOG = Logger.getLogger(GradleSourceForBinaryQuery.class.getName());
 
-  public GradleSourceForBinaryQuery(BuildVariant buildConfig) {
-    this.buildConfig = buildConfig;
-  }
-  
-  @Override
-  public void setAndroidProject(AndroidProject project) {
-    this.project = project;
-  }
-  
-  @Override
-  public Result findSourceRoots2(final URL binaryRoot) {
-    Result r = findAarLibraryRoots(binaryRoot);
-    if (r != null) {
-      return r;
-    }
-    if (project == null) {
-      return null;
-    }
-    final File binRootDir = FileUtil.archiveOrDirForURL(binaryRoot);
-    if (binRootDir == null) {
-      return null;
-    }
-    
-    Variant variant = Iterables.find(
-        project.getVariants(),
-        new Predicate<Variant>() {
-          @Override
-          public boolean apply(Variant input) {
-            return binRootDir.equals(input.getMainArtifact().getClassesFolder());
-          }
-        },
-        null);
-    if (variant != null) {
-      Iterable<FileObject> srcRoots = Iterables.filter(
-          Iterables.transform(
-              sourceRootsForVariant(variant),
-              new Function<File, FileObject>() {
-                @Override
-                public FileObject apply(File f) {
-                  return FileUtil.toFileObject(f);
-                }
-              }),
-          Predicates.notNull());
-      return new GradleSourceResult(srcRoots);
-    }
-    return null;
-  }
+    private final BuildVariant buildConfig;
+    private AndroidProject project;
 
-  private Iterable<? extends File> sourceRootsForVariant(Variant variant) {
-    Collection<File> javaDirs = project != null
-        ? project.getDefaultConfig().getSourceProvider().getJavaDirectories()
-        : Collections.<File>emptySet();
-    BuildTypeContainer buildTypeContainer = buildConfig.getCurrentBuildTypeContainer();
-    Collection<File> typeJavaDirs = buildTypeContainer != null
-        ? buildTypeContainer.getSourceProvider().getJavaDirectories()
-        : Collections.<File>emptySet();
-    Iterable<File> variantJavaDirs = variant != null
-        ? Iterables.concat(
-            Iterables.transform(
-                variant.getProductFlavors(),
-                new Function<String, Collection<File>>() {
-                  @Override
-                  public Collection<File> apply(String f) {
-                    if (project == null) {
-                      return Collections.<File>emptySet();
-                    }
-                    final ProductFlavorContainer flavor = 
-                        ProductFlavors.findFlavorByName(project.getProductFlavors(), f);
-                    if (flavor == null) {
-                      return Collections.<File>emptySet();
-                    }
-                    return flavor.getSourceProvider().getJavaDirectories();
-                  }
-                }))
-        : Collections.<File>emptySet();
-    Collection<File> generatedJavaDirs = variant != null
-        ? variant.getMainArtifact().getGeneratedSourceFolders()
-        : Collections.<File>emptyList();
-    return Iterables.concat(
-        javaDirs,
-        typeJavaDirs,
-        variantJavaDirs,
-        generatedJavaDirs);
-  }
-  
-  private Result findAarLibraryRoots(final URL binaryRoot) {
-    // FileUtil.getArchiveFile(binaryRoot);
-    AndroidLibrary aLib = null;
-    Variant variant = buildConfig.getCurrentVariant();
-    if (variant != null) {
-      aLib = Iterables.find(
-          variant.getMainArtifact().getDependencies().getLibraries(), 
-          new Predicate<AndroidLibrary>() {
+    public GradleSourceForBinaryQuery(BuildVariant buildConfig) {
+        this.buildConfig = buildConfig;
+    }
 
+    @Override
+    public void setAndroidProject(AndroidProject project) {
+        this.project = project;
+    }
+
+    @Override
+    public Result findSourceRoots2(final URL binaryRoot) {
+        Result r = findAarLibraryRoots(binaryRoot);
+        if (r != null) {
+            return r;
+        }
+        if (project == null) {
+            return null;
+        }
+        final File binRootDir = FileUtil.archiveOrDirForURL(binaryRoot);
+        if (binRootDir == null) {
+            return null;
+        }
+
+        Variant variant = Iterables.find(
+                project.getVariants(),
+                new Predicate<Variant>() {
             @Override
-            public boolean apply(AndroidLibrary lib) {
-              URL libUrl = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(lib.getJarFile()));
-              return binaryRoot.equals(libUrl);
+            public boolean apply(Variant input) {
+                return binRootDir.equals(input.getMainArtifact().getClassesFolder());
             }
-          },
-          null);
+        },
+                null);
+        if (variant != null) {
+            Iterable<FileObject> srcRoots = Iterables.filter(
+                    Iterables.transform(
+                            sourceRootsForVariant(variant),
+                            new Function<File, FileObject>() {
+                        @Override
+                        public FileObject apply(File f) {
+                            return FileUtil.toFileObject(f);
+                        }
+                    }),
+                    Predicates.notNull());
+            return new GradleSourceResult(srcRoots);
+        }
+        return null;
     }
-    if (aLib == null) {
-      return null;
+
+    private Iterable<? extends File> sourceRootsForVariant(Variant variant) {
+        Collection<File> javaDirs = project != null
+                ? project.getDefaultConfig().getSourceProvider().getJavaDirectories()
+                : Collections.<File>emptySet();
+        BuildTypeContainer buildTypeContainer = buildConfig.getCurrentBuildTypeContainer();
+        Collection<File> typeJavaDirs = buildTypeContainer != null
+                ? buildTypeContainer.getSourceProvider().getJavaDirectories()
+                : Collections.<File>emptySet();
+        Iterable<File> variantJavaDirs = variant != null
+                ? Iterables.concat(
+                        Iterables.transform(
+                                variant.getProductFlavors(),
+                                new Function<String, Collection<File>>() {
+                            @Override
+                            public Collection<File> apply(String f) {
+                                if (project == null) {
+                                    return Collections.<File>emptySet();
+                                }
+                                final ProductFlavorContainer flavor
+                                        = ProductFlavors.findFlavorByName(project.getProductFlavors(), f);
+                                if (flavor == null) {
+                                    return Collections.<File>emptySet();
+                                }
+                                return flavor.getSourceProvider().getJavaDirectories();
+                            }
+                        }))
+                : Collections.<File>emptySet();
+        Collection<File> generatedJavaDirs = variant != null
+                ? variant.getMainArtifact().getGeneratedSourceFolders()
+                : Collections.<File>emptyList();
+        return Iterables.concat(
+                javaDirs,
+                typeJavaDirs,
+                variantJavaDirs,
+                generatedJavaDirs);
     }
+
+    private Result findAarLibraryRoots(final URL binaryRoot) {
+        // FileUtil.getArchiveFile(binaryRoot);
+        AndroidLibrary aLib = null;
+        Variant variant = buildConfig.getCurrentVariant();
+        if (variant != null) {
+            aLib = Iterables.find(
+                    variant.getMainArtifact().getDependencies().getLibraries(),
+                    new Predicate<AndroidLibrary>() {
+
+                @Override
+                public boolean apply(AndroidLibrary lib) {
+                    URL libUrl = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(lib.getJarFile()));
+                    return binaryRoot.equals(libUrl);
+                }
+            },
+                    null);
+        }
+        if (aLib == null) {
+            return null;
+        }
 //    if (aLib instanceof AndroidLibraryProject) {
 //      AndroidLibraryProject libPrj = (AndroidLibraryProject) aLib;
 //      LOG.log(Level.FINE, "Found binary from AndroidLibrary {0}", libPrj.getProjectPath());
 //    } else {
-      LOG.log(Level.FINE, "Found unknown binary from AndroidLibrary {0}", aLib.getJarFile());
+        LOG.log(Level.FINE, "Found unknown binary from AndroidLibrary {0}", aLib.getJarFile());
 //    }
-    return null;
-  }
-
-  @Override
-  public GradleSourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
-    return findSourceRoots2(binaryRoot);
-  }
-  
-  private class GradleSourceResult implements SourceForBinaryQueryImplementation2.Result {
-
-    private final Iterable<FileObject> sourceRoots;
-
-    public GradleSourceResult(Iterable<FileObject> sourceRoots) {
-      this.sourceRoots = sourceRoots;
-    }
-    
-    public @Override
-    FileObject[] getRoots() {
-      List<FileObject> roots = Lists.newArrayList(sourceRoots);
-      LOG.log(Level.FINE, "return sources for binary in root {0}: {1}", new Object[]{project, roots});
-      return roots.toArray(new FileObject[roots.size()]);
-    }
-
-    public @Override
-    void addChangeListener(ChangeListener l) {
-    }
-
-    public @Override
-    void removeChangeListener(ChangeListener l) {
+        return null;
     }
 
     @Override
-    public boolean preferSources() {
-      return true;
+    public GradleSourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
+        return findSourceRoots2(binaryRoot);
     }
 
-  }
+    private class GradleSourceResult implements SourceForBinaryQueryImplementation2.Result {
+
+        private final Iterable<FileObject> sourceRoots;
+
+        public GradleSourceResult(Iterable<FileObject> sourceRoots) {
+            this.sourceRoots = sourceRoots;
+        }
+
+        public @Override
+        FileObject[] getRoots() {
+            List<FileObject> roots = Lists.newArrayList(sourceRoots);
+            LOG.log(Level.FINE, "return sources for binary in root {0}: {1}", new Object[]{project, roots});
+            return roots.toArray(new FileObject[roots.size()]);
+        }
+
+        public @Override
+        void addChangeListener(ChangeListener l) {
+        }
+
+        public @Override
+        void removeChangeListener(ChangeListener l) {
+        }
+
+        @Override
+        public boolean preferSources() {
+            return true;
+        }
+
+    }
 }

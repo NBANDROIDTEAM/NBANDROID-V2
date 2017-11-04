@@ -15,7 +15,10 @@ package org.nbandroid.netbeans.gradle.apk;
 
 import org.openide.filesystems.FileObject;
 
-/** Marker interface to decorate objects that can be installed on Android device. */
+/**
+ * Marker interface to decorate objects that can be installed on Android device.
+ */
 public interface Deployable {
-  FileObject getDeployableFile();
+
+    FileObject getDeployableFile();
 }

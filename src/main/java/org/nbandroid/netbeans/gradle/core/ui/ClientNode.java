@@ -12,7 +12,6 @@
  *  limitations under the License.
  *  under the License.
  */
-
 package org.nbandroid.netbeans.gradle.core.ui;
 
 import com.android.ddmlib.AndroidDebugBridge;
@@ -50,12 +49,12 @@ public class ClientNode extends AbstractNode implements AndroidDebugBridge.IClie
 
     private final Client client;
 
-    ClientNode (final Client client) {
-        super (Children.LEAF, Lookups.fixed(client));
+    ClientNode(final Client client) {
+        super(Children.LEAF, Lookups.fixed(client));
         assert client != null;
         this.client = client;
         this.setIconBaseWithExtension("org/netbeans/modules/android/core/resources/client.png");
-        updateInfo ();
+        updateInfo();
         AndroidDebugBridge.addClientChangeListener(this);
         this.addNodeListener(new NodeListener() {
 
@@ -83,7 +82,7 @@ public class ClientNode extends AbstractNode implements AndroidDebugBridge.IClie
     }
     //where
 
-    private void updateInfo () {
+    private void updateInfo() {
         final ClientData cd = this.client.getClientData();
         final int pid = cd.getPid();
         String name = cd.getClientDescription();
@@ -93,7 +92,7 @@ public class ClientNode extends AbstractNode implements AndroidDebugBridge.IClie
         }
         this.setDisplayName(name);
         final String desc = cd.getClientDescription();
-        final String description = NbBundle.getMessage(ClientNode.class, "TIP_Client",  desc == null ? "" : desc, Integer.toString(pid));
+        final String description = NbBundle.getMessage(ClientNode.class, "TIP_Client", desc == null ? "" : desc, Integer.toString(pid));
         if (description != null) {
             this.setShortDescription(description);
         }
@@ -104,7 +103,6 @@ public class ClientNode extends AbstractNode implements AndroidDebugBridge.IClie
         List<? extends Action> actions = Utilities.actionsForPath("UI/AndroidDevices/AndroidDeviceClients/Actions");
         return actions.toArray(new Action[actions.size()]);
     }
-
 
     @Override
     public PropertySet[] getPropertySets() {
@@ -142,17 +140,17 @@ public class ClientNode extends AbstractNode implements AndroidDebugBridge.IClie
                 return client.getClientData().getVmIdentifier();
             }
         });
-        ps.put (new PropertySupport.ReadOnly<Integer>("PROP_Port",
+        ps.put(new PropertySupport.ReadOnly<Integer>("PROP_Port",
                 Integer.class,
                 NbBundle.getMessage(ClientNode.class, "PROP_Port"),
-                NbBundle.getMessage(ClientNode.class, "DESC_Port")){
+                NbBundle.getMessage(ClientNode.class, "DESC_Port")) {
 
             @Override
             public Integer getValue() throws IllegalAccessException, InvocationTargetException {
                 return client.getDebuggerListenPort();
             }
         });
-        return new PropertySet[] {
+        return new PropertySet[]{
             ps
         };
     }
@@ -169,14 +167,13 @@ public class ClientNode extends AbstractNode implements AndroidDebugBridge.IClie
         }
     }
 
-
     public static GCAction createGCAction() {
         return new GCAction();
     }
 
     public static class GCAction extends NodeAction {
 
-        public GCAction () {
+        public GCAction() {
 
         }
 
@@ -190,7 +187,7 @@ public class ClientNode extends AbstractNode implements AndroidDebugBridge.IClie
 
         @Override
         protected boolean enable(Node[] activatedNodes) {
-            return activatedNodes.length == 1 && activatedNodes[0].getLookup().lookup(Client.class)!=null;
+            return activatedNodes.length == 1 && activatedNodes[0].getLookup().lookup(Client.class) != null;
         }
 
         @Override
@@ -211,7 +208,7 @@ public class ClientNode extends AbstractNode implements AndroidDebugBridge.IClie
 
     public static class KillAction extends NodeAction {
 
-        public KillAction () {
+        public KillAction() {
 
         }
 
@@ -222,7 +219,7 @@ public class ClientNode extends AbstractNode implements AndroidDebugBridge.IClie
             assert client != null;
             Object option = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
                     NbBundle.getMessage(ClientNode.class, "TXT_Kill",
-                    Integer.toString(client.getClientData().getPid()))));
+                            Integer.toString(client.getClientData().getPid()))));
             if (option == DialogDescriptor.YES_OPTION) {
                 client.kill();
             }
@@ -230,7 +227,7 @@ public class ClientNode extends AbstractNode implements AndroidDebugBridge.IClie
 
         @Override
         protected boolean enable(Node[] activatedNodes) {
-            return activatedNodes.length == 1 && activatedNodes[0].getLookup().lookup(Client.class)!=null;
+            return activatedNodes.length == 1 && activatedNodes[0].getLookup().lookup(Client.class) != null;
         }
 
         @Override

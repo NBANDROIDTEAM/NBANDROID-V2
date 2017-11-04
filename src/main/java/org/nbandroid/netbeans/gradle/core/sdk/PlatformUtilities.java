@@ -25,8 +25,8 @@ import com.android.utils.ILogger;
 public class PlatformUtilities {
 
     public static AvdManager createAvdManager(AndroidSdkHandler sdkMgr) throws AndroidLocationException {
-    final ILogger sdkLog = SdkLogProvider.createLogger(true);
-      final AvdManager avdMgr = AvdManager.getInstance(sdkMgr, sdkLog);
-    return avdMgr;
-  }
+        final ILogger sdkLog = SdkLogProvider.createLogger(true);
+        final AvdManager avdMgr = AvdManager.getInstance(sdkMgr, sdkLog);
+        return avdMgr;
+    }
 }

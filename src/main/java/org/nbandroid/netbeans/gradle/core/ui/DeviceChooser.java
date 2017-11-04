@@ -12,7 +12,6 @@
  *  limitations under the License.
  *  under the License.
  */
-
 package org.nbandroid.netbeans.gradle.core.ui;
 
 import com.android.ddmlib.IDevice;
@@ -26,10 +25,10 @@ import org.nbandroid.netbeans.gradle.avd.AvdSelector.LaunchData;
  */
 public interface DeviceChooser {
 
-  /**
-   * Selects a device
-   *
-   * @return device info or {@code null}
-   */
-  LaunchData selectDevice(AvdManager avdManager, IDevice[] devices);
+    /**
+     * Selects a device
+     *
+     * @return device info or {@code null}
+     */
+    LaunchData selectDevice(AvdManager avdManager, IDevice[] devices);
 }

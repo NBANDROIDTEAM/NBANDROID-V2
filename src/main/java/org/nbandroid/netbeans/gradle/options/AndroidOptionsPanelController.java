@@ -29,92 +29,92 @@ import org.openide.util.NbBundle;
 @NbBundle.Messages("OptionsCategory_Name_AndroidPlatform=Android")
 public final class AndroidOptionsPanelController extends OptionsPanelController {
 
-  private AndroidOptionsSubPanel panel;
-  private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-  private boolean changed;
-  private StatsCollector statsCollector;
-  private boolean enableStats;
+    private AndroidOptionsSubPanel panel;
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private boolean changed;
+    private StatsCollector statsCollector;
+    private boolean enableStats;
 
-  public AndroidOptionsPanelController() {
-  }
-
-  @Override
-  public void update() {
-    changed = false;
-    statsCollector = StatsCollector.getDefault();
-    enableStats = statsCollector.isEnabled();
-    getPanel().load();
-    // force validation
-    pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
-  }
-
-  @Override
-  public void applyChanges() {
-    if (changed) {
-      getPanel().store();
-      if (statsCollector.isEnabled() != enableStats) {
-        statsCollector.setEnabled(enableStats);
-      }
-      changed = false;
+    public AndroidOptionsPanelController() {
     }
-  }
 
-  @Override
-  public void cancel() {
-    // need not do anything special, if no changes have been persisted yet
-  }
-
-  public boolean isEnableStats() {
-    return enableStats;
-  }
-
-  public void setEnableStats(boolean enableStats) {
-    this.enableStats = enableStats;
-    markChanged();
-  }
-
-  @Override
-  public boolean isValid() {
-    return !changed || getPanel().valid();
-  }
-
-  @Override
-  public boolean isChanged() {
-    return changed;
-  }
-
-  @Override
-  public HelpCtx getHelpCtx() {
-    return null; // new HelpCtx("...ID") if you have a help set
-  }
-
-  @Override
-  public JComponent getComponent(Lookup masterLookup) {
-    return getPanel();
-  }
-
-  @Override
-  public void addPropertyChangeListener(PropertyChangeListener l) {
-    pcs.addPropertyChangeListener(l);
-  }
-
-  @Override
-  public void removePropertyChangeListener(PropertyChangeListener l) {
-    pcs.removePropertyChangeListener(l);
-  }
-
-  private AndroidOptionsSubPanel getPanel() {
-    if (panel == null) {
-      panel = new AndroidPlatformPanel(this);
+    @Override
+    public void update() {
+        changed = false;
+        statsCollector = StatsCollector.getDefault();
+        enableStats = statsCollector.isEnabled();
+        getPanel().load();
+        // force validation
+        pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
-    return panel;
-  }
 
-  public void markChanged() {
-    if (!changed) {
-      changed = true;
-      pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
+    @Override
+    public void applyChanges() {
+        if (changed) {
+            getPanel().store();
+            if (statsCollector.isEnabled() != enableStats) {
+                statsCollector.setEnabled(enableStats);
+            }
+            changed = false;
+        }
     }
-    pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
-  }
+
+    @Override
+    public void cancel() {
+        // need not do anything special, if no changes have been persisted yet
+    }
+
+    public boolean isEnableStats() {
+        return enableStats;
+    }
+
+    public void setEnableStats(boolean enableStats) {
+        this.enableStats = enableStats;
+        markChanged();
+    }
+
+    @Override
+    public boolean isValid() {
+        return !changed || getPanel().valid();
+    }
+
+    @Override
+    public boolean isChanged() {
+        return changed;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return null; // new HelpCtx("...ID") if you have a help set
+    }
+
+    @Override
+    public JComponent getComponent(Lookup masterLookup) {
+        return getPanel();
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
+    }
+
+    private AndroidOptionsSubPanel getPanel() {
+        if (panel == null) {
+            panel = new AndroidPlatformPanel(this);
+        }
+        return panel;
+    }
+
+    public void markChanged() {
+        if (!changed) {
+            changed = true;
+            pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
+        }
+        pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
+    }
 }

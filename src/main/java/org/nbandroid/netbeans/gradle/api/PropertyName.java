@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.nbandroid.netbeans.gradle.api;
 
 /**
@@ -20,20 +19,20 @@ package org.nbandroid.netbeans.gradle.api;
  */
 public enum PropertyName {
 
-  JAR_LIBS_DIR("jar.libs.dir"),
-  SRC_DIR("source.dir"),
-  SDK_DIR("sdk.dir"),
-  TARGET("target"),
-  TEST_PROJECT_DIR("tested.project.dir");
+    JAR_LIBS_DIR("jar.libs.dir"),
+    SRC_DIR("source.dir"),
+    SDK_DIR("sdk.dir"),
+    TARGET("target"),
+    TEST_PROJECT_DIR("tested.project.dir");
 
-  private final String name;
+    private final String name;
 
-  private PropertyName(String name) {
-    this.name = name;
-  }
+    private PropertyName(String name) {
+        this.name = name;
+    }
 
-  public String getName() {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
 }

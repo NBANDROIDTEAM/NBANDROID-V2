@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.nbandroid.netbeans.gradle.api;
 
 import com.android.ide.common.xml.AndroidManifestParser;
@@ -31,50 +30,51 @@ import org.openide.filesystems.FileObject;
 import org.xml.sax.SAXException;
 
 public class AndroidProjects {
-  private static final Logger LOG = Logger.getLogger(AndroidProjects.class.getName());
 
-  private AndroidProjects() {}
+    private static final Logger LOG = Logger.getLogger(AndroidProjects.class.getName());
 
-  @Nullable
-  public static ManifestData parseProjectManifest(Project project) {
-    if (project == null) {
-      return null;
+    private AndroidProjects() {
     }
-    AndroidManifestSource ams = project.getLookup().lookup(AndroidManifestSource.class);
-    FileObject androidManifest = ams != null ? ams.get() : null;
-    if (androidManifest == null) {
-      LOG.log(Level.WARNING, "No AndroidManifest.xml in {0}", project);
-      return null;
-    }
-    try {
-      return parseProjectManifest(androidManifest.getInputStream());
-    } catch (FileNotFoundException ex) {
-      LOG.log(Level.WARNING, null, ex);
-    }
-    return null;
-  }
 
-  public static ManifestData parseProjectManifest(InputStream manifestIS) {
-    try {
-      return AndroidManifestParser.parse(manifestIS);
-    } catch (ParserConfigurationException ex) {
-      LOG.log(Level.INFO, "AndroidManifest.xml cannot be parsed", ex);
-    } catch (StreamException ex) {
-      LOG.log(Level.INFO, "AndroidManifest.xml cannot be parsed", ex);
-    } catch (IOException ioe) {
-      LOG.log(Level.INFO, "AndroidManifest.xml cannot be parsed", ioe);
-    } catch (SAXException saxe) {
-      LOG.log(Level.INFO, "AndroidManifest.xml cannot be parsed", saxe);
-    } finally {
-          try {
-              manifestIS.close();
-          } catch (IOException ex) {
+    @Nullable
+    public static ManifestData parseProjectManifest(Project project) {
+        if (project == null) {
+            return null;
         }
-      }
+        AndroidManifestSource ams = project.getLookup().lookup(AndroidManifestSource.class);
+        FileObject androidManifest = ams != null ? ams.get() : null;
+        if (androidManifest == null) {
+            LOG.log(Level.WARNING, "No AndroidManifest.xml in {0}", project);
+            return null;
+        }
+        try {
+            return parseProjectManifest(androidManifest.getInputStream());
+        } catch (FileNotFoundException ex) {
+            LOG.log(Level.WARNING, null, ex);
+        }
+        return null;
+    }
 
-    return null;
-  }
+    public static ManifestData parseProjectManifest(InputStream manifestIS) {
+        try {
+            return AndroidManifestParser.parse(manifestIS);
+        } catch (ParserConfigurationException ex) {
+            LOG.log(Level.INFO, "AndroidManifest.xml cannot be parsed", ex);
+        } catch (StreamException ex) {
+            LOG.log(Level.INFO, "AndroidManifest.xml cannot be parsed", ex);
+        } catch (IOException ioe) {
+            LOG.log(Level.INFO, "AndroidManifest.xml cannot be parsed", ioe);
+        } catch (SAXException saxe) {
+            LOG.log(Level.INFO, "AndroidManifest.xml cannot be parsed", saxe);
+        } finally {
+            try {
+                manifestIS.close();
+            } catch (IOException ex) {
+            }
+        }
 
+        return null;
+    }
 
     public static DalvikPlatform projectPlatform(Project project) {
         DalvikPlatformResolver dpr = project.getLookup().lookup(DalvikPlatformResolver.class);
@@ -87,19 +87,18 @@ public class AndroidProjects {
             }
         }
         LOG.log(Level.INFO, "could not find platform for {0}", project);
-      return null;
+        return null;
     }
 
-  
     public static boolean isAndroidMavenProject(Project p) {
-    DalvikPlatformResolver dpr = p != null ? p.getLookup().lookup(DalvikPlatformResolver.class) : null;
-    if (dpr == null) {
-      return false;
+        DalvikPlatformResolver dpr = p != null ? p.getLookup().lookup(DalvikPlatformResolver.class) : null;
+        if (dpr == null) {
+            return false;
+        }
+        return dpr.findDalvikPlatform() != null;
     }
-    return dpr.findDalvikPlatform() != null;
-  }
-  
-  public static ReferenceResolver noReferenceResolver() {
-    return new NullRefResolver();
-  }
+
+    public static ReferenceResolver noReferenceResolver() {
+        return new NullRefResolver();
+    }
 }

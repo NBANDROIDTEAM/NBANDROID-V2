@@ -47,15 +47,15 @@ import org.openide.util.RequestProcessor;
  */
 public class LogReader {
 
-    public final static String PROPERTY_DEVICE_LIST                 = "DEVICE_LIST";
-    public final static String PROPERTY_CURRENT_DEVICE              = "CURRENT_DEVICE";
-    public final static String PROPERTY_CURRENT_DEVICE_STATE        = "CURRENT_DEVICE_STATE";
-    
+    public final static String PROPERTY_DEVICE_LIST = "DEVICE_LIST";
+    public final static String PROPERTY_CURRENT_DEVICE = "CURRENT_DEVICE";
+    public final static String PROPERTY_CURRENT_DEVICE_STATE = "CURRENT_DEVICE_STATE";
+
     private static final Logger LOG = Logger.getLogger(LogReader.class.getName());
     // These messages will not be added to log as events
     private static final Set<String> ignoredLines = ImmutableSet.of(
-                "--------- beginning of /dev/log/main",
-                "--------- beginning of /dev/log/system");
+            "--------- beginning of /dev/log/main",
+            "--------- beginning of /dev/log/system");
 
     public static enum CurrentDeviceState {
         ATTACHED_AND_LOGGING,
@@ -71,23 +71,22 @@ public class LogReader {
     private LogCatOutputReceiver receiver;
     private LogEventInfo lastLogEventInfo;
     private static final Pattern sLogPattern = Pattern.compile(
-            "^\\[\\s\\d\\d-\\d\\d\\s(\\d\\d:\\d\\d:\\d\\d\\.\\d+)" +
-            "\\s+(\\d*):((?:0x[0-9a-fA-F]+)|(?:\\s*\\d+))\\s([VDIWE])/(.*)\\]$");
+            "^\\[\\s\\d\\d-\\d\\d\\s(\\d\\d:\\d\\d:\\d\\d\\.\\d+)"
+            + "\\s+(\\d*):((?:0x[0-9a-fA-F]+)|(?:\\s*\\d+))\\s([VDIWE])/(.*)\\]$");
     private final AndroidDebugBridge adb;
     private boolean shouldBeReading = false;
     private volatile boolean reading = true;
     private Timer checkReadingStatusTimer;
     private int checkingPeriod = 10000;
 
-    private Map<String,Map<Integer, String[]>> processNameCache = new HashMap<>();
-    
-    private Map<String, Collection<LogEvent>> logEventCache = new HashMap<>();
+    private Map<String, Map<Integer, String[]>> processNameCache = new HashMap<>();
 
+    private Map<String, Collection<LogEvent>> logEventCache = new HashMap<>();
 
     public LogReader() {
 
         changeSupport = new PropertyChangeSupport(this);
-        listeners     = new HashSet<>();
+        listeners = new HashSet<>();
 
         adb = AndroidDebugBridgeFactory.getDefault();
         checkReadingStatusTimer = new Timer();
@@ -103,88 +102,81 @@ public class LogReader {
                         infoMessage("Trying to reconnect to the device in " + checkingPeriod / 1000 + " seconds.");
                         startReading();
                     }
-                }
-                catch(Exception e) {
+                } catch (Exception e) {
                     LOG.log(Level.SEVERE, "Unexpected exception on reconnecting the device.", e);
                 }
             }
         }, checkingPeriod, checkingPeriod);
     }
-    
-    
+
     public Set<String> getLoggedDevices() {
         return logEventCache.keySet();
     }
-    
-    
+
     public Collection<LogEvent> getLogEventsForDevice(String device) {
         return logEventCache.get(device);
     }
-    
-    
+
     public String getCurrentDevice() {
         if (requestedDeviceSerial != null) {
             return requestedDeviceSerial;
         }
-        
+
         if (currentDevice != null) {
             return currentDevice.getSerialNumber();
         }
-        
+
         return null;
     }
-    
-    
+
     public void setCurrentDevice(String device) {
-        if (device!=null && !device.equals(requestedDeviceSerial)) {
+        if (device != null && !device.equals(requestedDeviceSerial)) {
             // set new device
             this.requestedDeviceSerial = device;
-            
+
             if (receiver == null) {
                 startReading();
-            }
-            else {
+            } else {
                 // stop reading on current device,
                 // reading will be restarted 
                 stopReading();
             }
         }
     }
-    
-    
+
     public CurrentDeviceState getCurrentDeviceState() {
         // device is currently unavailable
         if (currentDevice == null) {
             return CurrentDeviceState.DETACHED;
         }
-        
+
         // is the "current device" the one we have requested?
         if (currentDevice.getSerialNumber().equals(requestedDeviceSerial) == false) {
             return CurrentDeviceState.DETACHED;
         }
-        
+
         // device is offline
         if (!deviceReallyConnected()) {
             return CurrentDeviceState.DETACHED;
         }
-        
+
         // is currently receiving events?
         if (receiver == null || !reading) {
             return CurrentDeviceState.ATTACHED;
         }
-        
+
         // device is ready!
         return CurrentDeviceState.ATTACHED_AND_LOGGING;
     }
 
     private boolean deviceReallyConnected() {
-        if (adb == null || !adb.isConnected() || !reading || currentDevice == null || 
-            currentDevice.isOffline() || !currentDevice.isOnline() || !isReading()) {
+        if (adb == null || !adb.isConnected() || !reading || currentDevice == null
+                || currentDevice.isOffline() || !currentDevice.isOnline() || !isReading()) {
             return false;
         }
         boolean gotIt = false;
         LOG.log(Level.INFO, "searching for device with sn: {0}", currentDevice.getSerialNumber());
-        for (IDevice d: adb.getDevices()) {
+        for (IDevice d : adb.getDevices()) {
             LOG.log(Level.INFO, "device: {0}", d.getSerialNumber());
             if (d.getSerialNumber().equals(currentDevice.getSerialNumber())) {
                 gotIt = true;
@@ -196,16 +188,15 @@ public class LogReader {
         }
         return true;
     }
-    
-    
+
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         this.changeSupport.addPropertyChangeListener(listener);
     }
-    
+
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         this.changeSupport.removePropertyChangeListener(listener);
     }
-    
+
     private void firePropertyChange(String property, Object oldVal, Object newVal) {
         this.changeSupport.firePropertyChange(property, oldVal, newVal);
     }
@@ -216,7 +207,6 @@ public class LogReader {
             errorMessage("Error - failed to initialize connection with adb");
         }
     }
-
 
     public void removeAllLogListeners() {
         listeners.clear();
@@ -248,7 +238,7 @@ public class LogReader {
 
         private final IDevice loggedDevice;
         public boolean isCancelled = false;
-        
+
         public LogCatOutputReceiver(IDevice device) {
             super();
             setTrimLine(false);
@@ -262,7 +252,8 @@ public class LogReader {
             }
         }
 
-        @Override public boolean isCancelled() {
+        @Override
+        public boolean isCancelled() {
             return isCancelled;
         }
     }
@@ -273,42 +264,42 @@ public class LogReader {
             return;
         }
         if (!adb.isConnected()) {
-          RequestProcessor.getDefault().post(new Runnable() {
+            RequestProcessor.getDefault().post(new Runnable() {
 
-            @Override public void run() {
-              adb.restart();
-              reallyStartReading();
-            }
+                @Override
+                public void run() {
+                    adb.restart();
+                    reallyStartReading();
+                }
 
-          });
+            });
         } else {
             reallyStartReading();
         }
     }
 
     private void reallyStartReading() {
-        String lastDeviceSerial = currentDevice!=null ? currentDevice.getSerialNumber() : "";
+        String lastDeviceSerial = currentDevice != null ? currentDevice.getSerialNumber() : "";
         IDevice[] devs = adb.getDevices();
-        
+
         // clear the current device, because the device may have gone
         currentDevice = null;
 
         if (requestedDeviceSerial == null) {
             currentDevice = null;
-            
+
             // if no device was requested, select the first available
             if (devs != null && devs.length > 0) {
                 requestedDeviceSerial = devs[0].getSerialNumber();
-            }
-            else {
+            } else {
                 // previous device has gone?
                 if (lastDeviceSerial.isEmpty() == false) {
                     changeSupport.firePropertyChange(PROPERTY_CURRENT_DEVICE, lastDeviceSerial, "");
                 }
-                
+
                 // no devices available - announce the current state and stop here
                 changeSupport.firePropertyChange(PROPERTY_CURRENT_DEVICE_STATE, null, getCurrentDeviceState());
-                
+
                 return;
             }
         }
@@ -316,7 +307,7 @@ public class LogReader {
         // always select current device by requested serial,
         // because the device object may have changed when was disconnected
         if (devs != null) {
-            for(IDevice dev : devs) {
+            for (IDevice dev : devs) {
                 if (dev.getSerialNumber().equals(requestedDeviceSerial)) {
                     currentDevice = dev;
                     break;
@@ -325,7 +316,7 @@ public class LogReader {
         }
 
         // get the serial of the current device (or empty string, if none connected)
-        String currentDeviceSerial = currentDevice!=null ? currentDevice.getSerialNumber() : "";
+        String currentDeviceSerial = currentDevice != null ? currentDevice.getSerialNumber() : "";
 
         // notify all clients, if the selected device has changed
         if (!lastDeviceSerial.equals(currentDeviceSerial)) {
@@ -338,7 +329,8 @@ public class LogReader {
             receiver = new LogCatOutputReceiver(currentDevice);
             RequestProcessor.getDefault().post(new Runnable() {
 
-                @Override public void run() {
+                @Override
+                public void run() {
                     reading = true;
 
                     // announce the new device state
@@ -351,14 +343,14 @@ public class LogReader {
                     try {
                         currDevice.executeShellCommand("logcat -v long", receiver);
                     } catch (TimeoutException | AdbCommandRejectedException | ShellCommandUnresponsiveException | IOException e) {
-                      LOG.log(Level.FINE, null, e);
-                      reading = false;
+                        LOG.log(Level.FINE, null, e);
+                        reading = false;
                     } finally {
                         receiver = null;
-                        
+
                         // announce the new device state
                         changeSupport.firePropertyChange(PROPERTY_CURRENT_DEVICE_STATE, null, getCurrentDeviceState());
-                        
+
                         // when the device has changed, we restart the logging process
                         String serial = currDevice.getSerialNumber();
                         if (!serial.equals(requestedDeviceSerial)) {
@@ -374,7 +366,7 @@ public class LogReader {
         if (receiver != null) {
             receiver.isCancelled = true;
         }
-        
+
         shouldBeReading = false;
     }
 
@@ -384,7 +376,7 @@ public class LogReader {
         }
         return false;
     }
-    
+
     LogEventInfo parseLine(IDevice device, String line) {
         LOG.log(Level.FINER, line);
         Matcher matcher = sLogPattern.matcher(line);
@@ -428,22 +420,22 @@ public class LogReader {
                     // tabs seem to display as only 1 tab so we replace the leading tabs
                     // by 4 spaces.
                     String message = line.replaceAll("\t", "    "); //$NON-NLS-1$ //$NON-NLS-2$
-                    if(ignoredLines.contains(message)) {
+                    if (ignoredLines.contains(message)) {
                         continue;
                     }
 
                     LogEvent event = new LogEvent(lastLogEventInfo, message);
-                    
+
                     Collection<LogEvent> loggedEvents = logEventCache.get(device.getSerialNumber());
                     if (loggedEvents == null) {
                         loggedEvents = new LinkedHashSet<>();
                         logEventCache.put(device.getSerialNumber(), loggedEvents);
-                        
+
                         // notify listeners for the new device
                         firePropertyChange(PROPERTY_DEVICE_LIST, null, getLoggedDevices());
                     }
-                    
-                    if(!loggedEvents.contains(event)) {
+
+                    if (!loggedEvents.contains(event)) {
                         loggedEvents.add(event);
                         sendNewLogEvent(event);
                     }
@@ -452,15 +444,15 @@ public class LogReader {
         }
     }
 
-
     /**
-     * Get a reference to the name of the process with the given ID.
-     * The reference may contain a null-object, couldn't be retrieved,
-     * but may be available later.
+     * Get a reference to the name of the process with the given ID. The
+     * reference may contain a null-object, couldn't be retrieved, but may be
+     * available later.
+     *
      * @param device Device, where the process runs.
-     * @param pid    ID of the process.
-     * @return       A reference to a string containing the process name
-     *               or {@code null}, if the process couldn't be retrieved yet.
+     * @param pid ID of the process.
+     * @return A reference to a string containing the process name or
+     * {@code null}, if the process couldn't be retrieved yet.
      */
     private String[] getProcessName(IDevice device, int pid) {
         Map<Integer, String[]> cache = processNameCache.get(device.getSerialNumber());
@@ -474,9 +466,9 @@ public class LogReader {
             nameref = new String[1];
             cache.put(pid, nameref);
         }
-        
+
         if (nameref[0] == null) {
-            for(Client client : device.getClients()) {
+            for (Client client : device.getClients()) {
                 ClientData data = client.getClientData();
 
                 if (data.getPid() == pid) {

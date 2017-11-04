@@ -13,13 +13,14 @@
  */
 package org.nbandroid.netbeans.gradle.api;
 
-import org.nbandroid.netbeans.gradle.api.ResourceRef;
-
 /**
  *
  * @author radim
  */
 public interface ReferenceResolver {
-  /** Return a list of project references. */
-  Iterable<ResourceRef> getReferences();
+
+    /**
+     * Return a list of project references.
+     */
+    Iterable<ResourceRef> getReferences();
 }

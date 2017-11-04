@@ -12,7 +12,6 @@
  *  limitations under the License.
  *  under the License.
  */
-
 package org.nbandroid.netbeans.gradle.core.sdk;
 
 import com.android.utils.ILogger;
@@ -21,62 +20,64 @@ import java.util.logging.Logger;
 
 /**
  * Utility to create SDK loggers.
+ *
  * @author radim
  */
 public class SdkLogProvider {
 
-  private static final Logger LOG = Logger.getLogger(SdkLogProvider.class.getName());
+    private static final Logger LOG = Logger.getLogger(SdkLogProvider.class.getName());
 
-  private SdkLogProvider() {
-  }
-
-  /**
-   * Creates an instance of {@link ILogger}.
-   *
-   * @param errorReportOn {@code true} to log errors to standard Java utilities logging API
-   * @return log consumer
-   */
-  public static ILogger createLogger(final boolean errorReportOn) {
-    return new AndroidToolsLogger(errorReportOn);
-  }
-
-  private static class AndroidToolsLogger implements ILogger {
-
-    private final boolean errorReportOn;
-
-    public AndroidToolsLogger(boolean errorReportOn) {
-      this.errorReportOn = errorReportOn;
+    private SdkLogProvider() {
     }
 
-    @Override
-    public void warning(String warningFormat, Object... args) {
-      try {
-        LOG.log(errorReportOn ? Level.WARNING : Level.FINER, String.format(warningFormat, args));
-      } catch (Exception ex) {
-        LOG.log(Level.FINE, null, ex);
-      }
+    /**
+     * Creates an instance of {@link ILogger}.
+     *
+     * @param errorReportOn {@code true} to log errors to standard Java
+     * utilities logging API
+     * @return log consumer
+     */
+    public static ILogger createLogger(final boolean errorReportOn) {
+        return new AndroidToolsLogger(errorReportOn);
     }
 
-    @Override
-    public void error(Throwable t, String errorFormat, Object... args) {
-      try {
-        if (errorFormat != null) {
-          LOG.log(errorReportOn ? Level.SEVERE : Level.FINER, String.format(errorFormat, args));
+    private static class AndroidToolsLogger implements ILogger {
+
+        private final boolean errorReportOn;
+
+        public AndroidToolsLogger(boolean errorReportOn) {
+            this.errorReportOn = errorReportOn;
         }
-        LOG.log(errorReportOn ? Level.SEVERE : Level.FINER, null, t);
-      } catch (Exception ex) {
-        LOG.log(Level.FINE, null, ex);
-      }
-    }
 
-    @Override
-    public void info(String string, Object... os) {
-      LOG.log(Level.INFO, String.format(string, os));
-    }
+        @Override
+        public void warning(String warningFormat, Object... args) {
+            try {
+                LOG.log(errorReportOn ? Level.WARNING : Level.FINER, String.format(warningFormat, args));
+            } catch (Exception ex) {
+                LOG.log(Level.FINE, null, ex);
+            }
+        }
 
-    @Override
-    public void verbose(String string, Object... os) {
-      LOG.log(Level.FINE, String.format(string, os));
+        @Override
+        public void error(Throwable t, String errorFormat, Object... args) {
+            try {
+                if (errorFormat != null) {
+                    LOG.log(errorReportOn ? Level.SEVERE : Level.FINER, String.format(errorFormat, args));
+                }
+                LOG.log(errorReportOn ? Level.SEVERE : Level.FINER, null, t);
+            } catch (Exception ex) {
+                LOG.log(Level.FINE, null, ex);
+            }
+        }
+
+        @Override
+        public void info(String string, Object... os) {
+            LOG.log(Level.INFO, String.format(string, os));
+        }
+
+        @Override
+        public void verbose(String string, Object... os) {
+            LOG.log(Level.FINE, String.format(string, os));
+        }
     }
-  }
 }

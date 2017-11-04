@@ -12,7 +12,6 @@
  *  limitations under the License.
  *  under the License.
  */
-
 package org.nbandroid.netbeans.gradle.ui.customizer;
 
 import org.nbandroid.netbeans.gradle.avd.AvdSelector.LaunchData;
@@ -22,5 +21,6 @@ import org.nbandroid.netbeans.gradle.avd.AvdSelector.LaunchData;
  * @author radim
  */
 public interface LaunchDeviceListener {
-  void lauchDeviceChanged(LaunchData launchData);
+
+    void lauchDeviceChanged(LaunchData launchData);
 }

@@ -11,21 +11,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.nbandroid.netbeans.gradle;
 
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
 /**
- * An envelope around I/O component used to show messages related to communication
- * with Android tools.
+ * An envelope around I/O component used to show messages related to
+ * communication with Android tools.
  *
  * @author radim
  */
 public class AndroidIO {
 
-  public static InputOutput getDefaultIO() {
-    return IOProvider.getDefault().getIO("Android development", false);
-  }
+    public static InputOutput getDefaultIO() {
+        return IOProvider.getDefault().getIO("Android development", false);
+    }
 }

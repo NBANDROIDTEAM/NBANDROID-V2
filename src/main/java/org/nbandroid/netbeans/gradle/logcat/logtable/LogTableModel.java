@@ -55,7 +55,6 @@ public class LogTableModel extends AbstractTableModel {
         this.filter = filter;
     }
 
-
     @Override
     public int getRowCount() {
         return data.size();
@@ -139,8 +138,8 @@ public class LogTableModel extends AbstractTableModel {
     }
 
     public void addNewEvent(LogEvent event) {
-       // Do filtering
-        if(filter != null && !filter.satisfy(event)) {
+        // Do filtering
+        if (filter != null && !filter.satisfy(event)) {
             return;
         }
 
@@ -154,7 +153,7 @@ public class LogTableModel extends AbstractTableModel {
     public void addNewEvents(Collection<? extends LogEvent> events) {
         int oldsize = data.size();
 
-        for(LogEvent event : events) {
+        for (LogEvent event : events) {
             if (filter != null && !filter.satisfy(event)) {
                 continue;
             }
@@ -193,10 +192,10 @@ public class LogTableModel extends AbstractTableModel {
         String s = String.format("%02d", sec);
         String ms = String.format("%02d", mili);
 
-        String time = h+":" + m + ":" + s + "." + ms;
+        String time = h + ":" + m + ":" + s + "." + ms;
         return new LogEvent(
-            new LogEventInfo(event.getPid(), event.getProcessNameRef(), time, event.getTag(), event.getLevel()),
-            event.getMessage());
+                new LogEventInfo(event.getPid(), event.getProcessNameRef(), time, event.getTag(), event.getLevel()),
+                event.getMessage());
     }
 
     public LogFilter getFilter() {
