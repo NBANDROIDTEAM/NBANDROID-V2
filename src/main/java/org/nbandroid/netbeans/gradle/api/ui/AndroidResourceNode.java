@@ -196,7 +196,7 @@ public class AndroidResourceNode extends FilterNode implements PathFinder {
             actions = new Action[origActions.length + 1];
             System.arraycopy(origActions, 1, actions, 2, origActions.length - 1);
             actions[0] = origActions[0]; // open
-          //TODO layout editor  actions[1] = new PreviewLayoutAction(fo);
+            //TODO layout editor  actions[1] = new PreviewLayoutAction(fo);
             return actions;
         }
     }

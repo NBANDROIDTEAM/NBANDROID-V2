@@ -21,51 +21,52 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 
 /**
- * Node to represent some special file in a project. Mostly just a wrapper around the normal data node.
+ * Node to represent some special file in a project. Mostly just a wrapper
+ * around the normal data node.
  *
  * @author radim
  */
 public class AndroidFileNode extends FilterNode {
 
-  private final String displayName;
+    private final String displayName;
 
-  public AndroidFileNode(Node orig, String displayName) {
-    super(orig);
-    this.displayName = displayName;
-  }
-
-  public @Override
-  String getDisplayName() {
-    if (displayName != null) {
-      return displayName;
-    } else {
-      return super.getDisplayName();
+    public AndroidFileNode(Node orig, String displayName) {
+        super(orig);
+        this.displayName = displayName;
     }
-  }
 
-  public @Override
-  boolean canRename() {
-    return false;
-  }
-
-  public @Override
-  boolean canDestroy() {
-    return false;
-  }
-
-  public @Override
-  boolean canCut() {
-    return false;
-  }
-
-  public @Override
-  String getHtmlDisplayName() {
-    String result = null;
-    DataObject dob = getLookup().lookup(DataObject.class);
-    if (dob != null) {
-      Set<FileObject> files = dob.files();
-      result = ImportantFilesNodeFactory.computeAnnotatedHtmlDisplayName(getDisplayName(), files);
+    public @Override
+    String getDisplayName() {
+        if (displayName != null) {
+            return displayName;
+        } else {
+            return super.getDisplayName();
+        }
     }
-    return result;
-  }
+
+    public @Override
+    boolean canRename() {
+        return false;
+    }
+
+    public @Override
+    boolean canDestroy() {
+        return false;
+    }
+
+    public @Override
+    boolean canCut() {
+        return false;
+    }
+
+    public @Override
+    String getHtmlDisplayName() {
+        String result = null;
+        DataObject dob = getLookup().lookup(DataObject.class);
+        if (dob != null) {
+            Set<FileObject> files = dob.files();
+            result = ImportantFilesNodeFactory.computeAnnotatedHtmlDisplayName(getDisplayName(), files);
+        }
+        return result;
+    }
 }

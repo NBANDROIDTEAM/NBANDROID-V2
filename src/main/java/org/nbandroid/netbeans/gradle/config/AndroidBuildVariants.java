@@ -13,39 +13,39 @@ import javax.annotation.Nullable;
  */
 public class AndroidBuildVariants {
 
-  @Nullable
-  public static AndroidArtifact instrumentTestArtifact(Iterable<AndroidArtifact> artifacts) {
-    return artifacts == null ?
-        null :
-        Iterables.find(
-            artifacts, 
-            new Predicate<AndroidArtifact>() {
-              @Override
-              public boolean apply(AndroidArtifact a) {
-                return AndroidProject.ARTIFACT_ANDROID_TEST.equals(a.getName());
-              }
-            }, 
-            null);
-  }
-  
-  @Nullable
-  public static Variant findVariantByName(Iterable<Variant> variants, final String name) {
-    return variants == null || name == null ?
-        null :
-        Iterables.find(
-            variants,
-            new Predicate<Variant>() {
+    @Nullable
+    public static AndroidArtifact instrumentTestArtifact(Iterable<AndroidArtifact> artifacts) {
+        return artifacts == null
+                ? null
+                : Iterables.find(
+                        artifacts,
+                        new Predicate<AndroidArtifact>() {
+                    @Override
+                    public boolean apply(AndroidArtifact a) {
+                        return AndroidProject.ARTIFACT_ANDROID_TEST.equals(a.getName());
+                    }
+                },
+                        null);
+    }
 
-              @Override
-              public boolean apply(Variant t) {
-                return name.equals(t.getName());
-              }
-            },
-            null);
-  }
-  
-  @Nullable
-  public static Variant findDebugVariant(Iterable<Variant> variants) {
-    return findVariantByName(variants, "debug");
-  }
+    @Nullable
+    public static Variant findVariantByName(Iterable<Variant> variants, final String name) {
+        return variants == null || name == null
+                ? null
+                : Iterables.find(
+                        variants,
+                        new Predicate<Variant>() {
+
+                    @Override
+                    public boolean apply(Variant t) {
+                        return name.equals(t.getName());
+                    }
+                },
+                        null);
+    }
+
+    @Nullable
+    public static Variant findDebugVariant(Iterable<Variant> variants) {
+        return findVariantByName(variants, "debug");
+    }
 }

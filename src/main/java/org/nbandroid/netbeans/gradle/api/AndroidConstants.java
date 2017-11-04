@@ -11,21 +11,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.nbandroid.netbeans.gradle.api;
 
 public class AndroidConstants {
 
-  private AndroidConstants() {}
-  
-  public static final String SOURCES_TYPE_GENERATED_JAVA = "gen-java";
-  public static final String SOURCES_TYPE_GENERATED_RESOURCES = "gen-resources";
-  public static final String SOURCES_TYPE_INSTRUMENT_TEST_JAVA = "instrument-test-java";
-  public static final String SOURCES_TYPE_INSTRUMENT_TEST_RESOURCES = "instrument-test-resources";
-  public static final String SOURCES_TYPE_INSTRUMENT_TEST_GENERATED_JAVA = "instrument-test-gen-java";
-  public static final String SOURCES_TYPE_ANDROID_RES = "android-res";
-  public static final String ANDROID_MANIFEST_XML = "AndroidManifest.xml";
-  
-  /** Command for ActionProvider to only build tests and skip launching. */
-  public static final String COMMAND_BUILD_TEST = "build/test";
+    private AndroidConstants() {
+    }
+
+    public static final String SOURCES_TYPE_GENERATED_JAVA = "gen-java";
+    public static final String SOURCES_TYPE_GENERATED_RESOURCES = "gen-resources";
+    public static final String SOURCES_TYPE_INSTRUMENT_TEST_JAVA = "instrument-test-java";
+    public static final String SOURCES_TYPE_INSTRUMENT_TEST_RESOURCES = "instrument-test-resources";
+    public static final String SOURCES_TYPE_INSTRUMENT_TEST_GENERATED_JAVA = "instrument-test-gen-java";
+    public static final String SOURCES_TYPE_ANDROID_RES = "android-res";
+    public static final String ANDROID_MANIFEST_XML = "AndroidManifest.xml";
+
+    /**
+     * Command for ActionProvider to only build tests and skip launching.
+     */
+    public static final String COMMAND_BUILD_TEST = "build/test";
 }

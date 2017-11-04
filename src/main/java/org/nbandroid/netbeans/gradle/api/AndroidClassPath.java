@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.nbandroid.netbeans.gradle.api;
 
 import org.netbeans.api.java.classpath.ClassPath;
@@ -21,12 +20,19 @@ import org.netbeans.spi.java.classpath.ClassPathProvider;
  * Defines the various class paths for a Android project.
  */
 public interface AndroidClassPath extends ClassPathProvider {
-  /**
-   * A classpath used for given type in Android project.
-   */
-  ClassPath getClassPath(String type);
-  /** Register classpath to GlobalPathRegistry. */
-  void register();
-  /** Unregister classpath from GlobalPathRegistry. */
-  void unregister();
+
+    /**
+     * A classpath used for given type in Android project.
+     */
+    ClassPath getClassPath(String type);
+
+    /**
+     * Register classpath to GlobalPathRegistry.
+     */
+    void register();
+
+    /**
+     * Unregister classpath from GlobalPathRegistry.
+     */
+    void unregister();
 }

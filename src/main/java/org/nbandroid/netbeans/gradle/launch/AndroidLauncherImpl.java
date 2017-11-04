@@ -36,15 +36,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.api.project.Project;
+import org.nbandroid.netbeans.gradle.AndroidIO;
+import org.nbandroid.netbeans.gradle.avd.AvdSelector;
 import org.nbandroid.netbeans.gradle.core.ddm.AndroidDebugBridgeFactory;
 import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatform;
 import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatformManager;
 import org.nbandroid.netbeans.gradle.core.sdk.SdkLogProvider;
 import org.nbandroid.netbeans.gradle.core.sdk.StatsCollector;
-import org.nbandroid.netbeans.gradle.AndroidIO;
-import org.nbandroid.netbeans.gradle.avd.AvdSelector;
 import org.nbandroid.netbeans.gradle.core.ui.DeviceChooserImpl;
+import org.netbeans.api.project.Project;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -282,7 +282,7 @@ public class AndroidLauncherImpl implements AndroidLauncher {
             if (launchInfo.reinstall) {
                 try {
                     // maybe it is not installed. try again clean install
-                     device.installRemotePackage(remotePackagePath, false);
+                    device.installRemotePackage(remotePackagePath, false);
                     io.getOut().println("Package " + launchInfo.packageFile.getNameExt() + " deployed");
                 } catch (InstallException ex1) {
                     io.getOut().println("Package deployment failed with: ");

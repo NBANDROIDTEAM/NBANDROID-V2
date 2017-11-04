@@ -18,80 +18,80 @@ import org.openide.util.RequestProcessor;
  * @author radim
  */
 public class AndroidTestRunConfiguration implements AndroidModelAware {
-  private static final Logger LOG = Logger.getLogger(AndroidTestRunConfiguration.class.getName());
-  
-  private static final String PREFERENCE_TEST_RUNNER = "androidTestRunner";
-  
-  @VisibleForTesting
-  public static final RequestProcessor RP = new RequestProcessor("gradle-test-runner", 1);
 
-  private final ChangeSupport cs = new ChangeSupport(this);
-  private final Object lock = new Object();
-  private final AuxiliaryProperties auxProps;
-  private String testRunner;
-  private String defaultTestRunner;
+    private static final Logger LOG = Logger.getLogger(AndroidTestRunConfiguration.class.getName());
 
-  public AndroidTestRunConfiguration(AuxiliaryProperties auxProps) {
-    this.auxProps = Preconditions.checkNotNull(auxProps);
-    testRunner = auxProps.get(PREFERENCE_TEST_RUNNER, false);
-    LOG.log(Level.FINE, "loaded test runner {0}", testRunner);
-  }
+    private static final String PREFERENCE_TEST_RUNNER = "androidTestRunner";
 
-  @Nullable
-  public String getTestRunner() {
-    synchronized (lock) {
-      if (testRunner == null) {
+    @VisibleForTesting
+    public static final RequestProcessor RP = new RequestProcessor("gradle-test-runner", 1);
+
+    private final ChangeSupport cs = new ChangeSupport(this);
+    private final Object lock = new Object();
+    private final AuxiliaryProperties auxProps;
+    private String testRunner;
+    private String defaultTestRunner;
+
+    public AndroidTestRunConfiguration(AuxiliaryProperties auxProps) {
+        this.auxProps = Preconditions.checkNotNull(auxProps);
         testRunner = auxProps.get(PREFERENCE_TEST_RUNNER, false);
-        LOG.log(Level.FINE, "re-loaded test runner {0}", testRunner);
-      }
-      return testRunner != null? testRunner : defaultTestRunner;
+        LOG.log(Level.FINE, "loaded test runner {0}", testRunner);
     }
-  }
-  
-  public void setTestRunner(final String testRunner) {
-    synchronized (lock) {
-      this.testRunner = testRunner;
-      auxProps.put(PREFERENCE_TEST_RUNNER, testRunner, false);
-      LOG.log(Level.FINE, "saved test runner {0}", testRunner);
-    }
-    fireChange();
-  }
-  
-  private void setDefaultTestRunner(final String testRunner) {
-    synchronized (lock) {
-      this.defaultTestRunner = testRunner;
-    }
-    fireChange();
-  }
-  
-  private void fireChange() {
-    RP.post(new Runnable() {
 
-      @Override
-      public void run() {
-        cs.fireChange();
-      }
-    });
-  }
-  
-  public void addChangeListener(ChangeListener listener) {
-    cs.addChangeListener(listener);
-  }
-  
-  public void removeChangeListener(ChangeListener listener) {
-    cs.removeChangeListener(listener);
-  }
+    @Nullable
+    public String getTestRunner() {
+        synchronized (lock) {
+            if (testRunner == null) {
+                testRunner = auxProps.get(PREFERENCE_TEST_RUNNER, false);
+                LOG.log(Level.FINE, "re-loaded test runner {0}", testRunner);
+            }
+            return testRunner != null ? testRunner : defaultTestRunner;
+        }
+    }
 
-  @Override
-  public void setAndroidProject(AndroidProject aPrj) {
-    if (aPrj == null) {
-      return;
+    public void setTestRunner(final String testRunner) {
+        synchronized (lock) {
+            this.testRunner = testRunner;
+            auxProps.put(PREFERENCE_TEST_RUNNER, testRunner, false);
+            LOG.log(Level.FINE, "saved test runner {0}", testRunner);
+        }
+        fireChange();
     }
-    String runner = aPrj.getDefaultConfig().getProductFlavor().getTestInstrumentationRunner();
-    if (runner == null) {
-      return;
+
+    private void setDefaultTestRunner(final String testRunner) {
+        synchronized (lock) {
+            this.defaultTestRunner = testRunner;
+        }
+        fireChange();
     }
-    setDefaultTestRunner(runner);
-  }
+
+    private void fireChange() {
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                cs.fireChange();
+            }
+        });
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        cs.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        cs.removeChangeListener(listener);
+    }
+
+    @Override
+    public void setAndroidProject(AndroidProject aPrj) {
+        if (aPrj == null) {
+            return;
+        }
+        String runner = aPrj.getDefaultConfig().getProductFlavor().getTestInstrumentationRunner();
+        if (runner == null) {
+            return;
+        }
+        setDefaultTestRunner(runner);
+    }
 }
-

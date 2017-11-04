@@ -13,7 +13,6 @@
  */
 package org.nbandroid.netbeans.gradle.api;
 
-import org.nbandroid.netbeans.gradle.api.ResourceRef;
 import java.util.Collections;
 
 /**
@@ -22,11 +21,11 @@ import java.util.Collections;
  */
 class NullRefResolver implements ReferenceResolver {
 
-  public NullRefResolver() {
-  }
+    public NullRefResolver() {
+    }
 
-  @Override
-  public Iterable<ResourceRef> getReferences() {
-    return Collections.emptyList();
-  }
+    @Override
+    public Iterable<ResourceRef> getReferences() {
+        return Collections.emptyList();
+    }
 }

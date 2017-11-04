@@ -12,7 +12,6 @@
  *  limitations under the License.
  *  under the License.
  */
-
 package org.nbandroid.netbeans.gradle.core.ui;
 
 import com.android.ddmlib.IDevice;
@@ -30,46 +29,46 @@ import org.openide.DialogDisplayer;
  */
 public class DeviceChooserImpl implements DeviceChooser {
 
-  /**
-   * Selects a device
-   *
-   * @return device info or {@code null}
-   */
-  @Override
-  public LaunchData selectDevice(AvdManager avdManager, IDevice[] devices) {
-      final DeviceUiChooser panel = new DeviceUiChooser(avdManager, devices);
-    final Object[] options = new Object[]{
-      DialogDescriptor.OK_OPTION,
-      DialogDescriptor.CANCEL_OPTION
-      };
+    /**
+     * Selects a device
+     *
+     * @return device info or {@code null}
+     */
+    @Override
+    public LaunchData selectDevice(AvdManager avdManager, IDevice[] devices) {
+        final DeviceUiChooser panel = new DeviceUiChooser(avdManager, devices);
+        final Object[] options = new Object[]{
+            DialogDescriptor.OK_OPTION,
+            DialogDescriptor.CANCEL_OPTION
+        };
 
-      final DialogDescriptor desc = new DialogDescriptor(panel,
-              "Select device",
-        true, options, options[0], DialogDescriptor.BOTTOM_ALIGN, null, null);
-    desc.setMessageType(DialogDescriptor.INFORMATION_MESSAGE);
-    desc.setValid(false); // no selection yet
-    panel.addLaunchDataListener(new LaunchDeviceListener() {
+        final DialogDescriptor desc = new DialogDescriptor(panel,
+                "Select device",
+                true, options, options[0], DialogDescriptor.BOTTOM_ALIGN, null, null);
+        desc.setMessageType(DialogDescriptor.INFORMATION_MESSAGE);
+        desc.setValid(false); // no selection yet
+        panel.addLaunchDataListener(new LaunchDeviceListener() {
 
-      @Override
-      public void lauchDeviceChanged(LaunchData launchData) {
-        desc.setValid(launchData != null);
-      }
-    });
+            @Override
+            public void lauchDeviceChanged(LaunchData launchData) {
+                desc.setValid(launchData != null);
+            }
+        });
 
-    final Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
-    panel.addSelectCallback(new Runnable() {
+        final Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
+        panel.addSelectCallback(new Runnable() {
 
-      @Override
-      public void run() {
-        dlg.setVisible(false);
-        desc.setValue(options[0]);
-      }
-    });
-    dlg.setVisible(true);
-    dlg.dispose();
-    if (desc.getValue() == options[0]) {
-      return panel.getLaunchData();
+            @Override
+            public void run() {
+                dlg.setVisible(false);
+                desc.setValue(options[0]);
+            }
+        });
+        dlg.setVisible(true);
+        dlg.dispose();
+        if (desc.getValue() == options[0]) {
+            return panel.getLaunchData();
+        }
+        return null;
     }
-    return null;
-  }
 }

@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.nbandroid.netbeans.gradle.ui;
 
 import java.awt.Image;
@@ -32,8 +31,9 @@ import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
- * Essentially copy of logic in ProjectsRootNode which is applied automatically to root nodes.
- * Would be nice to have available as a separate API. Here used for ImportantFilesNode.
+ * Essentially copy of logic in ProjectsRootNode which is applied automatically
+ * to root nodes. Would be nice to have available as a separate API. Here used
+ * for ImportantFilesNode.
  */
 class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener {
 
@@ -61,7 +61,7 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
             return;
         }
         Set<FileSystem> hookedFileSystems = new HashSet<FileSystem>();
-        for (FileObject fo: files) {
+        for (FileObject fo : files) {
             try {
                 FileSystem fs = fo.getFileSystem();
                 if (hookedFileSystems.contains(fs)) {
@@ -90,9 +90,9 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
     protected final Image annotateIcon(final Image img, final int type) {
         Image annotatedImg = img;
         if (files != null && files.iterator().hasNext()) {
-          ImageDecorator imgDecorator = Lookup.getDefault().lookup(ImageDecorator.class);
-          FileObject fo = files.iterator().next();
-          annotatedImg = imgDecorator.annotateIcon(img, type, files);
+            ImageDecorator imgDecorator = Lookup.getDefault().lookup(ImageDecorator.class);
+            FileObject fo = files.iterator().next();
+            annotatedImg = imgDecorator.annotateIcon(img, type, files);
         }
         return annotatedImg;
     }
@@ -100,9 +100,9 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
     protected final String annotateName(final String name) {
         String annotatedName = name;
         if (files != null && files.iterator().hasNext()) {
-          StatusDecorator statusDecorator = Lookup.getDefault().lookup(StatusDecorator.class);
-          FileObject fo = files.iterator().next();
-          annotatedName = statusDecorator.annotateName(name, files);
+            StatusDecorator statusDecorator = Lookup.getDefault().lookup(StatusDecorator.class);
+            FileObject fo = files.iterator().next();
+            annotatedName = statusDecorator.annotateName(name, files);
         }
         return annotatedName;
     }
@@ -114,8 +114,8 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         }
 
         boolean changed = false;
-        if (forceAnnotation || ((iconChange == false && event.isIconChange())  || (nameChange == false && event.isNameChange()))) {
-            for (FileObject fo: files) {
+        if (forceAnnotation || ((iconChange == false && event.isIconChange()) || (nameChange == false && event.isNameChange()))) {
+            for (FileObject fo : files) {
                 if (event.hasChanged(fo)) {
                     iconChange |= event.isIconChange();
                     nameChange |= event.isNameChange();

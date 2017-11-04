@@ -18,7 +18,10 @@ package org.nbandroid.netbeans.gradle.core.sdk;
  * @author radim
  */
 public interface UIClassDescriptor {
-  String getFQClassName();
-  String getSuperclass();
-  String getSimpleName();
+
+    String getFQClassName();
+
+    String getSuperclass();
+
+    String getSimpleName();
 }

@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.nbandroid.netbeans.gradle.ui;
 
 import org.openide.nodes.Node;
@@ -20,5 +19,6 @@ import org.openide.nodes.Node;
  * Support to find node in sub-tree matching to passed parameter.
  */
 public interface PathFinder {
+
     public Node findPath(Node root, Object target);
 }

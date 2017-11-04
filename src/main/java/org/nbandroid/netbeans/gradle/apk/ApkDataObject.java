@@ -21,39 +21,39 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
-import org.openide.nodes.Node;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 @NbBundle.Messages("APKMIME_DisplayName=Android Packages (.apk)")
-@DataObject.Registration(displayName = "#APKDataObject_DisplayName", 
-    iconBase = "org/netbeans/modules/android/project/resources/android.png", 
-    mimeType = "application/vnd.android.package-archive",
-    position = 1023)
+@DataObject.Registration(displayName = "#APKDataObject_DisplayName",
+        iconBase = "org/netbeans/modules/android/project/resources/android.png",
+        mimeType = "application/vnd.android.package-archive",
+        position = 1023)
 // register before JAR/ZIP
 @MIMEResolver.ExtensionRegistration(
-    displayName = "#APKMIME_DisplayName", extension = "apk", mimeType = "application/vnd.android.package-archive",
-    position = 479)
+        displayName = "#APKMIME_DisplayName", extension = "apk", mimeType = "application/vnd.android.package-archive",
+        position = 479)
 public class ApkDataObject extends MultiDataObject implements Deployable {
 
-  public ApkDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-    super(pf, loader);
+    public ApkDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
+        super(pf, loader);
 
-  }
+    }
 
-  @Override
-  protected Node createNodeDelegate() {
-    return new DataNode(this, Children.LEAF, getLookup());
-  }
+    @Override
+    protected Node createNodeDelegate() {
+        return new DataNode(this, Children.LEAF, getLookup());
+    }
 
-  @Override
-  public Lookup getLookup() {
-    return getCookieSet().getLookup();
-  }
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
 
-  @Override
-  public FileObject getDeployableFile() {
-    return getPrimaryFile();
-  }
+    @Override
+    public FileObject getDeployableFile() {
+        return getPrimaryFile();
+    }
 }

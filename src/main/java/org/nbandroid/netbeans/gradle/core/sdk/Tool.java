@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.nbandroid.netbeans.gradle.core.sdk;
 
 import com.google.common.collect.Lists;
@@ -20,33 +19,32 @@ import com.google.common.collect.Lists;
  * Enumeration of important tools from Android SDK.
  */
 public enum Tool {
-  // TODO: can be deleted and replaced with IAndroidTarget.getPath(int)
+    // TODO: can be deleted and replaced with IAndroidTarget.getPath(int)
 
-  // executable tools
-  EMULATOR("emulator", "tools"),
-  AGENT("adb", "platform-tools"),
+    // executable tools
+    EMULATOR("emulator", "tools"),
+    AGENT("adb", "platform-tools"),
+    // interesting resources
+    // in platforms/android-<version>/data/res/values
+    ATTRS_MANIFEST("attrs_manifest.xml", "data/res/values"),
+    // in platforms/android-<version>/data/res/values
+    ATTRS_LAYOUT("attrs.xml", "data/res/values"),
+    // in platforms/android-<version>/data
+    WIDGETS("widgets.txt", "data");
 
-  // interesting resources
-  // in platforms/android-<version>/data/res/values
-  ATTRS_MANIFEST("attrs_manifest.xml", "data/res/values"),
-  // in platforms/android-<version>/data/res/values
-  ATTRS_LAYOUT("attrs.xml", "data/res/values"),
-  // in platforms/android-<version>/data
-  WIDGETS("widgets.txt", "data");
+    public String getSystemName() {
+        return systemName;
+    }
 
-  public String getSystemName () {
-    return systemName;
-  }
+    Iterable<String> getFolders() {
+        return folders;
+    }
 
-  Iterable<String> getFolders() {
-    return folders;
-  }
+    private final String systemName;
+    private final Iterable<String> folders;
 
-  private final String systemName;
-  private final Iterable<String> folders;
-
-  private Tool(String systemName, String ... folders) {
-    this.systemName = systemName;
-    this.folders = Lists.newArrayList(folders);
-  }
+    private Tool(String systemName, String... folders) {
+        this.systemName = systemName;
+        this.folders = Lists.newArrayList(folders);
+    }
 }

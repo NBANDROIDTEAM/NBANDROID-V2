@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.nbandroid.netbeans.gradle.core.sdk;
 
 import com.android.ide.common.rendering.LayoutLibrary;
@@ -25,30 +24,34 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.filesystems.FileObject;
 
 public interface DalvikPlatform {
-  public static final String PLATFORM_JAR  = "android.jar";   //NOI18N
 
-  IAndroidTarget getAndroidTarget();
+    public static final String PLATFORM_JAR = "android.jar";   //NOI18N
+
+    IAndroidTarget getAndroidTarget();
 
     AndroidSdkHandler getSdkManager();
 
-  List<URL> getBootstrapLibraries();
+    List<URL> getBootstrapLibraries();
 
-  FileObject getInstallFolder();
+    FileObject getInstallFolder();
 
-  FileObject getPlatformFolder();
+    FileObject getPlatformFolder();
 
-  FileObject findTool(String toolName);
+    FileObject findTool(String toolName);
 
-  ClassPath getSourceFolders();
+    ClassPath getSourceFolders();
 
-  List<URL> getJavadocFolders();
+    List<URL> getJavadocFolders();
 
-  LayoutLibrary getLayoutLibrary();
-  FrameworkResources getLayoutLibPlatformResources();
-  
-  // TODO possibly create new interface for platform specific parts and separate target (platforms and add-ons)
-  /** List of themes defined for given platform in data/values/res/*.xml. */
-  Iterable<String>getThemes();
-  
-  Supplier<WidgetData> widgetDataSupplier();
+    LayoutLibrary getLayoutLibrary();
+
+    FrameworkResources getLayoutLibPlatformResources();
+
+    // TODO possibly create new interface for platform specific parts and separate target (platforms and add-ons)
+    /**
+     * List of themes defined for given platform in data/values/res/*.xml.
+     */
+    Iterable<String> getThemes();
+
+    Supplier<WidgetData> widgetDataSupplier();
 }

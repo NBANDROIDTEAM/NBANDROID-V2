@@ -86,22 +86,24 @@ import org.openide.windows.WindowManager;
 })
 public final class LogTopComponent extends TopComponent {
 
-  private static final Logger LOG = Logger.getLogger(LogTopComponent.class.getName());
-  private static final String ICON_PATH = "org/nyerel/nbandroid/logcat/androidIcon.png";
+    private static final Logger LOG = Logger.getLogger(LogTopComponent.class.getName());
+    private static final String ICON_PATH = "org/nyerel/nbandroid/logcat/androidIcon.png";
 
-  private static final String PREFERRED_ID = "LogTopComponent";
-  
-  private static final String SERIALIZE_VERSION = "version";
-  private static final String SERIALIZE_VERSION_CURRENT = "1.0";
-  private static final String SERIALIZE_FILTER_STRING = "filter.string";
-  private static final String SERIALIZE_FILTER_LEVEL = "filter.level";
-  private static final String SERIALIZE_FILTER_USE_REGEXP = "filter.useRegExp";
-  private static final String SERIALIZE_TAB_COUNT = "tab.count";
-  private static final String SERIALIZE_TAB = "tab";
+    private static final String PREFERRED_ID = "LogTopComponent";
 
-  private static LogTopComponent instance;
+    private static final String SERIALIZE_VERSION = "version";
+    private static final String SERIALIZE_VERSION_CURRENT = "1.0";
+    private static final String SERIALIZE_FILTER_STRING = "filter.string";
+    private static final String SERIALIZE_FILTER_LEVEL = "filter.level";
+    private static final String SERIALIZE_FILTER_USE_REGEXP = "filter.useRegExp";
+    private static final String SERIALIZE_TAB_COUNT = "tab.count";
+    private static final String SERIALIZE_TAB = "tab";
 
-    /** path to the icon used by the component and its open action */
+    private static LogTopComponent instance;
+
+    /**
+     * path to the icon used by the component and its open action
+     */
     private LogReader reader;
     private Timer timer;
     private TimerTask taskUpdateFilterText;
@@ -112,10 +114,9 @@ public final class LogTopComponent extends TopComponent {
 
     private List<LogTableManager> tabManagers;
     private final LogLineRowFilter rowFilter = new LogLineRowFilter();
-    
+
     private LogDevicesComboBoxSupport cmbLogDevicesSupport;
-    
-    
+
     private final PropertyChangeListener myPropertyChangeListener = new PropertyChangeListener() {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
@@ -127,8 +128,8 @@ public final class LogTopComponent extends TopComponent {
                     // create a copy of this list to avoid concurrent modification exceptions
                     Collection<LogEvent> eventsToAdd = new ArrayList<>(events.size());
                     eventsToAdd.addAll(events);
-                    
-                    for(LogTableManager manager : tabManagers) {
+
+                    for (LogTableManager manager : tabManagers) {
                         // clear all messages
                         manager.clearLog();
 
@@ -137,36 +138,35 @@ public final class LogTopComponent extends TopComponent {
                     }
                 }
             }
-            
+
             if (LogReader.PROPERTY_CURRENT_DEVICE_STATE.equals(evt.getPropertyName())) {
                 String tooltip = NbBundle.getMessage(this.getClass(), "DeviceStatus." + evt.getNewValue());
                 String res;
-                
-                switch((LogReader.CurrentDeviceState)evt.getNewValue()) {
-                case ATTACHED_AND_LOGGING:
-                    res = "/org/nbandroid/netbeans/gradle/logcat/resources/device_status_logging.png";
-                    break;
 
-                case DETACHED:
-                    res = "/org/nbandroid/netbeans/gradle/logcat/resources/device_status_detached.png";
-                    break;
+                switch ((LogReader.CurrentDeviceState) evt.getNewValue()) {
+                    case ATTACHED_AND_LOGGING:
+                        res = "/org/nbandroid/netbeans/gradle/logcat/resources/device_status_logging.png";
+                        break;
 
-                case ATTACHED:
-                    res = "/org/nbandroid/netbeans/gradle/logcat/resources/device_status_attached.png";
-                    break;
+                    case DETACHED:
+                        res = "/org/nbandroid/netbeans/gradle/logcat/resources/device_status_detached.png";
+                        break;
 
-                default:
-                    res = "/org/nbandroid/netbeans/gradle/logcat/resources/device_status_unknown.png";
-                    break;
+                    case ATTACHED:
+                        res = "/org/nbandroid/netbeans/gradle/logcat/resources/device_status_attached.png";
+                        break;
+
+                    default:
+                        res = "/org/nbandroid/netbeans/gradle/logcat/resources/device_status_unknown.png";
+                        break;
                 }
-                
+
                 lDeviceStatusIcon.setIcon(new ImageIcon(getClass().getResource(res)));
                 lDeviceStatusIcon.setToolTipText(tooltip);
             }
         }
     };
-    
-    
+
     public LogTopComponent() {
         initComponents();
         setName(NbBundle.getMessage(LogTopComponent.class, "CTL_LogTopComponent"));
@@ -178,9 +178,10 @@ public final class LogTopComponent extends TopComponent {
     }
 
     /**
-     * Gets default instance. Do not use directly: reserved for *.settings files only,
-     * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
-     * To obtain the singleton instance, use {@link #findInstance}.
+     * Gets default instance. Do not use directly: reserved for *.settings files
+     * only, i.e. deserialization routines; otherwise you could get a
+     * non-deserialized instance. To obtain the singleton instance, use
+     * {@link #findInstance}.
      */
     public static synchronized LogTopComponent getDefault() {
         if (instance == null) {
@@ -190,7 +191,8 @@ public final class LogTopComponent extends TopComponent {
     }
 
     /**
-     * Obtain the LogTopComponent instance. Never call {@link #getDefault} directly!
+     * Obtain the LogTopComponent instance. Never call {@link #getDefault}
+     * directly!
      */
     public static synchronized LogTopComponent findInstance() {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
@@ -203,8 +205,8 @@ public final class LogTopComponent extends TopComponent {
             return (LogTopComponent) win;
         }
         Logger.getLogger(LogTopComponent.class.getName()).warning(
-                "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");
+                "There seem to be multiple components with the '" + PREFERRED_ID
+                + "' ID. That is a potential source of errors and unexpected behavior.");
         return getDefault();
     }
 
@@ -213,23 +215,24 @@ public final class LogTopComponent extends TopComponent {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
 //compo
+
     @Override
     public void componentOpened() {
-      super.componentOpened();
-      startReading();
+        super.componentOpened();
+        startReading();
     }
 
     @Override
     public void componentClosed() {
-      if (reader != null) {
-        stopReading();
-      }
-      
-      if (cmbLogDevicesSupport != null) {
-          cmbLogDevicesSupport.detach();
-      }
-      
-      super.componentClosed();
+        if (reader != null) {
+            stopReading();
+        }
+
+        if (cmbLogDevicesSupport != null) {
+            cmbLogDevicesSupport.detach();
+        }
+
+        super.componentClosed();
     }
 
     void writeProperties(java.util.Properties p) {
@@ -237,7 +240,7 @@ public final class LogTopComponent extends TopComponent {
         // http://wiki.apidesign.org/wiki/PropertyFiles
         p.setProperty(SERIALIZE_VERSION, SERIALIZE_VERSION_CURRENT);
 
-        try{
+        try {
             // write current filter settings
             p.setProperty(SERIALIZE_FILTER_STRING, txtFilterText.getText());
             p.setProperty(SERIALIZE_FILTER_LEVEL, rowFilter.getLogLevel().toString());
@@ -247,7 +250,7 @@ public final class LogTopComponent extends TopComponent {
             p.setProperty(SERIALIZE_TAB_COUNT, Integer.toString(tabManagers.size()));
 
             // export all filters
-            for(int i=0; i<tabManagers.size(); i++) {
+            for (int i = 0; i < tabManagers.size(); i++) {
                 String prefix = SERIALIZE_TAB + "." + i;
                 LogFilter filter = tabManagers.get(i).getModel().getFilter();
 
@@ -255,33 +258,31 @@ public final class LogTopComponent extends TopComponent {
                     filter.serialize(p, prefix);
                 }
             }
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             LOG.log(Level.INFO, "error on saving LogCat TopComponent", e);
         }
     }
 
     Object readProperties(java.util.Properties p) {
         LogTopComponent singleton = LogTopComponent.getDefault();
-        
+
         try {
             singleton.readPropertiesImpl(p);
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             LOG.log(Level.INFO, "error on restore LogCat TopComponent", e);
         }
-        
+
         return singleton;
     }
-    
+
     private void readPropertiesImpl(java.util.Properties p) {
         String version = p.getProperty(SERIALIZE_VERSION);
-        
+
         if (SERIALIZE_VERSION_CURRENT.equals(version)) {
             String filterString = p.getProperty(SERIALIZE_FILTER_STRING, "");
             String filterLevel = p.getProperty(SERIALIZE_FILTER_LEVEL, LogLevel.VERBOSE.toString());
             boolean filterByRegExp = Boolean.parseBoolean(p.getProperty(SERIALIZE_FILTER_USE_REGEXP, "false"));
-            
+
             // apply filter string
             if (filterString != null) {
                 txtFilterText.setText(filterString);
@@ -289,47 +290,45 @@ public final class LogTopComponent extends TopComponent {
             }
             cbxFilterType.setSelected(filterByRegExp);
             rowFilter.setUseRegExp(filterByRegExp);
-            
+
             // apply filter level
             if (filterLevel != null) {
                 // find matching button to select
-                for(Enumeration<AbstractButton> buttons = btGrpLogLevel.getElements(); buttons.hasMoreElements();) {
+                for (Enumeration<AbstractButton> buttons = btGrpLogLevel.getElements(); buttons.hasMoreElements();) {
                     AbstractButton bt = buttons.nextElement();
-                    
+
                     if (filterLevel.equals(bt.getActionCommand())) {
                         bt.setSelected(true);
                         break;
                     }
                 }
-                
+
                 // convert LogLevel name into enum and configure filter
                 try {
                     rowFilter.setLogLevel(LogLevel.valueOf(filterLevel));
-                }
-                catch(IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                 }
             }
         }
-        
+
         // try to restore filter tabs
         try {
             int count = Integer.parseInt(p.getProperty(SERIALIZE_TAB_COUNT, "0"));
 
-            for(int i=1; i<count; i++) {
+            for (int i = 1; i < count; i++) {
                 String prefix = SERIALIZE_TAB + "." + i;
                 LogFilter filter = LogFilter.deserialize(p, prefix);
-                
+
                 if (filter != null) {
                     addTable(filter);
                 }
             }
+        } catch (IllegalArgumentException e) {
         }
-        catch(IllegalArgumentException e) {
-        }
-        
+
         // re-apply filter on current tab
         if (selectedTable != null) {
-            ((TableRowSorter)selectedTable.getRowSorter()).sort();
+            ((TableRowSorter) selectedTable.getRowSorter()).sort();
         }
     }
 
@@ -350,9 +349,9 @@ public final class LogTopComponent extends TopComponent {
                 for (LogTableManager manager : tabManagers) {
                     reader.addLogListener(manager);
                 }
-                
+
                 reader.addPropertyChangeListener(WeakListeners.propertyChange(myPropertyChangeListener, reader));
-                
+
                 cmbLogDevicesSupport = new LogDevicesComboBoxSupport(reader);
                 cmbLogDevicesSupport.attach(cmbLogDevices);
             }
@@ -386,7 +385,7 @@ public final class LogTopComponent extends TopComponent {
         if (taskUpdateFilterText != null) {
             taskUpdateFilterText.cancel();
         }
-        
+
         taskUpdateFilterText = new TimerTask() {
             @Override
             public void run() {
@@ -394,24 +393,23 @@ public final class LogTopComponent extends TopComponent {
                     rowFilter.setFilterString(txtFilterText.getText());
 
                     if (selectedTable != null) {
-                        ((AbstractTableModel)selectedTable.getModel()).fireTableDataChanged();
+                        ((AbstractTableModel) selectedTable.getModel()).fireTableDataChanged();
                     }
-                }
-                catch(Throwable t) {
+                } catch (Throwable t) {
                     LOG.log(Level.SEVERE, "unexpected exception when updating LogCat text filter", t);
                 }
             }
         };
-        
+
         if (timer != null) {
             timer.schedule(taskUpdateFilterText, 250);
         }
     }
 
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -655,7 +653,7 @@ public final class LogTopComponent extends TopComponent {
     private void addFilterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addFilterButtonActionPerformed
 
         LogFilter filter = LogFilterDialog.showDialog();
-        if(filter != null) {
+        if (filter != null) {
             addTable(filter);
         }
     }//GEN-LAST:event_addFilterButtonActionPerformed
@@ -663,7 +661,7 @@ public final class LogTopComponent extends TopComponent {
     private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearButtonActionPerformed
 
         LogTableManager manager = tabManagers.get(tabPane.getSelectedIndex());
-        if(manager != null) {
+        if (manager != null) {
             manager.clearLog();
         }
     }//GEN-LAST:event_clearButtonActionPerformed
@@ -671,19 +669,19 @@ public final class LogTopComponent extends TopComponent {
     private void tabPaneStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tabPaneStateChanged
 
         JScrollPane sPane = (JScrollPane) tabPane.getSelectedComponent();
-        if(sPane != null) {
+        if (sPane != null) {
 
             JViewport view = (JViewport) sPane.getComponent(0);
-            selectedTable  = (JTable) view.getView();
+            selectedTable = (JTable) view.getView();
 
             // re-apply the filter to the current tab
             if (selectedTable.getRowSorter() != null) {
-                ((TableRowSorter)selectedTable.getRowSorter()).sort();
+                ((TableRowSorter) selectedTable.getRowSorter()).sort();
             }
-            
-            if(tabManagers != null) {
 
-               // Remove all toggle button listeners
+            if (tabManagers != null) {
+
+                // Remove all toggle button listeners
                 for (ChangeListener l : autoScrollToggleButton.getChangeListeners()) {
 
                     autoScrollToggleButton.removeChangeListener(l);
@@ -691,19 +689,19 @@ public final class LogTopComponent extends TopComponent {
 
                 LogTableManager manager = tabManagers.get(tabPane.getSelectedIndex());
 
-               // Add current listener
+                // Add current listener
                 autoScrollToggleButton.addChangeListener(manager);
 
-               // Refresh buttons
+                // Refresh buttons
                 autoScrollToggleButton.setSelected(manager.isAutoFollowScroll());
-            }            
+            }
         }
     }//GEN-LAST:event_tabPaneStateChanged
 
     private void tabPanePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_tabPanePropertyChange
         if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName()) && evt.getSource() == tabPane) {
             // find the index of the clicked component
-            for(int index=tabPane.getTabCount(); --index>=0;) {
+            for (int index = tabPane.getTabCount(); --index >= 0;) {
                 // if it's the same component as in the property value, we know which tab should be closed
                 if (tabPane.getComponentAt(index) == evt.getNewValue()) {
                     LogTableManager manager = tabManagers.get(index);
@@ -711,10 +709,10 @@ public final class LogTopComponent extends TopComponent {
 
                     // ask the user... just to be sure
                     int result = JOptionPane.showConfirmDialog(
-                                                this,
-                                                NbBundle.getMessage(this.getClass(), "LogFilterDialog.ConfirmRemove.message", filter.getName(), filter.getDescription()),
-                                                NbBundle.getMessage(this.getClass(), "LogFilterDialog.ConfirmRemove.title", filter.getName()),
-                                                JOptionPane.YES_NO_OPTION
+                            this,
+                            NbBundle.getMessage(this.getClass(), "LogFilterDialog.ConfirmRemove.message", filter.getName(), filter.getDescription()),
+                            NbBundle.getMessage(this.getClass(), "LogFilterDialog.ConfirmRemove.title", filter.getName()),
+                            JOptionPane.YES_NO_OPTION
                     );
 
                     if (result == JOptionPane.YES_OPTION) {
@@ -736,17 +734,17 @@ public final class LogTopComponent extends TopComponent {
     }//GEN-LAST:event_removeTabButtonActionPerformed
 
 	private void btLogLevelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btLogLevelActionPerformed
-        LogLevel level = LogLevel.valueOf(evt.getActionCommand());
-        if (level != null) {
-            rowFilter.setLogLevel(level);
-            refreshContent();
-        }
-        
+            LogLevel level = LogLevel.valueOf(evt.getActionCommand());
+            if (level != null) {
+                rowFilter.setLogLevel(level);
+                refreshContent();
+            }
+
 	}//GEN-LAST:event_btLogLevelActionPerformed
 
 	private void txtFilterTextKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtFilterTextKeyTyped
-        rowFilter.setFilterString(txtFilterText.getText());
-        refreshContent();
+            rowFilter.setFilterString(txtFilterText.getText());
+            refreshContent();
 	}//GEN-LAST:event_txtFilterTextKeyTyped
 
     private void cbxFilterTypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbxFilterTypeActionPerformed
@@ -779,20 +777,19 @@ public final class LogTopComponent extends TopComponent {
 
     private void myInit() {
         tabManagers = new ArrayList<>();
-        
+
         // create the first tab
         addTable(LogFilter.createDefaultTab());
-        
+
         // activate the selected button
-        for(Enumeration<AbstractButton> buttons = btGrpLogLevel.getElements(); buttons.hasMoreElements();) {
+        for (Enumeration<AbstractButton> buttons = btGrpLogLevel.getElements(); buttons.hasMoreElements();) {
             AbstractButton button = buttons.nextElement();
-            
+
             if (button.getActionCommand().equals(rowFilter.getLogLevel().toString())) {
                 button.setSelected(true);
             }
         }
     }
-
 
     private void addTable(LogFilter filter) {
         LogTableModel model = new LogTableModel(filter);
@@ -800,7 +797,7 @@ public final class LogTopComponent extends TopComponent {
 
         // Prepare table for listening
         LogTableManager manager = prepareTable(table);
-        
+
         if (reader != null) {
             reader.addLogListener(manager);
         }
@@ -814,11 +811,10 @@ public final class LogTopComponent extends TopComponent {
 
         String tooltip = filter.getDescription();
         tabPane.addTab(filter.getName(), null, scroll, tooltip);
-        
+
         tabPane.validate();
     }
-    
-    
+
     private LogTableManager prepareTable(final JTable table) {
         table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         table.setShowHorizontalLines(false);
@@ -831,44 +827,43 @@ public final class LogTopComponent extends TopComponent {
 
             TableColumn column = columns.nextElement();
             column.setCellRenderer(new LogTableCellRenderer());
-        }        
+        }
 
-        TableRowSorter<LogTableModel> rowsorter = new TableRowSorter<LogTableModel>((LogTableModel)table.getModel()) {
-              @Override
-              public void rowsInserted(int firstRow, int endRow) {
+        TableRowSorter<LogTableModel> rowsorter = new TableRowSorter<LogTableModel>((LogTableModel) table.getModel()) {
+            @Override
+            public void rowsInserted(int firstRow, int endRow) {
                 try {
-                  super.rowsInserted(firstRow, endRow);
+                    super.rowsInserted(firstRow, endRow);
                 } catch (NullPointerException | IndexOutOfBoundsException ex) {
-                  LOG.log(Level.INFO, 
-                      "Ignoring exception caused by http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6582564", ex);
+                    LOG.log(Level.INFO,
+                            "Ignoring exception caused by http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6582564", ex);
                 }
-              }
+            }
 
-              @Override
-              public int convertRowIndexToModel(int index) {
+            @Override
+            public int convertRowIndexToModel(int index) {
                 try {
-                  return super.convertRowIndexToModel(index);
+                    return super.convertRowIndexToModel(index);
                 } catch (NullPointerException ex) {
-                  LOG.log(Level.INFO, 
-                      "Ignoring exception reported in http://netbeans.org/bugzilla/show_bug.cgi?id=197503", ex);
-                  return 0;
-                }
-                catch(ArrayIndexOutOfBoundsException e) {
+                    LOG.log(Level.INFO,
+                            "Ignoring exception reported in http://netbeans.org/bugzilla/show_bug.cgi?id=197503", ex);
+                    return 0;
+                } catch (ArrayIndexOutOfBoundsException e) {
                     // may happen when RowSorter.sort was called 2 times
                     return index;
                 }
-              }
+            }
         };
-        
+
         rowsorter.setRowFilter(rowFilter);
-        
+
         table.setRowSorter(rowsorter);
-        
+
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent evt) {
                 try {
-                    LogTableModel model = (LogTableModel)table.getModel();
+                    LogTableModel model = (LogTableModel) table.getModel();
                     int row = table.getSelectedRow();
                     int col = table.getSelectedColumn();
 
@@ -905,10 +900,10 @@ public final class LogTopComponent extends TopComponent {
 
                                     // XXX .size() call is super-slow for large files, see issue
                                     // #126531. So we fallback to catching IOOBE
-                //                    int nOfLines = lines.getLines().size();
-                //                    if (line > nOfLines) {
-                //                        line = nOfLines;
-                //                    }
+                                    //                    int nOfLines = lines.getLines().size();
+                                    //                    if (line > nOfLines) {
+                                    //                        line = nOfLines;
+                                    //                    }
                                     try {
                                         Line.Set lines = lc.getLineSet();
                                         Line l = lines.getCurrent(line - 1);
@@ -928,9 +923,8 @@ public final class LogTopComponent extends TopComponent {
                             }
                         }
                     }
-                }
-                catch(IOException e) {
-                    
+                } catch (IOException e) {
+
                 }
             }
         });

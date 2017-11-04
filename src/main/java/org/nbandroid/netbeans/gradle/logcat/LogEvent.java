@@ -22,25 +22,23 @@ import java.util.regex.Pattern;
  * @author NYEREL
  */
 public class LogEvent implements Comparable<LogEvent> {
-    
+
     /**
      * Reg-Ex copied from Java Project Support JavaAntLogger
      */
-    
-    /** Java identifier */
+    /**
+     * Java identifier
+     */
     private static final String JIDENT = "[\\p{javaJavaIdentifierStart}][\\p{javaJavaIdentifierPart}]*"; // NOI18N
-    
+
     private static final Pattern STACK_TRACE = Pattern.compile(
-            "(.*?((?:" + JIDENT + "[.])*)(" + JIDENT + ")[.](?:" + JIDENT + "|<init>|<clinit>)" + // NOI18N
+            "(.*?((?:" + JIDENT + "[.])*)(" + JIDENT + ")[.](?:" + JIDENT + "|<init>|<clinit>)"
+            + // NOI18N
             "[(])((" + JIDENT + "[.]java):([0-9]+)|Unknown Source)([)].*)"); // NOI18N
-
-
-
 
     private final LogEventInfo info;
     private final String message;
     private final StackTraceElement ste;
-
 
     public LogEvent(LogEventInfo info, String message) {
         this.info = info;
@@ -50,38 +48,36 @@ public class LogEvent implements Comparable<LogEvent> {
 
     /**
      * Parse the log message and create a {@link java.lang.StackTraceElement},
-     * if the message is part of a stack trace.
-     * Source is also copied from Java Project Support JavaAntLogger
+     * if the message is part of a stack trace. Source is also copied from Java
+     * Project Support JavaAntLogger
      */
     private StackTraceElement parseStackTraceElement() {
         Matcher m = STACK_TRACE.matcher(message);
-        
+
         if (m.matches()) {
             // We have a stack trace.
             String pkg = m.group(2);
             String cls = m.group(3);
             String filename = m.group(5);
             int lineNumber;
-            
+
             if (filename == null) {
                 filename = m.group(3).replaceFirst("[$].+", "") + ".java"; // NOI18N
                 lineNumber = 1;
-            }
-            else {
+            } else {
                 lineNumber = Integer.parseInt(m.group(6));
             }
-            
+
             String[] str = new String[m.groupCount()];
-            for(int i=0; i<str.length; i++) {
+            for (int i = 0; i < str.length; i++) {
                 str[i] = m.group(i);
             }
-            
+
             return new StackTraceElement(pkg + cls, "", pkg.replace('.', '/') + filename, lineNumber);
         }
-        
+
         return null;
     }
-
 
     public String getTime() {
         return info.getTime();
@@ -106,23 +102,23 @@ public class LogEvent implements Comparable<LogEvent> {
     public LogLevel getLevel() {
         return info.getLevel();
     }
-    
+
     public String getMessage() {
         return message;
     }
-    
+
     public StackTraceElement getStackTraceElement() {
         return ste;
     }
 
     @Override
     public String toString() {
-            return info.getTime() + ": "
+        return info.getTime() + ": "
                 + info.getLevel() + "/"
                 + info.getTag() + "("
                 + info.getPid() + "): "
                 + message;
-        }
+    }
 
     @Override
     public int compareTo(LogEvent o) {
@@ -136,7 +132,7 @@ public class LogEvent implements Comparable<LogEvent> {
 
     @Override
     public boolean equals(Object obj) {
-        if(obj instanceof LogEvent) {
+        if (obj instanceof LogEvent) {
             LogEvent o = (LogEvent) obj;
 
             if (message == null && o.message != null) {

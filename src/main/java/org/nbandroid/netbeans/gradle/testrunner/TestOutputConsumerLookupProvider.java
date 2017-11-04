@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.nbandroid.netbeans.gradle.testrunner;
 
 import java.util.logging.Level;
@@ -25,15 +24,15 @@ import org.openide.util.lookup.Lookups;
  * Action provider of the Android project.
  */
 @LookupProvider.Registration(
-    projectTypes=@LookupProvider.Registration.ProjectType(id="org-netbeans-modules-android-project", position=400))
+        projectTypes = @LookupProvider.Registration.ProjectType(id = "org-netbeans-modules-android-project", position = 400))
 public class TestOutputConsumerLookupProvider implements LookupProvider {
 
-  private static final Logger LOG = Logger.getLogger(TestOutputConsumerLookupProvider.class.getName());
+    private static final Logger LOG = Logger.getLogger(TestOutputConsumerLookupProvider.class.getName());
 
-  @Override
-  public Lookup createAdditionalLookup(Lookup lkp) {
-    LOG.log(Level.FINER, "createAdditionalLookup {0}", lkp);
-    final Project aPrj = lkp.lookup(Project.class);
-    return Lookups.singleton(new TestOutputUIDisplayer(aPrj));
-  }
+    @Override
+    public Lookup createAdditionalLookup(Lookup lkp) {
+        LOG.log(Level.FINER, "createAdditionalLookup {0}", lkp);
+        final Project aPrj = lkp.lookup(Project.class);
+        return Lookups.singleton(new TestOutputUIDisplayer(aPrj));
+    }
 }

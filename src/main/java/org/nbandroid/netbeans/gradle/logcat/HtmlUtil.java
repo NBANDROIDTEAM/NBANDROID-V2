@@ -15,22 +15,25 @@ package org.nbandroid.netbeans.gradle.logcat;
 
 /**
  * Utility class for HTML escaping.
+ *
  * @author Christian Fischer
  */
 public class HtmlUtil {
+
     /**
      * Escape html entities.
+     *
      * @param str The input string.
-     * @return    The HTML escaped output string.
+     * @return The HTML escaped output string.
      */
     public static String htmlEscape(String str) {
         StringBuilder sb = new StringBuilder();
         int size = str.length();
-        
-        for(int i=0; i<size; i++) {
+
+        for (int i = 0; i < size; i++) {
             char c = str.charAt(i);
-            
-            switch(c) {
+
+            switch (c) {
                 case '<':
                     sb.append("&lt;");
                     break;
@@ -45,19 +48,19 @@ public class HtmlUtil {
                     break;
                 default: {
                     int cc = Character.getNumericValue(c);
-                    
+
                     if (cc < 0xA0) {
                         sb.append(c);
                     } else {
                         // encode in unicode reference
                         sb.append("&#").append(Integer.toString(cc)).append(';');
                     }
-                    
+
                     break;
                 }
             }
         }
-        
+
         return sb.toString();
     }
 }

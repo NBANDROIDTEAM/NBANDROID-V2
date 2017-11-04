@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.nbandroid.netbeans.gradle.query;
 
 import com.android.builder.model.AndroidArtifact;
@@ -15,6 +33,7 @@ import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.nbandroid.netbeans.gradle.AndroidModelAware;
+import org.nbandroid.netbeans.gradle.api.AndroidConstants;
 import org.nbandroid.netbeans.gradle.config.AndroidBuildVariants;
 import org.nbandroid.netbeans.gradle.config.BuildVariant;
 import org.nbandroid.netbeans.gradle.config.ProductFlavors;
@@ -26,7 +45,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.nbandroid.netbeans.gradle.api.AndroidConstants;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -38,339 +56,341 @@ import org.openide.util.ChangeSupport;
  */
 public class GradleAndroidSources implements Sources, AndroidModelAware {
 
-  private final Project project;
-  private AndroidProject aProject;
-  private final BuildVariant buildConfig;
-  private final ChangeSupport cs = new ChangeSupport(this);
+    private final Project project;
+    private AndroidProject aProject;
+    private final BuildVariant buildConfig;
+    private final ChangeSupport cs = new ChangeSupport(this);
 
-  public GradleAndroidSources(Project project, BuildVariant buildConfig) {
-    this.project = Preconditions.checkNotNull(project);
-    this.buildConfig = Preconditions.checkNotNull(buildConfig);
-    buildConfig.addChangeListener(new ChangeListener() {
+    public GradleAndroidSources(Project project, BuildVariant buildConfig) {
+        this.project = Preconditions.checkNotNull(project);
+        this.buildConfig = Preconditions.checkNotNull(buildConfig);
+        buildConfig.addChangeListener(new ChangeListener() {
 
-      @Override
-      public void stateChanged(ChangeEvent e) {
-        cs.fireChange();
-      }
-    });
-  }
-
-  @Override
-  public SourceGroup[] getSourceGroups(String type) {
-    if (type.equals(Sources.TYPE_GENERIC)) {
-      ProjectInformation info = ProjectUtils.getInformation(project);
-      return new SourceGroup[]{GenericSources.group(project, project.getProjectDirectory(), info.getName(), info.getDisplayName(), null, null)};
-    } else if (type.equals(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-      return groupSrcMainJava();
-    } else if (type.equals(AndroidConstants.SOURCES_TYPE_INSTRUMENT_TEST_JAVA)) {
-      return groupSrcInstrumentTestJava();
-    } else if (type.equals(AndroidConstants.SOURCES_TYPE_GENERATED_JAVA)) {
-      // XXX listen to this being created/deleted
-      List<SourceGroup> grps = new ArrayList<SourceGroup>();
-      FileObject prjDir = project.getProjectDirectory();
-      Variant variant = buildConfig.getCurrentVariant();
-      if (variant != null) {
-        for (File srcDir : variant.getMainArtifact().getGeneratedSourceFolders()) {
-          if (!srcDir.exists()) {
-            continue;
-          }
-          FileObject src = FileUtil.toFileObject(srcDir);
-          String srcName = FileUtil.isParentOf(prjDir, src) ?
-              FileUtil.getRelativePath(prjDir, src) :
-              srcDir.getAbsolutePath();
-          grps.add(new AnySourceGroup(project, src, srcName, "Generated Source Packages " + srcName, null, null));
-        }
-      }
-      return grps.toArray(new SourceGroup[grps.size()]);
-    } else if (type.equals(AndroidConstants.SOURCES_TYPE_INSTRUMENT_TEST_GENERATED_JAVA)) {
-      // XXX listen to this being created/deleted
-      List<SourceGroup> grps = new ArrayList<SourceGroup>();
-      FileObject prjDir = project.getProjectDirectory();
-      Variant variant = buildConfig.getCurrentVariant();
-      AndroidArtifact testArtifact = AndroidBuildVariants.instrumentTestArtifact(variant.getExtraAndroidArtifacts());
-      if (testArtifact != null) {
-        for (File srcDir : testArtifact.getGeneratedSourceFolders()) {
-          if (!srcDir.exists()) {
-            continue;
-          }
-          FileObject src = FileUtil.toFileObject(srcDir);
-          String srcName = FileUtil.isParentOf(prjDir, src) ?
-              FileUtil.getRelativePath(prjDir, src) :
-              srcDir.getAbsolutePath();
-          grps.add(new AnySourceGroup(project, src, srcName, "Generated Instrument Test Packages " + srcName, null, null));
-        }
-      }
-      return grps.toArray(new SourceGroup[grps.size()]);
-    } else if (type.equals(JavaProjectConstants.SOURCES_TYPE_RESOURCES)) {
-      return groupSrcMainResources();
-    } else if (type.equals(AndroidConstants.SOURCES_TYPE_GENERATED_RESOURCES)) {
-      // XXX listen to this being created/deleted
-      List<SourceGroup> grps = new ArrayList<SourceGroup>();
-      FileObject prjDir = project.getProjectDirectory();
-      Variant variant = buildConfig.getCurrentVariant();
-      if (variant != null) {
-        for (File srcDir : variant.getMainArtifact().getGeneratedResourceFolders()) {
-          if (!srcDir.exists()) {
-            continue;
-          }
-          FileObject src = FileUtil.toFileObject(srcDir);
-          String srcName = FileUtil.isParentOf(prjDir, src) ?
-              FileUtil.getRelativePath(prjDir, src) :
-              srcDir.getAbsolutePath();
-          grps.add(new AnySourceGroup(project, src, srcName, "Generated Other Sources " + srcName, null, null));
-        }
-      }
-      return grps.toArray(new SourceGroup[grps.size()]);
-    } else if (type.equals(AndroidConstants.SOURCES_TYPE_ANDROID_RES)) {
-      return groupSrcMainRes();
-    } else {
-      // XXX consider SOURCES_TYPE_RESOURCES -> res
-      return new SourceGroup[0];
-    }
-  }
-
-  private SourceGroup[] groupSrcMainJava() {
-    // XXX listen to this being created/deleted
-    List<SourceGroup> grps = new ArrayList<SourceGroup>();
-    FileObject prjDir = project.getProjectDirectory();
-    if (aProject != null) {
-      for (File srcDir : aProject.getDefaultConfig().getSourceProvider().getJavaDirectories()) {
-        if (!srcDir.exists()) {
-          continue;
-        }
-        FileObject src = FileUtil.toFileObject(srcDir);
-        String srcName = FileUtil.isParentOf(prjDir, src) ?
-                FileUtil.getRelativePath(prjDir, src) :
-                srcDir.getAbsolutePath();
-        grps.add(GenericSources.group(project, src, srcName, "Source Packages " + srcName, null, null));
-      }
-      Variant variant = buildConfig.getCurrentVariant();
-      if (variant != null) {
-        for (String f : variant.getProductFlavors()) {
-          final ProductFlavorContainer flavor = ProductFlavors.findFlavorByName(aProject.getProductFlavors(), f);
-          if (flavor != null) {
-            for (File srcDir : flavor.getSourceProvider().getJavaDirectories()) {
-              if (!srcDir.exists()) {
-                continue;
-              }
-              FileObject src = FileUtil.toFileObject(srcDir);
-              String srcName = FileUtil.isParentOf(prjDir, src)
-                      ? FileUtil.getRelativePath(prjDir, src)
-                      : srcDir.getAbsolutePath();
-              grps.add(GenericSources.group(project, src, srcName, "Source Packages Flavor " + f, null, null));
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                cs.fireChange();
             }
-          }
-        }
-      }
+        });
     }
-    BuildTypeContainer buildTypeContainer = buildConfig.getCurrentBuildTypeContainer();
-    if (buildTypeContainer != null) {
-      for (File srcDir : buildTypeContainer.getSourceProvider().getJavaDirectories()) {
-        if (!srcDir.exists()) {
-          continue;
-        }
-        FileObject src = FileUtil.toFileObject(srcDir);
-        String srcName = FileUtil.isParentOf(prjDir, src) ?
-                FileUtil.getRelativePath(prjDir, src) :
-                srcDir.getAbsolutePath();
-        grps.add(GenericSources.group(project, src, srcName, "Source Packages " + srcName, null, null));
-      }
-    }
-    return grps.toArray(new SourceGroup[grps.size()]);
-  }
 
-  private SourceGroup[] groupSrcInstrumentTestJava() {
-    // XXX listen to this being created/deleted
-    List<SourceGroup> grps = new ArrayList<SourceGroup>();
-    FileObject prjDir = project.getProjectDirectory();
-    if (aProject != null) {
-      SourceProviderContainer spc = ProductFlavors.getSourceProviderContainer(
-          aProject.getDefaultConfig(), AndroidProject.ARTIFACT_ANDROID_TEST);
-      if (spc != null) {
-        for (File srcDir : spc.getSourceProvider().getJavaDirectories()) {
-          if (!srcDir.exists()) {
-            continue;
-          }
-          FileObject src = FileUtil.toFileObject(srcDir);
-          String srcName = FileUtil.isParentOf(prjDir, src) ?
-                  FileUtil.getRelativePath(prjDir, src) :
-                  srcDir.getAbsolutePath();
-          grps.add(GenericSources.group(project, src, srcName, "Instrument Test Packages " + srcName, null, null));
+    @Override
+    public SourceGroup[] getSourceGroups(String type) {
+        if (type.equals(Sources.TYPE_GENERIC)) {
+            ProjectInformation info = ProjectUtils.getInformation(project);
+            return new SourceGroup[]{GenericSources.group(project, project.getProjectDirectory(), info.getName(), info.getDisplayName(), null, null)};
+        } else if (type.equals(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            return groupSrcMainJava();
+        } else if (type.equals(AndroidConstants.SOURCES_TYPE_INSTRUMENT_TEST_JAVA)) {
+            return groupSrcInstrumentTestJava();
+        } else if (type.equals(AndroidConstants.SOURCES_TYPE_GENERATED_JAVA)) {
+            // XXX listen to this being created/deleted
+            List<SourceGroup> grps = new ArrayList<SourceGroup>();
+            FileObject prjDir = project.getProjectDirectory();
+            Variant variant = buildConfig.getCurrentVariant();
+            if (variant != null) {
+                for (File srcDir : variant.getMainArtifact().getGeneratedSourceFolders()) {
+                    if (!srcDir.exists()) {
+                        continue;
+                    }
+                    FileObject src = FileUtil.toFileObject(srcDir);
+                    String srcName = FileUtil.isParentOf(prjDir, src)
+                            ? FileUtil.getRelativePath(prjDir, src)
+                            : srcDir.getAbsolutePath();
+                    grps.add(new AnySourceGroup(project, src, srcName, "Generated Source Packages " + srcName, null, null));
+                }
+            }
+            return grps.toArray(new SourceGroup[grps.size()]);
+        } else if (type.equals(AndroidConstants.SOURCES_TYPE_INSTRUMENT_TEST_GENERATED_JAVA)) {
+            // XXX listen to this being created/deleted
+            List<SourceGroup> grps = new ArrayList<SourceGroup>();
+            FileObject prjDir = project.getProjectDirectory();
+            Variant variant = buildConfig.getCurrentVariant();
+            AndroidArtifact testArtifact = AndroidBuildVariants.instrumentTestArtifact(variant.getExtraAndroidArtifacts());
+            if (testArtifact != null) {
+                for (File srcDir : testArtifact.getGeneratedSourceFolders()) {
+                    if (!srcDir.exists()) {
+                        continue;
+                    }
+                    FileObject src = FileUtil.toFileObject(srcDir);
+                    String srcName = FileUtil.isParentOf(prjDir, src)
+                            ? FileUtil.getRelativePath(prjDir, src)
+                            : srcDir.getAbsolutePath();
+                    grps.add(new AnySourceGroup(project, src, srcName, "Generated Instrument Test Packages " + srcName, null, null));
+                }
+            }
+            return grps.toArray(new SourceGroup[grps.size()]);
+        } else if (type.equals(JavaProjectConstants.SOURCES_TYPE_RESOURCES)) {
+            return groupSrcMainResources();
+        } else if (type.equals(AndroidConstants.SOURCES_TYPE_GENERATED_RESOURCES)) {
+            // XXX listen to this being created/deleted
+            List<SourceGroup> grps = new ArrayList<SourceGroup>();
+            FileObject prjDir = project.getProjectDirectory();
+            Variant variant = buildConfig.getCurrentVariant();
+            if (variant != null) {
+                for (File srcDir : variant.getMainArtifact().getGeneratedResourceFolders()) {
+                    if (!srcDir.exists()) {
+                        continue;
+                    }
+                    FileObject src = FileUtil.toFileObject(srcDir);
+                    String srcName = FileUtil.isParentOf(prjDir, src)
+                            ? FileUtil.getRelativePath(prjDir, src)
+                            : srcDir.getAbsolutePath();
+                    grps.add(new AnySourceGroup(project, src, srcName, "Generated Other Sources " + srcName, null, null));
+                }
+            }
+            return grps.toArray(new SourceGroup[grps.size()]);
+        } else if (type.equals(AndroidConstants.SOURCES_TYPE_ANDROID_RES)) {
+            return groupSrcMainRes();
+        } else {
+            // XXX consider SOURCES_TYPE_RESOURCES -> res
+            return new SourceGroup[0];
         }
-      }
-      Variant variant = buildConfig.getCurrentVariant();
-      if (variant != null) {
-        for (String f : variant.getProductFlavors()) {
-          final ProductFlavorContainer flavor = ProductFlavors.findFlavorByName(aProject.getProductFlavors(), f);
-          if (flavor != null) {
-            SourceProviderContainer flavorSPC = ProductFlavors.getSourceProviderContainer(
-                flavor, AndroidProject.ARTIFACT_ANDROID_TEST);
-            if (flavorSPC != null) {
-              for (File srcDir : flavorSPC.getSourceProvider().getJavaDirectories()) {
+    }
+
+    private SourceGroup[] groupSrcMainJava() {
+        // XXX listen to this being created/deleted
+        List<SourceGroup> grps = new ArrayList<SourceGroup>();
+        FileObject prjDir = project.getProjectDirectory();
+        if (aProject != null) {
+            for (File srcDir : aProject.getDefaultConfig().getSourceProvider().getJavaDirectories()) {
                 if (!srcDir.exists()) {
-                  continue;
+                    continue;
                 }
                 FileObject src = FileUtil.toFileObject(srcDir);
                 String srcName = FileUtil.isParentOf(prjDir, src)
                         ? FileUtil.getRelativePath(prjDir, src)
                         : srcDir.getAbsolutePath();
-                grps.add(GenericSources.group(project, src, srcName, "Instrument Test Packages Flavor " + f, null, null));
-              }
+                grps.add(GenericSources.group(project, src, srcName, "Source Packages " + srcName, null, null));
             }
-          }
+            Variant variant = buildConfig.getCurrentVariant();
+            if (variant != null) {
+                for (String f : variant.getProductFlavors()) {
+                    final ProductFlavorContainer flavor = ProductFlavors.findFlavorByName(aProject.getProductFlavors(), f);
+                    if (flavor != null) {
+                        for (File srcDir : flavor.getSourceProvider().getJavaDirectories()) {
+                            if (!srcDir.exists()) {
+                                continue;
+                            }
+                            FileObject src = FileUtil.toFileObject(srcDir);
+                            String srcName = FileUtil.isParentOf(prjDir, src)
+                                    ? FileUtil.getRelativePath(prjDir, src)
+                                    : srcDir.getAbsolutePath();
+                            grps.add(GenericSources.group(project, src, srcName, "Source Packages Flavor " + f, null, null));
+                        }
+                    }
+                }
+            }
         }
-      }
-    }
-    return grps.toArray(new SourceGroup[grps.size()]);
-  }
-
-  private SourceGroup[] groupSrcMainResources() {
-    // XXX listen to this being created/deleted
-    List<SourceGroup> grps = new ArrayList<SourceGroup>();
-    FileObject prjDir = project.getProjectDirectory();
-    if (aProject != null) {
-      for (File srcDir : aProject.getDefaultConfig().getSourceProvider().getResourcesDirectories()) {
-        if (!srcDir.exists()) {
-          continue;
+        BuildTypeContainer buildTypeContainer = buildConfig.getCurrentBuildTypeContainer();
+        if (buildTypeContainer != null) {
+            for (File srcDir : buildTypeContainer.getSourceProvider().getJavaDirectories()) {
+                if (!srcDir.exists()) {
+                    continue;
+                }
+                FileObject src = FileUtil.toFileObject(srcDir);
+                String srcName = FileUtil.isParentOf(prjDir, src)
+                        ? FileUtil.getRelativePath(prjDir, src)
+                        : srcDir.getAbsolutePath();
+                grps.add(GenericSources.group(project, src, srcName, "Source Packages " + srcName, null, null));
+            }
         }
-        FileObject src = FileUtil.toFileObject(srcDir);
-        String srcName = FileUtil.isParentOf(prjDir, src) ?
-                FileUtil.getRelativePath(prjDir, src) :
-                srcDir.getAbsolutePath();
-        grps.add(GenericSources.group(project, src, srcName, "Other Sources " + srcName, null, null));
-      }
+        return grps.toArray(new SourceGroup[grps.size()]);
     }
-    BuildTypeContainer buildTypeContainer = buildConfig.getCurrentBuildTypeContainer();
-    if (buildTypeContainer != null) {
-      for (File srcDir : buildTypeContainer.getSourceProvider().getResourcesDirectories()) {
-        if (!srcDir.exists()) {
-          continue;
+
+    private SourceGroup[] groupSrcInstrumentTestJava() {
+        // XXX listen to this being created/deleted
+        List<SourceGroup> grps = new ArrayList<SourceGroup>();
+        FileObject prjDir = project.getProjectDirectory();
+        if (aProject != null) {
+            SourceProviderContainer spc = ProductFlavors.getSourceProviderContainer(
+                    aProject.getDefaultConfig(), AndroidProject.ARTIFACT_ANDROID_TEST);
+            if (spc != null) {
+                for (File srcDir : spc.getSourceProvider().getJavaDirectories()) {
+                    if (!srcDir.exists()) {
+                        continue;
+                    }
+                    FileObject src = FileUtil.toFileObject(srcDir);
+                    String srcName = FileUtil.isParentOf(prjDir, src)
+                            ? FileUtil.getRelativePath(prjDir, src)
+                            : srcDir.getAbsolutePath();
+                    grps.add(GenericSources.group(project, src, srcName, "Instrument Test Packages " + srcName, null, null));
+                }
+            }
+            Variant variant = buildConfig.getCurrentVariant();
+            if (variant != null) {
+                for (String f : variant.getProductFlavors()) {
+                    final ProductFlavorContainer flavor = ProductFlavors.findFlavorByName(aProject.getProductFlavors(), f);
+                    if (flavor != null) {
+                        SourceProviderContainer flavorSPC = ProductFlavors.getSourceProviderContainer(
+                                flavor, AndroidProject.ARTIFACT_ANDROID_TEST);
+                        if (flavorSPC != null) {
+                            for (File srcDir : flavorSPC.getSourceProvider().getJavaDirectories()) {
+                                if (!srcDir.exists()) {
+                                    continue;
+                                }
+                                FileObject src = FileUtil.toFileObject(srcDir);
+                                String srcName = FileUtil.isParentOf(prjDir, src)
+                                        ? FileUtil.getRelativePath(prjDir, src)
+                                        : srcDir.getAbsolutePath();
+                                grps.add(GenericSources.group(project, src, srcName, "Instrument Test Packages Flavor " + f, null, null));
+                            }
+                        }
+                    }
+                }
+            }
         }
-        FileObject src = FileUtil.toFileObject(srcDir);
-        String srcName = FileUtil.isParentOf(prjDir, src) ?
-                FileUtil.getRelativePath(prjDir, src) :
-                srcDir.getAbsolutePath();
-        grps.add(GenericSources.group(project, src, srcName, "Other Sources " + srcName, null, null));
-      }
+        return grps.toArray(new SourceGroup[grps.size()]);
     }
-    return grps.toArray(new SourceGroup[grps.size()]);
-  }
 
-  private SourceGroup[] groupSrcMainRes() {
-    List<SourceGroup> grps = new ArrayList<SourceGroup>();
-    FileObject prjDir = project.getProjectDirectory();
-    if (aProject != null) {
-      for (File srcDir : aProject.getDefaultConfig().getSourceProvider().getResDirectories()) {
-        if (!srcDir.exists()) {
-          continue;
+    private SourceGroup[] groupSrcMainResources() {
+        // XXX listen to this being created/deleted
+        List<SourceGroup> grps = new ArrayList<SourceGroup>();
+        FileObject prjDir = project.getProjectDirectory();
+        if (aProject != null) {
+            for (File srcDir : aProject.getDefaultConfig().getSourceProvider().getResourcesDirectories()) {
+                if (!srcDir.exists()) {
+                    continue;
+                }
+                FileObject src = FileUtil.toFileObject(srcDir);
+                String srcName = FileUtil.isParentOf(prjDir, src)
+                        ? FileUtil.getRelativePath(prjDir, src)
+                        : srcDir.getAbsolutePath();
+                grps.add(GenericSources.group(project, src, srcName, "Other Sources " + srcName, null, null));
+            }
         }
-        FileObject src = FileUtil.toFileObject(srcDir);
-        String srcName = FileUtil.isParentOf(prjDir, src) ?
-                FileUtil.getRelativePath(prjDir, src) :
-                srcDir.getAbsolutePath();
-        grps.add(GenericSources.group(project, src, srcName, "App resources " + srcName, null, null));
-      }
-    }
-    BuildTypeContainer buildTypeContainer = buildConfig.getCurrentBuildTypeContainer();
-    if (buildTypeContainer != null) {
-      for (File srcDir : buildTypeContainer.getSourceProvider().getResDirectories()) {
-        if (!srcDir.exists()) {
-          continue;
+        BuildTypeContainer buildTypeContainer = buildConfig.getCurrentBuildTypeContainer();
+        if (buildTypeContainer != null) {
+            for (File srcDir : buildTypeContainer.getSourceProvider().getResourcesDirectories()) {
+                if (!srcDir.exists()) {
+                    continue;
+                }
+                FileObject src = FileUtil.toFileObject(srcDir);
+                String srcName = FileUtil.isParentOf(prjDir, src)
+                        ? FileUtil.getRelativePath(prjDir, src)
+                        : srcDir.getAbsolutePath();
+                grps.add(GenericSources.group(project, src, srcName, "Other Sources " + srcName, null, null));
+            }
         }
-        FileObject src = FileUtil.toFileObject(srcDir);
-        String srcName = FileUtil.isParentOf(prjDir, src) ?
-                FileUtil.getRelativePath(prjDir, src) :
-                srcDir.getAbsolutePath();
-        grps.add(GenericSources.group(project, src, srcName, "App resources " + srcName, null, null));
-      }
+        return grps.toArray(new SourceGroup[grps.size()]);
     }
-    return grps.toArray(new SourceGroup[grps.size()]);
-  }
 
-  @Override
-  public void addChangeListener(ChangeListener listener) {
-    cs.addChangeListener(listener);
-  }
-
-  @Override
-  public void removeChangeListener(ChangeListener listener) {
-    cs.removeChangeListener(listener);
-  }
-
-  @Override
-  public void setAndroidProject(AndroidProject aPrj) {
-    aProject = aPrj;
-    cs.fireChange();
-  }
-  
-  /** SourceGroup that accept all sources including generated (NOT_SHARABLE). */
-  private static final class AnySourceGroup implements SourceGroup {
-
-    private final Project p;
-    private final FileObject rootFolder;
-    private final String name;
-    private final String displayName;
-    private final Icon icon;
-    private final Icon openedIcon;
-
-    AnySourceGroup(Project p, FileObject rootFolder, String name, String displayName, Icon icon, Icon openedIcon) {
-      this.p = p;
-      this.rootFolder = rootFolder;
-      this.name = name;
-      this.displayName = displayName;
-      this.icon = icon;
-      this.openedIcon = openedIcon;
+    private SourceGroup[] groupSrcMainRes() {
+        List<SourceGroup> grps = new ArrayList<SourceGroup>();
+        FileObject prjDir = project.getProjectDirectory();
+        if (aProject != null) {
+            for (File srcDir : aProject.getDefaultConfig().getSourceProvider().getResDirectories()) {
+                if (!srcDir.exists()) {
+                    continue;
+                }
+                FileObject src = FileUtil.toFileObject(srcDir);
+                String srcName = FileUtil.isParentOf(prjDir, src)
+                        ? FileUtil.getRelativePath(prjDir, src)
+                        : srcDir.getAbsolutePath();
+                grps.add(GenericSources.group(project, src, srcName, "App resources " + srcName, null, null));
+            }
+        }
+        BuildTypeContainer buildTypeContainer = buildConfig.getCurrentBuildTypeContainer();
+        if (buildTypeContainer != null) {
+            for (File srcDir : buildTypeContainer.getSourceProvider().getResDirectories()) {
+                if (!srcDir.exists()) {
+                    continue;
+                }
+                FileObject src = FileUtil.toFileObject(srcDir);
+                String srcName = FileUtil.isParentOf(prjDir, src)
+                        ? FileUtil.getRelativePath(prjDir, src)
+                        : srcDir.getAbsolutePath();
+                grps.add(GenericSources.group(project, src, srcName, "App resources " + srcName, null, null));
+            }
+        }
+        return grps.toArray(new SourceGroup[grps.size()]);
     }
 
     @Override
-    public FileObject getRootFolder() {
-      return rootFolder;
+    public void addChangeListener(ChangeListener listener) {
+        cs.addChangeListener(listener);
     }
 
     @Override
-    public String getName() {
-      return name;
+    public void removeChangeListener(ChangeListener listener) {
+        cs.removeChangeListener(listener);
     }
 
     @Override
-    public String getDisplayName() {
-      return displayName;
+    public void setAndroidProject(AndroidProject aPrj) {
+        aProject = aPrj;
+        cs.fireChange();
     }
 
-    @Override
-    public Icon getIcon(boolean opened) {
-      return opened ? icon : openedIcon;
-    }
+    /**
+     * SourceGroup that accept all sources including generated (NOT_SHARABLE).
+     */
+    private static final class AnySourceGroup implements SourceGroup {
 
-    @Override
-    public boolean contains(FileObject file) {
-      if (file != rootFolder && !FileUtil.isParentOf(rootFolder, file)) {
-        return false;
-      }
-      if (file.isFolder() && file != p.getProjectDirectory() && ProjectManager.getDefault().isProject(file)) {
-        // #67450: avoid actually loading the nested project.
-        return false;
-      }
-      if (FileOwnerQuery.getOwner(file) != p) {
-        return false;
-      }
-      // MIXED, UNKNOWN, and SHARABLE -> include it
-      return true; // SharabilityQuery.getSharability(file) != SharabilityQuery.Sharability.NOT_SHARABLE;
-    }
+        private final Project p;
+        private final FileObject rootFolder;
+        private final String name;
+        private final String displayName;
+        private final Icon icon;
+        private final Icon openedIcon;
 
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-      // XXX should react to ProjectInformation changes
-    }
+        AnySourceGroup(Project p, FileObject rootFolder, String name, String displayName, Icon icon, Icon openedIcon) {
+            this.p = p;
+            this.rootFolder = rootFolder;
+            this.name = name;
+            this.displayName = displayName;
+            this.icon = icon;
+            this.openedIcon = openedIcon;
+        }
 
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-      // XXX
-    }
+        @Override
+        public FileObject getRootFolder() {
+            return rootFolder;
+        }
 
-    @Override
-    public String toString() {
-      return "AnySourceGroup[name=" + name + ",rootFolder=" + rootFolder + "]";
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        @Override
+        public Icon getIcon(boolean opened) {
+            return opened ? icon : openedIcon;
+        }
+
+        @Override
+        public boolean contains(FileObject file) {
+            if (file != rootFolder && !FileUtil.isParentOf(rootFolder, file)) {
+                return false;
+            }
+            if (file.isFolder() && file != p.getProjectDirectory() && ProjectManager.getDefault().isProject(file)) {
+                // #67450: avoid actually loading the nested project.
+                return false;
+            }
+            if (FileOwnerQuery.getOwner(file) != p) {
+                return false;
+            }
+            // MIXED, UNKNOWN, and SHARABLE -> include it
+            return true; // SharabilityQuery.getSharability(file) != SharabilityQuery.Sharability.NOT_SHARABLE;
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+            // XXX should react to ProjectInformation changes
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+            // XXX
+        }
+
+        @Override
+        public String toString() {
+            return "AnySourceGroup[name=" + name + ",rootFolder=" + rootFolder + "]";
+        }
     }
-  }
 }

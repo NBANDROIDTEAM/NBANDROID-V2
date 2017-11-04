@@ -12,7 +12,6 @@
  *  limitations under the License.
  *  under the License.
  */
-
 package org.nbandroid.netbeans.gradle.core.ui;
 
 import com.android.ddmlib.AndroidDebugBridge;
@@ -29,29 +28,29 @@ import org.openide.util.RequestProcessor;
  */
 class RestartADBAction extends AbstractAction {
 
-  public RestartADBAction() {
-    putValue(NAME, NbBundle.getMessage(RestartADBAction.class, "NAME_Restart_ADB_Action"));
-  }
-
-  @Override
-  public void actionPerformed(ActionEvent e) {
-    final AndroidDebugBridge debugBridge = AndroidDebugBridgeFactory.getDefault();
-    if (debugBridge != null) {
-      RequestProcessor.getDefault().post(new Runnable() {
-
-        @Override
-        public void run() {
-          StatusDisplayer.getDefault().setStatusText(
-              NbBundle.getMessage(RestartADBAction.class, "MSG_restarting_ADB"));
-          boolean status = debugBridge.restart();
-          StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-              RestartADBAction.class,
-              status ? "MSG_ADB_restart_success" : "MSG_ADB_restart_fail"));
-        }
-      });
-    } else {
-      StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(RestartADBAction.class, "ERR_cannot_restart_ADB"));
+    public RestartADBAction() {
+        putValue(NAME, NbBundle.getMessage(RestartADBAction.class, "NAME_Restart_ADB_Action"));
     }
-  }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        final AndroidDebugBridge debugBridge = AndroidDebugBridgeFactory.getDefault();
+        if (debugBridge != null) {
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                @Override
+                public void run() {
+                    StatusDisplayer.getDefault().setStatusText(
+                            NbBundle.getMessage(RestartADBAction.class, "MSG_restarting_ADB"));
+                    boolean status = debugBridge.restart();
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
+                            RestartADBAction.class,
+                            status ? "MSG_ADB_restart_success" : "MSG_ADB_restart_fail"));
+                }
+            });
+        } else {
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(RestartADBAction.class, "ERR_cannot_restart_ADB"));
+        }
+    }
 
 }

@@ -71,7 +71,7 @@ public class LogTableManager implements LogListener, ChangeListener {
         levelColumn.setMaxWidth(80);
 
     }
-    
+
     public LogTableModel getModel() {
         return model;
     }
@@ -86,7 +86,7 @@ public class LogTableManager implements LogListener, ChangeListener {
             }
         });
     }
-    
+
     public void addAllEvents(final Collection<LogEvent> events) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -96,7 +96,7 @@ public class LogTableManager implements LogListener, ChangeListener {
                 if (autoFollowScroll) {
                     scrollToBottom();
                 }
-                
+
                 return;
             }
         });
@@ -111,7 +111,7 @@ public class LogTableManager implements LogListener, ChangeListener {
                 if (autoFollowScroll) {
                     scrollToBottom();
                 }
-                
+
                 return;
             }
         });
@@ -155,5 +155,5 @@ public class LogTableManager implements LogListener, ChangeListener {
     @Override
     public String toString() {
         return "LogTableManager for filter: " + model.getFilter();
-    }    
+    }
 }

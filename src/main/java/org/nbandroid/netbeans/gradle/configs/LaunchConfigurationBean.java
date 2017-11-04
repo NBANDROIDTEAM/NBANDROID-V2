@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.nbandroid.netbeans.gradle.configs;
 
 import org.nbandroid.netbeans.gradle.launch.LaunchConfiguration;
@@ -23,79 +22,84 @@ import org.nbandroid.netbeans.gradle.launch.LaunchConfiguration;
  */
 class LaunchConfigurationBean implements LaunchConfiguration {
 
-  private Action launchAction = Action.MAIN;
-  /** Name of launched activity (only important when {@link Action#ACTIVITY} is used. */
-  private String activityName;
+    private Action launchAction = Action.MAIN;
+    /**
+     * Name of launched activity (only important when {@link Action#ACTIVITY} is
+     * used.
+     */
+    private String activityName;
 
-  /** Build mode: debug or release. */
-  private String mode = MODE_DEBUG;
+    /**
+     * Build mode: debug or release.
+     */
+    private String mode = MODE_DEBUG;
 
-  private TargetMode targetMode = TargetMode.AUTO;
+    private TargetMode targetMode = TargetMode.AUTO;
 
-  private String emulatorOptions = "";
-  
-  private String instrumentationRunner;
+    private String emulatorOptions = "";
 
-  @Override
-  public Action getLaunchAction() {
-    return launchAction;
-  }
+    private String instrumentationRunner;
 
-  public void setLaunchAction(Action launchAction) {
-    this.launchAction = launchAction;
-  }
+    @Override
+    public Action getLaunchAction() {
+        return launchAction;
+    }
 
-  @Override
-  public String getActivityName() {
-    return activityName;
-  }
+    public void setLaunchAction(Action launchAction) {
+        this.launchAction = launchAction;
+    }
 
-  public void setActivityName(String ActivityName) {
-    this.activityName = ActivityName;
-  }
+    @Override
+    public String getActivityName() {
+        return activityName;
+    }
 
-  @Override
-  public String getMode() {
-    return mode;
-  }
+    public void setActivityName(String ActivityName) {
+        this.activityName = ActivityName;
+    }
 
-  public void setMode(String mode) {
-    this.mode = mode;
-  }
+    @Override
+    public String getMode() {
+        return mode;
+    }
 
-  @Override
-  public TargetMode getTargetMode() {
-    return targetMode;
-  }
+    public void setMode(String mode) {
+        this.mode = mode;
+    }
 
-  public void setTargetMode(TargetMode targetMode) {
-    this.targetMode = targetMode;
-  }
+    @Override
+    public TargetMode getTargetMode() {
+        return targetMode;
+    }
 
-  @Override
-  public String getEmulatorOptions() {
-    return emulatorOptions;
-  }
+    public void setTargetMode(TargetMode targetMode) {
+        this.targetMode = targetMode;
+    }
 
-  public void setEmulatorOptions(String emulatorOptions) {
-    this.emulatorOptions = emulatorOptions;
-  }
+    @Override
+    public String getEmulatorOptions() {
+        return emulatorOptions;
+    }
 
-  @Override
-  public String getInstrumentationRunner() {
-    return instrumentationRunner;
-  }
+    public void setEmulatorOptions(String emulatorOptions) {
+        this.emulatorOptions = emulatorOptions;
+    }
 
-  public void setInstrumentationRunner(String instrumentationRunner) {
-    this.instrumentationRunner = instrumentationRunner;
-  }
+    @Override
+    public String getInstrumentationRunner() {
+        return instrumentationRunner;
+    }
 
-  @Override
-  public String toString() {
-    return "LaunchConfigurationBean{" + "launchAction=" + launchAction
-        + "mode=" + mode
-        + (launchAction == Action.ACTIVITY ? ", activityName=" + activityName : "" )
-        + (instrumentationRunner != null ? (" testrunner=" + instrumentationRunner) : "")
-        + "}";
-  }
+    public void setInstrumentationRunner(String instrumentationRunner) {
+        this.instrumentationRunner = instrumentationRunner;
+    }
+
+    @Override
+    public String toString() {
+        return "LaunchConfigurationBean{" + "launchAction=" + launchAction
+                + "mode=" + mode
+                + (launchAction == Action.ACTIVITY ? ", activityName=" + activityName : "")
+                + (instrumentationRunner != null ? (" testrunner=" + instrumentationRunner) : "")
+                + "}";
+    }
 }

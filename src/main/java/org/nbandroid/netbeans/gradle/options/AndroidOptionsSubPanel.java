@@ -22,7 +22,9 @@ import javax.swing.JPanel;
  */
 public abstract class AndroidOptionsSubPanel extends JPanel {
 
-  public abstract boolean valid();
-  public abstract void store();
-  public abstract void load();
+    public abstract boolean valid();
+
+    public abstract void store();
+
+    public abstract void load();
 }

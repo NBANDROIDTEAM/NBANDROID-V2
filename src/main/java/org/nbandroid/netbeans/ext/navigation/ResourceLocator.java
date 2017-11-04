@@ -8,5 +8,5 @@ import org.nbandroid.netbeans.gradle.api.ResourceRef;
  */
 public interface ResourceLocator {
 
-  ResourceLocation findResourceLocation(ResourceRef ref);
+    ResourceLocation findResourceLocation(ResourceRef ref);
 }

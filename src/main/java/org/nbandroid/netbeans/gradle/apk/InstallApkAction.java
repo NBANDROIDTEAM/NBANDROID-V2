@@ -14,11 +14,11 @@
 package org.nbandroid.netbeans.gradle.apk;
 
 import com.android.ide.common.xml.ManifestData;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatformManager;
+import java.awt.event.ActionListener;
 import org.nbandroid.netbeans.gradle.avd.AvdSelector;
 import org.nbandroid.netbeans.gradle.configs.ConfigBuilder;
+import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatformManager;
 import org.nbandroid.netbeans.gradle.launch.AndroidLauncher;
 import org.nbandroid.netbeans.gradle.launch.AndroidLauncherImpl;
 import org.nbandroid.netbeans.gradle.launch.LaunchConfiguration;
@@ -29,31 +29,31 @@ import org.openide.util.RequestProcessor;
 
 public final class InstallApkAction implements ActionListener {
 
-  private static final RequestProcessor RP = new RequestProcessor("APK deployer", 1);
-  private final Deployable context;
+    private static final RequestProcessor RP = new RequestProcessor("APK deployer", 1);
+    private final Deployable context;
 
-  public InstallApkAction(Deployable context) {
-    this.context = context;
-  }
+    public InstallApkAction(Deployable context) {
+        this.context = context;
+    }
 
-  @Override
-  public void actionPerformed(ActionEvent ev) {
-    RP.post(new Runnable() {
+    @Override
+    public void actionPerformed(ActionEvent ev) {
+        RP.post(new Runnable() {
 
-      @Override
-      public void run() {
-        AndroidLauncher launcher = new AndroidLauncherImpl();
-        LaunchConfiguration cfg = ConfigBuilder.builder()
-            .withName("dummy").withTargetMode(TargetMode.AUTO).config().getLaunchConfiguration();
-        AvdSelector.LaunchData launchData = launcher.configAvd(
-            DalvikPlatformManager.getDefault().getSdkManager(), null, cfg);
-        if (launchData == null || launchData.getDevice() == null) {
-          return;
-        }
-        ManifestData manifest = new ApkUtils().apkPackageName(FileUtil.toFile(context.getDeployableFile()));
-        launcher.simpleLaunch(new LaunchInfo(context.getDeployableFile(),
-            /*reinstall*/true, /*debug*/false, null, manifest), launchData.getDevice());
-      }
-    });
-  }
+            @Override
+            public void run() {
+                AndroidLauncher launcher = new AndroidLauncherImpl();
+                LaunchConfiguration cfg = ConfigBuilder.builder()
+                        .withName("dummy").withTargetMode(TargetMode.AUTO).config().getLaunchConfiguration();
+                AvdSelector.LaunchData launchData = launcher.configAvd(
+                        DalvikPlatformManager.getDefault().getSdkManager(), null, cfg);
+                if (launchData == null || launchData.getDevice() == null) {
+                    return;
+                }
+                ManifestData manifest = new ApkUtils().apkPackageName(FileUtil.toFile(context.getDeployableFile()));
+                launcher.simpleLaunch(new LaunchInfo(context.getDeployableFile(),
+                        /*reinstall*/ true, /*debug*/ false, null, manifest), launchData.getDevice());
+            }
+        });
+    }
 }

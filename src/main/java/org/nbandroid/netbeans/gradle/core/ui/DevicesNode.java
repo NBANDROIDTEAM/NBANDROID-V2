@@ -12,7 +12,6 @@
  *  limitations under the License.
  *  under the License.
  */
-
 package org.nbandroid.netbeans.gradle.core.ui;
 
 import com.android.ddmlib.AndroidDebugBridge;
@@ -25,9 +24,9 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.nbandroid.netbeans.gradle.core.ddm.AndroidDebugBridgeFactory;
 import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatformManager;
+import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -45,59 +44,57 @@ import org.openide.xml.XMLUtil;
  *
  * @author tom
  */
-@ServicesTabNodeRegistration(name=DevicesNode.NAME, 
-    displayName="#TXT_Devices", 
-    shortDescription="#HINT_Devices", 
-    iconResource=DevicesNode.ICON_PATH, position=430)
+@ServicesTabNodeRegistration(name = DevicesNode.NAME,
+        displayName = "#TXT_Devices",
+        shortDescription = "#HINT_Devices",
+        iconResource = DevicesNode.ICON_PATH, position = 430)
 @Messages({
     "TXT_Devices=Android Devices",
     "HINT_Devices=Android Devices connected via ADB",
-    "HINT_DevicesBroken=Android Devices are not accessible. Configure Android SDK?",
-})
+    "HINT_DevicesBroken=Android Devices are not accessible. Configure Android SDK?",})
 public class DevicesNode extends AbstractNode implements PropertyChangeListener {
 
-  public static final String NAME = "AndroidDevices";
-  public static final String ICON_PATH = "org/netbeans/modules/android/core/resources/android.png";
-  // TODO(radim): needs large refactoring. Either fix DalvikPlatformManager or use SdkManager
+    public static final String NAME = "AndroidDevices";
+    public static final String ICON_PATH = "org/netbeans/modules/android/core/resources/android.png";
+    // TODO(radim): needs large refactoring. Either fix DalvikPlatformManager or use SdkManager
 
     private static DevicesNode node;
     private volatile boolean broken;
 
-    private DevicesNode () {
+    private DevicesNode() {
         super(new DevicesChildren());
         final DalvikPlatformManager dpm = DalvikPlatformManager.getDefault();
         dpm.addPropertyChangeListener(WeakListeners.propertyChange(this, dpm));
-        updateDescription ();
+        updateDescription();
         setIconBaseWithExtension(ICON_PATH);
     }
 
-    private void updateDescription () {
-      setName(NAME);
+    private void updateDescription() {
+        setName(NAME);
         setDisplayName("ddd");
-      final AndroidDebugBridge debugBridge = AndroidDebugBridgeFactory.getDefault();
-      broken = debugBridge == null;
+        final AndroidDebugBridge debugBridge = AndroidDebugBridgeFactory.getDefault();
+        broken = debugBridge == null;
         String description = broken ? "brk" : "nbrk";
-      setShortDescription(description);
+        setShortDescription(description);
     }
 
     @Override
     public String getHtmlDisplayName() {
         String dispName = super.getDisplayName();
         try {
-        dispName = XMLUtil.toElementContent(dispName);
+            dispName = XMLUtil.toElementContent(dispName);
         } catch (CharConversionException ex) {
             return dispName;
         }
-        return broken ? "<font color=\"#A40000\">"+dispName+"</font>" : dispName;           //NOI18N
+        return broken ? "<font color=\"#A40000\">" + dispName + "</font>" : dispName;           //NOI18N
     }
-
 
     @Override
     public Action[] getActions(boolean context) {
-      // TODO add action to restart debug bridge
-        return new Action [] {
-          new RestartADBAction(),
-          SystemAction.get(PropertiesAction.class)
+        // TODO add action to restart debug bridge
+        return new Action[]{
+            new RestartADBAction(),
+            SystemAction.get(PropertiesAction.class)
         };
     }
 
@@ -113,15 +110,15 @@ public class DevicesNode extends AbstractNode implements PropertyChangeListener 
             public Boolean getValue() throws IllegalAccessException, InvocationTargetException {
                 final AndroidDebugBridge jp = AndroidDebugBridgeFactory.getDefault();
                 return jp == null ? Boolean.FALSE : jp.isConnected();
-            }                                    
+            }
         });
-        return new PropertySet[] {
+        return new PropertySet[]{
             set
         };
     }
 
     @Override
-    public void propertyChange (final PropertyChangeEvent event) {
+    public void propertyChange(final PropertyChangeEvent event) {
         if (DalvikPlatformManager.PROP_INSTALLED_PLATFORMS.equals(event.getPropertyName())) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
@@ -134,7 +131,6 @@ public class DevicesNode extends AbstractNode implements PropertyChangeListener 
         }
     }
 
-
     public static synchronized DevicesNode getInstance() {
         if (node == null) {
             node = new DevicesNode();
@@ -142,13 +138,11 @@ public class DevicesNode extends AbstractNode implements PropertyChangeListener 
         return node;
     }
 
-
-
     private static class DevicesChildren extends Children.Keys<DeviceHolder> implements PropertyChangeListener, AndroidDebugBridge.IDeviceChangeListener {
 
-        public DevicesChildren () {
+        public DevicesChildren() {
             final DalvikPlatformManager jpm = DalvikPlatformManager.getDefault();
-            jpm.addPropertyChangeListener(WeakListeners.propertyChange(this, jpm));            
+            jpm.addPropertyChangeListener(WeakListeners.propertyChange(this, jpm));
         }
 
         @Override
@@ -161,7 +155,7 @@ public class DevicesNode extends AbstractNode implements PropertyChangeListener 
         private void updateKeys() {
             final Set<DeviceHolder> keys = new HashSet<DeviceHolder>();
             final AndroidDebugBridge bridge = AndroidDebugBridgeFactory.getDefault();
-            if (bridge != null) {                
+            if (bridge != null) {
                 for (IDevice device : bridge.getDevices()) {
                     keys.add(new DeviceHolder(device));
                 }
@@ -178,19 +172,16 @@ public class DevicesNode extends AbstractNode implements PropertyChangeListener 
             });
         }
 
-
         @Override
         protected void removeNotify() {
             AndroidDebugBridge.removeDeviceChangeListener(this);
             this.setKeys(new DeviceHolder[0]);
         }
 
-
-
         @Override
         protected Node[] createNodes(final DeviceHolder key) {
             assert key != null;
-            return new Node[] { new DeviceNode (key.device)};
+            return new Node[]{new DeviceNode(key.device)};
         }
 
         @Override
@@ -221,7 +212,7 @@ public class DevicesNode extends AbstractNode implements PropertyChangeListener 
 
         public final IDevice device;
 
-        public DeviceHolder (final IDevice device) {
+        public DeviceHolder(final IDevice device) {
             assert device != null;
             this.device = device;
         }

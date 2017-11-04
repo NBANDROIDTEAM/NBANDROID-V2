@@ -11,19 +11,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.nbandroid.netbeans.gradle.launch;
 
 import com.android.ddmlib.IDevice;
 import org.netbeans.api.project.Project;
 
 /**
- * Strategy used to launch code on device.
- * Examples are: no launch, activity launch, test launch.
+ * Strategy used to launch code on device. Examples are: no launch, activity
+ * launch, test launch.
  *
  * @author radim
  */
 public interface LaunchAction {
 
-  boolean doLaunch(LaunchInfo launchInfo, IDevice device, Project project);
+    boolean doLaunch(LaunchInfo launchInfo, IDevice device, Project project);
 }

@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.nbandroid.netbeans.gradle.launch;
 
 import javax.annotation.Nullable;
@@ -22,33 +21,42 @@ import javax.annotation.Nullable;
  * @author radim
  */
 public interface LaunchConfiguration {
-  public static final String MODE_DEBUG = "debug";
-  public static final String MODE_RELEASE = "release";
 
-  public enum Action {
-    MAIN,
-    ACTIVITY,
-    DO_NOTHING
-  }
+    public static final String MODE_DEBUG = "debug";
+    public static final String MODE_RELEASE = "release";
 
-  /** Mode used to select target device for launch. */
-  public enum TargetMode {
-    AUTO,
-    MANUAL;
-  }
+    public enum Action {
+        MAIN,
+        ACTIVITY,
+        DO_NOTHING
+    }
 
-  Action getLaunchAction();
+    /**
+     * Mode used to select target device for launch.
+     */
+    public enum TargetMode {
+        AUTO,
+        MANUAL;
+    }
 
-  /** A class name of executed activity or {@code null} if not applicable. */
-  @Nullable String getActivityName();
+    Action getLaunchAction();
 
-  // TODO extract as this does not belong to project config.
-  /** Debug or release mode. */
-  String getMode();
+    /**
+     * A class name of executed activity or {@code null} if not applicable.
+     */
+    @Nullable
+    String getActivityName();
 
-  TargetMode getTargetMode();
+    // TODO extract as this does not belong to project config.
+    /**
+     * Debug or release mode.
+     */
+    String getMode();
 
-  String getEmulatorOptions();
-  
-  @Nullable String getInstrumentationRunner();
+    TargetMode getTargetMode();
+
+    String getEmulatorOptions();
+
+    @Nullable
+    String getInstrumentationRunner();
 }

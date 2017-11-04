@@ -38,77 +38,73 @@ import org.openide.util.LookupListener;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
-
 /**
- * Support class for the list of logged devices.
- * Implements a data model, cell renderer and a listener
- * to handle attached and detached devices.
+ * Support class for the list of logged devices. Implements a data model, cell
+ * renderer and a listener to handle attached and detached devices.
+ *
  * @author Christian Fischer
  */
 public class LogDevicesComboBoxSupport
-    implements  ComboBoxModel<String>,
-                ListCellRenderer,
-                LookupListener,
-                PropertyChangeListener,
-                AndroidDebugBridge.IDeviceChangeListener
-{
+        implements ComboBoxModel<String>,
+        ListCellRenderer,
+        LookupListener,
+        PropertyChangeListener,
+        AndroidDebugBridge.IDeviceChangeListener {
+
     private final Set<ListDataListener> dataListeners = new HashSet<>();
     private final List<String> devices = new ArrayList<>();
-    private final Map<String,String> deviceLabels = new HashMap<>();
+    private final Map<String, String> deviceLabels = new HashMap<>();
     private final Lookup.Result<IDevice> deviceLookup;
     private final LogReader reader;
     private JComboBox cmb;
 
-
     protected LogDevicesComboBoxSupport(LogReader reader) {
         this.reader = reader;
-        
+
         // get notification for logged devices
         reader.addPropertyChangeListener(WeakListeners.propertyChange(this, reader));
-        
+
         // get notifications for attached and detached devices
         AndroidDebugBridge.addDeviceChangeListener(this);
-        
+
         Lookup lookup = Utilities.actionsGlobalContext();
         deviceLookup = lookup.lookupResult(IDevice.class);
         deviceLookup.addLookupListener(this);
-        
+
         update();
     }
-    
-    
+
     /**
      * Attaches this support class to a combo box.
-     * @param cmb 
+     *
+     * @param cmb
      */
     public void attach(JComboBox cmb) {
         this.cmb = cmb;
         this.cmb.setModel(this);
         this.cmb.setRenderer(this);
     }
-    
-    
+
     /**
      * Detach all listeners of this support class.
      */
     public void detach() {
         AndroidDebugBridge.removeDeviceChangeListener(this);
-        
+
         reader.removePropertyChangeListener(this);
-        
+
         deviceLookup.removeLookupListener(this);
-        
+
         return;
     }
 
-
     /**
-     * Update the content of the list data model
-     * and add all currently logged and attached devices.
+     * Update the content of the list data model and add all currently logged
+     * and attached devices.
      */
     private void update() {
         // add all logged devices
-        for(String device : reader.getLoggedDevices()) {
+        for (String device : reader.getLoggedDevices()) {
             add(device);
         }
 
@@ -120,14 +116,13 @@ public class LogDevicesComboBoxSupport
             }
         }
     }
-    
+
     /**
-     * Add a new device to the data model,
-     * or replace any existing.
+     * Add a new device to the data model, or replace any existing.
      */
     private void add(IDevice device) {
         String serial = device.getSerialNumber();
-        
+
         do {
             // for emulators use their virtual device name as label
             String deviceAvdName = device.getAvdName();
@@ -142,8 +137,7 @@ public class LogDevicesComboBoxSupport
                 deviceLabels.put(serial, deviceModelName + " [" + serial + "]");
                 break;
             }
-        }
-        while(false);
+        } while (false);
 
         // finally, add the serial.
         add(serial);
@@ -154,19 +148,19 @@ public class LogDevicesComboBoxSupport
      */
     private void add(String device) {
         int insertIndex = devices.size();
-        
+
         // check, if this serial already exists.
-        for(int i=devices.size(); --i>=0;) {
+        for (int i = devices.size(); --i >= 0;) {
             if (devices.get(i).equals(device)) {
-                
+
                 // refresh this item (the label may changed)
                 fireListDataEvent(ListDataEvent.INTERVAL_REMOVED, i);
                 fireListDataEvent(ListDataEvent.INTERVAL_ADDED, i);
-                
+
                 return;
             }
         }
-        
+
         if (insertIndex != -1) {
             devices.add(insertIndex, device);
 
@@ -174,17 +168,18 @@ public class LogDevicesComboBoxSupport
             fireListDataEvent(ListDataEvent.INTERVAL_ADDED, insertIndex);
         }
     }
-    
-    
+
     /**
-     * Remove a device from the data model, except it has messages in the log cache.
+     * Remove a device from the data model, except it has messages in the log
+     * cache.
      */
     private void remove(IDevice device) {
         remove(device.getSerialNumber());
     }
 
     /**
-     * Remove a device from the data model, except it has messages in the log cache.
+     * Remove a device from the data model, except it has messages in the log
+     * cache.
      */
     private void remove(String device) {
         // do we have log events for this device?
@@ -192,8 +187,8 @@ public class LogDevicesComboBoxSupport
             // if true, we want to keep it
             return;
         }
-        
-        for(int i=devices.size(); --i>=0;) {
+
+        for (int i = devices.size(); --i >= 0;) {
             if (devices.get(i).equals(device)) {
                 devices.remove(i);
                 fireListDataEvent(ListDataEvent.INTERVAL_REMOVED, i);
@@ -204,7 +199,7 @@ public class LogDevicesComboBoxSupport
     @Override
     public void setSelectedItem(Object anItem) {
         if (anItem instanceof String) {
-            reader.setCurrentDevice((String)anItem);
+            reader.setCurrentDevice((String) anItem);
         }
     }
 
@@ -232,69 +227,66 @@ public class LogDevicesComboBoxSupport
     public void removeListDataListener(ListDataListener l) {
         dataListeners.remove(l);
     }
-    
+
     private void fireContentsChangedEvent() {
         fireListDataEvent(ListDataEvent.CONTENTS_CHANGED, -1);
     }
-    
+
     private void fireListDataEvent(int type, int index) {
         fireListDataEvent(type, index, index);
     }
-    
+
     private void fireListDataEvent(int type, int index1, int index2) {
         ListDataEvent event = new ListDataEvent(this, type, index1, index2);
-        
-        for(ListDataListener listener : dataListeners) {
-            switch(type) {
+
+        for (ListDataListener listener : dataListeners) {
+            switch (type) {
                 case ListDataEvent.CONTENTS_CHANGED: {
                     listener.contentsChanged(event);
                     break;
                 }
-                    
+
                 case ListDataEvent.INTERVAL_ADDED: {
                     listener.intervalAdded(event);
                     break;
                 }
-                    
+
                 case ListDataEvent.INTERVAL_REMOVED: {
                     listener.intervalRemoved(event);
                     break;
                 }
             }
-            
+
         }
     }
-
 
     @Override
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         JLabel label;
-        
+
         if (value != null && value instanceof String) {
-            String deviceSerial = (String)value;
-            String deviceLabel  = deviceLabels.get(deviceSerial);
-            
+            String deviceSerial = (String) value;
+            String deviceLabel = deviceLabels.get(deviceSerial);
+
             // if we don't have a valid label for this device, just use the serial
             if (deviceLabel == null) {
                 deviceLabel = deviceSerial;
             }
-            
+
             label = new JLabel(deviceLabel);
-        }
-        else {
+        } else {
             // fallback, if there's something unexpected
             label = new JLabel(String.valueOf(value));
         }
-        
+
         if (isSelected) {
             label.setBackground(list.getSelectionBackground());
             label.setForeground(list.getSelectionForeground());
             label.setOpaque(true);
         }
-        
+
         return label;
     }
-
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
@@ -306,11 +298,10 @@ public class LogDevicesComboBoxSupport
     @Override
     public void resultChanged(LookupEvent ev) {
         // set the first item in the result as "active" device
-        for(IDevice device : deviceLookup.allInstances()) {
+        for (IDevice device : deviceLookup.allInstances()) {
             if (cmb != null) {
                 cmb.setSelectedItem(device.getSerialNumber());
-            }
-            else {
+            } else {
                 setSelectedItem(device.getSerialNumber());
             }
 

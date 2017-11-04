@@ -23,5 +23,5 @@ import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatform;
  */
 public interface DalvikPlatformResolver {
 
-  DalvikPlatform findDalvikPlatform();
+    DalvikPlatform findDalvikPlatform();
 }

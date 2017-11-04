@@ -23,6 +23,6 @@ import org.openide.filesystems.FileObject;
  */
 public interface AndroidManifestSource {
 
-  @Nullable
-  FileObject get();
+    @Nullable
+    FileObject get();
 }

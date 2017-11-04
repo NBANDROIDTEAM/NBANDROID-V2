@@ -27,7 +27,9 @@ import org.nbandroid.netbeans.gradle.logcat.LogEvent;
 public class LogLineRowFilter extends RowFilter<LogTableModel, Integer> {
 
     interface RowMatcher {
+
         boolean include(Entry<? extends LogTableModel, ? extends Integer> entry);
+
         String highlight(String str);
     }
 
@@ -35,14 +37,14 @@ public class LogLineRowFilter extends RowFilter<LogTableModel, Integer> {
     private boolean useRegexp = false;
     private String filterText = "";
     private RowMatcher currentFilter;
-    
+
     public LogLineRowFilter() {
         setFilterString("");
     }
-    
+
     /**
-     * Set the filter string for this RowFilter.
-     * The string will be split into single keywords.
+     * Set the filter string for this RowFilter. The string will be split into
+     * single keywords.
      */
     public final void setFilterString(String filterText) {
         this.filterText = filterText;
@@ -61,39 +63,43 @@ public class LogLineRowFilter extends RowFilter<LogTableModel, Integer> {
     public boolean isUseRegexp() {
         return useRegexp;
     }
-    
+
     /**
-     * Set the minimum LogLevel of messages, which should be included in this filter.
+     * Set the minimum LogLevel of messages, which should be included in this
+     * filter.
      */
     public void setLogLevel(LogLevel level) {
         this.level = level;
     }
-    
+
     /**
      * Get the current minimum LogLevel of this filter.
-     * @return 
+     *
+     * @return
      */
     public LogLevel getLogLevel() {
         return level;
     }
-    
+
     /**
      * Highlights all keywords in this string via HTML formatting.
+     *
      * @param str input string.
      * @return output string, containing html
      */
     public String highlight(String str) {
         return currentFilter.highlight(str);
     }
-    
+
     @Override
     public boolean include(Entry<? extends LogTableModel, ? extends Integer> entry) {
         return currentFilter.include(entry);
     }
 
     private class TextSearchFilter implements RowMatcher {
+
         private String[] searchKeyWords = new String[]{};
-        private Pattern keywordFinder  = null;
+        private Pattern keywordFinder = null;
 
         public TextSearchFilter(String filterText) {
             searchKeyWords = filterText.toLowerCase().trim().split("\\s");
@@ -153,7 +159,8 @@ public class LogLineRowFilter extends RowFilter<LogTableModel, Integer> {
     }
 
     private class RegexpRowMatcher implements RowMatcher {
-        private Pattern keywordFinder  = null;
+
+        private Pattern keywordFinder = null;
 
         public RegexpRowMatcher(String filterText) {
             try {
@@ -175,8 +182,8 @@ public class LogLineRowFilter extends RowFilter<LogTableModel, Integer> {
                 return false;
             }
 
-            if (keywordFinder.matcher(event.getMessage()).find() ||
-                    keywordFinder.matcher(event.getTag()).find()) {
+            if (keywordFinder.matcher(event.getMessage()).find()
+                    || keywordFinder.matcher(event.getTag()).find()) {
                 return true;
             }
             return false;

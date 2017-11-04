@@ -19,29 +19,40 @@ import javax.annotation.Nonnull;
 import org.netbeans.api.project.Project;
 
 /**
- * Information provider used when attaching JPDA debugger to Android device (Client).
- * 
+ * Information provider used when attaching JPDA debugger to Android device
+ * (Client).
+ *
  * @author radim
  */
 public interface AndroidDebugInfo {
 
-  public static final class AndroidDebugData {
-    public final String hostname;
-    public final int port;
-    public final Map<String, Object> properties;
+    public static final class AndroidDebugData {
 
-    public AndroidDebugData(String hostname, int port, Map<String, Object> properties) {
-      this.hostname = hostname;
-      this.port = port;
-      this.properties = properties;
+        public final String hostname;
+        public final int port;
+        public final Map<String, Object> properties;
+
+        public AndroidDebugData(String hostname, int port, Map<String, Object> properties) {
+            this.hostname = hostname;
+            this.port = port;
+            this.properties = properties;
+        }
     }
-  }
-  /** General query to answer if there is a chance to debug Android application using this project. */
-  boolean supportsDebugging();
-  /** More strict check to find if this project is suitable to debug application with given process name. */
-  boolean canDebug(String processName);
-  AndroidDebugData data(Client client);
-  
-  @Nonnull
-  Project project();
+
+    /**
+     * General query to answer if there is a chance to debug Android application
+     * using this project.
+     */
+    boolean supportsDebugging();
+
+    /**
+     * More strict check to find if this project is suitable to debug
+     * application with given process name.
+     */
+    boolean canDebug(String processName);
+
+    AndroidDebugData data(Client client);
+
+    @Nonnull
+    Project project();
 }

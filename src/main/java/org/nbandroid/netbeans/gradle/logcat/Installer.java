@@ -31,12 +31,11 @@ public class Installer extends ModuleInstall {
 
     @Override
     public void close() {
-      // TODO(radim): if we really need it then it belongs to core where ADBfactory lives
+        // TODO(radim): if we really need it then it belongs to core where ADBfactory lives
         AndroidDebugBridge adb = AndroidDebugBridgeFactory.getDefault();
         if (adb != null && adb.isConnected()) {
             AndroidDebugBridge.disconnectBridge();
         }
     }
-
 
 }

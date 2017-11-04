@@ -11,30 +11,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.nbandroid.netbeans.gradle.testrunner;
 
 import com.android.ddmlib.testrunner.ITestRunListener;
 import com.google.common.base.Preconditions;
 import java.util.logging.Logger;
-import org.netbeans.api.project.Project;
 import org.nbandroid.netbeans.gradle.api.TestOutputConsumer;
+import org.netbeans.api.project.Project;
 
 /**
  * A factory for test run listener that send output to GSF testrunner.
  */
 class TestOutputUIDisplayer implements TestOutputConsumer {
 
-  private static final Logger LOG = Logger.getLogger(TestOutputUIDisplayer.class.getName());
+    private static final Logger LOG = Logger.getLogger(TestOutputUIDisplayer.class.getName());
 
-  private final Project project;
+    private final Project project;
 
-  public TestOutputUIDisplayer(Project project) {
-    this.project = Preconditions.checkNotNull(project);
-  }
+    public TestOutputUIDisplayer(Project project) {
+        this.project = Preconditions.checkNotNull(project);
+    }
 
-  @Override
-  public ITestRunListener createTestListener(Project p) {
-    return new TestRunListener(project);
-  }
+    @Override
+    public ITestRunListener createTestListener(Project p) {
+        return new TestRunListener(project);
+    }
 }

@@ -19,17 +19,17 @@ package org.nbandroid.netbeans.gradle.core.sdk;
  * @author radim
  */
 public enum LayoutElementType {
-  VIEW('W'),
-  VIEW_GROUP('L'),
-  LAYOUT_PARAM('P');
+    VIEW('W'),
+    VIEW_GROUP('L'),
+    LAYOUT_PARAM('P');
 
-  private final char prefix;
+    private final char prefix;
 
-  private LayoutElementType(char prefix) {
-    this.prefix = prefix;
-  }
+    private LayoutElementType(char prefix) {
+        this.prefix = prefix;
+    }
 
-  public char getPrefix() {
-    return prefix;
-  }
+    public char getPrefix() {
+        return prefix;
+    }
 }

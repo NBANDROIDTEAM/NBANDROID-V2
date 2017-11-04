@@ -11,12 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.nbandroid.netbeans.gradle.launch;
 
 import com.android.ddmlib.IDevice;
-import org.netbeans.api.project.Project;
 import org.nbandroid.netbeans.gradle.AndroidIO;
+import org.netbeans.api.project.Project;
 
 /**
  * No-op launch strategy.
@@ -25,9 +24,9 @@ import org.nbandroid.netbeans.gradle.AndroidIO;
  */
 class EmptyLaunchAction implements LaunchAction {
 
-  @Override
-  public boolean doLaunch(LaunchInfo launchInfo, IDevice device, Project project) {
-    AndroidIO.getDefaultIO().getOut().println("No launch action requested.");
-    return true;
-  }
+    @Override
+    public boolean doLaunch(LaunchInfo launchInfo, IDevice device, Project project) {
+        AndroidIO.getDefaultIO().getOut().println("No launch action requested.");
+        return true;
+    }
 }

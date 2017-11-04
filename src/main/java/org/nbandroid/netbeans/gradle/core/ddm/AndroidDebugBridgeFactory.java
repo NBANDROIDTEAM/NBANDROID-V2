@@ -39,120 +39,120 @@ import org.openide.filesystems.FileUtil;
  */
 public final class AndroidDebugBridgeFactory {
 
-  public static final Logger LOG = Logger.getLogger(AndroidDebugBridgeFactory.class.getName());
+    public static final Logger LOG = Logger.getLogger(AndroidDebugBridgeFactory.class.getName());
 
-  /*
+    /*
    * Get adb location form DalvikPlatformManager (SdkConstants.OS_SDK_TOOLS_FOLDER + SdkConstants.FN_ADB)
    * store it in prefs for fast access
    * add listener to DPM to get changes and restart adb
    * 
    * make context object wrapping access to the bridge and its listeners.
-   */
-  private static DalvikPlatform usedPlatform;
-  private static AndroidDebugBridge bridge;
-  private static final String ADB_TOOL = "adb";    //NOI18N
+     */
+    private static DalvikPlatform usedPlatform;
+    private static AndroidDebugBridge bridge;
+    private static final String ADB_TOOL = "adb";    //NOI18N
 
-  private AndroidDebugBridgeFactory() {
-  }
-
-  /**
-   * Singleton accessor.
-   */
-  public static synchronized AndroidDebugBridge getDefault() {
-    if (usedPlatform != null) {
-      return bridge;
-    } else {
-      for (DalvikPlatform androidPlatform : DalvikPlatformManager.getDefault().getPlatforms()) {
-        try {
-          AndroidDebugBridge adb = forSDK(androidPlatform);
-          if (adb != null) {
-            return adb;
-          }
-        } catch (IllegalArgumentException ex) {
-          LOG.log(Level.INFO, "Cannot create debug bridge for this platform, will try different one.", ex);
-        }
-      }
+    private AndroidDebugBridgeFactory() {
     }
-    LOG.log(Level.INFO, "Cannot create debug bridge for any platform");
-    return null;
-  }
 
-  /**
-   * Currently only one active SDK supported :-(
-   *
-   * @return AndroidDebugBridge
-   */
-  /*public (private until it will work for more sdks)*/
-  private static synchronized AndroidDebugBridge forSDK(final DalvikPlatform androidPlatform) {
-
-    Log.setLogOutput(new Log.ILogOutput() {
-      @Override
-      public void printLog(LogLevel level, String arg1, String arg2) {
-        switch (level) {
-          case ASSERT:
-          case ERROR:
-          case WARN:
-          case INFO:
-            LOG.log(Level.INFO, "{0} {1} {2}", new Object[]{level.getPriorityLetter(), arg1, arg2});
-            break;
-          case DEBUG:
-            if (LOG.isLoggable(Level.FINER)) {
-              LOG.log(Level.FINER, "{0} {1} {2}", new Object[]{level.getPriorityLetter(), arg1, arg2});
+    /**
+     * Singleton accessor.
+     */
+    public static synchronized AndroidDebugBridge getDefault() {
+        if (usedPlatform != null) {
+            return bridge;
+        } else {
+            for (DalvikPlatform androidPlatform : DalvikPlatformManager.getDefault().getPlatforms()) {
+                try {
+                    AndroidDebugBridge adb = forSDK(androidPlatform);
+                    if (adb != null) {
+                        return adb;
+                    }
+                } catch (IllegalArgumentException ex) {
+                    LOG.log(Level.INFO, "Cannot create debug bridge for this platform, will try different one.", ex);
+                }
             }
-            break;
-          case VERBOSE:
-            if (LOG.isLoggable(Level.FINEST)) {
-              LOG.log(Level.FINEST, "{0} {1} {2}", new Object[]{level.getPriorityLetter(), arg1, arg2});
-            }
-            break;
         }
-      }
-
-      @Override
-      public void printAndPromptLog(LogLevel level, String arg1, String arg2) {
-        switch (level) {
-          case ASSERT:
-          case ERROR:
-          case WARN:
-          case INFO:
-            LOG.log(Level.INFO, "{0} {1} {2}", new Object[]{level.getPriorityLetter(), arg1, arg2});
-            break;
-          case DEBUG:
-            if (LOG.isLoggable(Level.FINER)) {
-              LOG.log(Level.FINER, "{0} {1} {2}", new Object[]{level.getPriorityLetter(), arg1, arg2});
-            }
-            break;
-          case VERBOSE:
-            if (LOG.isLoggable(Level.FINEST)) {
-              LOG.log(Level.FINEST, "{0} {1} {2}", new Object[]{level.getPriorityLetter(), arg1, arg2});
-            }
-            break;
-        }
-      }
-    });
-    DdmPreferences.setLogLevel("verbose");
-
-    if (bridge == null) {
-      final FileObject path = androidPlatform.findTool(ADB_TOOL);
-      if (path == null) {
-        throw new IllegalArgumentException(
-            "Broken platform " + androidPlatform.getAndroidTarget().getFullName());         //NOI18N
-      }
-      usedPlatform = androidPlatform;
-      ClientData.class.getClassLoader().clearAssertionStatus();      //qattern
-      DebugPortManager.setProvider(DebugPortProvider.getDefault());
-      LOG.log(Level.FINE, "Call init debug bridge");
-      AndroidDebugBridge.init(true);
-      String adbPath = FileUtil.toFile(path).getAbsolutePath();
-      LOG.log(Level.FINE, "Force create new debug bridge using path {0}", adbPath);
-      bridge = AndroidDebugBridge.createBridge(adbPath, true);
-      LOG.log(Level.FINE, "Created debug bridge ", bridge);
-      return bridge;
-    } else if (usedPlatform.equals(androidPlatform)) {
-      return bridge;
-    } else {
-      throw new UnsupportedOperationException(
-          "Already created for SDK " + usedPlatform.getAndroidTarget().getFullName());    //NOI18N
+        LOG.log(Level.INFO, "Cannot create debug bridge for any platform");
+        return null;
     }
-  }
+
+    /**
+     * Currently only one active SDK supported :-(
+     *
+     * @return AndroidDebugBridge
+     */
+    /*public (private until it will work for more sdks)*/
+    private static synchronized AndroidDebugBridge forSDK(final DalvikPlatform androidPlatform) {
+
+        Log.setLogOutput(new Log.ILogOutput() {
+            @Override
+            public void printLog(LogLevel level, String arg1, String arg2) {
+                switch (level) {
+                    case ASSERT:
+                    case ERROR:
+                    case WARN:
+                    case INFO:
+                        LOG.log(Level.INFO, "{0} {1} {2}", new Object[]{level.getPriorityLetter(), arg1, arg2});
+                        break;
+                    case DEBUG:
+                        if (LOG.isLoggable(Level.FINER)) {
+                            LOG.log(Level.FINER, "{0} {1} {2}", new Object[]{level.getPriorityLetter(), arg1, arg2});
+                        }
+                        break;
+                    case VERBOSE:
+                        if (LOG.isLoggable(Level.FINEST)) {
+                            LOG.log(Level.FINEST, "{0} {1} {2}", new Object[]{level.getPriorityLetter(), arg1, arg2});
+                        }
+                        break;
+                }
+            }
+
+            @Override
+            public void printAndPromptLog(LogLevel level, String arg1, String arg2) {
+                switch (level) {
+                    case ASSERT:
+                    case ERROR:
+                    case WARN:
+                    case INFO:
+                        LOG.log(Level.INFO, "{0} {1} {2}", new Object[]{level.getPriorityLetter(), arg1, arg2});
+                        break;
+                    case DEBUG:
+                        if (LOG.isLoggable(Level.FINER)) {
+                            LOG.log(Level.FINER, "{0} {1} {2}", new Object[]{level.getPriorityLetter(), arg1, arg2});
+                        }
+                        break;
+                    case VERBOSE:
+                        if (LOG.isLoggable(Level.FINEST)) {
+                            LOG.log(Level.FINEST, "{0} {1} {2}", new Object[]{level.getPriorityLetter(), arg1, arg2});
+                        }
+                        break;
+                }
+            }
+        });
+        DdmPreferences.setLogLevel("verbose");
+
+        if (bridge == null) {
+            final FileObject path = androidPlatform.findTool(ADB_TOOL);
+            if (path == null) {
+                throw new IllegalArgumentException(
+                        "Broken platform " + androidPlatform.getAndroidTarget().getFullName());         //NOI18N
+            }
+            usedPlatform = androidPlatform;
+            ClientData.class.getClassLoader().clearAssertionStatus();      //qattern
+            DebugPortManager.setProvider(DebugPortProvider.getDefault());
+            LOG.log(Level.FINE, "Call init debug bridge");
+            AndroidDebugBridge.init(true);
+            String adbPath = FileUtil.toFile(path).getAbsolutePath();
+            LOG.log(Level.FINE, "Force create new debug bridge using path {0}", adbPath);
+            bridge = AndroidDebugBridge.createBridge(adbPath, true);
+            LOG.log(Level.FINE, "Created debug bridge ", bridge);
+            return bridge;
+        } else if (usedPlatform.equals(androidPlatform)) {
+            return bridge;
+        } else {
+            throw new UnsupportedOperationException(
+                    "Already created for SDK " + usedPlatform.getAndroidTarget().getFullName());    //NOI18N
+        }
+    }
 }
