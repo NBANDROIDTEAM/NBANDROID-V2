@@ -87,6 +87,7 @@
                         <version>3.13</version>
                         <extensions>true</extensions>
                         <configuration>
+                            <requiresRestart>true</requiresRestart>
                             <netbeansUserdir>/jetty/netbeans9/user</netbeansUserdir>
                             <publicPackages>
                             </publicPackages>
@@ -124,6 +125,7 @@
                         <version>3.13</version>
                         <extensions>true</extensions>
                         <configuration>
+                            <requiresRestart>true</requiresRestart>
                             <publicPackages>
                             </publicPackages>
                             <moduleDependencies>
