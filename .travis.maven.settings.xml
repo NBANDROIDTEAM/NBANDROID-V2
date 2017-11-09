@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd" xmlns="http://maven.apache.org/SETTINGS/1.1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <profiles>
+        <profile>
+            <id>nb-gradle-repo</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <repositories>
+              <repository>
+                <snapshots>
+                   <enabled>false</enabled>
+                </snapshots>
+            <id>bintray-kelemen-maven</id>
+            <name>bintray</name>
+            <url>https://dl.bintray.com/kelemen/maven</url>
+        </repository>
+                <repository>
+        <id>central1</id>
+        <name>gradle-releases</name>
+        <url>https://repo.gradle.org/gradle/libs-releases-local</url>
+                    <snapshots>
+                   <enabled>false</enabled>
+                </snapshots>
+    </repository>
+                <repository>
+          <id>central2</id>
+          <url>https://repo1.maven.org/maven2</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+        </repository>
+      </repositories>
+        </profile>
+    </profiles>
+
+</settings>
