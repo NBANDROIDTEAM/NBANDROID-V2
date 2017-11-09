@@ -2,6 +2,5 @@ language: java
 jdk:
  - oraclejdk8
  
- before_install:
-  - cat ~/.m2/settings.xml
-  - rm  ~/.m2/settings.xml
+before_install:
+- rm ~/.m2/settings.xml
