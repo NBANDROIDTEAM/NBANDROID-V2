@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/NBANDROIDTEAM/NBANDROID-V2.svg?branch=master)](https://travis-ci.org/NBANDROIDTEAM/NBANDROID-V2)
+
 # NBANDROID-V2
 Netbeans Android support plugin
 
