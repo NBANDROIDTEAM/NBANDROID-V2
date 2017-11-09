@@ -16,6 +16,14 @@
             <name>bintray</name>
             <url>https://dl.bintray.com/kelemen/maven</url>
         </repository>
+                <repository>
+        <id>central</id>
+        <name>gradle-releases</name>
+        <url>https://repo.gradle.org/gradle/libs-releases-local</url>
+                    <snapshots>
+                   <enabled>false</enabled>
+                </snapshots>
+    </repository>
       </repositories>
         </profile>
     </profiles>
