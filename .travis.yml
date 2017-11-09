@@ -2,7 +2,7 @@ language: java
 jdk:
  - oraclejdk8
  
- cache:
+cache:
   directories: # keep in sync with CACHED_DIRECTORIES below
   - $HOME/.m2/repository
  
