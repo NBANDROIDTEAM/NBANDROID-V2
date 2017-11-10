@@ -64,6 +64,7 @@ import org.openide.windows.WindowManager;
 @ServiceProvider(service = SdkManager.class)
 public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
 
+    private AndroidSdkHandler androidSdkHandler;
     private RepoManager repoManager;
     private static final ExecutorService pool = Executors.newFixedThreadPool(1);
     //max 3 paralel downloads
@@ -81,6 +82,11 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
                             SdkConstants.FD_ANDROID_EXTRAS,
                             SdkConstants.FD_GAPID));
     private SdkToolsRootNode toolRoot;
+
+    @Override
+    public AndroidSdkHandler getAndroidSdkHandler() {
+        return androidSdkHandler;
+    }
 
     @Override
     public void addLocalPlatformChangeListener(LocalPlatformChangeListener l) {
@@ -167,10 +173,11 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
     public SdkManagerImpl() {
         //TODO listen to sdk dir change
         final Runnable runnable = new Runnable() {
+
             public void run() {
-                AndroidSdkHandler sdkManager = DalvikPlatformManager.getDefault().getSdkManager();
-                if (sdkManager != null) {
-                    repoManager = sdkManager.getSdkManager(new NbOutputWindowProgressIndicator());
+                androidSdkHandler = DalvikPlatformManager.getDefault().getSdkManager();
+                if (androidSdkHandler != null) {
+                    repoManager = androidSdkHandler.getSdkManager(new NbOutputWindowProgressIndicator());
                     repoManager.registerLocalChangeListener(SdkManagerImpl.this);
                     repoManager.registerRemoteChangeListener(SdkManagerImpl.this);
                     updateSdkPlatformPackages();

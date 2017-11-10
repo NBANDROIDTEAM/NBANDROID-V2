@@ -21,6 +21,7 @@ package org.nbandroid.netbeans.gradle.v2.sdk;
 import com.android.repository.api.LocalPackage;
 import com.android.repository.api.RepoManager;
 import com.android.repository.api.UpdatablePackage;
+import com.android.sdklib.repository.AndroidSdkHandler;
 import org.openide.util.Lookup;
 
 /**
@@ -53,6 +54,8 @@ public abstract class SdkManager {
      * @param l SdkPlatformChangeListener
      */
     public abstract void removeSdkPlatformChangeListener(SdkPlatformChangeListener l);
+
+    public abstract AndroidSdkHandler getAndroidSdkHandler();
 
     /**
      * Get Android repo manager
