@@ -55,4 +55,20 @@ public class IconProvider {
     @StaticResource
     private static final String RESOURCE_FOLDER_SUPPORT = "org/nbandroid/netbeans/gradle/ui/folder_support.png";
     public static final Image IMG_FOLDER_SUPPORT = ImageUtilities.loadImage(RESOURCE_FOLDER_SUPPORT);
+
+    @StaticResource
+    private static final String RESOURCE_ANDROID_LIBRARY = "org/nbandroid/netbeans/gradle/ui/AndroidDependencyIcon.png";
+    public static final Image IMG_ANDROID_LIBRARY = ImageUtilities.loadImage(RESOURCE_ANDROID_LIBRARY);
+
+    @StaticResource
+    private static final String RESOURCE_DEPENDENCY_JAVADOCINCLUDED = "org/nbandroid/netbeans/gradle/ui/DependencyJavadocIncluded.png";
+    public static final Image IMG_DEPENDENCY_JAVADOCINCLUDED = ImageUtilities.loadImage(RESOURCE_DEPENDENCY_JAVADOCINCLUDED);
+
+    @StaticResource
+    private static final String RESOURCE_DEPENDENCY_JAVASRCINCLUDED = "org/nbandroid/netbeans/gradle/ui/DependencySrcIncluded.png";
+    public static final Image IMG_DEPENDENCY_JAVASRCINCLUDED = ImageUtilities.loadImage(RESOURCE_DEPENDENCY_JAVASRCINCLUDED);
+
+    @StaticResource
+    private static final String RESOURCE_DEPENDENCY_BROKEN = "org/nbandroid/netbeans/gradle/ui/brokenProjectBadge.png";
+    public static final Image IMG_DEPENDENCY_BROKEN = ImageUtilities.loadImage(RESOURCE_DEPENDENCY_BROKEN);
 }

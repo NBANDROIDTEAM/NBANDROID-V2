@@ -13,6 +13,9 @@
  */
 package org.nbandroid.netbeans.gradle.api;
 
+import com.android.builder.model.AndroidLibrary;
+import com.android.builder.model.JavaLibrary;
+import java.net.URL;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 
@@ -35,4 +38,8 @@ public interface AndroidClassPath extends ClassPathProvider {
      * Unregister classpath from GlobalPathRegistry.
      */
     void unregister();
+
+    public JavaLibrary getJavaLibraryReference(URL url);
+
+    public AndroidLibrary getAndroidLibraryReference(URL url);
 }

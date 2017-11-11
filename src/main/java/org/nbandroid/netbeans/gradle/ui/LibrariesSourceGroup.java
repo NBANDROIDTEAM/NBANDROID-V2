@@ -15,13 +15,9 @@ package org.nbandroid.netbeans.gradle.ui;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
-import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
 import org.netbeans.api.project.SourceGroup;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.JarFileSystem;
 
 /**
  * LibrariesSourceGroup {@link SourceGroup} implementation passed to
@@ -47,20 +43,6 @@ public final class LibrariesSourceGroup implements SourceGroup {
         this.root = root;
         this.icon = icon;
         this.openIcon = openIcon;
-        Object attribute;
-        try {
-            FileSystem fileSystem = root.getFileSystem();
-            if (fileSystem instanceof JarFileSystem) {
-                FileObject jar = FileUtil.toFileObject(((JarFileSystem) fileSystem).getJarFile());
-                attribute = jar.getAttribute(GradleAndroidClassPathProvider.ANDROID_LIB_NAME);
-                if (attribute instanceof String) {
-                    displayName = (String) attribute;
-                }
-
-            }
-
-        } catch (FileStateInvalidException ex) {
-        }
         this.displayName = displayName;
     }
 
