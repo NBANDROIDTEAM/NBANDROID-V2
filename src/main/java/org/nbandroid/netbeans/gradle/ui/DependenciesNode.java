@@ -1,5 +1,6 @@
 package org.nbandroid.netbeans.gradle.ui;
 
+import com.android.builder.model.Library;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -20,6 +21,7 @@ import org.nbandroid.netbeans.gradle.api.AndroidClassPath;
 import org.nbandroid.netbeans.gradle.api.AndroidConstants;
 import org.nbandroid.netbeans.gradle.api.ui.AndroidNodes;
 import org.nbandroid.netbeans.gradle.api.ui.UiUtils;
+import org.nbandroid.netbeans.gradle.v2.nodes.DependencyNode;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -68,6 +70,7 @@ public final class DependenciesNode extends AbstractNode {
     public static Node createCompileDependenciesNode(
             String displayName, final Project project, Action... librariesNodeActions) {
         DependenciesChildren children = new DependenciesChildren(project) {
+            @Override
             protected void addLibraries(List<Key> result) {
                 final ClassPathProvider cpProvider = project.getLookup().lookup(ClassPathProvider.class);
                 if (cpProvider != null) {
@@ -86,9 +89,20 @@ public final class DependenciesNode extends AbstractNode {
                     });
                     ClassPath compileCP
                             = ClassPathSupport.createProxyClassPath(Lists.newArrayList(compileCPs).toArray(new ClassPath[0]));
-                    for (FileObject cpRoot : compileCP.getRoots()) {
-                        final FileObject archiveFile = FileUtil.getArchiveFile(cpRoot);
-                        result.add(new Key(AndroidNodes.createLibrarySourceGroup(archiveFile.getNameExt(), cpRoot)));
+                    if (cpProvider instanceof AndroidClassPath) {
+                        for (FileObject cpRoot : compileCP.getRoots()) {
+                            final FileObject archiveFile = FileUtil.getArchiveFile(cpRoot);
+                            Library lib = ((AndroidClassPath) cpProvider).getJavaLibraryReference(cpRoot.toURL());
+                            if (lib == null) {
+                                lib = ((AndroidClassPath) cpProvider).getAndroidLibraryReference(cpRoot.toURL());
+                            }
+                            result.add(new Key(AndroidNodes.createLibrarySourceGroup(archiveFile.getNameExt(), cpRoot), lib));
+                        }
+                    } else {
+                        for (FileObject cpRoot : compileCP.getRoots()) {
+                            final FileObject archiveFile = FileUtil.getArchiveFile(cpRoot);
+                            result.add(new Key(AndroidNodes.createLibrarySourceGroup(archiveFile.getNameExt(), cpRoot)));
+                        }
                     }
                 }
             }
@@ -243,7 +257,12 @@ public final class DependenciesNode extends AbstractNode {
                     break;
                 case Key.TYPE_LIBRARY:
                     // TODO wrap to show suitable actions
-                    result = new Node[]{PackageView.createPackageView(key.getSourceGroup())};
+                    if (key.existLibrary()) {
+                        result = new Node[]{new DependencyNode(PackageView.createPackageView(key.getSourceGroup()), key.getLibrary())};
+                    } else {
+                        result = new Node[]{PackageView.createPackageView(key.getSourceGroup())};
+                    }
+
                     break;
             }
             if (result == null) {
@@ -273,23 +292,41 @@ public final class DependenciesNode extends AbstractNode {
         static final int TYPE_PROJECT = 2;
 
         private final int type;
-        private SourceGroup sg;
-        private Project project;
-        private URI uri;
+        private final Library library;
+        private final SourceGroup sg;
+        private final Project project;
+        private final URI uri;
 
         Key() {
             this.type = TYPE_PLATFORM;
+            this.library = null;
+            sg = null;
+            project = null;
+            uri = null;
         }
 
         Key(SourceGroup sg) {
             this.type = TYPE_LIBRARY;
             this.sg = sg;
+            this.library = null;
+            project = null;
+            uri = null;
+        }
+
+        Key(SourceGroup sg, Library library) {
+            this.type = TYPE_LIBRARY;
+            this.sg = sg;
+            this.library = library;
+            project = null;
+            uri = null;
         }
 
         Key(Project p, URI uri) {
             this.type = TYPE_PROJECT;
             this.project = p;
             this.uri = uri;
+            sg = null;
+            this.library = null;
         }
 
         public int getType() {
@@ -298,6 +335,14 @@ public final class DependenciesNode extends AbstractNode {
 
         public SourceGroup getSourceGroup() {
             return this.sg;
+        }
+
+        public Library getLibrary() {
+            return library;
+        }
+
+        public boolean existLibrary() {
+            return library != null;
         }
 
         public Project getProject() {

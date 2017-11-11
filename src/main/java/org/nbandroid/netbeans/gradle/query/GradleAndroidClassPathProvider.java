@@ -43,6 +43,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -92,11 +93,22 @@ public final class GradleAndroidClassPathProvider
         implements ClassPathProvider, AndroidModelAware, GradleBuildAware, AndroidClassPath {
 
     private static final Logger LOG = Logger.getLogger(GradleAndroidClassPathProvider.class.getName());
-    public static final String ANDROID_LIB_NAME = "ANDROID_LIB_NAME";
+    private Map<URL, JavaLibrary> compileJavaLibs = new HashMap<>();
+    private Map<URL, AndroidLibrary> compileAndroidLibs = new HashMap<>();
 
     private interface Refreshable {
 
         void refresh();
+    }
+
+    @Override
+    public JavaLibrary getJavaLibraryReference(URL url) {
+        return compileJavaLibs.get(url);
+    }
+
+    @Override
+    public AndroidLibrary getAndroidLibraryReference(URL url) {
+        return compileAndroidLibs.get(url);
     }
 
     private final ClassPath source, boot, compile, execute, test, testCompile;
@@ -246,15 +258,17 @@ public final class GradleAndroidClassPathProvider
         @Override
         public URL[] getRoots() {
             List<URL> roots = new ArrayList<>();
+            Map<URL, JavaLibrary> tmpCompileLibs = new HashMap<>();
+            Map<URL, AndroidLibrary> tmpCompileAndroidLibs = new HashMap<>();
             if (project != null) {
                 Variant variant = buildConfig.getCurrentVariant();
                 if (variant != null) {
                     Dependencies dependencies = variant.getMainArtifact().getDependencies();
                     for (AndroidLibrary lib : dependencies.getLibraries()) {
-                        addAndroidLibraryDependencies(roots, lib);
+                        addAndroidLibraryDependencies(roots, tmpCompileAndroidLibs, lib);
                     }
                     for (JavaLibrary lib : dependencies.getJavaLibraries()) {
-                        addJavaLibraryDependencies(roots, lib);
+                        addJavaLibraryDependencies(roots, tmpCompileLibs, lib);
                     }
                     for (String prjPath : dependencies.getProjects()) {
                         if (gradleBuild == null) {
@@ -300,33 +314,32 @@ public final class GradleAndroidClassPathProvider
                 }
             }
             LOG.log(Level.FINE, "compile CP roots: {0}", roots);
+            compileAndroidLibs = tmpCompileAndroidLibs;
+            compileJavaLibs = tmpCompileLibs;
             return roots.toArray(new URL[0]);
         }
 
-        public void addAndroidLibraryDependencies(List<URL> roots, AndroidLibrary lib) {
+        public void addAndroidLibraryDependencies(List<URL> roots, Map<URL, AndroidLibrary> libs, AndroidLibrary lib) {
             String name = lib.getName();
             URL url = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(lib.getJarFile()));
             if (!roots.contains(url)) {
                 roots.add(url);
-                FileObject toFileObject = FileUtil.toFileObject(lib.getJarFile());
-                try {
-                    toFileObject.setAttribute(ANDROID_LIB_NAME, name.replace("@aar", ".jar"));
-                } catch (IOException ex) {
-                }
+                libs.put(url, lib);
             }
             List<? extends AndroidLibrary> libraryDependencies = lib.getLibraryDependencies();
             for (AndroidLibrary libraryDependencie : libraryDependencies) {
-                addAndroidLibraryDependencies(roots, libraryDependencie);
+                addAndroidLibraryDependencies(roots, libs, libraryDependencie);
             }
         }
 
-        private void addJavaLibraryDependencies(List<URL> roots, JavaLibrary lib) {
+        private void addJavaLibraryDependencies(List<URL> roots, Map<URL, JavaLibrary> libs, JavaLibrary lib) {
             URL root = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(lib.getJarFile()));
             if (!roots.contains(root)) {
                 roots.add(root);
+                libs.put(root, lib);
             }
             for (JavaLibrary childLib : lib.getDependencies()) {
-                addJavaLibraryDependencies(roots, childLib);
+                addJavaLibraryDependencies(roots, libs, childLib);
             }
         }
     }
