@@ -23,6 +23,7 @@ import com.android.builder.model.JavaLibrary;
 import com.android.builder.model.Library;
 import java.awt.Image;
 import java.io.File;
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.gradle.impldep.org.apache.commons.io.FilenameUtils;
 import org.nbandroid.netbeans.gradle.core.ui.IconProvider;
@@ -36,6 +37,7 @@ import org.netbeans.api.project.Project;
 import org.openide.util.ImageUtilities;
 
 /**
+ * Dependency detail info for DependencyNode
  *
  * @author arsi
  */
@@ -50,28 +52,52 @@ public class ArtifactData {
     private final String mavenLocation;
     private final String javadocFileName;
     private final String srcFileName;
+    private String javaDocPath;
+    private String srcPath;
+    private File gradleArtifactRoot;
 
     public ArtifactData(Library library, Project project) {
         this.library = library;
         this.project = project;
+        Collection<? extends Object> lookupAll = project.getLookup().lookupAll(Object.class);
         this.mavenLocation = makeMavenLocation();
         this.javadocFileName = makeJavadocFileName();
         this.srcFileName = makeSrcFileName();
         analyzeArtifact();
     }
 
+    /**
+     * Exist the dependency file?
+     *
+     * @return
+     */
     public boolean isBroken() {
         return broken.get();
     }
 
+    /**
+     * Get maven location /com/android/
+     *
+     * @return
+     */
     public String getMavenLocation() {
         return mavenLocation;
     }
 
+    /**
+     * Get javadoc filename artifact-javadoc.jar
+     *
+     * @return
+     */
     public String getJavadocFileName() {
         return javadocFileName;
     }
 
+    /**
+     * Get src file name artifact-sources.jar
+     *
+     * @return
+     */
     public String getSrcFileName() {
         return srcFileName;
     }
@@ -144,26 +170,56 @@ public class ArtifactData {
         return path;
     }
 
+    /**
+     * is javadoc downloaded?
+     *
+     * @return
+     */
     public boolean isJavadocLocal() {
         return javadocLocal.get();
     }
 
+    /**
+     * is src downloaded?
+     *
+     * @return
+     */
     public boolean isSrcLocal() {
         return srcLocal.get();
     }
 
+    /**
+     * Get library
+     *
+     * @return
+     */
     public Library getLibrary() {
         return library;
     }
 
+    /**
+     * get Project
+     *
+     * @return
+     */
     public Project getProject() {
         return project;
     }
 
+    /**
+     * is local project dependency file?
+     *
+     * @return
+     */
     public boolean isLocal() {
         return local.get();
     }
 
+    /**
+     * is from SDK_DIR/extras/android/m2repository
+     *
+     * @return
+     */
     public boolean isFromAndroidSdk() {
         if (library instanceof AndroidLibrary) {
             AndroidLibrary lib = (AndroidLibrary) library;
@@ -181,6 +237,11 @@ public class ArtifactData {
         return false;
     }
 
+    /**
+     * is from SDK_DIR/extras/google/m2repository
+     *
+     * @return
+     */
     public boolean isFromGoogleSdk() {
         if (library instanceof AndroidLibrary) {
             AndroidLibrary lib = (AndroidLibrary) library;
@@ -198,6 +259,11 @@ public class ArtifactData {
         return false;
     }
 
+    /**
+     * is from SDK_DIR/extras/m2repository
+     *
+     * @return
+     */
     public boolean isFromMavenSdk() {
         if (library instanceof AndroidLibrary) {
             AndroidLibrary lib = (AndroidLibrary) library;
@@ -215,6 +281,11 @@ public class ArtifactData {
         return false;
     }
 
+    /**
+     * is from gradle cache
+     *
+     * @return
+     */
     public boolean isFromGradle() {
         if (library instanceof AndroidLibrary) {
             AndroidLibrary lib = (AndroidLibrary) library;
@@ -232,14 +303,30 @@ public class ArtifactData {
         return false;
     }
 
+    /**
+     * is from SDK dir
+     *
+     * @return
+     */
     public boolean isFromSdk() {
         return isFromAndroidSdk() || isFromGoogleSdk() || isFromMavenSdk();
     }
 
+    /**
+     * isFromAndroidSdk() || isFromGoogleSdk() || isFromMavenSdk() ||
+     * isFromGradle()
+     *
+     * @return
+     */
     public boolean isDownloadable() {
         return isFromAndroidSdk() || isFromGoogleSdk() || isFromMavenSdk() || isFromGradle();
     }
 
+    /**
+     * is AndroidLibrary
+     *
+     * @return
+     */
     public boolean isAndroidLibrary() {
         return library instanceof AndroidLibrary;
     }
@@ -259,12 +346,16 @@ public class ArtifactData {
                 String javaDoc = getJavadocFileName();
                 String src = getSrcFileName();
                 if (isFromSdk()) {
-                    if (new File(bundleRoot, javaDoc).exists()) {
+                    File doc = new File(bundleRoot, javaDoc);
+                    javaDocPath = doc.getAbsolutePath();
+                    if (doc.exists()) {
                         javadocLocal.set(true);
                     } else {
                         javadocLocal.set(false);
                     }
-                    if (new File(bundleRoot, src).exists()) {
+                    File srcFile = new File(bundleRoot, src);
+                    srcPath = srcFile.getAbsolutePath();
+                    if (srcFile.exists()) {
                         srcLocal.set(true);
                     } else {
                         srcLocal.set(false);
@@ -274,15 +365,20 @@ public class ArtifactData {
                     srcLocal.set(false);
                     bundleRoot = bundleRoot.getParentFile();
                     if (bundleRoot != null && bundleRoot.isDirectory()) {
+                        gradleArtifactRoot = bundleRoot;
                         File[] listFiles = bundleRoot.listFiles();
                         for (File f : listFiles) {
                             if (f.isDirectory()) {
-                                if (new File(f, javaDoc).exists()) {
+                                File doc = new File(f, javaDoc);
+                                if (doc.exists()) {
                                     javadocLocal.set(true);
+                                    javaDocPath = doc.getAbsolutePath();
                                     break;
                                 }
-                                if (new File(f, src).exists()) {
+                                File srcFile = new File(f, src);
+                                if (srcFile.exists()) {
                                     srcLocal.set(true);
+                                    srcPath = srcFile.getAbsolutePath();
                                     break;
                                 }
                             }
@@ -300,6 +396,12 @@ public class ArtifactData {
         }
     }
 
+    /**
+     * Annotate icon: broken/javadoc/src
+     *
+     * @param icon
+     * @return
+     */
     public Image getIcon(Image icon) {
         icon = annotateBroken(icon);
         icon = annotateSrcAndJavaDoc(icon);
@@ -322,5 +424,35 @@ public class ArtifactData {
         }
         return icon;
     }
+
+    /**
+     * Get absolute path to javadoc jar for gradle if is no local javadoc
+     * returns null
+     *
+     * @return
+     */
+    public String getJavaDocPath() {
+        return javaDocPath;
+    }
+
+    /**
+     * Get absolute path to src jar for gradle if is no local src returns null
+     *
+     * @return
+     */
+    public String getSrcPath() {
+        return srcPath;
+    }
+
+    /**
+     * For gradle artifact returns it's root folder
+     *
+     * @return
+     */
+    public File getGradleArtifactRoot() {
+        return gradleArtifactRoot;
+    }
+
+
 
 }
