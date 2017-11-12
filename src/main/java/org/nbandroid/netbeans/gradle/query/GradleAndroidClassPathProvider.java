@@ -62,6 +62,7 @@ import org.nbandroid.netbeans.gradle.api.AndroidClassPath;
 import org.nbandroid.netbeans.gradle.config.AndroidBuildVariants;
 import org.nbandroid.netbeans.gradle.config.BuildVariant;
 import org.nbandroid.netbeans.gradle.config.ProductFlavors;
+import org.nbandroid.netbeans.gradle.v2.maven.ArtifactData;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -93,8 +94,7 @@ public final class GradleAndroidClassPathProvider
         implements ClassPathProvider, AndroidModelAware, GradleBuildAware, AndroidClassPath {
 
     private static final Logger LOG = Logger.getLogger(GradleAndroidClassPathProvider.class.getName());
-    private Map<URL, JavaLibrary> compileJavaLibs = new HashMap<>();
-    private Map<URL, AndroidLibrary> compileAndroidLibs = new HashMap<>();
+    private Map<URL, ArtifactData> artifactDatas = new HashMap<>();
 
     private interface Refreshable {
 
@@ -102,19 +102,15 @@ public final class GradleAndroidClassPathProvider
     }
 
     @Override
-    public JavaLibrary getJavaLibraryReference(URL url) {
-        return compileJavaLibs.get(url);
-    }
-
-    @Override
-    public AndroidLibrary getAndroidLibraryReference(URL url) {
-        return compileAndroidLibs.get(url);
+    public ArtifactData getArtifactData(URL url) {
+        return artifactDatas.get(url);
     }
 
     private final ClassPath source, boot, compile, execute, test, testCompile;
     private final BuildVariant buildConfig;
     private final Set<Refreshable> refreshables = Sets.newHashSet();
-    private AndroidProject project = null;
+    private AndroidProject androidProject = null;
+    private final Project project;
     private GradleBuild gradleBuild = null;
 
     //ARSI: Create virtual java package to override NB java 8 support check
@@ -132,8 +128,9 @@ public final class GradleAndroidClassPathProvider
         }
     }
 
-    public GradleAndroidClassPathProvider(BuildVariant buildConfig) {
+    public GradleAndroidClassPathProvider(BuildVariant buildConfig, Project project) {
         this.buildConfig = Preconditions.checkNotNull(buildConfig);
+        this.project = project;
         source = createSource();
         test = createTest();
         boot = createBoot();
@@ -144,7 +141,7 @@ public final class GradleAndroidClassPathProvider
 
     @Override
     public void setAndroidProject(AndroidProject project) {
-        this.project = project;
+        this.androidProject = project;
         // TODO rebuilt the classpath under lock?
         for (Refreshable r : refreshables) {
             r.refresh();
@@ -258,17 +255,16 @@ public final class GradleAndroidClassPathProvider
         @Override
         public URL[] getRoots() {
             List<URL> roots = new ArrayList<>();
-            Map<URL, JavaLibrary> tmpCompileLibs = new HashMap<>();
-            Map<URL, AndroidLibrary> tmpCompileAndroidLibs = new HashMap<>();
-            if (project != null) {
+            Map<URL, ArtifactData> tmpArtifactDatas = new HashMap<>();
+            if (androidProject != null) {
                 Variant variant = buildConfig.getCurrentVariant();
                 if (variant != null) {
                     Dependencies dependencies = variant.getMainArtifact().getDependencies();
                     for (AndroidLibrary lib : dependencies.getLibraries()) {
-                        addAndroidLibraryDependencies(roots, tmpCompileAndroidLibs, lib);
+                        addAndroidLibraryDependencies(roots, tmpArtifactDatas, lib);
                     }
                     for (JavaLibrary lib : dependencies.getJavaLibraries()) {
-                        addJavaLibraryDependencies(roots, tmpCompileLibs, lib);
+                        addJavaLibraryDependencies(roots, tmpArtifactDatas, lib);
                     }
                     for (String prjPath : dependencies.getProjects()) {
                         if (gradleBuild == null) {
@@ -314,17 +310,16 @@ public final class GradleAndroidClassPathProvider
                 }
             }
             LOG.log(Level.FINE, "compile CP roots: {0}", roots);
-            compileAndroidLibs = tmpCompileAndroidLibs;
-            compileJavaLibs = tmpCompileLibs;
+            artifactDatas = tmpArtifactDatas;
             return roots.toArray(new URL[0]);
         }
 
-        public void addAndroidLibraryDependencies(List<URL> roots, Map<URL, AndroidLibrary> libs, AndroidLibrary lib) {
+        public void addAndroidLibraryDependencies(List<URL> roots, Map<URL, ArtifactData> libs, AndroidLibrary lib) {
             String name = lib.getName();
             URL url = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(lib.getJarFile()));
             if (!roots.contains(url)) {
                 roots.add(url);
-                libs.put(url, lib);
+                libs.put(url, new ArtifactData(lib, project));
             }
             List<? extends AndroidLibrary> libraryDependencies = lib.getLibraryDependencies();
             for (AndroidLibrary libraryDependencie : libraryDependencies) {
@@ -332,11 +327,11 @@ public final class GradleAndroidClassPathProvider
             }
         }
 
-        private void addJavaLibraryDependencies(List<URL> roots, Map<URL, JavaLibrary> libs, JavaLibrary lib) {
+        private void addJavaLibraryDependencies(List<URL> roots, Map<URL, ArtifactData> libs, JavaLibrary lib) {
             URL root = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(lib.getJarFile()));
             if (!roots.contains(root)) {
                 roots.add(root);
-                libs.put(root, lib);
+                libs.put(root, new ArtifactData(lib, project));
             }
             for (JavaLibrary childLib : lib.getDependencies()) {
                 addJavaLibraryDependencies(roots, libs, childLib);
@@ -393,11 +388,11 @@ public final class GradleAndroidClassPathProvider
 
         @Override
         public URL[] getRoots() {
-            if (project == null) {
+            if (androidProject == null) {
                 return new URL[0]; // broken platform
             }
             //ARSI: add virtual java package to boot classpath to override NB java 8 support check
-            String sourceCompatibility = project.getJavaCompileOptions().getSourceCompatibility();
+            String sourceCompatibility = androidProject.getJavaCompileOptions().getSourceCompatibility();
             if ("1.8".equals(sourceCompatibility)) {
                 URL root = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(VIRTUALJAVA8ROOT_DIR));
                 URL[] basic = getBootUrls();
@@ -413,7 +408,7 @@ public final class GradleAndroidClassPathProvider
         private URL[] getBootUrls() {
             return Iterables.toArray(
                     Iterables.transform(
-                            project.getBootClasspath(),
+                            androidProject.getBootClasspath(),
                             new Function<String, URL>() {
 
                         @Override
@@ -434,7 +429,7 @@ public final class GradleAndroidClassPathProvider
     }
 
     private ClassPath createExecute(ClassPath compile) {
-        if (project != null) {
+        if (androidProject != null) {
             Variant variant = buildConfig.getCurrentVariant();
             if (variant != null) {
                 return ClassPathSupport.createProxyClassPath(compile, ClassPathSupport.createClassPath(
@@ -448,8 +443,8 @@ public final class GradleAndroidClassPathProvider
 
         @Override
         public Iterable<? extends File> get() {
-            Collection<File> javaDirs = project != null
-                    ? project.getDefaultConfig().getSourceProvider().getJavaDirectories()
+            Collection<File> javaDirs = androidProject != null
+                    ? androidProject.getDefaultConfig().getSourceProvider().getJavaDirectories()
                     : Collections.<File>emptySet();
             BuildTypeContainer buildTypeContainer = buildConfig.getCurrentBuildTypeContainer();
             Collection<File> typeJavaDirs = buildTypeContainer != null
@@ -463,10 +458,10 @@ public final class GradleAndroidClassPathProvider
                                     new Function<String, Collection<File>>() {
                                 @Override
                                 public Collection<File> apply(String f) {
-                                    if (project == null) {
+                                    if (androidProject == null) {
                                         return Collections.<File>emptySet();
                                     }
-                                    final ProductFlavorContainer flavor = ProductFlavors.findFlavorByName(project.getProductFlavors(), f);
+                                    final ProductFlavorContainer flavor = ProductFlavors.findFlavorByName(androidProject.getProductFlavors(), f);
                                     if (flavor == null) {
                                         return Collections.<File>emptySet();
                                     }
@@ -492,8 +487,8 @@ public final class GradleAndroidClassPathProvider
 
         @Override
         public Iterable<? extends File> get() {
-            SourceProviderContainer spc = project != null
-                    ? ProductFlavors.getSourceProviderContainer(project.getDefaultConfig(), AndroidProject.ARTIFACT_ANDROID_TEST)
+            SourceProviderContainer spc = androidProject != null
+                    ? ProductFlavors.getSourceProviderContainer(androidProject.getDefaultConfig(), AndroidProject.ARTIFACT_ANDROID_TEST)
                     : null;
             Collection<File> javaDirs = spc != null
                     ? spc.getSourceProvider().getJavaDirectories()
@@ -506,10 +501,10 @@ public final class GradleAndroidClassPathProvider
                                     new Function<String, Collection<File>>() {
                                 @Override
                                 public Collection<File> apply(String f) {
-                                    if (project == null) {
+                                    if (androidProject == null) {
                                         return Collections.<File>emptySet();
                                     }
-                                    final ProductFlavorContainer flavor = ProductFlavors.findFlavorByName(project.getProductFlavors(), f);
+                                    final ProductFlavorContainer flavor = ProductFlavors.findFlavorByName(androidProject.getProductFlavors(), f);
                                     if (flavor == null) {
                                         return Collections.<File>emptySet();
                                     }
@@ -649,7 +644,7 @@ public final class GradleAndroidClassPathProvider
 
         @Override
         public void refresh() {
-            LOG.log(Level.FINER, "Refresh source roots for: {0}", project);
+            LOG.log(Level.FINER, "Refresh source roots for: {0}", androidProject);
             cache = null;
             listeners.firePropertyChange(PROP_RESOURCES, null, null);
         }

@@ -104,7 +104,7 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         items.add(new GradlePlatformResolver());
         items.add(new GradleAndroidSources(project, buildCfg));
         items.add(new GradleAndroidManifest(project, buildCfg));
-        items.add(new GradleAndroidClassPathProvider(buildCfg));
+        items.add(new GradleAndroidClassPathProvider(buildCfg, project));
         items.add(new GradleSourceForBinaryQuery(buildCfg));
         items.add(new AndroidGradleNodes(project));
         items.add(new ProjectResourceLocator(project));

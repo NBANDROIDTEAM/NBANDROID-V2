@@ -18,7 +18,6 @@
  */
 package org.nbandroid.netbeans.gradle.ui;
 
-import com.android.builder.model.Library;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -39,6 +38,7 @@ import org.nbandroid.netbeans.gradle.api.AndroidClassPath;
 import org.nbandroid.netbeans.gradle.api.AndroidConstants;
 import org.nbandroid.netbeans.gradle.api.ui.AndroidNodes;
 import org.nbandroid.netbeans.gradle.api.ui.UiUtils;
+import org.nbandroid.netbeans.gradle.v2.maven.ArtifactData;
 import org.nbandroid.netbeans.gradle.v2.nodes.DependencyNode;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -110,10 +110,7 @@ public final class DependenciesNode extends AbstractNode {
                     if (cpProvider instanceof AndroidClassPath) {
                         for (FileObject cpRoot : compileCP.getRoots()) {
                             final FileObject archiveFile = FileUtil.getArchiveFile(cpRoot);
-                            Library lib = ((AndroidClassPath) cpProvider).getJavaLibraryReference(cpRoot.toURL());
-                            if (lib == null) {
-                                lib = ((AndroidClassPath) cpProvider).getAndroidLibraryReference(cpRoot.toURL());
-                            }
+                            ArtifactData lib = ((AndroidClassPath) cpProvider).getArtifactData(cpRoot.toURL());
                             result.add(new Key(AndroidNodes.createLibrarySourceGroup(archiveFile.getNameExt(), cpRoot), lib));
                         }
                     } else {
@@ -275,8 +272,8 @@ public final class DependenciesNode extends AbstractNode {
                     break;
                 case Key.TYPE_LIBRARY:
                     // TODO wrap to show suitable actions
-                    if (key.existLibrary()) {
-                        result = new Node[]{new DependencyNode(PackageView.createPackageView(key.getSourceGroup()), key.getLibrary(), project)};
+                    if (key.existArtifactData()) {
+                        result = new Node[]{new DependencyNode(PackageView.createPackageView(key.getSourceGroup()), key.artifactData)};
                     } else {
                         result = new Node[]{PackageView.createPackageView(key.getSourceGroup())};
                     }
@@ -310,14 +307,14 @@ public final class DependenciesNode extends AbstractNode {
         static final int TYPE_PROJECT = 2;
 
         private final int type;
-        private final Library library;
+        private final ArtifactData artifactData;
         private final SourceGroup sg;
         private final Project project;
         private final URI uri;
 
         Key() {
             this.type = TYPE_PLATFORM;
-            this.library = null;
+            this.artifactData = null;
             sg = null;
             project = null;
             uri = null;
@@ -326,15 +323,15 @@ public final class DependenciesNode extends AbstractNode {
         Key(SourceGroup sg) {
             this.type = TYPE_LIBRARY;
             this.sg = sg;
-            this.library = null;
+            this.artifactData = null;
             project = null;
             uri = null;
         }
 
-        Key(SourceGroup sg, Library library) {
+        Key(SourceGroup sg, ArtifactData library) {
             this.type = TYPE_LIBRARY;
             this.sg = sg;
-            this.library = library;
+            this.artifactData = library;
             project = null;
             uri = null;
         }
@@ -344,7 +341,7 @@ public final class DependenciesNode extends AbstractNode {
             this.project = p;
             this.uri = uri;
             sg = null;
-            this.library = null;
+            this.artifactData = null;
         }
 
         public int getType() {
@@ -355,12 +352,12 @@ public final class DependenciesNode extends AbstractNode {
             return this.sg;
         }
 
-        public Library getLibrary() {
-            return library;
+        public ArtifactData getArtifactData() {
+            return artifactData;
         }
 
-        public boolean existLibrary() {
-            return library != null;
+        public boolean existArtifactData() {
+            return artifactData != null;
         }
 
         public Project getProject() {

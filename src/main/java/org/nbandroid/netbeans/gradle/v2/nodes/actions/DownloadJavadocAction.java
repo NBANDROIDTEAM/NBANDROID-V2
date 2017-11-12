@@ -18,8 +18,8 @@
  */
 package org.nbandroid.netbeans.gradle.v2.nodes.actions;
 
+import org.nbandroid.netbeans.gradle.v2.maven.ArtifactData;
 import org.nbandroid.netbeans.gradle.v2.maven.MavenDownloader;
-import org.nbandroid.netbeans.gradle.v2.nodes.DependencyNode;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
@@ -42,7 +42,7 @@ public class DownloadJavadocAction extends NodeAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         for (Node node : activatedNodes) {
-            DependencyNode.Data data = node.getLookup().lookup(DependencyNode.Data.class);
+            ArtifactData data = node.getLookup().lookup(ArtifactData.class);
             if (data != null && !data.isJavadocLocal() && !data.isLocal()) {
                 MavenDownloader.downloadJavaDoc(data);
             }
@@ -52,7 +52,7 @@ public class DownloadJavadocAction extends NodeAction {
     @Override
     protected boolean enable(Node[] activatedNodes) {
         for (Node n : activatedNodes) {
-            DependencyNode.Data data = n.getLookup().lookup(DependencyNode.Data.class);
+            ArtifactData data = n.getLookup().lookup(ArtifactData.class);
             if (data == null) {
                 return false;
             }
