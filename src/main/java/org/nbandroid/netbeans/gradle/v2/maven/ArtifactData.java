@@ -453,6 +453,4 @@ public class ArtifactData {
         return gradleArtifactRoot;
     }
 
-
-
 }

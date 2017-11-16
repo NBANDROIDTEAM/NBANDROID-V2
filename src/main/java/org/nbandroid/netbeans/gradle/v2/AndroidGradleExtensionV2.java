@@ -29,6 +29,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
@@ -58,12 +59,17 @@ import org.nbandroid.netbeans.gradle.spi.ProjectRefResolver;
 import org.nbandroid.netbeans.gradle.testrunner.TestOutputConsumerLookupProvider;
 import org.nbandroid.netbeans.gradle.ui.AndroidTestsProvider;
 import org.nbandroid.netbeans.gradle.ui.BuildCustomizerProvider;
+import org.nbandroid.netbeans.gradle.v2.gradle.FindRepositoriesVisitor;
+import org.nbandroid.netbeans.gradle.v2.gradle.Repository;
 import org.netbeans.api.project.Project;
+import org.netbeans.gradle.project.NbGradleProject;
 import org.netbeans.gradle.project.api.entry.GradleProjectExtension2;
+import org.netbeans.gradle.project.model.NbGradleModel;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -93,6 +99,20 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
 
     public AndroidGradleExtensionV2(Project project) {
         this.project = Preconditions.checkNotNull(project);
+        NbGradleProject proj = project.getLookup().lookup(NbGradleProject.class);
+        if (proj != null) {
+            NbGradleModel model = proj.currentModel().getValue();
+            if (model != null) {
+                File buildFile = model.getBuildFile();
+                try {
+                    List<Repository> visit = FindRepositoriesVisitor.visit(buildFile);
+                    System.out.println("org.nbandroid.netbeans.gradle.v2.AndroidGradleExtensionV2.<init>()");
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+
         ic = new InstanceContent();
         projectAddOnLookup = new AbstractLookup(ic);
         final AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
