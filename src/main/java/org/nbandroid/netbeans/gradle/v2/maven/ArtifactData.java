@@ -22,8 +22,9 @@ import com.android.builder.model.AndroidLibrary;
 import com.android.builder.model.JavaLibrary;
 import com.android.builder.model.Library;
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.gradle.impldep.org.apache.commons.io.FilenameUtils;
 import org.nbandroid.netbeans.gradle.core.ui.IconProvider;
@@ -54,12 +55,14 @@ public class ArtifactData {
     private final String srcFileName;
     private String javaDocPath;
     private String srcPath;
+    private String origMd5ParentName = null;
     private File gradleArtifactRoot;
+    public static final String PROPERTY_SRC_LOCAL = "PROPERTY_SRC_LOCAL";
+    public static final String PROPERTY_DOC_LOCAL = "PROPERTY_DOC_LOCAL";
 
     public ArtifactData(Library library, Project project) {
         this.library = library;
         this.project = project;
-        Collection<? extends Object> lookupAll = project.getLookup().lookupAll(Object.class);
         this.mavenLocation = makeMavenLocation();
         this.javadocFileName = makeJavadocFileName();
         this.srcFileName = makeSrcFileName();
@@ -158,9 +161,11 @@ public class ArtifactData {
                 return null;
             }
         } else if (isFromGradle()) {
+            origMd5ParentName = f.getParentFile().getName();
             int indexOf = path.indexOf(GRADLE_STORE);
             if (indexOf > -1) {
                 path = path.substring(indexOf + GRADLE_STORE.length());
+                path = path.replace(origMd5ParentName + File.separator, "");
             } else {
                 return null;
             }
@@ -179,6 +184,23 @@ public class ArtifactData {
         return javadocLocal.get();
     }
 
+    public void setJavadocLocal(boolean local) {
+        boolean last = javadocLocal.getAndSet(local);
+        propertyChangeSupport.firePropertyChange(PROPERTY_DOC_LOCAL, last, local);
+    }
+
+    public void updateGradleCacheDocDir(String name) {
+        if (origMd5ParentName != null) {
+            javaDocPath = gradleArtifactRoot.getAbsolutePath() + File.separator + name + File.separator + javadocFileName;
+        }
+    }
+
+    public void updateGradleCacheSrcDir(String name) {
+        if (origMd5ParentName != null) {
+            srcPath = gradleArtifactRoot.getAbsolutePath() + File.separator + name + File.separator + srcFileName;
+        }
+    }
+
     /**
      * is src downloaded?
      *
@@ -186,6 +208,11 @@ public class ArtifactData {
      */
     public boolean isSrcLocal() {
         return srcLocal.get();
+    }
+
+    public void setSrcLocal(boolean local) {
+        boolean last = srcLocal.getAndSet(local);
+        propertyChangeSupport.firePropertyChange(PROPERTY_SRC_LOCAL, last, local);
     }
 
     /**
@@ -370,16 +397,19 @@ public class ArtifactData {
                         for (File f : listFiles) {
                             if (f.isDirectory()) {
                                 File doc = new File(f, javaDoc);
+
                                 if (doc.exists()) {
-                                    javadocLocal.set(true);
                                     javaDocPath = doc.getAbsolutePath();
-                                    break;
+                                    javadocLocal.set(true);
+                                } else {
+                                    javaDocPath = bundleRoot.getAbsolutePath() + File.separator + javadocFileName;
                                 }
                                 File srcFile = new File(f, src);
                                 if (srcFile.exists()) {
-                                    srcLocal.set(true);
                                     srcPath = srcFile.getAbsolutePath();
-                                    break;
+                                    srcLocal.set(true);
+                                } else {
+                                    srcPath = bundleRoot.getAbsolutePath() + File.separator + srcFileName;
                                 }
                             }
                         }
@@ -403,6 +433,9 @@ public class ArtifactData {
      * @return
      */
     public Image getIcon(Image icon) {
+        if (isAndroidLibrary()) {
+            icon = IconProvider.IMG_ANDROID_LIBRARY;
+        }
         icon = annotateBroken(icon);
         icon = annotateSrcAndJavaDoc(icon);
         return icon;
@@ -451,6 +484,26 @@ public class ArtifactData {
      */
     public File getGradleArtifactRoot() {
         return gradleArtifactRoot;
+    }
+
+    private transient final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+    /**
+     * Add PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Remove PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
 }

@@ -43,7 +43,7 @@ public class DownloadSourceAction extends NodeAction {
     protected void performAction(Node[] activatedNodes) {
         for (Node node : activatedNodes) {
             ArtifactData data = node.getLookup().lookup(ArtifactData.class);
-            if (data != null && !data.isJavadocLocal() && !data.isLocal()) {
+            if (data != null && !data.isSrcLocal() && !data.isLocal()) {
                 MavenDownloader.downloadSource(data);
             }
         }

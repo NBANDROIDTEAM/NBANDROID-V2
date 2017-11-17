@@ -26,10 +26,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.net.ssl.HttpsURLConnection;
+import org.gradle.impldep.org.apache.commons.io.FileUtils;
+import org.nbandroid.netbeans.gradle.v2.gradle.GradleAndroidRepositoriesProvider;
+import org.nbandroid.netbeans.gradle.v2.gradle.Repository;
 import org.netbeans.api.progress.ProgressHandle;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -43,31 +50,144 @@ public class MavenDownloader {
     public static final String MD5 = ".md5";
     public static final String SHA1 = ".sha1";
     private static final int BUFFER_SIZE = 1024;
-    private static final ExecutorService downloadPool = Executors.newFixedThreadPool(1);
+    private static final ExecutorService downloadPool = Executors.newFixedThreadPool(1); //Single thread!!
+
+    public enum FileType {
+        ARTIFACT,
+        SHA1,
+        MD5
+    }
+
+    public enum ArtifactType {
+        DOC,
+        SRC
+    }
 
     public static void downloadJavaDoc(ArtifactData data) {
-
-        String javadocFileName = data.getJavadocFileName();
-        String mavenLocation = data.getMavenLocation();
-        File f = new File("/tmp/" + javadocFileName + MD5);
-        downloadFromRepo(f, ANDROID_REPO + mavenLocation + javadocFileName);
-
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                GradleAndroidRepositoriesProvider provider = data.getProject().getLookup().lookup(GradleAndroidRepositoriesProvider.class);
+                List<Repository> allRepositories = provider.getAllRepositories();
+                for (Repository repo : allRepositories) {
+                    downloadPool.execute(new RepoDownloadTask(repo.getUrl(), data, FileType.SHA1, ArtifactType.DOC));
+                    downloadPool.execute(new RepoDownloadTask(repo.getUrl(), data, FileType.MD5, ArtifactType.DOC));
+                    downloadPool.execute(new RepoDownloadTask(repo.getUrl(), data, FileType.ARTIFACT, ArtifactType.DOC));
+                }
+            }
+        };
+        downloadPool.execute(runnable);
     }
 
     public static void downloadSource(ArtifactData data) {
-        String srcFileName = data.getSrcFileName();
-        String mavenLocation = data.getMavenLocation();
-        File f = new File("/tmp/" + srcFileName + MD5);
-        downloadFromRepo(f, ANDROID_REPO + mavenLocation + srcFileName);
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                GradleAndroidRepositoriesProvider provider = data.getProject().getLookup().lookup(GradleAndroidRepositoriesProvider.class);
+                List<Repository> allRepositories = provider.getAllRepositories();
+                for (Repository repo : allRepositories) {
+                    downloadPool.execute(new RepoDownloadTask(repo.getUrl(), data, FileType.SHA1, ArtifactType.SRC));
+                    downloadPool.execute(new RepoDownloadTask(repo.getUrl(), data, FileType.MD5, ArtifactType.SRC));
+                    downloadPool.execute(new RepoDownloadTask(repo.getUrl(), data, FileType.ARTIFACT, ArtifactType.SRC));
+                }
+            }
+        };
+        downloadPool.execute(runnable);
     }
 
-    private static boolean downloadFromRepo(File f, String url) {
-        try {
-            downloadFully(new URL(url), f);
-        } catch (Exception ex) {
-            return false;
+    private static class RepoDownloadTask implements Runnable {
+
+        private File f;
+        private String url;
+        private final ArtifactData data;
+        private final ArtifactType artifactType;
+        private final FileType fileType;
+        private final String repoUrl;
+
+        public RepoDownloadTask(String repoUrl, ArtifactData data, FileType fileType, ArtifactType artifactType) {
+            this.artifactType = artifactType;
+            this.fileType = fileType;
+            this.data = data;
+            this.repoUrl = repoUrl;
+
         }
-        return true;
+
+        private void computeCoordinates(ArtifactType artifactType1, ArtifactData data1, FileType fileType1) throws AssertionError {
+            String fileName;
+            String path;
+            String mavenLocation;
+            switch (artifactType1) {
+                case DOC:
+                    path = data1.getJavaDocPath();
+                    fileName = data1.getJavadocFileName();
+                    break;
+                case SRC:
+                    fileName = data1.getSrcFileName();
+                    path = data1.getSrcPath();
+                    break;
+                default:
+                    throw new AssertionError(artifactType1.name());
+            }
+            mavenLocation = data1.getMavenLocation() + fileName;
+            switch (fileType1) {
+                case ARTIFACT:
+                    this.f = new File(path);
+                    break;
+                case SHA1:
+                    this.f = new File(path + SHA1);
+                    mavenLocation = mavenLocation + SHA1;
+                    break;
+                case MD5:
+                    this.f = new File(path + MD5);
+                    mavenLocation = mavenLocation + MD5;
+                    break;
+                default:
+                    throw new AssertionError(fileType1.name());
+            }
+            this.url = repoUrl + mavenLocation;
+        }
+
+        @Override
+        public void run() {
+            computeCoordinates(artifactType, data, fileType);
+            if (f.exists()) {
+                return;
+            }
+            try {
+                f.getParentFile().mkdir();
+                downloadFully(new URL(url), f);
+            } catch (Exception ex) {
+            }
+            if (!f.exists()) {
+                return;
+            }
+            if (data.isFromGradle() && fileType == FileType.SHA1) {
+                try {
+                    String dirName = new String(Files.readAllBytes(Paths.get(f.getAbsolutePath())), "UTF-8");
+                    File dir = new File(f.getParentFile().getAbsolutePath() + File.separator + dirName);
+                    dir.mkdirs();
+                    File sha1File = new File(dir.getAbsolutePath() + File.separator + f.getName());
+                    FileUtils.copyFile(f, sha1File);
+                    f.delete();
+                    f = sha1File;
+                    if (artifactType == ArtifactType.DOC) {
+                        data.updateGradleCacheDocDir(dirName);
+                    } else {
+                        data.updateGradleCacheSrcDir(dirName);
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            if (fileType == FileType.ARTIFACT) {
+                if (artifactType == ArtifactType.DOC) {
+                    data.setJavadocLocal(f.exists());
+                } else {
+                    data.setSrcLocal(f.exists());
+                }
+            }
+        }
+
     }
 
     private static void downloadFully(URL url, File target) throws IOException {
@@ -104,6 +224,12 @@ public class MavenDownloader {
             in.close();
         } finally {
             handle.finish();
+            if (target.length() == 0) {
+                try {
+                    target.delete();
+                } catch (Exception e) {
+                }
+            }
         }
     }
 

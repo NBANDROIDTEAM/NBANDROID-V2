@@ -20,6 +20,8 @@ package org.nbandroid.netbeans.gradle.v2.nodes;
 
 import com.android.builder.model.Library;
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.List;
 import javax.swing.Action;
@@ -28,13 +30,14 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author arsi
  */
-public class DependencyNode extends FilterNode {
+public class DependencyNode extends FilterNode implements PropertyChangeListener {
 
     private final Library library;
     public static final String JAVADOC_NAME = "-javadoc.jar";
@@ -64,6 +67,8 @@ public class DependencyNode extends FilterNode {
         super(original, new Children(original), createLookup(library));
         this.data = getLookup().lookup(ArtifactData.class);
         this.library = data.getLibrary();
+        library.addPropertyChangeListener(WeakListeners.propertyChange(this, library));
+
     }
 
     @Override
@@ -96,6 +101,13 @@ public class DependencyNode extends FilterNode {
             }
         }
         return versionlessId;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (ArtifactData.PROPERTY_DOC_LOCAL.equals(evt.getPropertyName()) || ArtifactData.PROPERTY_SRC_LOCAL.equals(evt.getPropertyName())) {
+            fireIconChange();
+        }
     }
 
 }
