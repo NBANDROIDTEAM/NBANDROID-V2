@@ -46,6 +46,8 @@ import org.nbandroid.netbeans.gradle.core.sdk.StatsCollector;
 import org.nbandroid.netbeans.gradle.launch.GradleDebugInfo;
 import org.nbandroid.netbeans.gradle.launch.Launches;
 import org.nbandroid.netbeans.gradle.query.AndroidTaskVariableQuery;
+import org.nbandroid.netbeans.gradle.query.AutoAndroidGradleJavadocForBinaryQuery;
+import org.nbandroid.netbeans.gradle.query.AutoAndroidGradleSourceForBinaryQuery;
 import org.nbandroid.netbeans.gradle.query.BuiltInCommands;
 import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
 import org.nbandroid.netbeans.gradle.query.GradleAndroidManifest;
@@ -84,6 +86,7 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
     private final List<Object> items = Lists.newArrayList();
     private final GradleProjectOpenedHook openHook;
     private final SourceLevelQueryImpl2 levelQuery = new SourceLevelQueryImpl2();
+    private final GradleAndroidClassPathProvider androidClassPathProvider;
     // testing support
     @VisibleForTesting
     public final CountDownLatch loadedSignal = new CountDownLatch(1);
@@ -106,7 +109,8 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         items.add(new GradlePlatformResolver());
         items.add(new GradleAndroidSources(project, buildCfg));
         items.add(new GradleAndroidManifest(project, buildCfg));
-        items.add(new GradleAndroidClassPathProvider(buildCfg, project));
+        androidClassPathProvider = new GradleAndroidClassPathProvider(buildCfg, project);
+        items.add(androidClassPathProvider);
         items.add(new GradleSourceForBinaryQuery(buildCfg));
         items.add(new AndroidGradleNodes(project));
         items.add(new ProjectResourceLocator(project));
@@ -163,10 +167,16 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
             LOG.log(Level.FINE, "lookup: {0}", modelLookup.lookupAll(Object.class));
             AndroidProject aProject = modelLookup.lookup(AndroidProject.class);
             GradleBuild build = modelLookup.lookup(GradleBuild.class);
+            AutoAndroidGradleSourceForBinaryQuery sourceForBinaryQuery = Lookup.getDefault().lookup(AutoAndroidGradleSourceForBinaryQuery.class);
+            AutoAndroidGradleJavadocForBinaryQuery javadocForBinaryQuery = Lookup.getDefault().lookup(AutoAndroidGradleJavadocForBinaryQuery.class);
             if (aProject != null) {
                 updateAndroidProject(aProject, build);
+                sourceForBinaryQuery.addClassPathProvider(androidClassPathProvider);
+                javadocForBinaryQuery.addClassPathProvider(androidClassPathProvider);
             } else {
                 clearAndroidProject();
+                sourceForBinaryQuery.removeClassPathProvider(androidClassPathProvider);
+                javadocForBinaryQuery.removeClassPathProvider(androidClassPathProvider);
             }
         } finally {
             loadedSignal.countDown();
