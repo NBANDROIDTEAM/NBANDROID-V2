@@ -73,4 +73,9 @@ public class DownloadSourceAction extends NodeAction {
         return null;
     }
 
+    @Override
+    protected boolean asynchronous() {
+        return true;
+    }
+
 }
