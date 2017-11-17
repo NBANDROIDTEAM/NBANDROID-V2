@@ -18,6 +18,7 @@ import com.android.repository.api.ProgressIndicator;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,32 +78,39 @@ public class NbDownloader implements Downloader {
         indicator.setText("Downloading...");
         indicator.setSecondaryText(url.toString());
         ProgressHandle handle = ProgressHandle.createHandle("Downloading " + url);
-        URLConnection connection = url.openConnection();
-        if (connection instanceof HttpsURLConnection) {
-            ((HttpsURLConnection) connection).setInstanceFollowRedirects(true);
-            ((HttpsURLConnection) connection).setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; U; PPC; en-US; rv:1.3.1)");
-            ((HttpsURLConnection) connection).setRequestProperty("Accept-Charset", "UTF-8");
-            ((HttpsURLConnection) connection).setDoOutput(true);
-            ((HttpsURLConnection) connection).setDoInput(true);
-        }
-        connection.setConnectTimeout(3000);
-        connection.connect();
-        int contentLength = connection.getContentLength();
-        handle.start(contentLength);
-        OutputStream dest = new FileOutputStream(target);
-        InputStream in = connection.getInputStream();
+        try {
+            URLConnection connection = url.openConnection();
+            if (connection instanceof HttpsURLConnection) {
+                ((HttpsURLConnection) connection).setInstanceFollowRedirects(true);
+                ((HttpsURLConnection) connection).setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; U; PPC; en-US; rv:1.3.1)");
+                ((HttpsURLConnection) connection).setRequestProperty("Accept-Charset", "UTF-8");
+                ((HttpsURLConnection) connection).setDoOutput(true);
+                ((HttpsURLConnection) connection).setDoInput(true);
+            }
+            connection.setConnectTimeout(3000);
+            connection.connect();
+            int contentLength = connection.getContentLength();
+            if (contentLength < 1) {
+                throw new FileNotFoundException();
+            }
+            handle.start(contentLength);
+            OutputStream dest = new FileOutputStream(target);
+            InputStream in = connection.getInputStream();
 
-        int count;
-        int done = 0;
-        byte data[] = new byte[BUFFER_SIZE];
-        while ((count = in.read(data, 0, BUFFER_SIZE)) != -1) {
-            done += count;
-            handle.progress(done);
-            dest.write(data, 0, count);
+            int count;
+            int done = 0;
+            byte data[] = new byte[BUFFER_SIZE];
+            while ((count = in.read(data, 0, BUFFER_SIZE)) != -1) {
+                done += count;
+                handle.progress(done);
+                dest.write(data, 0, count);
+            }
+
+            dest.close();
+            in.close();
+        } finally {
+            handle.finish();
         }
-        handle.finish();
-        dest.close();
-        in.close();
     }
 
     @Nullable
