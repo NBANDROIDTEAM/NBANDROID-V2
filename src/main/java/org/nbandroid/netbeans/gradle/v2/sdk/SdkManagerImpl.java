@@ -241,6 +241,13 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
             }
         }
         platforms = platformsTmp;
+        for (LocalPlatformChangeListener localListener : localListeners) {
+            try {
+                localListener.platformListChanged(platforms);
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
         Collections.sort(tmpPackages, new Comparator<AndroidVersionNode>() {
             @Override
             public int compare(AndroidVersionNode o1, AndroidVersionNode o2) {
@@ -309,13 +316,7 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
                 Exceptions.printStackTrace(e);
             }
         }
-        for (LocalPlatformChangeListener localListener : localListeners) {
-            try {
-                localListener.platformListChanged(platforms);
-            } catch (Exception e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
+
     }
 
     /**

@@ -28,6 +28,7 @@ import org.nbandroid.netbeans.gradle.v2.sdk.SdkManager;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
@@ -35,7 +36,9 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author arsi
  */
-@ServiceProvider(service = JavaPlatformProvider.class)
+@ServiceProviders({
+    @ServiceProvider(service = JavaPlatformProvider.class),
+    @ServiceProvider(service = AndroidPlatformProviderJava18.class)})
 public class AndroidPlatformProviderJava18 implements JavaPlatformProvider, LocalPlatformChangeListener {
 
     private final Vector<PropertyChangeListener> listeners = new Vector<>();
