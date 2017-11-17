@@ -65,6 +65,11 @@
                                     <id>com.github.kelemen:netbeans-gradle-plugin</id>
                                     <type>impl</type>
                                 </dependency>
+                                <dependency>
+                                    <!--Private Package Reference-->
+                                    <id>org.netbeans.modules:org-netbeans-modules-masterfs</id>
+                                    <type>impl</type>
+                                </dependency>
                             </moduleDependencies>
                         </configuration>
                     </plugin>
@@ -102,6 +107,11 @@
                                     <id>com.github.kelemen:netbeans-gradle-plugin</id>
                                     <type>impl</type>
                                 </dependency>
+                                <dependency>
+                                    <!--Private Package Reference-->
+                                    <id>org.netbeans.modules:org-netbeans-modules-masterfs</id>
+                                    <type>impl</type>
+                                </dependency>
                             </moduleDependencies>
                             <netbeansInstallation>/ssd/nb/netbeans-8.1-e3/</netbeansInstallation>
                         </configuration>
@@ -137,6 +147,11 @@
                                 <dependency>
                                     <!--Private Package Reference-->
                                     <id>com.github.kelemen:netbeans-gradle-plugin</id>
+                                    <type>impl</type>
+                                </dependency>
+                                <dependency>
+                                    <!--Private Package Reference-->
+                                    <id>org.netbeans.modules:org-netbeans-modules-masterfs</id>
                                     <type>impl</type>
                                 </dependency>
                             </moduleDependencies>
@@ -590,12 +605,17 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-java-platform</artifactId>
-            <version>RELEASE81</version>
+            <version>${version.nb}</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
             <version>2.4.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-masterfs</artifactId>
+            <version>${version.nb}</version>
         </dependency>
     </dependencies>
     <properties>
