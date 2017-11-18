@@ -617,6 +617,11 @@
             <artifactId>org-netbeans-modules-masterfs</artifactId>
             <version>${version.nb}</version>
         </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-api-templates</artifactId>
+            <version>${version.nb}</version>
+        </dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

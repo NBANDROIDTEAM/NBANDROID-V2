@@ -19,12 +19,7 @@
 package org.nbandroid.netbeans.gradle.platform;
 
 import com.android.repository.api.UpdatablePackage;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Vector;
-import java.util.concurrent.atomic.AtomicReference;
-import org.nbandroid.netbeans.gradle.v2.sdk.LocalPlatformChangeListener;
-import org.nbandroid.netbeans.gradle.v2.sdk.SdkManager;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
 import org.openide.util.lookup.ServiceProvider;
@@ -39,49 +34,10 @@ import org.openide.util.lookup.ServiceProviders;
 @ServiceProviders({
     @ServiceProvider(service = JavaPlatformProvider.class),
     @ServiceProvider(service = AndroidPlatformProviderJava18.class)})
-public class AndroidPlatformProviderJava18 implements JavaPlatformProvider, LocalPlatformChangeListener {
-
-    private final Vector<PropertyChangeListener> listeners = new Vector<>();
-    private final AtomicReference<JavaPlatform[]> platforms = new AtomicReference<>(new JavaPlatform[0]);
-    private final AtomicReference<JavaPlatform> defaultPlatform = new AtomicReference<>(null);
-
-    public AndroidPlatformProviderJava18() {
-        SdkManager.getDefault().addLocalPlatformChangeListener(this);
-    }
+public class AndroidPlatformProviderJava18 extends AndroidPlatformProvider {
 
     @Override
-    public JavaPlatform[] getInstalledPlatforms() {
-        return platforms.get();
+    protected void createPlatform(JavaPlatform[] tmp, int i, Vector<UpdatablePackage> pkgs) {
+        tmp[i] = new AndroidPlatform(pkgs.get(i), "1.8");
     }
-
-    @Override
-    public JavaPlatform getDefaultPlatform() {
-        return defaultPlatform.get();
-    }
-
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        listeners.add(listener);
-    }
-
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        listeners.remove(listener);
-    }
-
-    @Override
-    public void platformListChanged(Vector<UpdatablePackage> pkgs) {
-        JavaPlatform[] tmp = new JavaPlatform[pkgs.size()];
-        for (int i = 0; i < pkgs.size(); i++) {
-            tmp[i] = new AndroidPlatform(pkgs.get(i), "1.8");
-        }
-        platforms.set(tmp);
-        if (tmp.length > 0) {
-            defaultPlatform.set(tmp[0]);
-        }
-        for (PropertyChangeListener listener : listeners) {
-            listener.propertyChange(new PropertyChangeEvent(this, PROP_INSTALLED_PLATFORMS, null, platforms));
-        }
-    }
-
 }
