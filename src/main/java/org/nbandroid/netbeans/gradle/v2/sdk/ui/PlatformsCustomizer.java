@@ -44,8 +44,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatform;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -77,12 +76,12 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     private static final Logger LOG = Logger.getLogger(PlatformsCustomizer.class.getName());
 
     private static final String TEMPLATE = "Templates/Services/Platforms/org-netbeans-api-java-Platform/javaplatform.xml";  //NOI18N
-    private static final String STORAGE = "Services/Platforms/org-netbeans-api-java-Platform";  //NOI18N
+    private static final String STORAGE = "Services/Platforms/org-nbandroid-netbeans-gradle-Platform";  //NOI18N
     private static final String ATTR_CAN_REMOVE = "can-remove"; //NOI18N
 
     private PlatformCategoriesChildren children;
     private ExplorerManager manager;
-    private final JavaPlatform initialPlatform;
+    private final AndroidSdkPlatform initialPlatform;
 
     /**
      * Shows platforms customizer
@@ -90,9 +89,9 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
      * @param platform which should be seelcted, may be null
      * @return boolean for future extension, currently always true
      */
-    public static boolean showCustomizer(JavaPlatform platform) {
+    public static boolean showCustomizer() {
         PlatformsCustomizer customizer
-                = new PlatformsCustomizer(platform);
+                = new PlatformsCustomizer();
         javax.swing.JButton close = new javax.swing.JButton(NbBundle.getMessage(PlatformsCustomizer.class, "CTL_Close"));
         close.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PlatformsCustomizer.class, "AD_Close"));
         DialogDescriptor descriptor = new DialogDescriptor(customizer, NbBundle.getMessage(PlatformsCustomizer.class,
@@ -112,9 +111,8 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     /**
      * Creates new form PlatformsCustomizer
      */
-    public PlatformsCustomizer(JavaPlatform initialPlatform) {
-        this.initialPlatform = (initialPlatform == null)
-                ? JavaPlatformManager.getDefault().getDefaultPlatform() : initialPlatform;
+    public PlatformsCustomizer() {
+        this.initialPlatform = null;
         initComponents();
     }
 
@@ -373,10 +371,11 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                     if (wiz.getValue() == WizardDescriptor.FINISH_OPTION) {
                         self.getChildren().refreshPlatforms();
                         Set result = wiz.getInstantiatedObjects();
-                        self.expandPlatforms(result.isEmpty() ? null : (JavaPlatform) result.iterator().next());
+                        self.expandPlatforms(result.isEmpty() ? null : (AndroidSdkPlatform) result.iterator().next());
                     }
                 } finally {
                     dlg.dispose();
+                    wiz.getInstantiatedObjects();
                 }
 //                } catch (DataObjectNotFoundException dfne) {
 //                    Exceptions.printStackTrace(dfne);
@@ -416,7 +415,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         }
         JComponent target = messageArea;
         JComponent owner = messageArea;
-        JavaPlatform platform = pNode.getLookup().lookup(JavaPlatform.class);
+        AndroidSdkPlatform platform = pNode.getLookup().lookup(AndroidSdkPlatform.class);
         if (pNode != getExplorerManager().getRootContext()) {
             if (platform != null) {
                 this.removeButton.setEnabled(canRemove(platform, pNode.getLookup().lookup(DataObject.class)));
@@ -472,7 +471,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         container.add(component);
     }
 
-    private boolean canRemove(final JavaPlatform platform, final DataObject dobj) {
+    private boolean canRemove(final AndroidSdkPlatform platform, final DataObject dobj) {
         if (isDefaultPlatform(platform)) {
             return false;
         }
@@ -486,22 +485,21 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         return true;
     }
 
-    private static boolean isDefaultPlatform(JavaPlatform platform) {
-        JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
-        return defaultPlatform != null && defaultPlatform.equals(platform);
+    private static boolean isDefaultPlatform(AndroidSdkPlatform platform) {
+        return platform.isDefaultSdk();
     }
 
-    private void expandPlatforms(JavaPlatform platform) {
+    private void expandPlatforms(AndroidSdkPlatform platform) {
         ExplorerManager mgr = this.getExplorerManager();
         Node node = mgr.getRootContext();
         expandAllNodes(this.platforms, node, mgr, platform);
     }
 
-    private static void expandAllNodes(BeanTreeView btv, Node node, ExplorerManager mgr, JavaPlatform platform) {
+    private static void expandAllNodes(BeanTreeView btv, Node node, ExplorerManager mgr, AndroidSdkPlatform platform) {
         btv.expandNode(node);
         Children ch = node.getChildren();
         if (ch == Children.LEAF) {
-            if (platform != null && platform.equals(node.getLookup().lookup(JavaPlatform.class))) {
+            if (platform != null && platform.equals(node.getLookup().lookup(AndroidSdkPlatform.class))) {
                 try {
                     mgr.setSelectedNodes(new Node[]{node});
                 } catch (PropertyVetoException e) {
@@ -696,16 +694,16 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                     try {
                         final DataObject dobj = DataObject.find(child);
                         Node node = dobj.getNodeDelegate();
-                        JavaPlatform platform = node.getLookup().lookup(JavaPlatform.class);
+                        AndroidSdkPlatform platform = node.getLookup().lookup(AndroidSdkPlatform.class);
                         if (platform == null) {
                             //Create a node platfrom like from bean.
                             final InstanceCookie ic = dobj.getLookup().lookup(InstanceCookie.class);
                             if (ic != null) {
                                 try {
                                     final Object instance = ic.instanceCreate();
-                                    if (instance instanceof JavaPlatform) {
+                                    if (instance instanceof AndroidSdkPlatform) {
                                         node = new FilterNode(new BeanNode(instance), Children.LEAF, Lookups.singleton(instance));
-                                        platform = (JavaPlatform) instance;
+                                        platform = (AndroidSdkPlatform) instance;
                                     }
                                 } catch (Exception e) {
                                     //report and continue with next platform
@@ -720,9 +718,9 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                             }
                         }
                         if (platform != null) {
-                            final String platformType = platform.getSpecification().getName();
+                            final String platformType = "Android";
                             if (platformType != null) {
-                                final String platformTypeDisplayName = platform.getSpecification().getDisplayName();
+                                final String platformTypeDisplayName = "Android";
                                 PlatformCategoriesDescriptor platforms = categories.get(platformType);
                                 if (platforms == null) {
                                     platforms = new PlatformCategoriesDescriptor(platformTypeDisplayName);

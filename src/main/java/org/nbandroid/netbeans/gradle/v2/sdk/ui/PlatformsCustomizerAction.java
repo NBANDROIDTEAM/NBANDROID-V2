@@ -36,6 +36,6 @@ public final class PlatformsCustomizerAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        PlatformsCustomizer.showCustomizer(null);
+        PlatformsCustomizer.showCustomizer();
     }
 }

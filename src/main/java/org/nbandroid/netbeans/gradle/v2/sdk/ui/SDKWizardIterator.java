@@ -23,9 +23,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatform;
+import org.nbandroid.netbeans.gradle.v2.sdk.PlatformConvertor;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle.Messages;
@@ -48,9 +49,16 @@ public final class SDKWizardIterator implements WizardDescriptor.InstantiatingIt
     WizardDescriptor.Panel<WizardDescriptor> panels[] = new WizardDescriptor.Panel[]{panel1, panelLocal, panel3};
 
     @Override
-    public Set<?> instantiate() throws IOException {
-        // TODO return set of FileObject (or DataObject) you have created
-        return Collections.emptySet();
+    public java.util.Set instantiate() throws IOException {
+        AndroidSdkPlatform p = new AndroidSdkPlatform((String) wizard.getProperty(SDKWizardPanelInstall.SDK_NAME), (String) wizard.getProperty(SDKWizardPanelInstall.SDK_PATH));
+        p.setDefault((boolean) wizard.getProperty(SDKWizardPanelInstall.SDK_DEFAULT));
+//        InstanceDataObject.create(
+//                DataFolder.findFolder(FileUtil.createFolder(FileUtil.getConfigRoot(), "Services/Platforms/org-nbandroid-netbeans-gradle-Platform")),
+//                null,
+//                p,
+//                null,
+//                true);
+        return Collections.singleton(PlatformConvertor.create(p));
     }
 
     @Override
