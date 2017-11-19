@@ -18,6 +18,11 @@
  */
 package org.nbandroid.netbeans.gradle.v2.sdk.ui;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -25,13 +30,14 @@ import org.openide.util.HelpCtx;
 /**
  * @author ArSi
  */
-public class SDKWizardPanelSelect implements WizardDescriptor.Panel<WizardDescriptor> {
+public class SDKWizardPanelSelect implements WizardDescriptor.Panel<WizardDescriptor>, PropertyChangeListener {
 
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
     private SDKVisualPanelSelect component;
+    private final List<ChangeListener> listeners = new ArrayList<>();
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -41,6 +47,7 @@ public class SDKWizardPanelSelect implements WizardDescriptor.Panel<WizardDescri
     public SDKVisualPanelSelect getComponent() {
         if (component == null) {
             component = new SDKVisualPanelSelect();
+            component.addPropertyChangeListener(this);
         }
         return component;
     }
@@ -55,30 +62,40 @@ public class SDKWizardPanelSelect implements WizardDescriptor.Panel<WizardDescri
 
     @Override
     public boolean isValid() {
-        // If it is always OK to press Next or Finish, then:
-        return true;
-        // If it depends on some condition (form filled out...) and
-        // this condition changes (last form field filled in...) then
-        // use ChangeSupport to implement add/removeChangeListener below.
-        // WizardDescriptor.ERROR/WARNING/INFORMATION_MESSAGE will also be useful.
+        return getComponent().isSdkSelected();
     }
 
     @Override
     public void addChangeListener(ChangeListener l) {
+        listeners.add(l);
     }
 
     @Override
     public void removeChangeListener(ChangeListener l) {
+        listeners.remove(l);
     }
 
     @Override
     public void readSettings(WizardDescriptor wiz) {
         // use wiz.getProperty to retrieve previous panel state
+        getComponent().testPath();
     }
 
     @Override
     public void storeSettings(WizardDescriptor wiz) {
         // use wiz.putProperty to remember current panel state
+        wiz.putProperty(SDKWizardPanelInstall.SDK_PATH, getComponent().getSdkPath());
+        wiz.putProperty(SDKWizardPanelInstall.SDK_NAME, getComponent().getSdkName());
+        wiz.putProperty(SDKWizardPanelInstall.SDK_DEFAULT, getComponent().isSdkDefault());
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (SDKVisualPanelSelect.SDK_SELECTED.equals(evt.getPropertyName())) {
+            for (ChangeListener listener : listeners) {
+                listener.stateChanged(new ChangeEvent(this));
+            }
+        }
     }
 
 }
