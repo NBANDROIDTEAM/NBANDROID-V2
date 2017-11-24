@@ -44,7 +44,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatform;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatformImpl;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -81,7 +81,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
     private PlatformCategoriesChildren children;
     private ExplorerManager manager;
-    private final AndroidSdkPlatform initialPlatform;
+    private final AndroidSdkPlatformImpl initialPlatform;
 
     /**
      * Shows platforms customizer
@@ -371,7 +371,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                     if (wiz.getValue() == WizardDescriptor.FINISH_OPTION) {
                         self.getChildren().refreshPlatforms();
                         Set result = wiz.getInstantiatedObjects();
-                        self.expandPlatforms(result.isEmpty() ? null : (AndroidSdkPlatform) result.iterator().next());
+                        self.expandPlatforms(result.isEmpty() ? null : (AndroidSdkPlatformImpl) result.iterator().next());
                     }
                 } finally {
                     dlg.dispose();
@@ -415,7 +415,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         }
         JComponent target = messageArea;
         JComponent owner = messageArea;
-        AndroidSdkPlatform platform = pNode.getLookup().lookup(AndroidSdkPlatform.class);
+        AndroidSdkPlatformImpl platform = pNode.getLookup().lookup(AndroidSdkPlatformImpl.class);
         if (pNode != getExplorerManager().getRootContext()) {
             if (platform != null) {
                 this.removeButton.setEnabled(canRemove(platform, pNode.getLookup().lookup(DataObject.class)));
@@ -471,7 +471,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         container.add(component);
     }
 
-    private boolean canRemove(final AndroidSdkPlatform platform, final DataObject dobj) {
+    private boolean canRemove(final AndroidSdkPlatformImpl platform, final DataObject dobj) {
         if (isDefaultPlatform(platform)) {
             return false;
         }
@@ -485,21 +485,21 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         return true;
     }
 
-    private static boolean isDefaultPlatform(AndroidSdkPlatform platform) {
+    private static boolean isDefaultPlatform(AndroidSdkPlatformImpl platform) {
         return platform.isDefaultSdk();
     }
 
-    private void expandPlatforms(AndroidSdkPlatform platform) {
+    private void expandPlatforms(AndroidSdkPlatformImpl platform) {
         ExplorerManager mgr = this.getExplorerManager();
         Node node = mgr.getRootContext();
         expandAllNodes(this.platforms, node, mgr, platform);
     }
 
-    private static void expandAllNodes(BeanTreeView btv, Node node, ExplorerManager mgr, AndroidSdkPlatform platform) {
+    private static void expandAllNodes(BeanTreeView btv, Node node, ExplorerManager mgr, AndroidSdkPlatformImpl platform) {
         btv.expandNode(node);
         Children ch = node.getChildren();
         if (ch == Children.LEAF) {
-            if (platform != null && platform.equals(node.getLookup().lookup(AndroidSdkPlatform.class))) {
+            if (platform != null && platform.equals(node.getLookup().lookup(AndroidSdkPlatformImpl.class))) {
                 try {
                     mgr.setSelectedNodes(new Node[]{node});
                 } catch (PropertyVetoException e) {
@@ -694,16 +694,16 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                     try {
                         final DataObject dobj = DataObject.find(child);
                         Node node = dobj.getNodeDelegate();
-                        AndroidSdkPlatform platform = node.getLookup().lookup(AndroidSdkPlatform.class);
+                        AndroidSdkPlatformImpl platform = node.getLookup().lookup(AndroidSdkPlatformImpl.class);
                         if (platform == null) {
                             //Create a node platfrom like from bean.
                             final InstanceCookie ic = dobj.getLookup().lookup(InstanceCookie.class);
                             if (ic != null) {
                                 try {
                                     final Object instance = ic.instanceCreate();
-                                    if (instance instanceof AndroidSdkPlatform) {
+                                    if (instance instanceof AndroidSdkPlatformImpl) {
                                         node = new FilterNode(new BeanNode(instance), Children.LEAF, Lookups.singleton(instance));
-                                        platform = (AndroidSdkPlatform) instance;
+                                        platform = (AndroidSdkPlatformImpl) instance;
                                     }
                                 } catch (Exception e) {
                                     //report and continue with next platform

@@ -25,5 +25,15 @@
                 </file>
             </folder>
         </folder>
+    </folder>
+    <folder name="Services">
+        <folder name="Hidden">
+            <file name="org-nbandroid-netbeans-gradle-platform-AndroidPlatformProviderJava17.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.java.platform.implspi.JavaPlatformProvider"/>
+            </file>
+            <file name="org-nbandroid-netbeans-gradle-platform-AndroidPlatformProviderJava18.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.java.platform.implspi.JavaPlatformProvider"/>
+            </file>
         </folder>
+    </folder>
 </filesystem>

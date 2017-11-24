@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatform;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatformImpl;
 import org.nbandroid.netbeans.gradle.v2.sdk.PlatformConvertor;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.WizardDescriptor;
@@ -50,7 +50,7 @@ public final class SDKWizardIterator implements WizardDescriptor.InstantiatingIt
 
     @Override
     public java.util.Set instantiate() throws IOException {
-        AndroidSdkPlatform p = new AndroidSdkPlatform((String) wizard.getProperty(SDKWizardPanelInstall.SDK_NAME), (String) wizard.getProperty(SDKWizardPanelInstall.SDK_PATH));
+        AndroidSdkPlatformImpl p = new AndroidSdkPlatformImpl((String) wizard.getProperty(SDKWizardPanelInstall.SDK_NAME), (String) wizard.getProperty(SDKWizardPanelInstall.SDK_PATH));
         p.setDefault((boolean) wizard.getProperty(SDKWizardPanelInstall.SDK_DEFAULT));
 //        InstanceDataObject.create(
 //                DataFolder.findFolder(FileUtil.createFolder(FileUtil.getConfigRoot(), "Services/Platforms/org-nbandroid-netbeans-gradle-Platform")),

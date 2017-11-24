@@ -1,32 +1,15 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package org.nbandroid.netbeans.gradle.v2.sdk;
 
 import com.android.SdkConstants;
-import com.android.repository.api.Channel;
 import com.android.repository.api.Installer;
 import com.android.repository.api.LocalPackage;
-import com.android.repository.api.ProgressRunner;
 import com.android.repository.api.RepoManager;
-import com.android.repository.api.RepoManager.RepoLoadedCallback;
 import com.android.repository.api.RepoPackage;
-import com.android.repository.api.SettingsController;
 import com.android.repository.api.Uninstaller;
 import com.android.repository.api.UpdatablePackage;
 import com.android.repository.impl.installer.BasicInstallerFactory;
@@ -38,6 +21,8 @@ import com.android.sdklib.repository.AndroidSdkHandler;
 import com.android.sdklib.repository.installer.MavenInstallListener;
 import com.android.sdklib.repository.meta.DetailsTypes;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -49,24 +34,26 @@ import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.gradle.impldep.com.google.common.collect.ImmutableList;
-import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatformManager;
 import org.nbandroid.netbeans.gradle.core.sdk.NbDownloader;
 import org.nbandroid.netbeans.gradle.core.sdk.NbOutputWindowProgressIndicator;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;
 
 /**
- * Default SDK Manager implementation
  *
  * @author arsi
  */
-@ServiceProvider(service = SdkManager.class)
-public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
+public class AndroidSdkPlatformImpl extends AndroidSdkPlatform implements Serializable, RepoManager.RepoLoadedCallback {
 
+    private String displayName;
+    private String sdkPath;
+    private Map<String, String> properties = Collections.emptyMap();
+    private Map<String, String> sysproperties = Collections.emptyMap();
+    private boolean defaultSdk = false;
     private AndroidSdkHandler androidSdkHandler;
     private RepoManager repoManager;
-    private static final ExecutorService pool = Executors.newFixedThreadPool(1);
     //max 3 paralel downloads
     public static final ExecutorService DOWNLOAD_POOL = Executors.newFixedThreadPool(3);
     private final Vector<SdkPlatformChangeListener> listeners = new Vector<>();
@@ -82,6 +69,38 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
                             SdkConstants.FD_ANDROID_EXTRAS,
                             SdkConstants.FD_GAPID));
     private SdkToolsRootNode toolRoot;
+
+    public AndroidSdkPlatformImpl(String displayName, String sdkPath, Map<String, String> properties, Map<String, String> sysproperties) {
+        this.displayName = displayName;
+        this.sdkPath = sdkPath;
+        this.properties = properties;
+        this.sysproperties = sysproperties;
+        final Runnable runnable = new Runnable() {
+
+            @Override
+            public void run() {
+                androidSdkHandler = AndroidSdkHandler.getInstance(new File(sdkPath));
+                if (androidSdkHandler != null) {
+                    repoManager = androidSdkHandler.getSdkManager(new NbOutputWindowProgressIndicator());
+                    repoManager.registerLocalChangeListener(AndroidSdkPlatformImpl.this);
+                    repoManager.registerRemoteChangeListener(AndroidSdkPlatformImpl.this);
+                    updateSdkPlatformPackages();
+                } else {
+                    repoManager = null;
+                }
+            }
+        };
+        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+            @Override
+            public void run() {
+                AndroidSdkPlatform.pool.submit(runnable);
+            }
+        });
+    }
+
+    public AndroidSdkPlatformImpl(String displayName, String sdkPath) {
+        this(displayName, sdkPath, Collections.EMPTY_MAP, Collections.EMPTY_MAP);
+    }
 
     @Override
     public AndroidSdkHandler getAndroidSdkHandler() {
@@ -170,29 +189,53 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
         listeners.remove(l);
     }
 
-    public SdkManagerImpl() {
-        //TODO listen to sdk dir change
-        final Runnable runnable = new Runnable() {
-
-            public void run() {
-                androidSdkHandler = DalvikPlatformManager.getDefault().getSdkManager();
-                if (androidSdkHandler != null) {
-                    repoManager = androidSdkHandler.getSdkManager(new NbOutputWindowProgressIndicator());
-                    repoManager.registerLocalChangeListener(SdkManagerImpl.this);
-                    repoManager.registerRemoteChangeListener(SdkManagerImpl.this);
-                    updateSdkPlatformPackages();
-                } else {
-                    repoManager = null;
-                }
-            }
-        };
-        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
-            @Override
-            public void run() {
-                pool.submit(runnable);
-            }
-        });
+    @Override
+    public String getDisplayName() {
+        return displayName;
     }
+
+    @Override
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
+    @Override
+    public FileObject getInstallFolder() {
+        return FileUtil.toFileObject(new File(sdkPath));
+    }
+
+    @Override
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    @Override
+    public void setSdkRootFolder(String sdkPath) {
+        this.sdkPath = sdkPath;
+    }
+
+    @Override
+    public void setDefault(boolean defaultSdk) {
+        this.defaultSdk = defaultSdk;
+    }
+
+    @Override
+    public boolean isDefaultSdk() {
+        return defaultSdk;
+    }
+
+    @Override
+    public List<FileObject> getInstallFolders() {
+        List<FileObject> tmp = new ArrayList<>();
+        tmp.add(getInstallFolder());
+        return Collections.unmodifiableList(tmp);
+    }
+
+    @Override
+    Map<String, String> getSystemProperties() {
+        return sysproperties;
+    }
+
 
     /**
      * Update SDK platform pakages list After update is called
@@ -334,7 +377,7 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
             @Override
             public void run() {
                 BasicInstallerFactory installerFactory = new BasicInstallerFactory();
-                Uninstaller uninstaller = installerFactory.createUninstaller(aPackage, SdkManager.getDefault().getRepoManager(), FileOpUtils.create());
+                Uninstaller uninstaller = installerFactory.createUninstaller(aPackage, getRepoManager(), FileOpUtils.create());
                 NbOutputWindowProgressIndicator indicator = new NbOutputWindowProgressIndicator();
                 if (uninstaller.prepare(indicator)) {
                     uninstaller.complete(indicator);
@@ -360,7 +403,7 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
             @Override
             public void run() {
                 BasicInstallerFactory installerFactory = new BasicInstallerFactory();
-                Installer installer = installerFactory.createInstaller(aPackage.getRemote(), SdkManager.getDefault().getRepoManager(), new NbDownloader(), FileOpUtils.create());
+                Installer installer = installerFactory.createInstaller(aPackage.getRemote(), getRepoManager(), new NbDownloader(), FileOpUtils.create());
                 NbOutputWindowProgressIndicator indicator = new NbOutputWindowProgressIndicator();
                 if (installer.prepare(indicator)) {
                     installer.complete(indicator);
@@ -370,55 +413,6 @@ public class SdkManagerImpl extends SdkManager implements RepoLoadedCallback {
         };
 
         DOWNLOAD_POOL.execute(runnable);
-    }
-
-    private class DownloadErrorCallback implements Runnable {
-
-        @Override
-        public void run() {
-        }
-
-    }
-
-    private class NbProgressRunner implements ProgressRunner {
-
-        @Override
-        public void runAsyncWithProgress(ProgressRunner.ProgressRunnable r) {
-            r.run(new NbOutputWindowProgressIndicator(), this);
-        }
-
-        @Override
-        public void runSyncWithProgress(ProgressRunner.ProgressRunnable r) {
-            r.run(new NbOutputWindowProgressIndicator(), this);
-        }
-
-        @Override
-        public void runSyncWithoutProgress(Runnable r) {
-            pool.submit(r);
-        }
-
-    }
-
-    private class NbSettingsController implements SettingsController {
-
-        boolean force = false;
-
-        @Override
-        public boolean getForceHttp() {
-            return force;
-        }
-
-        @Override
-        public void setForceHttp(boolean force) {
-            this.force = force;
-        }
-
-        @Override
-        public Channel getChannel() {
-            //TODO add channel selection to Android settings
-            return Channel.create(0);
-        }
-
     }
 
 }

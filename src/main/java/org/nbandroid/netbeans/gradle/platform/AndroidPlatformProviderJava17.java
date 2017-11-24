@@ -21,15 +21,13 @@ package org.nbandroid.netbeans.gradle.platform;
 import com.android.repository.api.UpdatablePackage;
 import java.util.Vector;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  * JavaPlatformProvider for Android platforms and java 1.7
  *
  * @author arsi
  */
-@ServiceProvider(service = JavaPlatformProvider.class)
+//@ServiceProvider(service = JavaPlatformProvider.class)
 public class AndroidPlatformProviderJava17 extends AndroidPlatformProvider {
 
     @Override

@@ -123,7 +123,7 @@ public class AndroidPlatform extends JavaPlatform {
 
     @Override
     public Map<String, String> getProperties() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return Collections.EMPTY_MAP;
     }
 
     @Override
@@ -159,7 +159,7 @@ public class AndroidPlatform extends JavaPlatform {
     @Override
     public ClassPath getSourceFolders() {
         if (sourceDir != null) {
-            return ClassPathSupport.createClassPath(sourceDir);
+            return ClassPathSupport.createClassPath(FileUtil.urlForArchiveOrDir(FileUtil.toFile(sourceDir)));
         } else {
             return ClassPath.EMPTY;
         }

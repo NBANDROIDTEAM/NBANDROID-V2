@@ -34,7 +34,8 @@ import javax.swing.JTable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.DefaultTreeModel;
-import org.nbandroid.netbeans.gradle.v2.sdk.SdkManager;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatform;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatformProvider;
 import org.nbandroid.netbeans.gradle.v2.sdk.SdkToolsChangeListener;
 import org.nbandroid.netbeans.gradle.v2.sdk.SdkToolsMultiPackageNode;
 import org.nbandroid.netbeans.gradle.v2.sdk.SdkToolsPackageNode;
@@ -54,7 +55,7 @@ import org.openide.windows.WindowManager;
  */
 public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeListener {
 
-    private SdkManager manager;
+    private AndroidSdkPlatform manager;
     private boolean detailsState;
     private OutlineModel model;
     private SdkToolsRootNode sdkToolsRootNode;
@@ -157,12 +158,12 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
                 if (node instanceof SdkToolsMultiPackageNode) {
                     if (!((SdkToolsMultiPackageNode) node).getNodes().isEmpty()) {
                         UpdatablePackage aPackage = ((SdkToolsMultiPackageNode) node).getNodes().get(0).getPackage();
-                        SdkManager.getDefault().installPackage(aPackage);
+                        AndroidSdkPlatformProvider.getDefaultPlatform().installPackage(aPackage);
                     }
 
                 } else if (node instanceof SdkToolsPackageNode) {
                     UpdatablePackage aPackage = ((SdkToolsPackageNode) node).getPackage();
-                    SdkManager.getDefault().installPackage(aPackage);
+                    AndroidSdkPlatformProvider.getDefaultPlatform().installPackage(aPackage);
                 }
             }
         });
@@ -178,12 +179,12 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
                 if (node instanceof SdkToolsMultiPackageNode) {
                     if (!((SdkToolsMultiPackageNode) node).getNodes().isEmpty()) {
                         UpdatablePackage aPackage = ((SdkToolsMultiPackageNode) node).getNodes().get(0).getPackage();
-                        SdkManager.getDefault().installPackage(aPackage);
+                        AndroidSdkPlatformProvider.getDefaultPlatform().installPackage(aPackage);
                     }
 
                 } else if (node instanceof SdkToolsPackageNode) {
                     UpdatablePackage aPackage = ((SdkToolsPackageNode) node).getPackage();
-                    SdkManager.getDefault().installPackage(aPackage);
+                    AndroidSdkPlatformProvider.getDefaultPlatform().installPackage(aPackage);
                 }
             }
         });
@@ -198,12 +199,12 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
                 if (node instanceof SdkToolsMultiPackageNode) {
                     if (!((SdkToolsMultiPackageNode) node).getNodes().isEmpty()) {
                         LocalPackage local = ((SdkToolsMultiPackageNode) node).getNodes().get(0).getPackage().getLocal();
-                        SdkManager.getDefault().uninstallPackage(local);
+                        AndroidSdkPlatformProvider.getDefaultPlatform().uninstallPackage(local);
                     }
 
                 } else if (node instanceof SdkToolsPackageNode) {
                     LocalPackage local = ((SdkToolsPackageNode) node).getPackage().getLocal();
-                    SdkManager.getDefault().uninstallPackage(local);
+                    AndroidSdkPlatformProvider.getDefaultPlatform().uninstallPackage(local);
                 }
             }
 
@@ -263,7 +264,7 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
         WindowManager.getDefault().invokeWhenUIReady(runnable);
     }
 
-    public void connect(SdkManager manager) {
+    public void connect(AndroidSdkPlatform manager) {
         this.manager = manager;
         if (manager != null) {
             manager.addSdkToolsChangeListener(this);

@@ -21,9 +21,6 @@ package org.nbandroid.netbeans.gradle.platform;
 import com.android.repository.api.UpdatablePackage;
 import java.util.Vector;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
@@ -31,9 +28,9 @@ import org.openide.util.lookup.ServiceProviders;
  *
  * @author arsi
  */
-@ServiceProviders({
-    @ServiceProvider(service = JavaPlatformProvider.class),
-    @ServiceProvider(service = AndroidPlatformProviderJava18.class)})
+//@ServiceProviders({
+//    @ServiceProvider(service = JavaPlatformProvider.class),
+//    @ServiceProvider(service = AndroidPlatformProviderJava18.class)})
 public class AndroidPlatformProviderJava18 extends AndroidPlatformProvider {
 
     @Override

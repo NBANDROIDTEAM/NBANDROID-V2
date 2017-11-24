@@ -26,7 +26,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Vector;
+import java.util.WeakHashMap;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -35,12 +38,30 @@ import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 
 /**
+ * Hack to make android platform source folder read-only
  *
+ * @see org.nbandroid.netbeans.gradle.platform.ReadOnlyURLMapper
  * @author arsi
  */
 public class ReadOnlyFileObject extends FileObject {
 
     private final FileObject original;
+    private static final Map<FileObject, FileObject> cache = new WeakHashMap<>();
+
+    public static final FileObject findOrCreate(FileObject orig) {
+        if (orig == null) {
+            return null;
+        }
+        if (orig instanceof ReadOnlyFileObject) {
+            return orig;
+        }
+        FileObject roFo = cache.get(orig);
+        if (roFo == null) {
+            roFo = new ReadOnlyFileObject(orig);
+            cache.put(orig, roFo);
+        }
+        return roFo;
+    }
 
     public ReadOnlyFileObject(FileObject original) {
         this.original = original;
@@ -68,7 +89,7 @@ public class ReadOnlyFileObject extends FileObject {
 
     @Override
     public FileObject getParent() {
-        return original.getParent();
+        return findOrCreate(original.getParent());
     }
 
     @Override
@@ -98,7 +119,7 @@ public class ReadOnlyFileObject extends FileObject {
 
     @Override
     public void delete(FileLock lock) throws IOException {
-        original.delete(lock);
+        throw new IOException();
     }
 
     @Override
@@ -156,25 +177,24 @@ public class ReadOnlyFileObject extends FileObject {
         FileObject[] children = original.getChildren();
         List<FileObject> tmp = new ArrayList<>();
         for (FileObject chld : children) {
-            tmp.add(new ReadOnlyFileObject(chld));
+            tmp.add(findOrCreate(chld));
         }
         return tmp.toArray(new FileObject[tmp.size()]);
     }
 
     @Override
     public FileObject getFileObject(String name, String ext) {
-        FileObject fileObject = original.getFileObject(name, ext);
-        return new ReadOnlyFileObject(fileObject);
+        return findOrCreate(original.getFileObject(name, ext));
     }
 
     @Override
     public FileObject createFolder(String name) throws IOException {
-        return new ReadOnlyFileObject(original.createFolder(name));
+        throw new IOException();
     }
 
     @Override
     public FileObject createData(String name, String ext) throws IOException {
-        return new ReadOnlyFileObject(original.createData(name, ext));
+        throw new IOException();
     }
 
     @Override
@@ -189,7 +209,7 @@ public class ReadOnlyFileObject extends FileObject {
 
     @Override
     public FileObject getCanonicalFileObject() throws IOException {
-        return new ReadOnlyFileObject(original.getCanonicalFileObject());
+        return findOrCreate(original.getCanonicalFileObject());
     }
 
     @Override
@@ -234,12 +254,12 @@ public class ReadOnlyFileObject extends FileObject {
 
     @Override
     public FileObject createData(String name) throws IOException {
-        return new ReadOnlyFileObject(original.createData(name));
+        throw new IOException();
     }
 
     @Override
     public FileObject getFileObject(String relativePath) {
-        return new ReadOnlyFileObject(original.getFileObject(relativePath));
+        return findOrCreate(original.getFileObject(relativePath));
     }
 
     @Override
@@ -248,7 +268,7 @@ public class ReadOnlyFileObject extends FileObject {
         Vector<FileObject> tmp = new Vector<>();
         while (datas.hasMoreElements()) {
             FileObject nextElement = datas.nextElement();
-            tmp.add(new ReadOnlyFileObject(nextElement));
+            tmp.add(findOrCreate(nextElement));
         }
         return tmp.elements();
     }
@@ -259,7 +279,7 @@ public class ReadOnlyFileObject extends FileObject {
         Vector<FileObject> tmp = new Vector<>();
         while (datas.hasMoreElements()) {
             FileObject nextElement = datas.nextElement();
-            tmp.add(new ReadOnlyFileObject(nextElement));
+            tmp.add(findOrCreate(nextElement));
         }
         return tmp.elements();
     }
@@ -270,7 +290,7 @@ public class ReadOnlyFileObject extends FileObject {
         Vector<FileObject> tmp = new Vector<>();
         while (datas.hasMoreElements()) {
             FileObject nextElement = datas.nextElement();
-            tmp.add(new ReadOnlyFileObject(nextElement));
+            tmp.add(findOrCreate(nextElement));
         }
         return tmp.elements();
     }
@@ -362,12 +382,28 @@ public class ReadOnlyFileObject extends FileObject {
 
     @Override
     public FileObject move(FileLock lock, FileObject target, String name, String ext) throws IOException {
-        return new ReadOnlyFileObject(original.move(lock, target, name, ext));
+        throw new IOException();
     }
 
     @Override
     public FileObject copy(FileObject target, String name, String ext) throws IOException {
-        return new ReadOnlyFileObject(original.copy(target, name, ext));
+        throw new IOException();
+    }
+
+    @Override
+    public int hashCode() {
+        return original.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ReadOnlyFileObject) {
+            final ReadOnlyFileObject other = (ReadOnlyFileObject) obj;
+            if (Objects.equals(this.original, other.original)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

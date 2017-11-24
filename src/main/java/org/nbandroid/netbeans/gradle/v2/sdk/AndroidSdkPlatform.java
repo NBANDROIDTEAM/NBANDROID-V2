@@ -1,84 +1,176 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.nbandroid.netbeans.gradle.v2.sdk;
 
+import com.android.repository.api.Channel;
+import com.android.repository.api.LocalPackage;
+import com.android.repository.api.ProgressRunner;
+import com.android.repository.api.RepoManager;
+import com.android.repository.api.SettingsController;
+import com.android.repository.api.UpdatablePackage;
+import com.android.sdklib.repository.AndroidSdkHandler;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import org.nbandroid.netbeans.gradle.core.sdk.NbOutputWindowProgressIndicator;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
+ * SDK Manager
  *
  * @author arsi
  */
-public class AndroidSdkPlatform implements Serializable {
+public abstract class AndroidSdkPlatform {
 
-    private String displayName;
-    private String sdkPath;
-    private Map<String, String> properties = Collections.emptyMap();
-    private Map<String, String> sysproperties = Collections.emptyMap();
-    private boolean defaultSdk = false;
+    public static final ExecutorService pool = Executors.newFixedThreadPool(1);
     private PropertyChangeSupport supp;
 
-    public AndroidSdkPlatform(String displayName, String sdkPath, Map<String, String> properties, Map<String, String> sysproperties) {
-        this.displayName = displayName;
-        this.sdkPath = sdkPath;
-        this.properties = properties;
-        this.sysproperties = sysproperties;
+    /**
+     * Add SdkPlatformChangeListener to listen of SDK platform pakages list
+     * changes On add is listener called with actual package list
+     *
+     * @param l SdkPlatformChangeListener
+     */
+    public abstract void addSdkPlatformChangeListener(SdkPlatformChangeListener l);
+
+    /**
+     * Remove SdkPlatformChangeListener
+     *
+     * @param l SdkPlatformChangeListener
+     */
+    public abstract void removeSdkPlatformChangeListener(SdkPlatformChangeListener l);
+
+    public abstract AndroidSdkHandler getAndroidSdkHandler();
+
+    /**
+     * Get Android repo manager
+     *
+     * @return RepoManager or null if no SDK location is set
+     */
+    public abstract RepoManager getRepoManager();
+
+    /**
+     * Update SDK platform pakages list After update is fired
+     * SdkPlatformChangeListener and SdkToolsChangeListener
+     */
+    public abstract void updateSdkPlatformPackages();
+
+    /**
+     * Add addSdkToolsChangeListener to listen of SDK tools pakages list changes
+     * On add is listener called with actual package list
+     *
+     * @param l addSdkToolsChangeListener
+     */
+    public abstract void addSdkToolsChangeListener(SdkToolsChangeListener l);
+
+    /**
+     * Remove SdkToolsChangeListener
+     *
+     * @param l SdkToolsChangeListener
+     */
+    public abstract void removeSdkToolsChangeListener(SdkToolsChangeListener l);
+
+    /**
+     * Uninstall android package After unistall is called
+     * updateSdkPlatformPackages()
+     *
+     * @param aPackage LocalPackage
+     */
+    public abstract void uninstallPackage(LocalPackage aPackage);
+
+    /**
+     * Install or Update Android package After istall is called
+     * updateSdkPlatformPackages()
+     *
+     * @param aPackage UpdatablePackage
+     */
+    public abstract void installPackage(final UpdatablePackage aPackage);
+
+    public abstract void addLocalPlatformChangeListener(LocalPlatformChangeListener l);
+
+    public abstract void removeLocalPlatformChangeListener(LocalPlatformChangeListener l);
+
+    public abstract String getDisplayName();
+
+    public abstract FileObject getInstallFolder();
+
+    public abstract List<FileObject> getInstallFolders();
+
+    public abstract Map<String, String> getProperties();
+
+    abstract Map<String, String> getSystemProperties();
+
+    public abstract boolean isDefaultSdk();
+
+    public abstract void setDefault(boolean defaultSdk);
+
+    public abstract void setDisplayName(String displayName);
+
+    public abstract void setSdkRootFolder(String sdkPath);
+
+    protected class DownloadErrorCallback implements Runnable {
+
+        @Override
+        public void run() {
+        }
     }
 
-    public AndroidSdkPlatform(String displayName, String sdkPath) {
-        this.displayName = displayName;
-        this.sdkPath = sdkPath;
+    protected class NbProgressRunner implements ProgressRunner {
+
+        @Override
+        public void runAsyncWithProgress(ProgressRunner.ProgressRunnable r) {
+            r.run(new NbOutputWindowProgressIndicator(), this);
+        }
+
+        @Override
+        public void runSyncWithProgress(ProgressRunner.ProgressRunnable r) {
+            r.run(new NbOutputWindowProgressIndicator(), this);
+        }
+
+        @Override
+        public void runSyncWithoutProgress(Runnable r) {
+            pool.submit(r);
+        }
     }
 
+    protected class NbSettingsController implements SettingsController {
 
-    public String getDisplayName() {
-        return displayName;
-    }
+        boolean force = false;
 
-    public Map<String, String> getProperties() {
-        return properties;
-    }
+        @Override
+        public boolean getForceHttp() {
+            return force;
+        }
 
-    public FileObject getInstallFolder() {
-        return FileUtil.toFileObject(new File(sdkPath));
-    }
+        @Override
+        public void setForceHttp(boolean force) {
+            this.force = force;
+        }
 
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    public void setSdkRootFolder(String sdkPath) {
-        this.sdkPath = sdkPath;
-    }
-
-    public void setDefault(boolean defaultSdk) {
-        this.defaultSdk = defaultSdk;
-    }
-
-    public boolean isDefaultSdk() {
-        return defaultSdk;
-    }
-
-    public List<FileObject> getInstallFolders() {
-        List<FileObject> tmp = new ArrayList<>();
-        tmp.add(getInstallFolder());
-        return Collections.unmodifiableList(tmp);
-    }
-
-    Map<String, String> getSystemProperties() {
-        return sysproperties;
+        @Override
+        public Channel getChannel() {
+            //TODO add channel selection to Android settings
+            return Channel.create(0);
+        }
     }
 
     public final void addPropertyChangeListener(PropertyChangeListener l) {
@@ -111,6 +203,5 @@ public class AndroidSdkPlatform implements Serializable {
             supp.firePropertyChange(propName, oldValue, newValue);
         }
     }
-
 
 }

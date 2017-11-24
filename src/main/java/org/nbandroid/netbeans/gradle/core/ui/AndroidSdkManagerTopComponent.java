@@ -18,7 +18,7 @@
  */
 package org.nbandroid.netbeans.gradle.core.ui;
 
-import org.nbandroid.netbeans.gradle.v2.sdk.SdkManager;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatformProvider;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -120,8 +120,8 @@ public final class AndroidSdkManagerTopComponent extends TopComponent {
     // End of variables declaration//GEN-END:variables
     @Override
     public void componentOpened() {
-        sdkPlatformPanel.connect(SdkManager.getDefault());
-        sdkToolsPanel.connect(SdkManager.getDefault());
+        sdkPlatformPanel.connect(AndroidSdkPlatformProvider.getDefaultPlatform());
+        sdkToolsPanel.connect(AndroidSdkPlatformProvider.getDefaultPlatform());
     }
 
     @Override
