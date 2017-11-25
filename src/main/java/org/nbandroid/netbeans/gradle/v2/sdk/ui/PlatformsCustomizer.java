@@ -48,7 +48,6 @@ import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatformImpl;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.cookies.InstanceCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.explorer.view.BeanTreeView;
@@ -58,7 +57,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.BeanNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -66,7 +64,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.Lookups;
 
 /**
  * @author tom
@@ -199,6 +196,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.ipadx = 40;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 12, 12, 6);
@@ -622,14 +620,14 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
         @Override
         protected Node[] createNodes(Node key) {
-            return new Node[]{new FilterNode(key, Children.LEAF)};
+            return new Node[]{new FilterNode(key, new FilterNode.Children(key))};
         }
     }
 
     private static class PlatformCategoryNode extends AbstractNode {
 
         private final PlatformCategoriesDescriptor desc;
-        private Node iconDelegate;
+        private final Node iconDelegate;
 
         public PlatformCategoryNode(PlatformCategoriesDescriptor desc) {
             super(new PlatformsChildren(desc.getPlatform()));
@@ -695,28 +693,6 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                         final DataObject dobj = DataObject.find(child);
                         Node node = dobj.getNodeDelegate();
                         AndroidSdkPlatformImpl platform = node.getLookup().lookup(AndroidSdkPlatformImpl.class);
-                        if (platform == null) {
-                            //Create a node platfrom like from bean.
-                            final InstanceCookie ic = dobj.getLookup().lookup(InstanceCookie.class);
-                            if (ic != null) {
-                                try {
-                                    final Object instance = ic.instanceCreate();
-                                    if (instance instanceof AndroidSdkPlatformImpl) {
-                                        node = new FilterNode(new BeanNode(instance), Children.LEAF, Lookups.singleton(instance));
-                                        platform = (AndroidSdkPlatformImpl) instance;
-                                    }
-                                } catch (Exception e) {
-                                    //report and continue with next platform
-                                    Exceptions.printStackTrace(Exceptions.attachMessage(
-                                            e,
-                                            "Exception while loading platform:"
-                                            + //NOI18N
-                                            FileUtil.getFileDisplayName(dobj.getPrimaryFile())));
-                                }
-                            } else {
-                                LOG.log(Level.FINE, "No platform provided for file: {0}", FileUtil.getFileDisplayName(dobj.getPrimaryFile())); //NOI18N
-                            }
-                        }
                         if (platform != null) {
                             final String platformType = "Android";
                             if (platformType != null) {

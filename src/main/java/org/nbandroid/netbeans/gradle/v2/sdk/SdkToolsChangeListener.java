@@ -18,12 +18,14 @@
  */
 package org.nbandroid.netbeans.gradle.v2.sdk;
 
+import java.util.EventListener;
+
 /**
  * SdkToolsChangeListener to listen of SDK tools pakages list changes
  *
  * @author arsi
  */
-public interface SdkToolsChangeListener {
+public interface SdkToolsChangeListener extends EventListener {
 
     /**
      * Package list changed

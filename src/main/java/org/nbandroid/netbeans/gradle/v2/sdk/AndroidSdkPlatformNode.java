@@ -6,9 +6,13 @@
 
 package org.nbandroid.netbeans.gradle.v2.sdk;
 
+import com.android.repository.api.UpdatablePackage;
 import java.awt.Image;
 import java.util.List;
+import java.util.Vector;
+import java.util.concurrent.atomic.AtomicReference;
 import org.nbandroid.netbeans.gradle.core.ui.IconProvider;
+import org.nbandroid.netbeans.gradle.v2.sdk.ui.AndroidSdkCustomizer;
 import org.openide.loaders.XMLDataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
@@ -23,10 +27,12 @@ import org.openide.util.lookup.Lookups;
 class AndroidSdkPlatformNode extends AbstractNode {
 
     private final AndroidSdkPlatformImpl platform;
+    private final XMLDataObject holder;
 
     public AndroidSdkPlatformNode(AndroidSdkPlatformImpl p, XMLDataObject holder) {
-        super(Children.create(new AndroidPlatformChildrenFactory(), false), Lookups.fixed(new Object[]{p, holder}));
+        super(Children.create(new AndroidPlatformChildrenFactory(p, holder), true), Lookups.fixed(new Object[]{p, holder}));
         this.platform = p;
+        this.holder = holder;
         //   super.setIconBaseWithExtension("org/netbeans/modules/java/j2seplatform/resources/platform.gif");
     }
 
@@ -40,17 +46,50 @@ class AndroidSdkPlatformNode extends AbstractNode {
         return IconProvider.IMG_ANDROID_SDK_ICON; //To change body of generated methods, choose Tools | Templates.
     }
 
-    private static class AndroidPlatformChildrenFactory extends ChildFactory<String> {
+    @Override
+    public Image getOpenedIcon(int type) {
+        return getIcon(type); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean hasCustomizer() {
+        return true;
+    }
+
+    @Override
+    public java.awt.Component getCustomizer() {
+        return new AndroidSdkCustomizer(platform, holder);
+    }
+
+
+    private static class AndroidPlatformChildrenFactory extends ChildFactory<UpdatablePackage> implements LocalPlatformChangeListener {
+
+        private final AndroidSdkPlatformImpl platformImpl;
+        private final XMLDataObject holder;
+        private final AtomicReference<Vector<UpdatablePackage>> platforms = new AtomicReference<>(new Vector<UpdatablePackage>());
+
+        public AndroidPlatformChildrenFactory(AndroidSdkPlatformImpl platformImpl, XMLDataObject holder) {
+            this.platformImpl = platformImpl;
+            this.holder = holder;
+            platformImpl.addLocalPlatformChangeListener(this);
+        }
 
         @Override
-        protected boolean createKeys(List<String> toPopulate) {
-            toPopulate.add("aaa");
+        protected boolean createKeys(List<UpdatablePackage> toPopulate) {
+            Vector<UpdatablePackage> tmp = platforms.get();
+            toPopulate.addAll(tmp);
             return true;
         }
 
         @Override
-        protected Node createNodeForKey(String key) {
-            return new AndroidPlatformNode();
+        protected Node createNodeForKey(UpdatablePackage key) {
+            return new AndroidPlatformNode(key, platformImpl, holder);
+        }
+
+        @Override
+        public void platformListChanged(Vector<UpdatablePackage> platforms) {
+            this.platforms.set(platforms);
+            refresh(true);
         }
 
     }

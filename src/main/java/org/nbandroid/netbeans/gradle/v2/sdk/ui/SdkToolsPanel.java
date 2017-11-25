@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.core.ui;
+package org.nbandroid.netbeans.gradle.v2.sdk.ui;
 
 import com.android.repository.api.LocalPackage;
 import com.android.repository.api.UpdatablePackage;
@@ -34,8 +34,9 @@ import javax.swing.JTable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.DefaultTreeModel;
+import org.nbandroid.netbeans.gradle.core.ui.*;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatform;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatformProvider;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatformImpl;
 import org.nbandroid.netbeans.gradle.v2.sdk.SdkToolsChangeListener;
 import org.nbandroid.netbeans.gradle.v2.sdk.SdkToolsMultiPackageNode;
 import org.nbandroid.netbeans.gradle.v2.sdk.SdkToolsPackageNode;
@@ -46,6 +47,7 @@ import org.netbeans.swing.outline.OutlineModel;
 import org.netbeans.swing.outline.RenderDataProvider;
 import org.netbeans.swing.outline.RowModel;
 import org.openide.util.NbPreferences;
+import org.openide.util.WeakListeners;
 import org.openide.windows.WindowManager;
 
 /**
@@ -68,7 +70,7 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
     /**
      * Creates new form SdkToolsPanel
      */
-    public SdkToolsPanel() {
+    public SdkToolsPanel(AndroidSdkPlatformImpl platform) {
         initComponents();
         tableMenu.add(installMenuItem);
         tableMenu.add(updateMenuItem);
@@ -158,12 +160,12 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
                 if (node instanceof SdkToolsMultiPackageNode) {
                     if (!((SdkToolsMultiPackageNode) node).getNodes().isEmpty()) {
                         UpdatablePackage aPackage = ((SdkToolsMultiPackageNode) node).getNodes().get(0).getPackage();
-                        AndroidSdkPlatformProvider.getDefaultPlatform().installPackage(aPackage);
+                        platform.installPackage(aPackage);
                     }
 
                 } else if (node instanceof SdkToolsPackageNode) {
                     UpdatablePackage aPackage = ((SdkToolsPackageNode) node).getPackage();
-                    AndroidSdkPlatformProvider.getDefaultPlatform().installPackage(aPackage);
+                    platform.installPackage(aPackage);
                 }
             }
         });
@@ -179,12 +181,12 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
                 if (node instanceof SdkToolsMultiPackageNode) {
                     if (!((SdkToolsMultiPackageNode) node).getNodes().isEmpty()) {
                         UpdatablePackage aPackage = ((SdkToolsMultiPackageNode) node).getNodes().get(0).getPackage();
-                        AndroidSdkPlatformProvider.getDefaultPlatform().installPackage(aPackage);
+                        platform.installPackage(aPackage);
                     }
 
                 } else if (node instanceof SdkToolsPackageNode) {
                     UpdatablePackage aPackage = ((SdkToolsPackageNode) node).getPackage();
-                    AndroidSdkPlatformProvider.getDefaultPlatform().installPackage(aPackage);
+                    platform.installPackage(aPackage);
                 }
             }
         });
@@ -199,16 +201,17 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
                 if (node instanceof SdkToolsMultiPackageNode) {
                     if (!((SdkToolsMultiPackageNode) node).getNodes().isEmpty()) {
                         LocalPackage local = ((SdkToolsMultiPackageNode) node).getNodes().get(0).getPackage().getLocal();
-                        AndroidSdkPlatformProvider.getDefaultPlatform().uninstallPackage(local);
+                        platform.uninstallPackage(local);
                     }
 
                 } else if (node instanceof SdkToolsPackageNode) {
                     LocalPackage local = ((SdkToolsPackageNode) node).getPackage().getLocal();
-                    AndroidSdkPlatformProvider.getDefaultPlatform().uninstallPackage(local);
+                    platform.uninstallPackage(local);
                 }
             }
 
         });
+        platform.addSdkToolsChangeListener(WeakListeners.create(SdkToolsChangeListener.class, (SdkToolsChangeListener) this, platform));
     }
 
     /**
@@ -264,18 +267,6 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
         WindowManager.getDefault().invokeWhenUIReady(runnable);
     }
 
-    public void connect(AndroidSdkPlatform manager) {
-        this.manager = manager;
-        if (manager != null) {
-            manager.addSdkToolsChangeListener(this);
-        }
-    }
-
-    public void disconnect() {
-        if (manager != null) {
-            manager.removeSdkToolsChangeListener(this);
-        }
-    }
 
     private class PackageRenderer implements RenderDataProvider {
 

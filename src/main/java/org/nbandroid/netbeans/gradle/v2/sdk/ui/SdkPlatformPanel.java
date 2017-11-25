@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.core.ui;
+package org.nbandroid.netbeans.gradle.v2.sdk.ui;
 
 import com.android.repository.api.UpdatablePackage;
 import com.android.sdklib.repository.meta.DetailsTypes;
@@ -34,8 +34,9 @@ import javax.swing.JTable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.DefaultTreeModel;
+import org.nbandroid.netbeans.gradle.core.ui.*;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatform;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatformProvider;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatformImpl;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidVersionNode;
 import org.nbandroid.netbeans.gradle.v2.sdk.SdkPackageNode;
 import org.nbandroid.netbeans.gradle.v2.sdk.SdkPlatformChangeListener;
@@ -46,6 +47,7 @@ import org.netbeans.swing.outline.RenderDataProvider;
 import org.netbeans.swing.outline.RowModel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.util.NbPreferences;
+import org.openide.util.WeakListeners;
 import org.openide.windows.WindowManager;
 
 /**
@@ -69,7 +71,7 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
     /**
      * Creates new form SdkPlatformPanel
      */
-    public SdkPlatformPanel() {
+    public SdkPlatformPanel(AndroidSdkPlatformImpl platform) {
         initComponents();
         tableMenu.add(installMenuItem);
         tableMenu.add(updateMenuItem);
@@ -149,13 +151,13 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
                     Vector<SdkPackageNode> packages = ((AndroidVersionNode) node).getPackages();
                     for (SdkPackageNode pkg : packages) {
                         if (pkg.getPackage().getRepresentative().getTypeDetails() instanceof DetailsTypes.PlatformDetailsType) {
-                            AndroidSdkPlatformProvider.getDefaultPlatform().installPackage(pkg.getPackage());
+                            platform.installPackage(pkg.getPackage());
                             break;
                         }
                     }
 
                 } else if (node instanceof SdkPackageNode) {
-                    AndroidSdkPlatformProvider.getDefaultPlatform().installPackage(((SdkPackageNode) node).getPackage());
+                    platform.installPackage(((SdkPackageNode) node).getPackage());
                 }
             }
         });
@@ -172,13 +174,13 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
                     Vector<SdkPackageNode> packages = ((AndroidVersionNode) node).getPackages();
                     for (SdkPackageNode pkg : packages) {
                         if (pkg.getPackage().getRepresentative().getTypeDetails() instanceof DetailsTypes.PlatformDetailsType) {
-                            AndroidSdkPlatformProvider.getDefaultPlatform().installPackage(pkg.getPackage());
+                            platform.installPackage(pkg.getPackage());
                             break;
                         }
                     }
 
                 } else if (node instanceof SdkPackageNode) {
-                    AndroidSdkPlatformProvider.getDefaultPlatform().installPackage(((SdkPackageNode) node).getPackage());
+                    platform.installPackage(((SdkPackageNode) node).getPackage());
 
                 }
             }
@@ -195,30 +197,18 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
                     Vector<SdkPackageNode> packages = ((AndroidVersionNode) node).getPackages();
                     for (SdkPackageNode pkg : packages) {
                         if (pkg.getPackage().getRepresentative().getTypeDetails() instanceof DetailsTypes.PlatformDetailsType) {
-                            AndroidSdkPlatformProvider.getDefaultPlatform().uninstallPackage(pkg.getPackage().getLocal());
+                            platform.uninstallPackage(pkg.getPackage().getLocal());
                             break;
                         }
                     }
 
                 } else if (node instanceof SdkPackageNode) {
-                    AndroidSdkPlatformProvider.getDefaultPlatform().uninstallPackage(((SdkPackageNode) node).getPackage().getLocal());
+                    platform.uninstallPackage(((SdkPackageNode) node).getPackage().getLocal());
                 }
             }
 
         });
-    }
-
-    public void connect(AndroidSdkPlatform manager) {
-        this.manager = manager;
-        if (manager != null) {
-            manager.addSdkPlatformChangeListener(this);
-        }
-    }
-
-    public void disconnect() {
-        if (manager != null) {
-            manager.removeSdkPlatformChangeListener(this);
-        }
+        platform.addSdkPlatformChangeListener(WeakListeners.create(SdkPlatformChangeListener.class, (SdkPlatformChangeListener) this, platform));
     }
 
     /**
