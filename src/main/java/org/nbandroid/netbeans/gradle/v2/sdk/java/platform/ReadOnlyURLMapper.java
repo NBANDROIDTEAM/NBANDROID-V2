@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.platform;
+package org.nbandroid.netbeans.gradle.v2.sdk.java.platform;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

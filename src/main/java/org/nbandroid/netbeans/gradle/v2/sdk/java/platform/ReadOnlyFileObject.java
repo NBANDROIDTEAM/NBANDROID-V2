@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.platform;
+package org.nbandroid.netbeans.gradle.v2.sdk.java.platform;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -40,7 +40,7 @@ import org.openide.util.Lookup;
 /**
  * Hack to make android platform source folder read-only
  *
- * @see org.nbandroid.netbeans.gradle.platform.ReadOnlyURLMapper
+ * @see org.nbandroid.netbeans.gradle.v2.sdk.java.platform.ReadOnlyURLMapper
  * @author arsi
  */
 public class ReadOnlyFileObject extends FileObject {

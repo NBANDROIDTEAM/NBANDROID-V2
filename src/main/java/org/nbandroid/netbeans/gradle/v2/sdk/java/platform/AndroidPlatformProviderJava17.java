@@ -16,25 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.platform;
+package org.nbandroid.netbeans.gradle.v2.sdk.java.platform;
 
 import com.android.repository.api.UpdatablePackage;
 import java.util.Vector;
 import org.netbeans.api.java.platform.JavaPlatform;
 
 /**
- *
- * JavaPlatformProvider for Android platforms and java 1.8
+ * JavaPlatformProvider for Android platforms and java 1.7
  *
  * @author arsi
  */
-//@ServiceProviders({
-//    @ServiceProvider(service = JavaPlatformProvider.class),
-//    @ServiceProvider(service = AndroidPlatformProviderJava18.class)})
-public class AndroidPlatformProviderJava18 extends AndroidPlatformProvider {
+//@ServiceProvider(service = JavaPlatformProvider.class)
+public class AndroidPlatformProviderJava17 extends AndroidPlatformProvider {
 
     @Override
     protected void createPlatform(JavaPlatform[] tmp, int i, Vector<UpdatablePackage> pkgs) {
-        tmp[i] = new AndroidPlatform(pkgs.get(i), "1.8");
+        tmp[i] = new AndroidPlatform(pkgs.get(i), "1.7");
     }
+
 }
