@@ -28,10 +28,10 @@
     </folder>
     <folder name="Services">
         <folder name="Hidden">
-            <file name="org-nbandroid-netbeans-gradle-v2-sdk-java-platform-AndroidPlatformProviderJava17.instance">
+            <file name="org-nbandroid-netbeans-gradle-v2-sdk-java-platform-AndroidJavaPlatformProvider7.instance">
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.java.platform.implspi.JavaPlatformProvider"/>
             </file>
-            <file name="org-nbandroid-netbeans-gradle-v2-sdk-java-platform-AndroidPlatformProviderJava18.instance">
+            <file name="org-nbandroid-netbeans-gradle-v2-sdk-java-platform-AndroidJavaPlatformProvider8.instance">
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.java.platform.implspi.JavaPlatformProvider"/>
             </file>
         </folder>

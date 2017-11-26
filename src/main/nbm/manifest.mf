@@ -1,4 +1,5 @@
 Manifest-Version: 1.0
+OpenIDE-Module-Install: org/nbandroid/netbeans/gradle/v2/Installer.class
 OpenIDE-Module-Layer: sk/arsi/netbeans/gradle/android/gradle/android/support/layer.xml
 OpenIDE-Module-Localizing-Bundle: sk/arsi/netbeans/gradle/android/gradle/android/support/Bundle.properties
 OpenIDE-Module-Requires: org.openide.windows.WindowManager

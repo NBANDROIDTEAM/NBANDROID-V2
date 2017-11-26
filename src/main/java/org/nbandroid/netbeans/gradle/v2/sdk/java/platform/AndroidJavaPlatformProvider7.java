@@ -28,11 +28,11 @@ import org.netbeans.api.java.platform.JavaPlatform;
  * @author arsi
  */
 //@ServiceProvider(service = JavaPlatformProvider.class)
-public class AndroidPlatformProviderJava17 extends AndroidPlatformProvider {
+public class AndroidJavaPlatformProvider7 extends AndroidJavaPlatformProvider {
 
     @Override
     protected void createPlatform(JavaPlatform[] tmp, int i, Vector<UpdatablePackage> pkgs) {
-        tmp[i] = new AndroidPlatform(pkgs.get(i), "1.7");
+        tmp[i] = new AndroidJavaPlatform(pkgs.get(i), "1.7");
     }
 
 }

@@ -244,8 +244,8 @@ public class AndroidSdkPlatformImpl extends AndroidSdkPlatform implements Serial
     @Override
     public void updateSdkPlatformPackages() {
         if (repoManager != null) {
-            repoManager.load(5000, ImmutableList.of(),
-                    ImmutableList.of(),
+            repoManager.load(0, ImmutableList.of(this),
+                    ImmutableList.of(this),
                     ImmutableList.of(new DownloadErrorCallback()),
                     new NbProgressRunner(), new NbDownloader(), new NbSettingsController(), false);
         }

@@ -41,7 +41,7 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class AndroidSdkPlatform {
 
-    public static final ExecutorService pool = Executors.newFixedThreadPool(1);
+    public static final ExecutorService pool = Executors.newCachedThreadPool();
     private PropertyChangeSupport supp;
 
     /**

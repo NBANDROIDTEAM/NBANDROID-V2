@@ -63,6 +63,10 @@ public class AndroidSdkPlatformProvider implements FileChangeListener {
         }
     }
 
+    public static final AndroidSdkPlatformProvider getDefault() {
+        return Lookup.getDefault().lookup(AndroidSdkPlatformProvider.class);
+    }
+
     public static final AndroidSdkPlatform[] getInstalledPlatforms() {
         return Lookup.getDefault().lookup(AndroidSdkPlatformProvider.class).getInstalledPlatformsInt();
     }

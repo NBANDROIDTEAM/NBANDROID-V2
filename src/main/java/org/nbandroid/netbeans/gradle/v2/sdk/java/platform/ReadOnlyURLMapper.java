@@ -55,7 +55,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class ReadOnlyURLMapper extends URLMapper implements PropertyChangeListener, LookupListener {
 
     private static final Map<FileObject, FileObject> cache = new WeakHashMap<>();
-    private AtomicReference<AndroidPlatformProviderJava18> platformProvider = new AtomicReference<>(null);
+    private AtomicReference<AndroidJavaPlatformProvider8> platformProvider = new AtomicReference<>(null);
     private final AtomicReference<String[]> reference = new AtomicReference<>(new String[0]);
     private final Lookup.Result<JavaPlatformProvider> result = Lookup.getDefault().lookupResult(JavaPlatformProvider.class);
     private static final File LASTPLATFORMS_FILE = Places.getCacheSubfile("NBANDROID/lastplatforms.xml");
@@ -100,7 +100,7 @@ public class ReadOnlyURLMapper extends URLMapper implements PropertyChangeListen
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        AndroidPlatformProviderJava18 provider = platformProvider.get();
+        AndroidJavaPlatformProvider8 provider = platformProvider.get();
         if (provider != null) {
             JavaPlatform[] installedPlatforms = provider.getInstalledPlatforms();
             List<String> tmp = new ArrayList<>();
@@ -125,15 +125,15 @@ public class ReadOnlyURLMapper extends URLMapper implements PropertyChangeListen
 
     @Override
     public void resultChanged(LookupEvent ev) {
-        AndroidPlatformProviderJava18 provider = platformProvider.get();
+        AndroidJavaPlatformProvider8 provider = platformProvider.get();
         if (provider == null) {
             Collection<? extends JavaPlatformProvider> lookupAll = result.allInstances();
             Iterator<? extends JavaPlatformProvider> iterator = lookupAll.iterator();
             while (iterator.hasNext()) {
                 JavaPlatformProvider next = iterator.next();
-                if (next instanceof AndroidPlatformProviderJava18) {
-                    platformProvider.set((AndroidPlatformProviderJava18) next);
-                    ((AndroidPlatformProviderJava18) next).addPropertyChangeListener(this);
+                if (next instanceof AndroidJavaPlatformProvider8) {
+                    platformProvider.set((AndroidJavaPlatformProvider8) next);
+                    ((AndroidJavaPlatformProvider8) next).addPropertyChangeListener(this);
                     propertyChange(null);
                 }
             }

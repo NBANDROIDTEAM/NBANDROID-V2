@@ -35,11 +35,11 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 
 /**
- * AndroidPlatform from Android UpdatablePackage
+ * AndroidJavaPlatform from Android UpdatablePackage
  *
  * @author arsi
  */
-public class AndroidPlatform extends JavaPlatform {
+public class AndroidJavaPlatform extends JavaPlatform {
 
     private final UpdatablePackage pkg;
     private final FileObject binaryRoot;
@@ -53,7 +53,7 @@ public class AndroidPlatform extends JavaPlatform {
     private static final String OPTIONAL_FOLDER = "optional";
     private final List<URL> standardPackages = new ArrayList<>();
 
-    AndroidPlatform(UpdatablePackage pkg, String javaVersion) {
+    AndroidJavaPlatform(UpdatablePackage pkg, String javaVersion) {
         this.pkg = pkg;
         this.specification = new Specification("j2se", new SpecificationVersion(javaVersion));
         binaryRoot = FileUtil.toFileObject(pkg.getLocal().getLocation());

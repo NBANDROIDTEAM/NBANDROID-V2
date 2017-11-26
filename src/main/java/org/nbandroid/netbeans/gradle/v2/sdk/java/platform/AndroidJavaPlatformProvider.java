@@ -33,13 +33,13 @@ import static org.netbeans.modules.java.platform.implspi.JavaPlatformProvider.PR
  *
  * @author arsi
  */
-public abstract class AndroidPlatformProvider implements JavaPlatformProvider, LocalPlatformChangeListener {
+public abstract class AndroidJavaPlatformProvider implements JavaPlatformProvider, LocalPlatformChangeListener {
 
     protected final Vector<PropertyChangeListener> listeners = new Vector<>();
     protected final AtomicReference<JavaPlatform[]> platforms = new AtomicReference<>(new JavaPlatform[0]);
     protected final AtomicReference<JavaPlatform> defaultPlatform = new AtomicReference<>(null);
 
-    public AndroidPlatformProvider() {
+    public AndroidJavaPlatformProvider() {
         AndroidSdkPlatformProvider.getDefaultPlatform().addLocalPlatformChangeListener(this);
     }
 
