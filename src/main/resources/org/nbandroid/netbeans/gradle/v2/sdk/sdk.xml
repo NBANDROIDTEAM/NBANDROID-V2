@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sdk PUBLIC "-//NetBeans//DTD Android SdkDefinition 1.0//EN" "/jetty/netbeans9/NBANDROID-V2/src/main/resources/org/nbandroid/netbeans/gradle/v2/sdk/platformdefinition.dtd">
+<sdk default="no" name="Test1">
+    <sdkhome>
+        <resource>/jetty/android-studio-sdk/</resource>
+    </sdkhome>
+    <properties/>
+    <sysproperties/>
+    <platforms>
+        <platform name="Platform 22" path="/test/test">
+            <boot>
+                <file>/aaa/aaaa.jar</file>
+                <file>/aaa/bbbb.jar</file>
+            </boot>
+            <src>
+                <file>/aaa/ddddr</file>
+                <file>/aaa/aaaa.jar</file>
+            </src>
+            <doc>
+                <file user="true">/aaa/aaaa.jar</file>
+                <file>/aaa/aaaa.jar</file>
+            </doc>
+        </platform>
+        <platform name="Platform 23" path="/test/test1">
+            <boot>
+                <file>/aaa/aaaa.jar</file>
+                <file>/aaa/bbbb.jar</file>
+            </boot>
+            <src>
+                <file>/aaa/ddddr</file>
+                <file>/aaa/aaaa.jar</file>
+            </src>
+            <doc>
+                <file>/aaa/aaaa.jar</file>
+                <file>/aaa/aaaa.jar</file>
+            </doc>
+        </platform>
+    </platforms>
+</sdk>

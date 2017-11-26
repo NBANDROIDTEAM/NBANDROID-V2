@@ -24,7 +24,7 @@ attributes:
      the sdk is default.
     default = yes|<missing>
 -->
-<!ELEMENT sdk (sdkhome?,properties?,sysproperties?)>
+<!ELEMENT sdk (sdkhome?,properties?,sysproperties?,platforms*)>
 <!ATTLIST sdk
     name CDATA #IMPLIED
     default CDATA #IMPLIED
@@ -48,6 +48,30 @@ Sysproperties hold a list of system properties as reported by the SDK
 <!--Represents a root of a path, holds a stringified URL-->
 <!ELEMENT resource (#PCDATA)>
 
+<!--- Represents a root of platforms -->
+<!ELEMENT platforms (platform)*>
+
+<!---  Represents a root of platform -->
+<!ELEMENT platform (boot,src?,doc?)>
+<!ATTLIST platform
+    name CDATA #IMPLIED
+    path CDATA #IMPLIED
+  >
+
+<!--- Boot classpath list -->
+<!ELEMENT boot (file+)>
+
+<!--- src classpath list -->
+<!ELEMENT src (file+)>
+
+<!--- src classpath list -->
+<!ELEMENT doc (file+)>
+
+<!--- file path -->
+<!ELEMENT file (#PCDATA)>
+<!ATTLIST file
+    user CDATA #IMPLIED
+  >
 <!--
 Definition of one property: it has a name and some optional string data
 -->

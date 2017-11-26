@@ -362,7 +362,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         void write(final OutputStream out) throws IOException {
             final Map<String, String> props = instance.getProperties();
             final Map<String, String> sysProps = instance.getSystemProperties();
-            final Document doc = XMLUtil.createDocument(ELEMENT_PLATFORM, null, PLATFORM_DTD_ID, "http://www.netbeans.org/dtds/java-platformdefinition-1_0.dtd"); //NOI18N
+            final Document doc = XMLUtil.createDocument(ELEMENT_SDK_ROOT, null, PLATFORM_DTD_ID, "http://www.netbeans.org/dtds/java-platformdefinition-1_0.dtd"); //NOI18N
             final Element platformElement = doc.getDocumentElement();
             platformElement.setAttribute(ATTR_PLATFORM_NAME, instance.getDisplayName());
             platformElement.setAttribute(ATTR_PLATFORM_DEFAULT, defaultPlatform ? "yes" : "no"); //NOI18N
@@ -412,7 +412,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     static final String ELEMENT_PROPERTIES = "properties"; // NOI18N
     static final String ELEMENT_SYSPROPERTIES = "sysproperties"; // NOI18N
     static final String ELEMENT_PROPERTY = "property"; // NOI18N
-    static final String ELEMENT_PLATFORM = "platform"; // NOI18N
+    static final String ELEMENT_SDK_ROOT = "sdk"; // NOI18N
     static final String ELEMENT_SDKHOME = "sdkhome";    //NOI18N
     static final String ELEMENT_RESOURCE = "resource";  //NOI18N
     static final String ATTR_PLATFORM_NAME = "name"; // NOI18N
@@ -445,7 +445,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 throws org.xml.sax.SAXException {
             if (qName != null) {
                 switch (qName) {
-                    case ELEMENT_PLATFORM:
+                    case ELEMENT_SDK_ROOT:
                         name = attrs.getValue(ATTR_PLATFORM_NAME);
                         isDefault = "yes".equals(attrs.getValue(ATTR_PLATFORM_DEFAULT));
                         break;
