@@ -65,7 +65,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
 
     private RequestProcessor.Task saveTask;
 
-    private Reference<AndroidSdkPlatformImpl> refPlatform = new WeakReference<>(null);
+    private Reference<AndroidSdkImpl> refPlatform = new WeakReference<>(null);
 
     private LinkedList<PropertyChangeEvent> keepAlive = new LinkedList<>();
 
@@ -115,7 +115,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
 
     @Override
     public Class instanceClass() {
-        return AndroidSdkPlatformImpl.class;
+        return AndroidSdkImpl.class;
     }
 
     @Override
@@ -144,16 +144,16 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                     throw new java.io.IOException(cause);
                 }
             }
-            AndroidSdkPlatformImpl inst = createPlatform(handler);
+            AndroidSdkImpl inst = createPlatform(handler);
             refPlatform = new WeakReference<>(inst);
             return inst;
         }
     }
 
-    AndroidSdkPlatformImpl createPlatform(H handler) {
-        AndroidSdkPlatformImpl p;
+    AndroidSdkImpl createPlatform(H handler) {
+        AndroidSdkImpl p;
 
-        p = new AndroidSdkPlatformImpl(handler.name, handler.installFolder, handler.properties, handler.sysProperties);
+        p = new AndroidSdkImpl(handler.name, handler.installFolder, handler.properties, handler.sysProperties);
         defaultPlatform = false;
         p.addPropertyChangeListener(this);
         return p;
@@ -166,7 +166,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
 
     @Override
     public boolean instanceOf(Class<?> type) {
-        return (type.isAssignableFrom(AndroidSdkPlatformImpl.class));
+        return (type.isAssignableFrom(AndroidSdkImpl.class));
     }
 
     private static final int DELAY = 2000;
@@ -191,7 +191,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         synchronized (this) {
             e = keepAlive.removeFirst();
         }
-        AndroidSdkPlatformImpl plat = (AndroidSdkPlatformImpl) e.getSource();
+        AndroidSdkImpl plat = (AndroidSdkImpl) e.getSource();
         try {
             holder.getPrimaryFile().getFileSystem().runAtomicAction(
                     new W(plat, holder, defaultPlatform));
@@ -203,8 +203,8 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     @Override
     public Node convert(Class<Node> key) {
         try {
-            AndroidSdkPlatformImpl p = (AndroidSdkPlatformImpl) instanceCreate();
-            return new AndroidSdkPlatformNode(p, this.holder);
+            AndroidSdkImpl p = (AndroidSdkImpl) instanceCreate();
+            return new AndroidSdkNode(p, this.holder);
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -226,18 +226,18 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         return key;
     }
 
-    public static AndroidSdkPlatformImpl create(final AndroidSdkPlatformImpl prototype) throws IOException, IllegalArgumentException {
+    public static AndroidSdkImpl create(final AndroidSdkImpl prototype) throws IOException, IllegalArgumentException {
         Parameters.notNull("prototype", prototype);
         final String systemName = prototype.getDisplayName();
         if (systemName == null) {
             throw new IllegalArgumentException("No name");
         }
-        final FileObject platformsFolder = FileUtil.getConfigFile(AndroidSdkPlatformProvider.PLATFORM_STORAGE);
+        final FileObject platformsFolder = FileUtil.getConfigFile(AndroidSdkProvider.PLATFORM_STORAGE);
         if (platformsFolder.getFileObject(systemName, "xml") != null) {   //NOI18N
             throw new IllegalArgumentException(systemName);
         }
         final DataObject dobj = create(prototype, DataFolder.findFolder(platformsFolder), systemName);
-        return dobj.getNodeDelegate().getLookup().lookup(AndroidSdkPlatformImpl.class);
+        return dobj.getNodeDelegate().getLookup().lookup(AndroidSdkImpl.class);
     }
 
     @NonNull
@@ -245,7 +245,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         if (name == null || name.length() == 0) {
             throw new IllegalArgumentException();
         }
-        final FileObject platformsFolder = FileUtil.getConfigFile(AndroidSdkPlatformProvider.PLATFORM_STORAGE);
+        final FileObject platformsFolder = FileUtil.getConfigFile(AndroidSdkProvider.PLATFORM_STORAGE);
         String antName = PropertyUtils.getUsablePropertyName(name);
         if (platformsFolder.getFileObject(antName, "xml") != null) { //NOI18N
             String baseName = antName;
@@ -259,14 +259,14 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         return antName;
     }
 
-    public static void generatePlatformProperties(AndroidSdkPlatformImpl platform, String systemName, EditableProperties props) throws IOException {
+    public static void generatePlatformProperties(AndroidSdkImpl platform, String systemName, EditableProperties props) throws IOException {
     }
 
     public static String createName(String platName, String propType) {
         return "platforms." + platName + "." + propType;        //NOI18N
     }
 
-    private static DataObject create(final AndroidSdkPlatformImpl plat, final DataFolder f, final String idName) throws IOException {
+    private static DataObject create(final AndroidSdkImpl plat, final DataFolder f, final String idName) throws IOException {
         W w = new W(plat, f, idName);
         f.getPrimaryFile().getFileSystem().runAtomicAction(w);
         try {
@@ -310,19 +310,19 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
 
     private static final class W implements FileSystem.AtomicAction {
 
-        AndroidSdkPlatformImpl instance;
+        AndroidSdkImpl instance;
         MultiDataObject holder;
         String name;
         DataFolder f;
         boolean defaultPlatform;
 
-        W(AndroidSdkPlatformImpl instance, MultiDataObject holder, boolean defaultPlatform) {
+        W(AndroidSdkImpl instance, MultiDataObject holder, boolean defaultPlatform) {
             this.instance = instance;
             this.holder = holder;
             this.defaultPlatform = defaultPlatform;
         }
 
-        W(AndroidSdkPlatformImpl instance, DataFolder f, String n) {
+        W(AndroidSdkImpl instance, DataFolder f, String n) {
             this.instance = instance;
             this.name = n;
             this.f = f;

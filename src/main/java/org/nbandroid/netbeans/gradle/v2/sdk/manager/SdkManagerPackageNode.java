@@ -16,81 +16,76 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.sdk;
+package org.nbandroid.netbeans.gradle.v2.sdk.manager;
 
+import com.android.repository.api.UpdatablePackage;
 import java.util.Enumeration;
-import java.util.List;
-import java.util.Vector;
 import javax.swing.tree.TreeNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidVersionNode;
 
 /**
- * Root Node of Sdk platform packages
+ * Node representing single Android platform package
  *
  * @author arsi
  */
-public class SdkPlatformPackagesRootNode implements TreeNode {
+public class SdkManagerPackageNode implements TreeNode {
 
-    private final Vector<AndroidVersionNode> decorators = new Vector<>();
-    private boolean flatModel = true;
+    private final AndroidVersionNode versionDecorator;
+    private final UpdatablePackage pkg;
 
-    public SdkPlatformPackagesRootNode(List<AndroidVersionNode> decorators) {
-        this.decorators.addAll(decorators);
+    public SdkManagerPackageNode(AndroidVersionNode versionDecorator, UpdatablePackage pkg) {
+        this.versionDecorator = versionDecorator;
+        this.pkg = pkg;
+    }
+
+    /**
+     * Get android package
+     *
+     * @return UpdatablePackage
+     */
+    public UpdatablePackage getPackage() {
+        return pkg;
     }
 
     @Override
     public TreeNode getChildAt(int childIndex) {
-        return decorators.elementAt(childIndex);
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public int getChildCount() {
-        return decorators.size();
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public TreeNode getParent() {
-        return null;
+        return versionDecorator;
     }
 
     @Override
     public int getIndex(TreeNode node) {
-        return decorators.indexOf(node);
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public boolean getAllowsChildren() {
-        return true;
+        return false;
     }
 
     @Override
     public boolean isLeaf() {
-        return decorators.isEmpty();
+        return true;
     }
 
     @Override
     public Enumeration children() {
-        return decorators.elements();
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    /**
-     * Get view type
-     *
-     * @return true-flat, false-full
-     */
-    public boolean isFlatModel() {
-        return flatModel;
+    @Override
+    public String toString() {
+        return pkg.getRepresentative().getDisplayName();
     }
 
-    /**
-     * Set view type
-     *
-     * @param flatModel true-flat, false-full
-     */
-    public void setFlatModel(boolean flatModel) {
-        this.flatModel = flatModel;
-        for (AndroidVersionNode decorator : decorators) {
-            decorator.setFlatModel(flatModel);
-        }
-    }
 
 }

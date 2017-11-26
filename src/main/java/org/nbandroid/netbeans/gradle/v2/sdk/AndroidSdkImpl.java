@@ -5,6 +5,12 @@
  */
 package org.nbandroid.netbeans.gradle.v2.sdk;
 
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsMultiPackageNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsPackageNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformPackagesRootNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPackageNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsSupportNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsRootNode;
 import com.android.SdkConstants;
 import com.android.repository.api.Installer;
 import com.android.repository.api.LocalPackage;
@@ -40,12 +46,14 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.windows.WindowManager;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformChangeListener;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsChangeListener;
 
 /**
  *
  * @author arsi
  */
-public class AndroidSdkPlatformImpl extends AndroidSdkPlatform implements Serializable, RepoManager.RepoLoadedCallback {
+public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoManager.RepoLoadedCallback {
 
     private String displayName;
     private String sdkPath;
@@ -56,11 +64,11 @@ public class AndroidSdkPlatformImpl extends AndroidSdkPlatform implements Serial
     private RepoManager repoManager;
     //max 3 paralel downloads
     public static final ExecutorService DOWNLOAD_POOL = Executors.newFixedThreadPool(3);
-    private final Vector<SdkPlatformChangeListener> listeners = new Vector<>();
-    private final Vector<SdkToolsChangeListener> toolsListeners = new Vector<>();
+    private final Vector<SdkManagerPlatformChangeListener> listeners = new Vector<>();
+    private final Vector<SdkManagerToolsChangeListener> toolsListeners = new Vector<>();
     private final Vector<LocalPlatformChangeListener> localListeners = new Vector<>();
     private Vector<UpdatablePackage> platforms = new Vector<>();
-    private SdkPlatformPackagesRootNode platformPackages = null;
+    private SdkManagerPlatformPackagesRootNode platformPackages = null;
     private List<UpdatablePackage> toolsPackages = null;
     private static final Set<String> MULTI_VERSION_PREFIXES
             = ImmutableSet.of(SdkConstants.FD_BUILD_TOOLS, SdkConstants.FD_LLDB, SdkConstants.FD_CMAKE,
@@ -68,9 +76,9 @@ public class AndroidSdkPlatformImpl extends AndroidSdkPlatform implements Serial
                             SdkConstants.FD_EXTRAS,
                             SdkConstants.FD_ANDROID_EXTRAS,
                             SdkConstants.FD_GAPID));
-    private SdkToolsRootNode toolRoot;
+    private SdkManagerToolsRootNode toolRoot;
 
-    public AndroidSdkPlatformImpl(String displayName, String sdkPath, Map<String, String> properties, Map<String, String> sysproperties) {
+    public AndroidSdkImpl(String displayName, String sdkPath, Map<String, String> properties, Map<String, String> sysproperties) {
         this.displayName = displayName;
         this.sdkPath = sdkPath;
         this.properties = properties;
@@ -82,8 +90,8 @@ public class AndroidSdkPlatformImpl extends AndroidSdkPlatform implements Serial
                 androidSdkHandler = AndroidSdkHandler.getInstance(new File(sdkPath));
                 if (androidSdkHandler != null) {
                     repoManager = androidSdkHandler.getSdkManager(new NbOutputWindowProgressIndicator());
-                    repoManager.registerLocalChangeListener(AndroidSdkPlatformImpl.this);
-                    repoManager.registerRemoteChangeListener(AndroidSdkPlatformImpl.this);
+                    repoManager.registerLocalChangeListener(AndroidSdkImpl.this);
+                    repoManager.registerRemoteChangeListener(AndroidSdkImpl.this);
                     updateSdkPlatformPackages();
                 } else {
                     repoManager = null;
@@ -93,12 +101,12 @@ public class AndroidSdkPlatformImpl extends AndroidSdkPlatform implements Serial
         WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
             @Override
             public void run() {
-                AndroidSdkPlatform.pool.submit(runnable);
+                AndroidSdk.pool.submit(runnable);
             }
         });
     }
 
-    public AndroidSdkPlatformImpl(String displayName, String sdkPath) {
+    public AndroidSdkImpl(String displayName, String sdkPath) {
         this(displayName, sdkPath, Collections.EMPTY_MAP, Collections.EMPTY_MAP);
     }
 
@@ -139,7 +147,7 @@ public class AndroidSdkPlatformImpl extends AndroidSdkPlatform implements Serial
      * @param l addSdkToolsChangeListener
      */
     @Override
-    public void addSdkToolsChangeListener(SdkToolsChangeListener l) {
+    public void addSdkToolsChangeListener(SdkManagerToolsChangeListener l) {
         if (!toolsListeners.contains(l)) {
             toolsListeners.add(l);
             if (toolRoot != null) {
@@ -149,24 +157,24 @@ public class AndroidSdkPlatformImpl extends AndroidSdkPlatform implements Serial
     }
 
     /**
-     * Remove SdkToolsChangeListener
+     * Remove SdkManagerToolsChangeListener
      *
-     * @param l SdkToolsChangeListener
+     * @param l SdkManagerToolsChangeListener
      */
     @Override
-    public void removeSdkToolsChangeListener(SdkToolsChangeListener l) {
+    public void removeSdkToolsChangeListener(SdkManagerToolsChangeListener l) {
         toolsListeners.remove(l);
     }
 
     /**
-     * Add SdkPlatformChangeListener to listen of SDK platform pakages list
-     * changes. On add is listener called with actual package list. Listener is
+     * Add SdkManagerPlatformChangeListener to listen of SDK platform pakages list
+ changes. On add is listener called with actual package list. Listener is
      * called from actual thread
      *
-     * @param l SdkPlatformChangeListener
+     * @param l SdkManagerPlatformChangeListener
      */
     @Override
-    public void addSdkPlatformChangeListener(SdkPlatformChangeListener l) {
+    public void addSdkPlatformChangeListener(SdkManagerPlatformChangeListener l) {
         if (!listeners.contains(l)) {
             listeners.add(l);
             if (platformPackages != null) {
@@ -180,12 +188,12 @@ public class AndroidSdkPlatformImpl extends AndroidSdkPlatform implements Serial
     }
 
     /**
-     * Remove SdkPlatformChangeListener
+     * Remove SdkManagerPlatformChangeListener
      *
-     * @param l SdkPlatformChangeListener
+     * @param l SdkManagerPlatformChangeListener
      */
     @Override
-    public void removeSdkPlatformChangeListener(SdkPlatformChangeListener l) {
+    public void removeSdkPlatformChangeListener(SdkManagerPlatformChangeListener l) {
         listeners.remove(l);
     }
 
@@ -239,7 +247,7 @@ public class AndroidSdkPlatformImpl extends AndroidSdkPlatform implements Serial
 
     /**
      * Update SDK platform pakages list After update is called
-     * SdkPlatformChangeListener
+ SdkManagerPlatformChangeListener
      */
     @Override
     public void updateSdkPlatformPackages() {
@@ -272,10 +280,10 @@ public class AndroidSdkPlatformImpl extends AndroidSdkPlatform implements Serial
                 AndroidVersion androidVersion = ((DetailsTypes.ApiDetailsType) details).getAndroidVersion();
                 if (tmp.containsKey(androidVersion)) {
                     AndroidVersionNode avd = tmp.get(androidVersion);
-                    avd.addPackage(new SdkPackageNode(avd, info));
+                    avd.addPackage(new SdkManagerPackageNode(avd, info));
                 } else {
                     AndroidVersionNode avd = new AndroidVersionNode(androidVersion);
-                    avd.addPackage(new SdkPackageNode(avd, info));
+                    avd.addPackage(new SdkManagerPackageNode(avd, info));
                     tmp.put(androidVersion, avd);
                     tmpPackages.add(avd);
                 }
@@ -297,18 +305,18 @@ public class AndroidSdkPlatformImpl extends AndroidSdkPlatform implements Serial
                 return o2.getCodeName().compareTo(o1.getCodeName());
             }
         });
-        platformPackages = new SdkPlatformPackagesRootNode(tmpPackages);
-        for (SdkPlatformChangeListener listener : listeners) {
+        platformPackages = new SdkManagerPlatformPackagesRootNode(tmpPackages);
+        for (SdkManagerPlatformChangeListener listener : listeners) {
             try {
                 listener.packageListChanged(platformPackages);
             } catch (Exception e) {
                 Exceptions.printStackTrace(e);
             }
         }
-        Map<String, SdkToolsMultiPackageNode> tmpMulti = new HashMap<>();
-        Map<String, SdkToolsMultiPackageNode> tmpMultiSupport = new HashMap<>();
-        toolRoot = new SdkToolsRootNode();
-        SdkToolsSupportNode supportNode = new SdkToolsSupportNode(toolRoot);
+        Map<String, SdkManagerToolsMultiPackageNode> tmpMulti = new HashMap<>();
+        Map<String, SdkManagerToolsMultiPackageNode> tmpMultiSupport = new HashMap<>();
+        toolRoot = new SdkManagerToolsRootNode();
+        SdkManagerToolsSupportNode supportNode = new SdkManagerToolsSupportNode(toolRoot);
         for (UpdatablePackage p : toolsPackages) {
             String prefix = p.getRepresentative().getPath();
             int lastSegmentIndex = prefix.lastIndexOf(';');
@@ -322,20 +330,20 @@ public class AndroidSdkPlatformImpl extends AndroidSdkPlatform implements Serial
                 if (MULTI_VERSION_PREFIXES.contains(prefix) || p.getRepresentative().getTypeDetails() instanceof DetailsTypes.MavenType) {
                     if (!(p.getRepresentative().getTypeDetails() instanceof DetailsTypes.MavenType)) {
                         if (tmpMulti.containsKey(prefix)) {
-                            SdkToolsMultiPackageNode node = tmpMulti.get(prefix);
-                            node.addNode(new SdkToolsPackageNode(node, p));
+                            SdkManagerToolsMultiPackageNode node = tmpMulti.get(prefix);
+                            node.addNode(new SdkManagerToolsPackageNode(node, p));
                         } else {
-                            SdkToolsMultiPackageNode node = new SdkToolsMultiPackageNode(toolRoot, prefix);
-                            node.addNode(new SdkToolsPackageNode(node, p));
+                            SdkManagerToolsMultiPackageNode node = new SdkManagerToolsMultiPackageNode(toolRoot, prefix);
+                            node.addNode(new SdkManagerToolsPackageNode(node, p));
                             tmpMulti.put(prefix, node);
                             toolRoot.addNode(node);
                         }
                     } else if (tmpMultiSupport.containsKey(prefix)) {
-                        SdkToolsMultiPackageNode node = tmpMultiSupport.get(prefix);
-                        node.addNode(new SdkToolsPackageNode(node, p));
+                        SdkManagerToolsMultiPackageNode node = tmpMultiSupport.get(prefix);
+                        node.addNode(new SdkManagerToolsPackageNode(node, p));
                     } else {
-                        SdkToolsMultiPackageNode node = new SdkToolsMultiPackageNode(supportNode, prefix);
-                        node.addNode(new SdkToolsPackageNode(node, p));
+                        SdkManagerToolsMultiPackageNode node = new SdkManagerToolsMultiPackageNode(supportNode, prefix);
+                        node.addNode(new SdkManagerToolsPackageNode(node, p));
                         tmpMultiSupport.put(prefix, node);
                         supportNode.addNode(node);
                     }
@@ -344,15 +352,15 @@ public class AndroidSdkPlatformImpl extends AndroidSdkPlatform implements Serial
             }
             if (!found) {
                 if (p.getRepresentative().getPath().endsWith(RepoPackage.PATH_SEPARATOR + MavenInstallListener.MAVEN_DIR_NAME)) {
-                    supportNode.addNode(new SdkToolsPackageNode(toolRoot, p));
+                    supportNode.addNode(new SdkManagerToolsPackageNode(toolRoot, p));
                 } else {
-                    toolRoot.addNode(new SdkToolsPackageNode(toolRoot, p));
+                    toolRoot.addNode(new SdkManagerToolsPackageNode(toolRoot, p));
                 }
             }
         }
         toolRoot.addNode(supportNode);
 
-        for (SdkToolsChangeListener toolsListener : toolsListeners) {
+        for (SdkManagerToolsChangeListener toolsListener : toolsListeners) {
             try {
                 toolsListener.packageListChanged(toolRoot);
             } catch (Exception e) {

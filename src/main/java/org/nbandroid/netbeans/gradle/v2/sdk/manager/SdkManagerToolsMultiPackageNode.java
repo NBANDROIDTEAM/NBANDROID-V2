@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.sdk;
+package org.nbandroid.netbeans.gradle.v2.sdk.manager;
 
 import com.android.repository.api.RepoPackage;
 import java.util.ArrayList;
@@ -26,21 +26,22 @@ import java.util.Enumeration;
 import java.util.List;
 import javax.swing.tree.TreeNode;
 import org.nbandroid.netbeans.gradle.v2.ext.ComparableVersion;
+import org.nbandroid.netbeans.gradle.v2.sdk.AbstractSdkToolNode;
 
 /**
  * SDK Tool node with more versions of single package
  *
  * @author arsi
  */
-public class SdkToolsMultiPackageNode extends AbstractSdkToolNode {
+public class SdkManagerToolsMultiPackageNode extends AbstractSdkToolNode {
 
     private final TreeNode parent;
     private final String prefix;
-    private final List<SdkToolsPackageNode> nodes = new ArrayList<>();
+    private final List<SdkManagerToolsPackageNode> nodes = new ArrayList<>();
     private boolean flatModel = true;
     private String displayName = null;
 
-    SdkToolsMultiPackageNode(TreeNode parent, String prefix) {
+    public SdkManagerToolsMultiPackageNode(TreeNode parent, String prefix) {
         this.parent = parent;
         this.prefix = prefix;
     }
@@ -80,7 +81,7 @@ public class SdkToolsMultiPackageNode extends AbstractSdkToolNode {
         return Collections.enumeration(nodes);
     }
 
-    void addNode(SdkToolsPackageNode node) {
+    public void addNode(SdkManagerToolsPackageNode node) {
         nodes.add(node);
     }
 
@@ -92,7 +93,7 @@ public class SdkToolsMultiPackageNode extends AbstractSdkToolNode {
     @Override
     public void setFlatModel(boolean flatModel) {
         this.flatModel = flatModel;
-        for (SdkToolsPackageNode node : nodes) {
+        for (SdkManagerToolsPackageNode node : nodes) {
             node.setFlatModel(flatModel);
         }
     }
@@ -101,7 +102,7 @@ public class SdkToolsMultiPackageNode extends AbstractSdkToolNode {
         return prefix;
     }
 
-    public List<SdkToolsPackageNode> getNodes() {
+    public List<SdkManagerToolsPackageNode> getNodes() {
         return nodes;
     }
 
@@ -112,9 +113,9 @@ public class SdkToolsMultiPackageNode extends AbstractSdkToolNode {
 
     public String getDisplayName() {
         if (displayName == null) {
-            Collections.sort(nodes, new Comparator<SdkToolsPackageNode>() {
+            Collections.sort(nodes, new Comparator<SdkManagerToolsPackageNode>() {
                 @Override
-                public int compare(SdkToolsPackageNode o1, SdkToolsPackageNode o2) {
+                public int compare(SdkManagerToolsPackageNode o1, SdkManagerToolsPackageNode o2) {
                     return new ComparableVersion(o2.toString()).compareTo(new ComparableVersion(o1.toString()));
                 }
             });

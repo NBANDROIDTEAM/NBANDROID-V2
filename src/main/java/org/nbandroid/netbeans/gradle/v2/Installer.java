@@ -7,14 +7,14 @@ package org.nbandroid.netbeans.gradle.v2;
 
 import com.android.ddmlib.AndroidDebugBridge;
 import org.nbandroid.netbeans.gradle.core.ddm.AndroidDebugBridgeFactory;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatformProvider;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.openide.modules.ModuleInstall;
 
 public class Installer extends ModuleInstall {
 
     @Override
     public void restored() {
-        AndroidSdkPlatformProvider.getDefault(); //init SDK subsystem
+        AndroidSdkProvider.getDefault(); //init SDK subsystem
     }
 
     @Override

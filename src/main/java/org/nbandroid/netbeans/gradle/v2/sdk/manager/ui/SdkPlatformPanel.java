@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.sdk.ui;
+package org.nbandroid.netbeans.gradle.v2.sdk.manager.ui;
 
 import com.android.repository.api.UpdatablePackage;
 import com.android.sdklib.repository.meta.DetailsTypes;
@@ -35,12 +35,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.DefaultTreeModel;
 import org.nbandroid.netbeans.gradle.core.ui.*;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatform;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatformImpl;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkImpl;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidVersionNode;
-import org.nbandroid.netbeans.gradle.v2.sdk.SdkPackageNode;
-import org.nbandroid.netbeans.gradle.v2.sdk.SdkPlatformChangeListener;
-import org.nbandroid.netbeans.gradle.v2.sdk.SdkPlatformPackagesRootNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPackageNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformPackagesRootNode;
 import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.OutlineModel;
 import org.netbeans.swing.outline.RenderDataProvider;
@@ -49,18 +48,19 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.util.NbPreferences;
 import org.openide.util.WeakListeners;
 import org.openide.windows.WindowManager;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformChangeListener;
 
 /**
  * Visual Android SDK platform installer
  *
  * @author arsi
  */
-public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerManager.Provider, SdkPlatformChangeListener {
+public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerManager.Provider, SdkManagerPlatformChangeListener {
 
     private final ExplorerManager explorerManager = new ExplorerManager();
-    private AndroidSdkPlatform manager = null;
+    private AndroidSdk manager = null;
     private OutlineModel model = null;
-    private SdkPlatformPackagesRootNode platformPackages = null;
+    private SdkManagerPlatformPackagesRootNode platformPackages = null;
     public static final String SHOW_DETAILS = "SHOW_DETAILS";
     private boolean detailsState;
     private final JPopupMenu tableMenu = new JPopupMenu();
@@ -71,7 +71,7 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
     /**
      * Creates new form SdkPlatformPanel
      */
-    public SdkPlatformPanel(AndroidSdkPlatformImpl platform) {
+    public SdkPlatformPanel(AndroidSdkImpl platform) {
         initComponents();
         tableMenu.add(installMenuItem);
         tableMenu.add(updateMenuItem);
@@ -112,8 +112,8 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
                     if (rowindex != -1) {
                         if (platformPackages.isFlatModel()) {
                             if (node instanceof AndroidVersionNode) {
-                                Vector<SdkPackageNode> packages = ((AndroidVersionNode) node).getPackages();
-                                for (SdkPackageNode pkg : packages) {
+                                Vector<SdkManagerPackageNode> packages = ((AndroidVersionNode) node).getPackages();
+                                for (SdkManagerPackageNode pkg : packages) {
                                     if (pkg.getPackage().getRepresentative().getTypeDetails() instanceof DetailsTypes.PlatformDetailsType) {
                                         updateMenuItem.setEnabled(pkg.getPackage().isUpdate());
                                         installMenuItem.setEnabled(!pkg.getPackage().hasLocal());
@@ -127,10 +127,10 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
                                 }
                                 tableMenu.show(e.getComponent(), e.getX(), e.getY());
                             }
-                        } else if (node instanceof SdkPackageNode) {
-                            updateMenuItem.setEnabled(((SdkPackageNode) node).getPackage().isUpdate());
-                            installMenuItem.setEnabled(!((SdkPackageNode) node).getPackage().hasLocal());
-                            unInstallMenuItem.setEnabled(((SdkPackageNode) node).getPackage().hasLocal());
+                        } else if (node instanceof SdkManagerPackageNode) {
+                            updateMenuItem.setEnabled(((SdkManagerPackageNode) node).getPackage().isUpdate());
+                            installMenuItem.setEnabled(!((SdkManagerPackageNode) node).getPackage().hasLocal());
+                            unInstallMenuItem.setEnabled(((SdkManagerPackageNode) node).getPackage().hasLocal());
                             tableMenu.show(e.getComponent(), e.getX(), e.getY());
                         }
 
@@ -148,16 +148,16 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
                 }
                 Object node = packageTreeTableView.getModel().getValueAt(rowindex, 0);
                 if (node instanceof AndroidVersionNode) {
-                    Vector<SdkPackageNode> packages = ((AndroidVersionNode) node).getPackages();
-                    for (SdkPackageNode pkg : packages) {
+                    Vector<SdkManagerPackageNode> packages = ((AndroidVersionNode) node).getPackages();
+                    for (SdkManagerPackageNode pkg : packages) {
                         if (pkg.getPackage().getRepresentative().getTypeDetails() instanceof DetailsTypes.PlatformDetailsType) {
                             platform.installPackage(pkg.getPackage());
                             break;
                         }
                     }
 
-                } else if (node instanceof SdkPackageNode) {
-                    platform.installPackage(((SdkPackageNode) node).getPackage());
+                } else if (node instanceof SdkManagerPackageNode) {
+                    platform.installPackage(((SdkManagerPackageNode) node).getPackage());
                 }
             }
         });
@@ -171,16 +171,16 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
                 }
                 Object node = packageTreeTableView.getModel().getValueAt(rowindex, 0);
                 if (node instanceof AndroidVersionNode) {
-                    Vector<SdkPackageNode> packages = ((AndroidVersionNode) node).getPackages();
-                    for (SdkPackageNode pkg : packages) {
+                    Vector<SdkManagerPackageNode> packages = ((AndroidVersionNode) node).getPackages();
+                    for (SdkManagerPackageNode pkg : packages) {
                         if (pkg.getPackage().getRepresentative().getTypeDetails() instanceof DetailsTypes.PlatformDetailsType) {
                             platform.installPackage(pkg.getPackage());
                             break;
                         }
                     }
 
-                } else if (node instanceof SdkPackageNode) {
-                    platform.installPackage(((SdkPackageNode) node).getPackage());
+                } else if (node instanceof SdkManagerPackageNode) {
+                    platform.installPackage(((SdkManagerPackageNode) node).getPackage());
 
                 }
             }
@@ -194,21 +194,21 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
                 }
                 Object node = packageTreeTableView.getModel().getValueAt(rowindex, 0);
                 if (node instanceof AndroidVersionNode) {
-                    Vector<SdkPackageNode> packages = ((AndroidVersionNode) node).getPackages();
-                    for (SdkPackageNode pkg : packages) {
+                    Vector<SdkManagerPackageNode> packages = ((AndroidVersionNode) node).getPackages();
+                    for (SdkManagerPackageNode pkg : packages) {
                         if (pkg.getPackage().getRepresentative().getTypeDetails() instanceof DetailsTypes.PlatformDetailsType) {
                             platform.uninstallPackage(pkg.getPackage().getLocal());
                             break;
                         }
                     }
 
-                } else if (node instanceof SdkPackageNode) {
-                    platform.uninstallPackage(((SdkPackageNode) node).getPackage().getLocal());
+                } else if (node instanceof SdkManagerPackageNode) {
+                    platform.uninstallPackage(((SdkManagerPackageNode) node).getPackage().getLocal());
                 }
             }
 
         });
-        platform.addSdkPlatformChangeListener(WeakListeners.create(SdkPlatformChangeListener.class, (SdkPlatformChangeListener) this, platform));
+        platform.addSdkPlatformChangeListener(WeakListeners.create(SdkManagerPlatformChangeListener.class, (SdkManagerPlatformChangeListener) this, platform));
     }
 
     /**
@@ -277,8 +277,8 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
 
         @Override
         public javax.swing.Icon getIcon(Object o) {
-            if (o instanceof SdkPackageNode) {
-                UpdatablePackage aPackage = ((SdkPackageNode) o).getPackage();
+            if (o instanceof SdkManagerPackageNode) {
+                UpdatablePackage aPackage = ((SdkManagerPackageNode) o).getPackage();
                 if (aPackage.isUpdate()) {
                     return new ImageIcon(IconProvider.IMG_UPDATE);
                 } else if (aPackage.hasLocal()) {
@@ -288,8 +288,8 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
                 }
             } else if (o instanceof AndroidVersionNode) {
                 if (((AndroidVersionNode) o).isFlatModel()) {
-                    Vector<SdkPackageNode> packages = ((AndroidVersionNode) o).getPackages();
-                    for (SdkPackageNode pkg : packages) {
+                    Vector<SdkManagerPackageNode> packages = ((AndroidVersionNode) o).getPackages();
+                    for (SdkManagerPackageNode pkg : packages) {
                         if (pkg.getPackage().getRepresentative().getTypeDetails() instanceof DetailsTypes.PlatformDetailsType) {
                             if (pkg.getPackage().isUpdate()) {
                                 return new ImageIcon(IconProvider.IMG_UPDATE);
@@ -302,8 +302,8 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
                     }
                     return new ImageIcon(IconProvider.IMG_REMOTE);
                 } else {
-                    Vector<SdkPackageNode> packages = ((AndroidVersionNode) o).getPackages();
-                    for (SdkPackageNode pkg : packages) {
+                    Vector<SdkManagerPackageNode> packages = ((AndroidVersionNode) o).getPackages();
+                    for (SdkManagerPackageNode pkg : packages) {
                         if (pkg.getPackage().getRepresentative().getTypeDetails() instanceof DetailsTypes.PlatformDetailsType) {
                             if (pkg.getPackage().isUpdate()) {
                                 return new ImageIcon(IconProvider.IMG_FOLDER_UPDATE);
@@ -322,8 +322,8 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
 
         @Override
         public String getTooltipText(Object o) {
-            if (o instanceof SdkPackageNode) {
-                UpdatablePackage aPackage = ((SdkPackageNode) o).getPackage();
+            if (o instanceof SdkManagerPackageNode) {
+                UpdatablePackage aPackage = ((SdkManagerPackageNode) o).getPackage();
                 if (aPackage.isUpdate()) {
                     return "Update available:" + aPackage.getRemote().getVersion().getMajor();
                 } else if (aPackage.hasLocal()) {
@@ -343,7 +343,7 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
     }
 
     @Override
-    public void packageListChanged(SdkPlatformPackagesRootNode platformPackages) {
+    public void packageListChanged(SdkManagerPlatformPackagesRootNode platformPackages) {
         this.platformPackages = platformPackages;
         platformPackages.setFlatModel(!showDetails.isSelected());
         Runnable runnable = new Runnable() {
@@ -359,7 +359,7 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
         WindowManager.getDefault().invokeWhenUIReady(runnable);
     }
 
-    private OutlineModel createModel(SdkPlatformPackagesRootNode pkgs) {
+    private OutlineModel createModel(SdkManagerPlatformPackagesRootNode pkgs) {
         return DefaultOutlineModel.createOutlineModel(new DefaultTreeModel(pkgs), new RowModel() {
             @Override
             public int getColumnCount() {
@@ -376,8 +376,8 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
                             }
                             case 1: {
                                 int major = 0;
-                                Vector<SdkPackageNode> packages = ((AndroidVersionNode) node).getPackages();
-                                for (SdkPackageNode pkg : packages) {
+                                Vector<SdkManagerPackageNode> packages = ((AndroidVersionNode) node).getPackages();
+                                for (SdkManagerPackageNode pkg : packages) {
                                     if (pkg.getPackage().getRepresentative().getTypeDetails() instanceof DetailsTypes.PlatformDetailsType) {
                                         return pkg.getPackage().getRepresentative().getVersion().getMajor();
                                     }
@@ -390,13 +390,13 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
                         return null;
                     }
 
-                } else if (node instanceof SdkPackageNode) {
+                } else if (node instanceof SdkManagerPackageNode) {
                     switch (column) {
                         case 0: {
-                            return ((AndroidVersionNode) ((SdkPackageNode) node).getParent()).getVersion().getApiLevel();
+                            return ((AndroidVersionNode) ((SdkManagerPackageNode) node).getParent()).getVersion().getApiLevel();
                         }
                         case 1: {
-                            return ((SdkPackageNode) node).getPackage().getRepresentative().getVersion().getMajor();
+                            return ((SdkManagerPackageNode) node).getPackage().getRepresentative().getVersion().getMajor();
                         }
                     }
                 }

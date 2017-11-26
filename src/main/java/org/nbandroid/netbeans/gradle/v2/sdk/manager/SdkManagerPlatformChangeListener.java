@@ -16,22 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.sdk;
+package org.nbandroid.netbeans.gradle.v2.sdk.manager;
 
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformPackagesRootNode;
 import java.util.EventListener;
 
 /**
- * SdkToolsChangeListener to listen of SDK tools pakages list changes
+ * SdkManagerPlatformChangeListener to listen of SDK platform pakages list changes
  *
  * @author arsi
  */
-public interface SdkToolsChangeListener extends EventListener {
+public interface SdkManagerPlatformChangeListener extends EventListener {
 
     /**
      * Package list changed
      *
-     * @param sdkToolsRootNode SdkToolsRootNode
+     * @param platformPackages SdkManagerPlatformPackagesRootNode
      */
-    public void packageListChanged(SdkToolsRootNode sdkToolsRootNode);
+    public void packageListChanged(SdkManagerPlatformPackagesRootNode platformPackages);
 
 }

@@ -26,7 +26,7 @@ public class AndroidPlatformNode extends AbstractNode {
 
     private final UpdatablePackage aPackage;
 
-    AndroidPlatformNode(UpdatablePackage aPackage, AndroidSdkPlatformImpl platform, XMLDataObject holder) {
+    AndroidPlatformNode(UpdatablePackage aPackage, AndroidSdkImpl platform, XMLDataObject holder) {
         super(Children.LEAF, Lookups.fixed(new Object[]{platform, holder, aPackage}));
         this.aPackage = aPackage;
     }

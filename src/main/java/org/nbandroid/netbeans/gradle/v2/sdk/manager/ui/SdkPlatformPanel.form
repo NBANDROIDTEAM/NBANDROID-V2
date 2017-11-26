@@ -49,7 +49,7 @@
     <Component class="javax.swing.JCheckBox" name="showDetails">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/nbandroid/netbeans/gradle/v2/sdk/ui/Bundle.properties" key="SdkPlatformPanel.showDetails.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/nbandroid/netbeans/gradle/v2/sdk/manager/ui/Bundle.properties" key="SdkPlatformPanel.showDetails.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

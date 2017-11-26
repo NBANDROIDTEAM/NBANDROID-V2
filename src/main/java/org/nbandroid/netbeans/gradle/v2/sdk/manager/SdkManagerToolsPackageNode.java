@@ -16,26 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.sdk;
+package org.nbandroid.netbeans.gradle.v2.sdk.manager;
 
 import com.android.repository.Revision;
 import com.android.repository.api.RepoPackage;
 import com.android.repository.api.UpdatablePackage;
 import java.util.Enumeration;
 import javax.swing.tree.TreeNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.AbstractSdkToolNode;
 
 /**
  * SDK Tools single package node
  *
  * @author arsi
  */
-public class SdkToolsPackageNode extends AbstractSdkToolNode {
+public class SdkManagerToolsPackageNode extends AbstractSdkToolNode {
 
     private final TreeNode parent;
     private final UpdatablePackage pkg;
     private boolean flatModel = true;
 
-    public SdkToolsPackageNode(TreeNode parent, UpdatablePackage pkg) {
+    public SdkManagerToolsPackageNode(TreeNode parent, UpdatablePackage pkg) {
         this.parent = parent;
         this.pkg = pkg;
     }
@@ -91,7 +92,7 @@ public class SdkToolsPackageNode extends AbstractSdkToolNode {
 
     @Override
     public String toString() {
-        if (parent instanceof SdkToolsMultiPackageNode) {
+        if (parent instanceof SdkManagerToolsMultiPackageNode) {
             RepoPackage representative = pkg.getRepresentative();
             String name = representative.getDisplayName();
             String suffix = representative.getPath().substring(representative.getPath().lastIndexOf(RepoPackage.PATH_SEPARATOR) + 1);

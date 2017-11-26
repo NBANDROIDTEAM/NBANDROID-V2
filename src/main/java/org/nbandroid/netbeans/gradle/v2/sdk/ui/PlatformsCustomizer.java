@@ -44,7 +44,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatformImpl;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkImpl;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -78,7 +78,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
     private PlatformCategoriesChildren children;
     private ExplorerManager manager;
-    private final AndroidSdkPlatformImpl initialPlatform;
+    private final AndroidSdkImpl initialPlatform;
 
     /**
      * Shows platforms customizer
@@ -369,7 +369,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                     if (wiz.getValue() == WizardDescriptor.FINISH_OPTION) {
                         self.getChildren().refreshPlatforms();
                         Set result = wiz.getInstantiatedObjects();
-                        self.expandPlatforms(result.isEmpty() ? null : (AndroidSdkPlatformImpl) result.iterator().next());
+                        self.expandPlatforms(result.isEmpty() ? null : (AndroidSdkImpl) result.iterator().next());
                     }
                 } finally {
                     dlg.dispose();
@@ -413,7 +413,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         }
         JComponent target = messageArea;
         JComponent owner = messageArea;
-        AndroidSdkPlatformImpl platform = pNode.getLookup().lookup(AndroidSdkPlatformImpl.class);
+        AndroidSdkImpl platform = pNode.getLookup().lookup(AndroidSdkImpl.class);
         if (pNode != getExplorerManager().getRootContext()) {
             if (platform != null) {
                 this.removeButton.setEnabled(canRemove(platform, pNode.getLookup().lookup(DataObject.class)));
@@ -469,7 +469,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         container.add(component);
     }
 
-    private boolean canRemove(final AndroidSdkPlatformImpl platform, final DataObject dobj) {
+    private boolean canRemove(final AndroidSdkImpl platform, final DataObject dobj) {
         if (isDefaultPlatform(platform)) {
             return false;
         }
@@ -483,21 +483,21 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         return true;
     }
 
-    private static boolean isDefaultPlatform(AndroidSdkPlatformImpl platform) {
+    private static boolean isDefaultPlatform(AndroidSdkImpl platform) {
         return platform.isDefaultSdk();
     }
 
-    private void expandPlatforms(AndroidSdkPlatformImpl platform) {
+    private void expandPlatforms(AndroidSdkImpl platform) {
         ExplorerManager mgr = this.getExplorerManager();
         Node node = mgr.getRootContext();
         expandAllNodes(this.platforms, node, mgr, platform);
     }
 
-    private static void expandAllNodes(BeanTreeView btv, Node node, ExplorerManager mgr, AndroidSdkPlatformImpl platform) {
+    private static void expandAllNodes(BeanTreeView btv, Node node, ExplorerManager mgr, AndroidSdkImpl platform) {
         btv.expandNode(node);
         Children ch = node.getChildren();
         if (ch == Children.LEAF) {
-            if (platform != null && platform.equals(node.getLookup().lookup(AndroidSdkPlatformImpl.class))) {
+            if (platform != null && platform.equals(node.getLookup().lookup(AndroidSdkImpl.class))) {
                 try {
                     mgr.setSelectedNodes(new Node[]{node});
                 } catch (PropertyVetoException e) {
@@ -692,7 +692,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                     try {
                         final DataObject dobj = DataObject.find(child);
                         Node node = dobj.getNodeDelegate();
-                        AndroidSdkPlatformImpl platform = node.getLookup().lookup(AndroidSdkPlatformImpl.class);
+                        AndroidSdkImpl platform = node.getLookup().lookup(AndroidSdkImpl.class);
                         if (platform != null) {
                             final String platformType = "Android";
                             if (platformType != null) {

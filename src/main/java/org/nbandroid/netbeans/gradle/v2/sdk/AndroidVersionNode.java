@@ -18,6 +18,7 @@
  */
 package org.nbandroid.netbeans.gradle.v2.sdk;
 
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPackageNode;
 import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.SdkVersionInfo;
 import java.util.Enumeration;
@@ -34,7 +35,7 @@ public class AndroidVersionNode implements TreeNode {
 
     private final AndroidVersion version;
     private final String codeName;
-    private final Vector<SdkPackageNode> packages = new Vector<>();
+    private final Vector<SdkManagerPackageNode> packages = new Vector<>();
     private boolean flatModel = true;
 
     public AndroidVersionNode(AndroidVersion version) {
@@ -42,7 +43,7 @@ public class AndroidVersionNode implements TreeNode {
         codeName = SdkVersionInfo.getVersionWithCodename(version);
     }
 
-    protected void addPackage(SdkPackageNode pkg) {
+    protected void addPackage(SdkManagerPackageNode pkg) {
         packages.add(pkg);
     }
 
@@ -154,7 +155,7 @@ public class AndroidVersionNode implements TreeNode {
      *
      * @return Vector of packages
      */
-    public Vector<SdkPackageNode> getPackages() {
+    public Vector<SdkManagerPackageNode> getPackages() {
         return packages;
     }
 

@@ -33,31 +33,33 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.nbandroid.netbeans.gradle.core.sdk.NbOutputWindowProgressIndicator;
 import org.openide.filesystems.FileObject;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformChangeListener;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsChangeListener;
 
 /**
  * SDK Manager
  *
  * @author arsi
  */
-public abstract class AndroidSdkPlatform {
+public abstract class AndroidSdk {
 
     public static final ExecutorService pool = Executors.newCachedThreadPool();
     private PropertyChangeSupport supp;
 
     /**
-     * Add SdkPlatformChangeListener to listen of SDK platform pakages list
-     * changes On add is listener called with actual package list
+     * Add SdkManagerPlatformChangeListener to listen of SDK platform pakages list
+ changes On add is listener called with actual package list
      *
-     * @param l SdkPlatformChangeListener
+     * @param l SdkManagerPlatformChangeListener
      */
-    public abstract void addSdkPlatformChangeListener(SdkPlatformChangeListener l);
+    public abstract void addSdkPlatformChangeListener(SdkManagerPlatformChangeListener l);
 
     /**
-     * Remove SdkPlatformChangeListener
+     * Remove SdkManagerPlatformChangeListener
      *
-     * @param l SdkPlatformChangeListener
+     * @param l SdkManagerPlatformChangeListener
      */
-    public abstract void removeSdkPlatformChangeListener(SdkPlatformChangeListener l);
+    public abstract void removeSdkPlatformChangeListener(SdkManagerPlatformChangeListener l);
 
     public abstract AndroidSdkHandler getAndroidSdkHandler();
 
@@ -70,7 +72,7 @@ public abstract class AndroidSdkPlatform {
 
     /**
      * Update SDK platform pakages list After update is fired
-     * SdkPlatformChangeListener and SdkToolsChangeListener
+ SdkManagerPlatformChangeListener and SdkManagerToolsChangeListener
      */
     public abstract void updateSdkPlatformPackages();
 
@@ -80,14 +82,14 @@ public abstract class AndroidSdkPlatform {
      *
      * @param l addSdkToolsChangeListener
      */
-    public abstract void addSdkToolsChangeListener(SdkToolsChangeListener l);
+    public abstract void addSdkToolsChangeListener(SdkManagerToolsChangeListener l);
 
     /**
-     * Remove SdkToolsChangeListener
+     * Remove SdkManagerToolsChangeListener
      *
-     * @param l SdkToolsChangeListener
+     * @param l SdkManagerToolsChangeListener
      */
-    public abstract void removeSdkToolsChangeListener(SdkToolsChangeListener l);
+    public abstract void removeSdkToolsChangeListener(SdkManagerToolsChangeListener l);
 
     /**
      * Uninstall android package After unistall is called

@@ -24,7 +24,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicReference;
 import org.nbandroid.netbeans.gradle.v2.sdk.LocalPlatformChangeListener;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatformProvider;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
 import static org.netbeans.modules.java.platform.implspi.JavaPlatformProvider.PROP_INSTALLED_PLATFORMS;
@@ -40,7 +40,7 @@ public abstract class AndroidJavaPlatformProvider implements JavaPlatformProvide
     protected final AtomicReference<JavaPlatform> defaultPlatform = new AtomicReference<>(null);
 
     public AndroidJavaPlatformProvider() {
-        AndroidSdkPlatformProvider.getDefaultPlatform().addLocalPlatformChangeListener(this);
+        AndroidSdkProvider.getDefaultPlatform().addLocalPlatformChangeListener(this);
     }
 
     @Override

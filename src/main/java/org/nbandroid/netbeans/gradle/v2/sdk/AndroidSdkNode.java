@@ -24,12 +24,12 @@ import org.openide.util.lookup.Lookups;
  *
  * @author arsi
  */
-class AndroidSdkPlatformNode extends AbstractNode {
+class AndroidSdkNode extends AbstractNode {
 
-    private final AndroidSdkPlatformImpl platform;
+    private final AndroidSdkImpl platform;
     private final XMLDataObject holder;
 
-    public AndroidSdkPlatformNode(AndroidSdkPlatformImpl p, XMLDataObject holder) {
+    public AndroidSdkNode(AndroidSdkImpl p, XMLDataObject holder) {
         super(Children.create(new AndroidPlatformChildrenFactory(p, holder), true), Lookups.fixed(new Object[]{p, holder}));
         this.platform = p;
         this.holder = holder;
@@ -64,11 +64,11 @@ class AndroidSdkPlatformNode extends AbstractNode {
 
     private static class AndroidPlatformChildrenFactory extends ChildFactory<UpdatablePackage> implements LocalPlatformChangeListener {
 
-        private final AndroidSdkPlatformImpl platformImpl;
+        private final AndroidSdkImpl platformImpl;
         private final XMLDataObject holder;
         private final AtomicReference<Vector<UpdatablePackage>> platforms = new AtomicReference<>(new Vector<UpdatablePackage>());
 
-        public AndroidPlatformChildrenFactory(AndroidSdkPlatformImpl platformImpl, XMLDataObject holder) {
+        public AndroidPlatformChildrenFactory(AndroidSdkImpl platformImpl, XMLDataObject holder) {
             this.platformImpl = platformImpl;
             this.holder = holder;
             platformImpl.addLocalPlatformChangeListener(this);

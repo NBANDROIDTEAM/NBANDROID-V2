@@ -29,8 +29,8 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author arsi
  */
-@ServiceProvider(service = AndroidSdkPlatformProvider.class)
-public class AndroidSdkPlatformProvider implements FileChangeListener {
+@ServiceProvider(service = AndroidSdkProvider.class)
+public class AndroidSdkProvider implements FileChangeListener {
 
     public static final String PLATFORM_STORAGE = "Services/Platforms/org-nbandroid-netbeans-gradle-Platform"; //NOI18N
     public static final String PROP_INSTALLED_PLATFORMS = "PROP_INSTALLED_PLATFORMS";
@@ -38,22 +38,22 @@ public class AndroidSdkPlatformProvider implements FileChangeListener {
     private static FileObject lastFound;
     private FileChangeListener pathListener;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private static final Logger LOG = Logger.getLogger(AndroidSdkPlatformProvider.class.getName());
+    private static final Logger LOG = Logger.getLogger(AndroidSdkProvider.class.getName());
 
     /**
      * Get default SDK manager
      *
-     * @return AndroidSdkPlatform
+     * @return AndroidSdk
      */
-    public static final AndroidSdkPlatform getDefaultPlatform() {
-        AndroidSdkPlatform[] installedPlatforms = Lookup.getDefault().lookup(AndroidSdkPlatformProvider.class).getInstalledPlatformsInt();
+    public static final AndroidSdk getDefaultPlatform() {
+        AndroidSdk[] installedPlatforms = Lookup.getDefault().lookup(AndroidSdkProvider.class).getInstalledPlatformsInt();
         switch (installedPlatforms.length) {
             case 1:
                 return installedPlatforms[0];
             case 0:
                 return null;
             default: {
-                for (AndroidSdkPlatform installedPlatform : installedPlatforms) {
+                for (AndroidSdk installedPlatform : installedPlatforms) {
                     if (installedPlatform.isDefaultSdk()) {
                         return installedPlatform;
                     }
@@ -63,19 +63,19 @@ public class AndroidSdkPlatformProvider implements FileChangeListener {
         }
     }
 
-    public static final AndroidSdkPlatformProvider getDefault() {
-        return Lookup.getDefault().lookup(AndroidSdkPlatformProvider.class);
+    public static final AndroidSdkProvider getDefault() {
+        return Lookup.getDefault().lookup(AndroidSdkProvider.class);
     }
 
-    public static final AndroidSdkPlatform[] getInstalledPlatforms() {
-        return Lookup.getDefault().lookup(AndroidSdkPlatformProvider.class).getInstalledPlatformsInt();
+    public static final AndroidSdk[] getInstalledPlatforms() {
+        return Lookup.getDefault().lookup(AndroidSdkProvider.class).getInstalledPlatformsInt();
     }
 
-    public AndroidSdkPlatformProvider() {
+    public AndroidSdkProvider() {
     }
 
-    protected final AndroidSdkPlatform[] getInstalledPlatformsInt() {
-        final List<AndroidSdkPlatform> platforms = new ArrayList<>();
+    protected final AndroidSdk[] getInstalledPlatformsInt() {
+        final List<AndroidSdk> platforms = new ArrayList<>();
         final FileObject storage = getStorage();
         if (storage != null) {
             try {
@@ -88,8 +88,8 @@ public class AndroidSdkPlatformProvider implements FileChangeListener {
                                 "The file: {0} has no InstanceCookie", //NOI18N
                                 platformDefinition.getNameExt());
                     } else if (ic instanceof InstanceCookie.Of) {
-                        if (((InstanceCookie.Of) ic).instanceOf(AndroidSdkPlatform.class)) {
-                            platforms.add((AndroidSdkPlatform) ic.instanceCreate());
+                        if (((InstanceCookie.Of) ic).instanceOf(AndroidSdk.class)) {
+                            platforms.add((AndroidSdk) ic.instanceCreate());
                         } else {
                             LOG.log(
                                     Level.WARNING,
@@ -98,8 +98,8 @@ public class AndroidSdkPlatformProvider implements FileChangeListener {
                         }
                     } else {
                         Object instance = ic.instanceCreate();
-                        if (instance instanceof AndroidSdkPlatform) {
-                            platforms.add((AndroidSdkPlatform) instance);
+                        if (instance instanceof AndroidSdk) {
+                            platforms.add((AndroidSdk) instance);
                         } else {
                             LOG.log(
                                     Level.WARNING,
@@ -112,7 +112,7 @@ public class AndroidSdkPlatformProvider implements FileChangeListener {
                 Exceptions.printStackTrace(cnf);
             }
         }
-        return platforms.toArray(new AndroidSdkPlatform[platforms.size()]);
+        return platforms.toArray(new AndroidSdk[platforms.size()]);
     }
 
     private synchronized FileObject getStorage() {

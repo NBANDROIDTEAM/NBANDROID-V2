@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.sdk.ui;
+package org.nbandroid.netbeans.gradle.v2.sdk.manager.ui;
 
 import com.android.repository.api.LocalPackage;
 import com.android.repository.api.UpdatablePackage;
@@ -35,13 +35,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.DefaultTreeModel;
 import org.nbandroid.netbeans.gradle.core.ui.*;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatform;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkPlatformImpl;
-import org.nbandroid.netbeans.gradle.v2.sdk.SdkToolsChangeListener;
-import org.nbandroid.netbeans.gradle.v2.sdk.SdkToolsMultiPackageNode;
-import org.nbandroid.netbeans.gradle.v2.sdk.SdkToolsPackageNode;
-import org.nbandroid.netbeans.gradle.v2.sdk.SdkToolsRootNode;
-import org.nbandroid.netbeans.gradle.v2.sdk.SdkToolsSupportNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkImpl;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsMultiPackageNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsPackageNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsRootNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsSupportNode;
 import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.OutlineModel;
 import org.netbeans.swing.outline.RenderDataProvider;
@@ -49,18 +48,19 @@ import org.netbeans.swing.outline.RowModel;
 import org.openide.util.NbPreferences;
 import org.openide.util.WeakListeners;
 import org.openide.windows.WindowManager;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsChangeListener;
 
 /**
  * Visual Android SDK tools installer
  *
  * @author arsi
  */
-public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeListener {
+public class SdkToolsPanel extends javax.swing.JPanel implements SdkManagerToolsChangeListener {
 
-    private AndroidSdkPlatform manager;
+    private AndroidSdk manager;
     private boolean detailsState;
     private OutlineModel model;
-    private SdkToolsRootNode sdkToolsRootNode;
+    private SdkManagerToolsRootNode sdkToolsRootNode;
     private final JPopupMenu tableMenu = new JPopupMenu();
     private final JMenuItem installMenuItem = new JMenuItem("Install package");
     private final JMenuItem updateMenuItem = new JMenuItem("Update package");
@@ -70,7 +70,7 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
     /**
      * Creates new form SdkToolsPanel
      */
-    public SdkToolsPanel(AndroidSdkPlatformImpl platform) {
+    public SdkToolsPanel(AndroidSdkImpl platform) {
         initComponents();
         tableMenu.add(installMenuItem);
         tableMenu.add(updateMenuItem);
@@ -112,36 +112,36 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
                     Object node = packageTreeTableView.getModel().getValueAt(rowindex, 0);
                     if (rowindex != -1) {
                         if (sdkToolsRootNode.isFlatModel()) {
-                            if (node instanceof SdkToolsSupportNode) {
+                            if (node instanceof SdkManagerToolsSupportNode) {
                                 //Do nothing
-                            } else if (node instanceof SdkToolsMultiPackageNode) {
-                                if (((SdkToolsMultiPackageNode) node).getParent() instanceof SdkToolsSupportNode) {
+                            } else if (node instanceof SdkManagerToolsMultiPackageNode) {
+                                if (((SdkManagerToolsMultiPackageNode) node).getParent() instanceof SdkManagerToolsSupportNode) {
                                     //Do nothing
-                                } else if (!((SdkToolsMultiPackageNode) node).getNodes().isEmpty()) {
-                                    UpdatablePackage aPackage = ((SdkToolsMultiPackageNode) node).getNodes().get(0).getPackage();
+                                } else if (!((SdkManagerToolsMultiPackageNode) node).getNodes().isEmpty()) {
+                                    UpdatablePackage aPackage = ((SdkManagerToolsMultiPackageNode) node).getNodes().get(0).getPackage();
                                     updateMenuItem.setEnabled(aPackage.isUpdate());
                                     installMenuItem.setEnabled(!aPackage.hasLocal());
                                     unInstallMenuItem.setEnabled(aPackage.hasLocal());
                                     tableMenu.show(e.getComponent(), e.getX(), e.getY());
                                 }
 
-                            } else if (node instanceof SdkToolsPackageNode) {
-                                updateMenuItem.setEnabled(((SdkToolsPackageNode) node).getPackage().isUpdate());
-                                installMenuItem.setEnabled(!((SdkToolsPackageNode) node).getPackage().hasLocal());
-                                unInstallMenuItem.setEnabled(((SdkToolsPackageNode) node).getPackage().hasLocal());
+                            } else if (node instanceof SdkManagerToolsPackageNode) {
+                                updateMenuItem.setEnabled(((SdkManagerToolsPackageNode) node).getPackage().isUpdate());
+                                installMenuItem.setEnabled(!((SdkManagerToolsPackageNode) node).getPackage().hasLocal());
+                                unInstallMenuItem.setEnabled(((SdkManagerToolsPackageNode) node).getPackage().hasLocal());
                                 tableMenu.show(e.getComponent(), e.getX(), e.getY());
                             }
 
-                        } else if (node instanceof SdkToolsSupportNode) {
+                        } else if (node instanceof SdkManagerToolsSupportNode) {
                             //Do nothing
 
-                        } else if (node instanceof SdkToolsMultiPackageNode) {
+                        } else if (node instanceof SdkManagerToolsMultiPackageNode) {
                             //Do nothing
 
-                        } else if (node instanceof SdkToolsPackageNode) {
-                            updateMenuItem.setEnabled(((SdkToolsPackageNode) node).getPackage().isUpdate());
-                            installMenuItem.setEnabled(!((SdkToolsPackageNode) node).getPackage().hasLocal());
-                            unInstallMenuItem.setEnabled(((SdkToolsPackageNode) node).getPackage().hasLocal());
+                        } else if (node instanceof SdkManagerToolsPackageNode) {
+                            updateMenuItem.setEnabled(((SdkManagerToolsPackageNode) node).getPackage().isUpdate());
+                            installMenuItem.setEnabled(!((SdkManagerToolsPackageNode) node).getPackage().hasLocal());
+                            unInstallMenuItem.setEnabled(((SdkManagerToolsPackageNode) node).getPackage().hasLocal());
                             tableMenu.show(e.getComponent(), e.getX(), e.getY());
                         }
 
@@ -157,14 +157,14 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
                     return;
                 }
                 Object node = packageTreeTableView.getModel().getValueAt(rowindex, 0);
-                if (node instanceof SdkToolsMultiPackageNode) {
-                    if (!((SdkToolsMultiPackageNode) node).getNodes().isEmpty()) {
-                        UpdatablePackage aPackage = ((SdkToolsMultiPackageNode) node).getNodes().get(0).getPackage();
+                if (node instanceof SdkManagerToolsMultiPackageNode) {
+                    if (!((SdkManagerToolsMultiPackageNode) node).getNodes().isEmpty()) {
+                        UpdatablePackage aPackage = ((SdkManagerToolsMultiPackageNode) node).getNodes().get(0).getPackage();
                         platform.installPackage(aPackage);
                     }
 
-                } else if (node instanceof SdkToolsPackageNode) {
-                    UpdatablePackage aPackage = ((SdkToolsPackageNode) node).getPackage();
+                } else if (node instanceof SdkManagerToolsPackageNode) {
+                    UpdatablePackage aPackage = ((SdkManagerToolsPackageNode) node).getPackage();
                     platform.installPackage(aPackage);
                 }
             }
@@ -178,14 +178,14 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
                     return;
                 }
                 Object node = packageTreeTableView.getModel().getValueAt(rowindex, 0);
-                if (node instanceof SdkToolsMultiPackageNode) {
-                    if (!((SdkToolsMultiPackageNode) node).getNodes().isEmpty()) {
-                        UpdatablePackage aPackage = ((SdkToolsMultiPackageNode) node).getNodes().get(0).getPackage();
+                if (node instanceof SdkManagerToolsMultiPackageNode) {
+                    if (!((SdkManagerToolsMultiPackageNode) node).getNodes().isEmpty()) {
+                        UpdatablePackage aPackage = ((SdkManagerToolsMultiPackageNode) node).getNodes().get(0).getPackage();
                         platform.installPackage(aPackage);
                     }
 
-                } else if (node instanceof SdkToolsPackageNode) {
-                    UpdatablePackage aPackage = ((SdkToolsPackageNode) node).getPackage();
+                } else if (node instanceof SdkManagerToolsPackageNode) {
+                    UpdatablePackage aPackage = ((SdkManagerToolsPackageNode) node).getPackage();
                     platform.installPackage(aPackage);
                 }
             }
@@ -198,20 +198,20 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
                     return;
                 }
                 Object node = packageTreeTableView.getModel().getValueAt(rowindex, 0);
-                if (node instanceof SdkToolsMultiPackageNode) {
-                    if (!((SdkToolsMultiPackageNode) node).getNodes().isEmpty()) {
-                        LocalPackage local = ((SdkToolsMultiPackageNode) node).getNodes().get(0).getPackage().getLocal();
+                if (node instanceof SdkManagerToolsMultiPackageNode) {
+                    if (!((SdkManagerToolsMultiPackageNode) node).getNodes().isEmpty()) {
+                        LocalPackage local = ((SdkManagerToolsMultiPackageNode) node).getNodes().get(0).getPackage().getLocal();
                         platform.uninstallPackage(local);
                     }
 
-                } else if (node instanceof SdkToolsPackageNode) {
-                    LocalPackage local = ((SdkToolsPackageNode) node).getPackage().getLocal();
+                } else if (node instanceof SdkManagerToolsPackageNode) {
+                    LocalPackage local = ((SdkManagerToolsPackageNode) node).getPackage().getLocal();
                     platform.uninstallPackage(local);
                 }
             }
 
         });
-        platform.addSdkToolsChangeListener(WeakListeners.create(SdkToolsChangeListener.class, (SdkToolsChangeListener) this, platform));
+        platform.addSdkToolsChangeListener(WeakListeners.create(SdkManagerToolsChangeListener.class, (SdkManagerToolsChangeListener) this, platform));
     }
 
     /**
@@ -250,7 +250,7 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
     }// </editor-fold>//GEN-END:initComponents
 
     @Override
-    public void packageListChanged(SdkToolsRootNode sdkToolsRootNode) {
+    public void packageListChanged(SdkManagerToolsRootNode sdkToolsRootNode) {
         this.sdkToolsRootNode = sdkToolsRootNode;
         sdkToolsRootNode.setFlatModel(!showDetails.isSelected());
         Runnable runnable = new Runnable() {
@@ -298,13 +298,13 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
         @Override
         public Icon getIcon(Object o) {
             //first support node
-            if (o instanceof SdkToolsSupportNode) {
+            if (o instanceof SdkManagerToolsSupportNode) {
                 return new ImageIcon(IconProvider.IMG_FOLDER_SUPPORT);
-            } else if (o instanceof SdkToolsMultiPackageNode) {
-                if (!((SdkToolsMultiPackageNode) o).getNodes().isEmpty()) {
-                    if (((SdkToolsMultiPackageNode) o).getNodes().get(0).getPackage().isUpdate()) {
+            } else if (o instanceof SdkManagerToolsMultiPackageNode) {
+                if (!((SdkManagerToolsMultiPackageNode) o).getNodes().isEmpty()) {
+                    if (((SdkManagerToolsMultiPackageNode) o).getNodes().get(0).getPackage().isUpdate()) {
                         return new ImageIcon(IconProvider.IMG_FOLDER_UPDATE);
-                    } else if (((SdkToolsMultiPackageNode) o).getNodes().get(0).getPackage().hasLocal()) {
+                    } else if (((SdkManagerToolsMultiPackageNode) o).getNodes().get(0).getPackage().hasLocal()) {
                         return new ImageIcon(IconProvider.IMG_FOLDER_LOCAL);
                     } else {
                         return new ImageIcon(IconProvider.IMG_FOLDER_REMOTE);
@@ -314,10 +314,10 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
                     //TODO another icon?
                 }
 
-            } else if (o instanceof SdkToolsPackageNode) {
-                if (((SdkToolsPackageNode) o).getPackage().isUpdate()) {
+            } else if (o instanceof SdkManagerToolsPackageNode) {
+                if (((SdkManagerToolsPackageNode) o).getPackage().isUpdate()) {
                     return new ImageIcon(IconProvider.IMG_UPDATE);
-                } else if (((SdkToolsPackageNode) o).getPackage().hasLocal()) {
+                } else if (((SdkManagerToolsPackageNode) o).getPackage().hasLocal()) {
                     return new ImageIcon(IconProvider.IMG_LOCAL);
                 } else {
                     return new ImageIcon(IconProvider.IMG_REMOTE);
@@ -328,7 +328,7 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
 
     }
 
-    private OutlineModel createModel(SdkToolsRootNode rootNode) {
+    private OutlineModel createModel(SdkManagerToolsRootNode rootNode) {
         return DefaultOutlineModel.createOutlineModel(new DefaultTreeModel(rootNode), new RowModel() {
             @Override
             public int getColumnCount() {
@@ -337,14 +337,14 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkToolsChangeL
 
             @Override
             public Object getValueFor(Object node, int column) {
-                if (node instanceof SdkToolsSupportNode) {
+                if (node instanceof SdkManagerToolsSupportNode) {
                     return null;
-                } else if (node instanceof SdkToolsMultiPackageNode) {
-                    if (!((SdkToolsMultiPackageNode) node).getNodes().isEmpty()) {
-                        return ((SdkToolsMultiPackageNode) node).getNodes().get(0).getPackage().getRepresentative().getVersion().toString();
+                } else if (node instanceof SdkManagerToolsMultiPackageNode) {
+                    if (!((SdkManagerToolsMultiPackageNode) node).getNodes().isEmpty()) {
+                        return ((SdkManagerToolsMultiPackageNode) node).getNodes().get(0).getPackage().getRepresentative().getVersion().toString();
                     }
-                } else if (node instanceof SdkToolsPackageNode) {
-                    return ((SdkToolsPackageNode) node).getPackage().getRepresentative().getVersion().toString();
+                } else if (node instanceof SdkManagerToolsPackageNode) {
+                    return ((SdkManagerToolsPackageNode) node).getPackage().getRepresentative().getVersion().toString();
                 }
                 return "Err";
             }

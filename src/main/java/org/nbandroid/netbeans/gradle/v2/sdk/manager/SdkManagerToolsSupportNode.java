@@ -16,37 +16,42 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.sdk;
+package org.nbandroid.netbeans.gradle.v2.sdk.manager;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Vector;
 import javax.swing.tree.TreeNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.AbstractSdkToolNode;
 
 /**
- * Root Node of Sdk Tools packages
+ * SDK Tools Root node of Support packages
  *
  * @author arsi
  */
-public class SdkToolsRootNode implements TreeNode {
+public class SdkManagerToolsSupportNode extends AbstractSdkToolNode {
 
-    private final Vector<AbstractSdkToolNode> nodes = new Vector<>();
-    private boolean flatModel = true;
+    private final TreeNode paren;
+    private final List<AbstractSdkToolNode> nodes = new ArrayList<>();
 
-    public SdkToolsRootNode(List<AbstractSdkToolNode> node) {
-        this.nodes.addAll(node);
-    }
-
-    public SdkToolsRootNode() {
+    public SdkManagerToolsSupportNode(TreeNode parent) {
+        this.paren = parent;
     }
 
     public void addNode(AbstractSdkToolNode node) {
         nodes.add(node);
+        node.setFlatModel(false);
+    }
+
+    @Override
+    public String toString() {
+        return "Support repository"; //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public TreeNode getChildAt(int childIndex) {
-        return nodes.elementAt(childIndex);
+        return nodes.get(childIndex);
     }
 
     @Override
@@ -56,7 +61,7 @@ public class SdkToolsRootNode implements TreeNode {
 
     @Override
     public TreeNode getParent() {
-        return null;
+        return paren;
     }
 
     @Override
@@ -76,28 +81,20 @@ public class SdkToolsRootNode implements TreeNode {
 
     @Override
     public Enumeration children() {
-        return nodes.elements();
+        return Collections.enumeration(nodes);
     }
 
-    /**
-     * Get view type
-     *
-     * @return true-flat, false-full
-     */
+    public List<AbstractSdkToolNode> getNodes() {
+        return nodes;
+    }
+
+    @Override
     public boolean isFlatModel() {
-        return flatModel;
+        return false;
     }
 
-    /**
-     * Set view type
-     *
-     * @param flatModel true-flat, false-full
-     */
+    @Override
     public void setFlatModel(boolean flatModel) {
-        this.flatModel = flatModel;
-        for (AbstractSdkToolNode node : nodes) {
-            node.setFlatModel(flatModel);
-        }
     }
 
 }
