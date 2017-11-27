@@ -18,20 +18,18 @@
  */
 package org.nbandroid.netbeans.gradle.v2.sdk.java.platform;
 
-import com.android.repository.api.UpdatablePackage;
+import com.android.sdklib.SdkVersionInfo;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 
 /**
@@ -41,84 +39,17 @@ import org.openide.modules.SpecificationVersion;
  */
 public class AndroidJavaPlatform extends JavaPlatform {
 
-    private final UpdatablePackage pkg;
-    private final FileObject binaryRoot;
-    private final FileObject sourceDir;
-    public static final String SOURCES_DIR = "sources";
-    public static final String PLATFORMS_DIR = "platforms";
-    private static final String JAR_FILE = "android.jar";
-    private static final String JAR = "jar";
+    private final AndroidPlatformInfo pkg;
     private final Specification specification;
-    private static final String DATA_FOLDER = "data";
-    private static final String OPTIONAL_FOLDER = "optional";
-    private final List<URL> standardPackages = new ArrayList<>();
 
-    AndroidJavaPlatform(UpdatablePackage pkg, String javaVersion) {
+    AndroidJavaPlatform(AndroidPlatformInfo pkg, String javaVersion) {
         this.pkg = pkg;
         this.specification = new Specification("j2se", new SpecificationVersion(javaVersion));
-        binaryRoot = FileUtil.toFileObject(pkg.getLocal().getLocation());
-        sourceDir = sourceForJar(binaryRoot);
-        FileObject dataDir = binaryRoot.getFileObject(DATA_FOLDER);
-        if (dataDir != null) {
-            Enumeration<? extends FileObject> children = dataDir.getChildren(true);
-            while (children.hasMoreElements()) {
-                FileObject nextElement = children.nextElement();
-                if (JAR.equals(nextElement.getExt())) {
-                    standardPackages.add(FileUtil.urlForArchiveOrDir(FileUtil.toFile(nextElement)));
-                }
-            }
-        }
-
-        FileObject optionalDir = binaryRoot.getFileObject(OPTIONAL_FOLDER);
-        if (optionalDir != null) {
-            Enumeration<? extends FileObject> children = optionalDir.getChildren(true);
-            while (children.hasMoreElements()) {
-                FileObject nextElement = children.nextElement();
-                if (JAR.equals(nextElement.getExt())) {
-                    standardPackages.add(FileUtil.urlForArchiveOrDir(FileUtil.toFile(nextElement)));
-                }
-            }
-        }
-
-        if (binaryRoot != null) {
-            Enumeration<? extends FileObject> children = binaryRoot.getChildren(false);
-            while (children.hasMoreElements()) {
-                FileObject nextElement = children.nextElement();
-                if (JAR.equals(nextElement.getExt())) {
-                    standardPackages.add(FileUtil.urlForArchiveOrDir(FileUtil.toFile(nextElement)));
-                }
-            }
-        }
-    }
-
-    public static FileObject sourceForJar(FileObject binaryRoot) {
-        FileObject dir = binaryRoot;
-        if (dir == null) {
-            return null;
-        }
-        String platformName = dir.getName();
-        dir = dir.getParent();
-        if (dir == null || !PLATFORMS_DIR.equals(dir.getName())) {
-            return null;
-        }
-        dir = dir.getParent();
-        if (dir == null) {
-            return null;
-        }
-        dir = dir.getFileObject(SOURCES_DIR);
-        if (dir == null) {
-            return null;
-        }
-        dir = dir.getFileObject(platformName);
-        if (dir == null) {
-            return null;
-        }
-        return dir;
     }
 
     @Override
     public String getDisplayName() {
-        return pkg.getLocal().getDisplayName();
+        return SdkVersionInfo.getVersionWithCodename(pkg.getAndroidVersion());
     }
 
     @Override
@@ -128,7 +59,7 @@ public class AndroidJavaPlatform extends JavaPlatform {
 
     @Override
     public ClassPath getBootstrapLibraries() {
-        return ClassPathSupport.createClassPath(standardPackages.toArray(new URL[standardPackages.size()]));
+        return ClassPathSupport.createClassPath(pkg.getBootURLs());
     }
 
     @Override
@@ -158,16 +89,12 @@ public class AndroidJavaPlatform extends JavaPlatform {
 
     @Override
     public ClassPath getSourceFolders() {
-        if (sourceDir != null) {
-            return ClassPathSupport.createClassPath(FileUtil.urlForArchiveOrDir(FileUtil.toFile(sourceDir)));
-        } else {
-            return ClassPath.EMPTY;
-        }
+        return ClassPathSupport.createClassPath(pkg.getSrcURLs());
     }
 
     @Override
     public List<URL> getJavadocFolders() {
-        return Collections.EMPTY_LIST;
+        return pkg.getJavadocURLs();
     }
 
 }

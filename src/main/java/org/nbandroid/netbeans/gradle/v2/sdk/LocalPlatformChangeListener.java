@@ -18,8 +18,7 @@
  */
 package org.nbandroid.netbeans.gradle.v2.sdk;
 
-import com.android.repository.api.UpdatablePackage;
-import java.util.Vector;
+import java.util.List;
 
 /**
  *
@@ -27,5 +26,5 @@ import java.util.Vector;
  */
 public interface LocalPlatformChangeListener {
 
-    public void platformListChanged(Vector<UpdatablePackage> platforms);
+    public void platformListChanged(List<AndroidPlatformInfo> platforms);
 }

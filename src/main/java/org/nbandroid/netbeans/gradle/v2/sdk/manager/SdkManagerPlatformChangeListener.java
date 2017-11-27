@@ -18,11 +18,11 @@
  */
 package org.nbandroid.netbeans.gradle.v2.sdk.manager;
 
-import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformPackagesRootNode;
 import java.util.EventListener;
 
 /**
- * SdkManagerPlatformChangeListener to listen of SDK platform pakages list changes
+ * SdkManagerPlatformChangeListener to listen of SDK platform pakages list
+ * changes
  *
  * @author arsi
  */

@@ -54,8 +54,9 @@ Sysproperties hold a list of system properties as reported by the SDK
 <!---  Represents a root of platform -->
 <!ELEMENT platform (boot,src?,doc?)>
 <!ATTLIST platform
-    name CDATA #IMPLIED
-    path CDATA #IMPLIED
+    name CDATA #REQUIRED
+    path CDATA #REQUIRED
+    apilevel CDATA #REQUIRED
   >
 
 <!--- Boot classpath list -->

@@ -37,6 +37,7 @@ import javax.swing.tree.DefaultTreeModel;
 import org.nbandroid.netbeans.gradle.core.ui.*;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkImpl;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsChangeListener;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsMultiPackageNode;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsPackageNode;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsRootNode;
@@ -48,7 +49,6 @@ import org.netbeans.swing.outline.RowModel;
 import org.openide.util.NbPreferences;
 import org.openide.util.WeakListeners;
 import org.openide.windows.WindowManager;
-import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsChangeListener;
 
 /**
  * Visual Android SDK tools installer
@@ -266,7 +266,6 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkManagerTools
         };
         WindowManager.getDefault().invokeWhenUIReady(runnable);
     }
-
 
     private class PackageRenderer implements RenderDataProvider {
 

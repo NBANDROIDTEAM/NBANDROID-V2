@@ -18,13 +18,14 @@
  */
 package org.nbandroid.netbeans.gradle.v2.sdk.java.platform;
 
-import com.android.repository.api.UpdatablePackage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicReference;
-import org.nbandroid.netbeans.gradle.v2.sdk.LocalPlatformChangeListener;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
+import org.nbandroid.netbeans.gradle.v2.sdk.LocalPlatformChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
 import static org.netbeans.modules.java.platform.implspi.JavaPlatformProvider.PROP_INSTALLED_PLATFORMS;
@@ -64,7 +65,7 @@ public abstract class AndroidJavaPlatformProvider implements JavaPlatformProvide
     }
 
     @Override
-    public void platformListChanged(Vector<UpdatablePackage> pkgs) {
+    public void platformListChanged(List<AndroidPlatformInfo> pkgs) {
         JavaPlatform[] tmp = new JavaPlatform[pkgs.size()];
         for (int i = 0; i < pkgs.size(); i++) {
             createPlatform(tmp, i, pkgs);
@@ -78,6 +79,6 @@ public abstract class AndroidJavaPlatformProvider implements JavaPlatformProvide
         }
     }
 
-    protected abstract void createPlatform(JavaPlatform[] tmp, int i, Vector<UpdatablePackage> pkgs);
+    protected abstract void createPlatform(JavaPlatform[] tmp, int i, List<AndroidPlatformInfo> pkgs);
 
 }

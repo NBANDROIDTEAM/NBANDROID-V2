@@ -32,9 +32,9 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.nbandroid.netbeans.gradle.core.sdk.NbOutputWindowProgressIndicator;
-import org.openide.filesystems.FileObject;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformChangeListener;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsChangeListener;
+import org.openide.filesystems.FileObject;
 
 /**
  * SDK Manager
@@ -47,8 +47,8 @@ public abstract class AndroidSdk {
     private PropertyChangeSupport supp;
 
     /**
-     * Add SdkManagerPlatformChangeListener to listen of SDK platform pakages list
- changes On add is listener called with actual package list
+     * Add SdkManagerPlatformChangeListener to listen of SDK platform pakages
+     * list changes On add is listener called with actual package list
      *
      * @param l SdkManagerPlatformChangeListener
      */
@@ -72,7 +72,7 @@ public abstract class AndroidSdk {
 
     /**
      * Update SDK platform pakages list After update is fired
- SdkManagerPlatformChangeListener and SdkManagerToolsChangeListener
+     * SdkManagerPlatformChangeListener and SdkManagerToolsChangeListener
      */
     public abstract void updateSdkPlatformPackages();
 

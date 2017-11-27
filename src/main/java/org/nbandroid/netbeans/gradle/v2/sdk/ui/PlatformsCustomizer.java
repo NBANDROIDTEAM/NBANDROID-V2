@@ -67,6 +67,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  * @author tom
+ * @author arsi - android mod
  */
 public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyChangeListener, VetoableChangeListener, ExplorerManager.Provider {
 

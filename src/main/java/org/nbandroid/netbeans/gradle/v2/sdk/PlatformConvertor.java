@@ -1,13 +1,29 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.nbandroid.netbeans.gradle.v2.sdk;
 
+import com.android.sdklib.AndroidVersion;
 import java.beans.*;
 import java.io.*;
 import java.lang.ref.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,6 +47,7 @@ import org.xml.sax.*;
  * Reads and writes the standard platform format implemented by PlatformImpl2.
  *
  * @author Svata Dedic
+ * @author arsi - android mod
  */
 public class PlatformConvertor implements Environment.Provider, InstanceCookie.Of, PropertyChangeListener, Runnable, InstanceContent.Convertor<Class<Node>, Node> {
 
@@ -153,7 +170,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     AndroidSdkImpl createPlatform(H handler) {
         AndroidSdkImpl p;
 
-        p = new AndroidSdkImpl(handler.name, handler.installFolder, handler.properties, handler.sysProperties);
+        p = new AndroidSdkImpl(handler.name, handler.installFolder, handler.properties, handler.sysProperties, handler.platforms);
         defaultPlatform = false;
         p.addPropertyChangeListener(this);
         return p;
@@ -362,6 +379,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         void write(final OutputStream out) throws IOException {
             final Map<String, String> props = instance.getProperties();
             final Map<String, String> sysProps = instance.getSystemProperties();
+            List<AndroidPlatformInfo> platforms = instance.getPlatforms();
             final Document doc = XMLUtil.createDocument(ELEMENT_SDK_ROOT, null, PLATFORM_DTD_ID, "http://www.netbeans.org/dtds/java-platformdefinition-1_0.dtd"); //NOI18N
             final Element platformElement = doc.getDocumentElement();
             platformElement.setAttribute(ATTR_PLATFORM_NAME, instance.getDisplayName());
@@ -380,7 +398,50 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 writeProperties(sysProps, sysPropsElement, doc);
                 platformElement.appendChild(sysPropsElement);
             }
+            final Element platformsElement = doc.createElement(ELEMENT_PLATFORMS);
+            writePlatforms(platforms, platformsElement, doc);
+            platformElement.appendChild(platformsElement);
             XMLUtil.write(doc, out, "UTF8");                                                    //NOI18N
+        }
+
+        private void writePlatforms(List<AndroidPlatformInfo> platforms, Element platformsElement, Document doc) {
+            for (AndroidPlatformInfo platform : platforms) {
+                final Element platformElement = doc.createElement(ELEMENT_PLATFORM);
+                try {
+                    platformElement.setAttribute(ATTR_PROPERTY_NAME, XMLUtil.toAttributeValue(platform.getPlatformName()));
+                    platformElement.setAttribute(ATTR_PLATFORM_PATH, XMLUtil.toAttributeValue(platform.getPlatformFolder().getPath()));
+                    platformElement.setAttribute(ATTR_PLATFORM_APILEVEL, XMLUtil.toAttributeValue("" + platform.getAndroidVersion().getApiLevel()));
+                } catch (CharConversionException ex) {
+                    LOG.log(
+                            Level.WARNING,
+                            "Cannot store attr: {0} value: {1}", //NOI18N
+                            new Object[]{
+                                platform.getPlatformName(),
+                                platform.getPlatformFolder().getPath()
+                            });
+                }
+
+                writeBootSrcDoc(platform.getBootPaths(), ELEMENT_BOOT, platformElement, doc);
+                writeBootSrcDoc(platform.getSrcPaths(), ELEMENT_SRC, platformElement, doc);
+                writeBootSrcDoc(platform.getJavadocPaths(), ELEMENT_DOC, platformElement, doc);
+                platformsElement.appendChild(platformElement);
+            }
+        }
+
+        private void writeBootSrcDoc(List<AndroidPlatformInfo.PathRecord> paths, String elementType, Element platformElement, Document doc) {
+            final Element element = doc.createElement(elementType);
+            for (AndroidPlatformInfo.PathRecord path : paths) {
+                final Element fileElement = doc.createElement(ELEMENT_FILE);
+                try {
+                    fileElement.setAttribute(ATTR_FILE_USER, XMLUtil.toAttributeValue("" + path.isUserRecord()));
+                } catch (CharConversionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                fileElement.appendChild(doc.createTextNode(path.getUrl().toExternalForm()));
+                element.appendChild(fileElement);
+            }
+            platformElement.appendChild(element);
+
         }
 
         void writeProperties(final Map<String, String> props, final Element element, final Document doc) throws IOException {
@@ -419,6 +480,15 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     static final String ATTR_PLATFORM_DEFAULT = "default"; // NOI18N
     static final String ATTR_PROPERTY_NAME = "name"; // NOI18N
     static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
+    static final String ELEMENT_PLATFORMS = "platforms";
+    static final String ELEMENT_PLATFORM = "platform";
+    static final String ATTR_PLATFORM_PATH = "path"; // NOI18N
+    static final String ELEMENT_BOOT = "boot";
+    static final String ELEMENT_SRC = "src";
+    static final String ELEMENT_DOC = "doc";
+    static final String ELEMENT_FILE = "file";
+    static final String ATTR_FILE_USER = "user"; // NOI18N
+    static final String ATTR_PLATFORM_APILEVEL = "apilevel"; // NOI18N
 
     private static final class H extends org.xml.sax.helpers.DefaultHandler implements EntityResolver {
 
@@ -427,10 +497,13 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         String installFolder;
         String name;
         boolean isDefault;
+        final List<AndroidPlatformInfo> platforms = new ArrayList<>();
+        AndroidPlatformInfo platformInfo;
 
         private Map<String, String> propertyMap;
         private StringBuffer buffer;
         private List<String> path;
+        List<AndroidPlatformInfo.PathRecord> paths;
 
         @Override
         public void startDocument() throws org.xml.sax.SAXException {
@@ -455,6 +528,32 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                         }
                         propertyMap = properties;
                         break;
+                    case ELEMENT_PLATFORMS:
+                        platforms.clear();
+                        break;
+                    case ELEMENT_PLATFORM: {
+                        String nm = attrs.getValue(ATTR_PROPERTY_NAME);
+                        if (nm == null || "".equals(nm)) {
+                            throw new SAXException("missing name");
+                        }
+                        String val = attrs.getValue(ATTR_PLATFORM_PATH);
+                        String apiLevel = attrs.getValue(ATTR_PLATFORM_APILEVEL);
+                        AndroidVersion androidVersion;
+                        try {
+                            androidVersion = new AndroidVersion("" + apiLevel);
+                        } catch (AndroidVersion.AndroidVersionException ex) {
+                            throw new SAXException("bad Android API level");
+                        }
+                        if (platformInfo == null) {
+                            platformInfo = new AndroidPlatformInfo(new File(val), nm, androidVersion);
+                        }
+                    }
+                    break;
+                    case ELEMENT_BOOT:
+                    case ELEMENT_SRC:
+                    case ELEMENT_DOC:
+                        paths = new ArrayList<>();
+                        break;
                     case ELEMENT_SYSPROPERTIES:
                         if (sysProperties == null) {
                             sysProperties = new HashMap<>(17);
@@ -477,9 +576,14 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                         this.installFolder = "";
                         this.path = new ArrayList<>();
                         break;
+                    case ELEMENT_FILE: {
+                        String val = attrs.getValue(ATTR_FILE_USER);
+                        isDefault = Boolean.valueOf(val);
+                    }
                     case ELEMENT_RESOURCE:
                         this.buffer = new StringBuffer();
                         break;
+
                 }
             }
         }
@@ -492,10 +596,42 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                     case ELEMENT_SYSPROPERTIES:
                         propertyMap = null;
                         break;
+                    case ELEMENT_PLATFORMS:
+                        break;
+                    case ELEMENT_PLATFORM:
+                        if (platforms != null) {
+                            platforms.add(platformInfo);
+                        }
+                        platformInfo = null;
+                        break;
                     case ELEMENT_RESOURCE:
                         this.path.add(this.buffer.toString());
                         this.installFolder = this.path.get(0);
                         this.buffer = null;
+                        break;
+                    case ELEMENT_FILE: {
+                        try {
+                            paths.add(new AndroidPlatformInfo.PathRecord(isDefault, new URL(buffer.toString())));
+                        } catch (MalformedURLException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                    this.buffer = null;
+                    break;
+                    case ELEMENT_BOOT:
+                        if (platformInfo != null) {
+                            platformInfo.addBootPaths(paths);
+                        }
+                        break;
+                    case ELEMENT_SRC:
+                        if (platformInfo != null) {
+                            platformInfo.addSrcPaths(paths);
+                        }
+                        break;
+                    case ELEMENT_DOC:
+                        if (platformInfo != null) {
+                            platformInfo.addJavaDocPaths(paths);
+                        }
                         break;
                 }
             }

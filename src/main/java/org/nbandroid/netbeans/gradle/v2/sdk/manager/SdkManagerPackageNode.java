@@ -87,5 +87,4 @@ public class SdkManagerPackageNode implements TreeNode {
         return pkg.getRepresentative().getDisplayName();
     }
 
-
 }

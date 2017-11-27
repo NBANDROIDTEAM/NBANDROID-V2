@@ -1,15 +1,26 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.nbandroid.netbeans.gradle.v2.sdk;
 
-import com.android.repository.api.UpdatablePackage;
 import java.awt.Image;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.atomic.AtomicReference;
 import org.nbandroid.netbeans.gradle.core.ui.IconProvider;
 import org.nbandroid.netbeans.gradle.v2.sdk.ui.AndroidSdkCustomizer;
@@ -61,12 +72,11 @@ class AndroidSdkNode extends AbstractNode {
         return new AndroidSdkCustomizer(platform, holder);
     }
 
-
-    private static class AndroidPlatformChildrenFactory extends ChildFactory<UpdatablePackage> implements LocalPlatformChangeListener {
+    private static class AndroidPlatformChildrenFactory extends ChildFactory<AndroidPlatformInfo> implements LocalPlatformChangeListener {
 
         private final AndroidSdkImpl platformImpl;
         private final XMLDataObject holder;
-        private final AtomicReference<Vector<UpdatablePackage>> platforms = new AtomicReference<>(new Vector<UpdatablePackage>());
+        private final AtomicReference<List<AndroidPlatformInfo>> platforms = new AtomicReference<>(new ArrayList<AndroidPlatformInfo>());
 
         public AndroidPlatformChildrenFactory(AndroidSdkImpl platformImpl, XMLDataObject holder) {
             this.platformImpl = platformImpl;
@@ -75,25 +85,23 @@ class AndroidSdkNode extends AbstractNode {
         }
 
         @Override
-        protected boolean createKeys(List<UpdatablePackage> toPopulate) {
-            Vector<UpdatablePackage> tmp = platforms.get();
+        protected boolean createKeys(List<AndroidPlatformInfo> toPopulate) {
+            List<AndroidPlatformInfo> tmp = platforms.get();
             toPopulate.addAll(tmp);
             return true;
         }
 
         @Override
-        protected Node createNodeForKey(UpdatablePackage key) {
+        protected Node createNodeForKey(AndroidPlatformInfo key) {
             return new AndroidPlatformNode(key, platformImpl, holder);
         }
 
         @Override
-        public void platformListChanged(Vector<UpdatablePackage> platforms) {
+        public void platformListChanged(List<AndroidPlatformInfo> platforms) {
             this.platforms.set(platforms);
             refresh(true);
         }
 
     }
-
-
 
 }

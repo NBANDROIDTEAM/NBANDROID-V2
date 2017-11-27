@@ -26,5 +26,4 @@ public class Installer extends ModuleInstall {
         }
     }
 
-
 }

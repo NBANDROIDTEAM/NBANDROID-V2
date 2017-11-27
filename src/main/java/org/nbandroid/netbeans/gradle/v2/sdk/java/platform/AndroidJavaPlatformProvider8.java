@@ -18,8 +18,8 @@
  */
 package org.nbandroid.netbeans.gradle.v2.sdk.java.platform;
 
-import com.android.repository.api.UpdatablePackage;
-import java.util.Vector;
+import java.util.List;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.netbeans.api.java.platform.JavaPlatform;
 
 /**
@@ -34,7 +34,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 public class AndroidJavaPlatformProvider8 extends AndroidJavaPlatformProvider {
 
     @Override
-    protected void createPlatform(JavaPlatform[] tmp, int i, Vector<UpdatablePackage> pkgs) {
+    protected void createPlatform(JavaPlatform[] tmp, int i, List<AndroidPlatformInfo> pkgs) {
         tmp[i] = new AndroidJavaPlatform(pkgs.get(i), "1.8");
     }
 }

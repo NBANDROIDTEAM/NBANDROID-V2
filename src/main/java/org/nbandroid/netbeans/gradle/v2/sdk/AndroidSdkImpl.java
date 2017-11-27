@@ -1,16 +1,23 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.nbandroid.netbeans.gradle.v2.sdk;
 
-import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsMultiPackageNode;
-import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsPackageNode;
-import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformPackagesRootNode;
-import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPackageNode;
-import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsSupportNode;
-import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsRootNode;
 import com.android.SdkConstants;
 import com.android.repository.api.Installer;
 import com.android.repository.api.LocalPackage;
@@ -28,6 +35,7 @@ import com.android.sdklib.repository.installer.MavenInstallListener;
 import com.android.sdklib.repository.meta.DetailsTypes;
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,17 +45,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.gradle.impldep.com.google.common.collect.ImmutableList;
 import org.nbandroid.netbeans.gradle.core.sdk.NbDownloader;
 import org.nbandroid.netbeans.gradle.core.sdk.NbOutputWindowProgressIndicator;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPackageNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformChangeListener;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformPackagesRootNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsChangeListener;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsMultiPackageNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsPackageNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsRootNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsSupportNode;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.windows.WindowManager;
-import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformChangeListener;
-import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsChangeListener;
 
 /**
  *
@@ -77,12 +92,16 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
                             SdkConstants.FD_ANDROID_EXTRAS,
                             SdkConstants.FD_GAPID));
     private SdkManagerToolsRootNode toolRoot;
+    private final Map<String, AndroidPlatformInfo> platformsList = new ConcurrentHashMap<>();
 
-    public AndroidSdkImpl(String displayName, String sdkPath, Map<String, String> properties, Map<String, String> sysproperties) {
+    public AndroidSdkImpl(String displayName, String sdkPath, Map<String, String> properties, Map<String, String> sysproperties, List<AndroidPlatformInfo> platforms) {
         this.displayName = displayName;
         this.sdkPath = sdkPath;
         this.properties = properties;
         this.sysproperties = sysproperties;
+        for (AndroidPlatformInfo platform : platforms) {
+            platformsList.put(platform.getPlatformFolder().getAbsolutePath(), platform);
+        }
         final Runnable runnable = new Runnable() {
 
             @Override
@@ -107,7 +126,11 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
     }
 
     public AndroidSdkImpl(String displayName, String sdkPath) {
-        this(displayName, sdkPath, Collections.EMPTY_MAP, Collections.EMPTY_MAP);
+        this(displayName, sdkPath, Collections.EMPTY_MAP, Collections.EMPTY_MAP, Collections.EMPTY_LIST);
+    }
+
+    public List<AndroidPlatformInfo> getPlatforms() {
+        return new ArrayList<>(platformsList.values());
     }
 
     @Override
@@ -121,7 +144,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
             localListeners.add(l);
         }
         if (!platforms.isEmpty()) {
-            l.platformListChanged(platforms);
+            l.platformListChanged(new ArrayList<>(platformsList.values()));
         }
     }
 
@@ -167,9 +190,9 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
     }
 
     /**
-     * Add SdkManagerPlatformChangeListener to listen of SDK platform pakages list
- changes. On add is listener called with actual package list. Listener is
-     * called from actual thread
+     * Add SdkManagerPlatformChangeListener to listen of SDK platform pakages
+     * list changes. On add is listener called with actual package list.
+     * Listener is called from actual thread
      *
      * @param l SdkManagerPlatformChangeListener
      */
@@ -244,10 +267,9 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
         return sysproperties;
     }
 
-
     /**
      * Update SDK platform pakages list After update is called
- SdkManagerPlatformChangeListener
+     * SdkManagerPlatformChangeListener
      */
     @Override
     public void updateSdkPlatformPackages() {
@@ -292,9 +314,26 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
             }
         }
         platforms = platformsTmp;
+        for (UpdatablePackage up : platformsTmp) {
+            AndroidPlatformInfo info = platformsList.get(up.getLocal().getLocation().getAbsolutePath());
+            if (info != null) {
+                try {
+                    info.update();
+                } catch (FileNotFoundException ex) {
+                    platformsList.remove(up.getLocal().getLocation().getAbsolutePath());
+                }
+            } else {
+                try {
+                    info = new AndroidPlatformInfo(up);
+                    platformsList.put(up.getLocal().getLocation().getAbsolutePath(), info);
+                } catch (FileNotFoundException ex) {
+                }
+            }
+        }
+        firePropertyChange("test", true, false);
         for (LocalPlatformChangeListener localListener : localListeners) {
             try {
-                localListener.platformListChanged(platforms);
+                localListener.platformListChanged(new ArrayList<>(platformsList.values()));
             } catch (Exception e) {
                 Exceptions.printStackTrace(e);
             }
