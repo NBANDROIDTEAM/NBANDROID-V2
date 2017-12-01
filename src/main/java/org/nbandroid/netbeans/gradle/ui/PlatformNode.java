@@ -24,12 +24,12 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
+import org.nbandroid.netbeans.gradle.api.AndroidClassPath;
+import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatform;
 import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatform;
-import org.nbandroid.netbeans.gradle.api.AndroidClassPath;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
@@ -77,7 +77,7 @@ public final class PlatformNode extends AbstractNode {
                     : NbBundle.getMessage(PlatformNode.class, "FMT_PlatformDisplayName",
                             platform.getAndroidTarget().getName(), platform.getAndroidTarget().getVersionName());
         } else {
-            name = NbBundle.getMessage(PlatformNode.class, "TXT_BrokenPlatform");
+            name = "Broken platform";
         }
         return name;
     }

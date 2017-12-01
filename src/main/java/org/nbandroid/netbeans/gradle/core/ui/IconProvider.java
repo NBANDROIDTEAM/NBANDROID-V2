@@ -71,4 +71,8 @@ public class IconProvider {
     @StaticResource
     private static final String RESOURCE_DEPENDENCY_BROKEN = "org/nbandroid/netbeans/gradle/ui/brokenProjectBadge.png";
     public static final Image IMG_DEPENDENCY_BROKEN = ImageUtilities.loadImage(RESOURCE_DEPENDENCY_BROKEN);
+
+    @StaticResource
+    private static final String RESOURCE_ANDROID_SDK_ICON = "org/nbandroid/netbeans/gradle/v2/sdk/ui/android-sdk.png";
+    public static final Image IMG_ANDROID_SDK_ICON = ImageUtilities.loadImage(RESOURCE_ANDROID_SDK_ICON);
 }

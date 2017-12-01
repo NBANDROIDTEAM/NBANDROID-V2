@@ -28,11 +28,16 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.net.ssl.HttpsURLConnection;
+import javax.swing.JProgressBar;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.gradle.impldep.org.apache.commons.io.FileUtils;
+import org.gradle.impldep.org.apache.commons.io.IOUtils;
 import org.nbandroid.netbeans.gradle.v2.gradle.GradleAndroidRepositoriesProvider;
 import org.nbandroid.netbeans.gradle.v2.gradle.Repository;
 import org.netbeans.api.progress.ProgressHandle;
@@ -49,8 +54,10 @@ public class MavenDownloader {
     public static final String JCENTER = "http://jcenter.bintray.com";
     public static final String MD5 = ".md5";
     public static final String SHA1 = ".sha1";
+    private static final int EXEC_MASK = 0111;
     private static final int BUFFER_SIZE = 1024;
-    private static final ExecutorService downloadPool = Executors.newFixedThreadPool(1); //Single thread!!
+    static final ExecutorService downloadPool = Executors.newFixedThreadPool(1); //Single thread!!
+    public static final ExecutorService POOL = Executors.newFixedThreadPool(1);
 
     public enum FileType {
         ARTIFACT,
@@ -190,7 +197,7 @@ public class MavenDownloader {
 
     }
 
-    private static void downloadFully(URL url, File target) throws IOException {
+    public static void downloadFully(URL url, File target) throws IOException {
 
         // We don't use the settings here explicitly, since HttpRequests picks up the network settings from studio directly.
         ProgressHandle handle = ProgressHandle.createHandle("Downloading " + url);
@@ -230,6 +237,88 @@ public class MavenDownloader {
                 } catch (Exception e) {
                 }
             }
+        }
+    }
+
+    public static void downloadFully(URL url, File target, JProgressBar progressBar) throws IOException {
+
+        // We don't use the settings here explicitly, since HttpRequests picks up the network settings from studio directly.
+        try {
+            URLConnection connection = url.openConnection();
+            if (connection instanceof HttpsURLConnection) {
+                ((HttpsURLConnection) connection).setInstanceFollowRedirects(true);
+                ((HttpsURLConnection) connection).setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; U; PPC; en-US; rv:1.3.1)");
+                ((HttpsURLConnection) connection).setRequestProperty("Accept-Charset", "UTF-8");
+                ((HttpsURLConnection) connection).setDoOutput(true);
+                ((HttpsURLConnection) connection).setDoInput(true);
+            }
+            connection.setConnectTimeout(3000);
+            connection.connect();
+            int contentLength = connection.getContentLength();
+            if (contentLength < 1) {
+                throw new FileNotFoundException();
+            }
+            if (progressBar != null) {
+                progressBar.setMinimum(0);
+                progressBar.setMaximum(contentLength);
+            }
+            OutputStream dest = new FileOutputStream(target);
+            InputStream in = connection.getInputStream();
+            int count;
+            int done = 0;
+            byte data[] = new byte[BUFFER_SIZE];
+            while ((count = in.read(data, 0, BUFFER_SIZE)) != -1) {
+                done += count;
+                if (progressBar != null) {
+                    progressBar.setValue(done);
+                }
+                dest.write(data, 0, count);
+            }
+            dest.close();
+            in.close();
+        } finally {
+            if (target.length() == 0) {
+                try {
+                    target.delete();
+                } catch (Exception e) {
+                }
+            }
+        }
+    }
+
+    public static void unzip(File zipFile, File destination)
+            throws IOException {
+        ZipFile zip = new ZipFile(zipFile);
+        try {
+            Enumeration<ZipArchiveEntry> e = zip.getEntries();
+            while (e.hasMoreElements()) {
+                ZipArchiveEntry entry = e.nextElement();
+                File file = new File(destination, entry.getName());
+                if (entry.isDirectory()) {
+                    file.mkdirs();
+                } else {
+                    InputStream is = zip.getInputStream(entry);
+                    File parent = file.getParentFile();
+                    if (parent != null && parent.exists() == false) {
+                        parent.mkdirs();
+                    }
+                    FileOutputStream os = new FileOutputStream(file);
+                    try {
+                        IOUtils.copy(is, os);
+                    } finally {
+                        os.close();
+                        is.close();
+                    }
+                    file.setLastModified(entry.getTime());
+                    int mode = entry.getUnixMode();
+                    if ((mode & EXEC_MASK) != 0) {
+                        if (!file.setExecutable(true)) {
+                        }
+                    }
+                }
+            }
+        } finally {
+            ZipFile.closeQuietly(zip);
         }
     }
 

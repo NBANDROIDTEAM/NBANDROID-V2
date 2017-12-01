@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -16,15 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.sdk;
+package org.nbandroid.netbeans.gradle.v2.sdk.manager;
 
-import java.util.List;
+import java.util.EventListener;
 
 /**
+ * SdkManagerPlatformChangeListener to listen of SDK platform pakages list
+ * changes
  *
  * @author arsi
  */
-public interface LocalPlatformChangeListener {
+public interface SdkManagerPlatformChangeListener extends EventListener {
 
-    public void platformListChanged(List<AndroidPlatformInfo> platforms);
+    /**
+     * Package list changed
+     *
+     * @param platformPackages SdkManagerPlatformPackagesRootNode
+     */
+    public void packageListChanged(SdkManagerPlatformPackagesRootNode platformPackages);
+
 }

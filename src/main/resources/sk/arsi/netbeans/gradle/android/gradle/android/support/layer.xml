@@ -1,4 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
+    <folder name="Services">
+        <folder name="Platforms">
+            <folder name="org-nbandroid-netbeans-gradle-Platform">
+            </folder>
+        </folder>
+    </folder>
+    <folder name="xml">
+        <folder name="entities">
+            <folder name="NetBeans">
+                <file name="DTD_Android_SdkDefinition_1_0" url="nbres:/org/nbandroid/netbeans/gradle/v2/sdk/platformdefinition.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Android SdkDefinition 1.0//EN"/>
+                </file>
+            </folder>
+        </folder>
+
+        <folder name="lookups">
+            <folder name="NetBeans">
+                <file name="DTD_Android_SdkDefinition_1_0.instance">
+                    <attr name="instanceClass" stringvalue="org.nbandroid.netbeans.gradle.v2.sdk.PlatformConvertor"/>
+                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment$Provider"/>
+                    <attr name="instanceCreate" methodvalue="org.nbandroid.netbeans.gradle.v2.sdk.PlatformConvertor.createProvider"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Services">
+        <folder name="Hidden">
+            <file name="org-nbandroid-netbeans-gradle-v2-sdk-java-platform-AndroidJavaPlatformProvider7.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.java.platform.implspi.JavaPlatformProvider"/>
+            </file>
+            <file name="org-nbandroid-netbeans-gradle-v2-sdk-java-platform-AndroidJavaPlatformProvider8.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.java.platform.implspi.JavaPlatformProvider"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

@@ -16,15 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.sdk;
+package org.nbandroid.netbeans.gradle.v2.sdk.java.platform;
 
 import java.util.List;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
+import org.netbeans.api.java.platform.JavaPlatform;
 
 /**
+ * JavaPlatformProvider for Android platforms and java 1.7
  *
  * @author arsi
  */
-public interface LocalPlatformChangeListener {
+//@ServiceProvider(service = JavaPlatformProvider.class)
+public class AndroidJavaPlatformProvider7 extends AndroidJavaPlatformProvider {
 
-    public void platformListChanged(List<AndroidPlatformInfo> platforms);
+    @Override
+    protected void createPlatform(JavaPlatform[] tmp, int i, List<AndroidPlatformInfo> pkgs) {
+        tmp[i] = new AndroidJavaPlatform(pkgs.get(i), "1.7");
+    }
+
 }
