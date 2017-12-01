@@ -53,6 +53,12 @@ class AndroidSdkNode extends AbstractNode {
     }
 
     @Override
+    public String getHtmlDisplayName() {
+        return platform.getHtmlDisplayName(); //To change body of generated methods, choose Tools | Templates.
+    }
+
+
+    @Override
     public Image getIcon(int type) {
         return IconProvider.IMG_ANDROID_SDK_ICON; //To change body of generated methods, choose Tools | Templates.
     }

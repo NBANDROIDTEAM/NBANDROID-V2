@@ -170,8 +170,8 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     AndroidSdkImpl createPlatform(H handler) {
         AndroidSdkImpl p;
 
-        p = new AndroidSdkImpl(handler.name, handler.installFolder, handler.properties, handler.sysProperties, handler.platforms);
-        defaultPlatform = false;
+        p = new AndroidSdkImpl(handler.name, handler.installFolder, handler.properties, handler.sysProperties, handler.platforms, handler.isDefault);
+        defaultPlatform = handler.isDefault;
         p.addPropertyChangeListener(this);
         return p;
     }
@@ -336,14 +336,14 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         W(AndroidSdkImpl instance, MultiDataObject holder, boolean defaultPlatform) {
             this.instance = instance;
             this.holder = holder;
-            this.defaultPlatform = defaultPlatform;
+            this.defaultPlatform = instance.isDefaultSdk();
         }
 
         W(AndroidSdkImpl instance, DataFolder f, String n) {
             this.instance = instance;
             this.name = n;
             this.f = f;
-            this.defaultPlatform = false;
+            this.defaultPlatform = instance.isDefaultSdk();
         }
 
         public void run() throws java.io.IOException {
@@ -497,6 +497,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         String installFolder;
         String name;
         boolean isDefault;
+        boolean isUser;
         final List<AndroidPlatformInfo> platforms = new ArrayList<>();
         AndroidPlatformInfo platformInfo;
 
@@ -578,7 +579,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                         break;
                     case ELEMENT_FILE: {
                         String val = attrs.getValue(ATTR_FILE_USER);
-                        isDefault = Boolean.valueOf(val);
+                        isUser = Boolean.valueOf(val);
                     }
                     case ELEMENT_RESOURCE:
                         this.buffer = new StringBuffer();
@@ -611,7 +612,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                         break;
                     case ELEMENT_FILE: {
                         try {
-                            paths.add(new AndroidPlatformInfo.PathRecord(isDefault, new URL(buffer.toString())));
+                            paths.add(new AndroidPlatformInfo.PathRecord(isUser, new URL(buffer.toString())));
                         } catch (MalformedURLException ex) {
                             Exceptions.printStackTrace(ex);
                         }

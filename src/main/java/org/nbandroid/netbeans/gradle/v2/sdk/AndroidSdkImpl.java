@@ -74,7 +74,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
     private String sdkPath;
     private Map<String, String> properties = Collections.emptyMap();
     private Map<String, String> sysproperties = Collections.emptyMap();
-    private boolean defaultSdk = false;
+    private boolean defaultSdk;
     private AndroidSdkHandler androidSdkHandler;
     private RepoManager repoManager;
     //max 3 paralel downloads
@@ -94,9 +94,10 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
     private SdkManagerToolsRootNode toolRoot;
     private final Map<String, AndroidPlatformInfo> platformsList = new ConcurrentHashMap<>();
 
-    public AndroidSdkImpl(String displayName, String sdkPath, Map<String, String> properties, Map<String, String> sysproperties, List<AndroidPlatformInfo> platforms) {
+    public AndroidSdkImpl(String displayName, String sdkPath, Map<String, String> properties, Map<String, String> sysproperties, List<AndroidPlatformInfo> platforms, boolean defaultSdk) {
         this.displayName = displayName;
         this.sdkPath = sdkPath;
+        this.defaultSdk = defaultSdk;
         this.properties = properties;
         this.sysproperties = sysproperties;
         for (AndroidPlatformInfo platform : platforms) {
@@ -126,7 +127,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
     }
 
     public AndroidSdkImpl(String displayName, String sdkPath) {
-        this(displayName, sdkPath, Collections.EMPTY_MAP, Collections.EMPTY_MAP, Collections.EMPTY_LIST);
+        this(displayName, sdkPath, Collections.EMPTY_MAP, Collections.EMPTY_MAP, Collections.EMPTY_LIST, false);
     }
 
     public List<AndroidPlatformInfo> getPlatforms() {
@@ -223,6 +224,16 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
     @Override
     public String getDisplayName() {
         return displayName;
+
+    }
+
+    @Override
+    public String getHtmlDisplayName() {
+        if (isDefaultSdk()) {
+            return "<html><b>" + displayName + " (default)</b></html>";
+        }
+        return null;
+
     }
 
     @Override

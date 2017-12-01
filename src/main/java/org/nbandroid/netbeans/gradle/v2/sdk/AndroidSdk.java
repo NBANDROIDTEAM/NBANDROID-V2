@@ -113,6 +113,8 @@ public abstract class AndroidSdk {
 
     public abstract String getDisplayName();
 
+    public abstract String getHtmlDisplayName();
+
     public abstract FileObject getInstallFolder();
 
     public abstract List<FileObject> getInstallFolders();
