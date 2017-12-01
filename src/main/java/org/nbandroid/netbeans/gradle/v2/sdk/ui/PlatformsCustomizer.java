@@ -38,6 +38,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -80,6 +81,8 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     private PlatformCategoriesChildren children;
     private ExplorerManager manager;
     private final AndroidSdkImpl initialPlatform;
+    private AndroidSdkImpl selectedPlatform;
+    private static final Vector<AndroidSdkImpl> platformsList = new Vector<>();
 
     /**
      * Shows platforms customizer
@@ -180,6 +183,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         clientArea = new javax.swing.JPanel();
         messageArea = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
+        mkDefault = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -229,7 +233,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 6);
@@ -293,9 +297,9 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         cards.add(messageArea, "card3");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -313,6 +317,20 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jLabel3, gridBagConstraints);
+
+        mkDefault.setMnemonic('D');
+        mkDefault.setText("Default");
+        mkDefault.setEnabled(false);
+        mkDefault.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mkDefaultActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(mkDefault, gridBagConstraints);
 
         getAccessibleContext().setAccessibleDescription(bundle.getString("AD_PlatformsCustomizer")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -386,6 +404,18 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         });
     }//GEN-LAST:event_addNewPlatform
 
+    private void mkDefaultActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mkDefaultActionPerformed
+        for (AndroidSdkImpl plt : platformsList) {
+            if(plt.isDefaultSdk()){
+                plt.setDefault(false);
+            }
+        }
+        if (selectedPlatform != null) {
+            selectedPlatform.setDefault(true);
+        }
+        this.getChildren().refreshPlatforms();
+    }//GEN-LAST:event_mkDefaultActionPerformed
+
     private synchronized PlatformCategoriesChildren getChildren() {
         if (this.children == null) {
             this.children = new PlatformCategoriesChildren();
@@ -414,13 +444,14 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         }
         JComponent target = messageArea;
         JComponent owner = messageArea;
-        AndroidSdkImpl platform = pNode.getLookup().lookup(AndroidSdkImpl.class);
+        selectedPlatform = pNode.getLookup().lookup(AndroidSdkImpl.class);
         if (pNode != getExplorerManager().getRootContext()) {
-            if (platform != null) {
-                this.removeButton.setEnabled(canRemove(platform, pNode.getLookup().lookup(DataObject.class)));
-                if (!platform.getInstallFolders().isEmpty()) {
+            if (selectedPlatform != null) {
+                mkDefault.setEnabled(!selectedPlatform.isDefaultSdk());
+                this.removeButton.setEnabled(!selectedPlatform.isDefaultSdk());
+                if (!selectedPlatform.getInstallFolders().isEmpty()) {
                     this.platformName.setText(pNode.getDisplayName());
-                    for (FileObject installFolder : platform.getInstallFolders()) {
+                    for (FileObject installFolder : selectedPlatform.getInstallFolders()) {
                         File file = FileUtil.toFile(installFolder);
                         if (file != null) {
                             this.platformHome.setText(file.getAbsolutePath());
@@ -429,6 +460,9 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                     target = clientArea;
                     owner = jPanel1;
                 }
+            } else {
+                removeButton.setEnabled(false);
+                mkDefault.setEnabled(false);
             }
             Component component = null;
             if (pNode.hasCustomizer()) {
@@ -525,6 +559,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel messageArea;
+    private javax.swing.JButton mkDefault;
     private javax.swing.JTextField platformHome;
     private javax.swing.JTextField platformName;
     private org.openide.explorer.view.BeanTreeView platforms;
@@ -686,6 +721,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         }
 
         private void refreshPlatforms() {
+            platformsList.clear();
             FileObject storage = FileUtil.getConfigFile(STORAGE);
             if (storage != null) {
                 java.util.Map<String, PlatformCategoriesDescriptor> categories = new HashMap<String, PlatformCategoriesDescriptor>();
@@ -695,18 +731,15 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                         Node node = dobj.getNodeDelegate();
                         AndroidSdkImpl platform = node.getLookup().lookup(AndroidSdkImpl.class);
                         if (platform != null) {
+                            platformsList.add(platform);
                             final String platformType = "Android";
-                            if (platformType != null) {
-                                final String platformTypeDisplayName = "Android";
-                                PlatformCategoriesDescriptor platforms = categories.get(platformType);
-                                if (platforms == null) {
-                                    platforms = new PlatformCategoriesDescriptor(platformTypeDisplayName);
-                                    categories.put(platformType, platforms);
-                                }
-                                platforms.add(node);
-                            } else {
-                                LOG.log(Level.WARNING, "Platform: {0} has invalid specification.", platform.getDisplayName());  //NOI18N
+                            final String platformTypeDisplayName = "Android";
+                            PlatformCategoriesDescriptor platforms = categories.get(platformType);
+                            if (platforms == null) {
+                                platforms = new PlatformCategoriesDescriptor(platformTypeDisplayName);
+                                categories.put(platformType, platforms);
                             }
+                            platforms.add(node);
                         } else {
                             LOG.log(Level.WARNING, "Platform node for : {0} has no platform in its lookup.", node.getDisplayName());   //NOI18N
                         }

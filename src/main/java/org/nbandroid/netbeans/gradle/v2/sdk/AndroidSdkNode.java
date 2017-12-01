@@ -19,6 +19,8 @@
 package org.nbandroid.netbeans.gradle.v2.sdk;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -29,13 +31,14 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author arsi
  */
-class AndroidSdkNode extends AbstractNode {
+class AndroidSdkNode extends AbstractNode implements PropertyChangeListener {
 
     private final AndroidSdkImpl platform;
     private final XMLDataObject holder;
@@ -43,6 +46,7 @@ class AndroidSdkNode extends AbstractNode {
     public AndroidSdkNode(AndroidSdkImpl p, XMLDataObject holder) {
         super(Children.create(new AndroidPlatformChildrenFactory(p, holder), true), Lookups.fixed(new Object[]{p, holder}));
         this.platform = p;
+        p.addPropertyChangeListener(WeakListeners.propertyChange(this, AndroidSdkImpl.DEFAULT_PLATFORM, p));
         this.holder = holder;
         //   super.setIconBaseWithExtension("org/netbeans/modules/java/j2seplatform/resources/platform.gif");
     }
@@ -76,6 +80,15 @@ class AndroidSdkNode extends AbstractNode {
     @Override
     public java.awt.Component getCustomizer() {
         return new AndroidSdkCustomizer(platform, holder);
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (Boolean.TRUE.equals(evt.getNewValue())) {
+            fireDisplayNameChange(getDisplayName(), getHtmlDisplayName());
+        } else {
+            fireDisplayNameChange(getHtmlDisplayName(), getDisplayName());
+        }
     }
 
     private static class AndroidPlatformChildrenFactory extends ChildFactory<AndroidPlatformInfo> implements LocalPlatformChangeListener {

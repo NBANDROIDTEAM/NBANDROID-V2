@@ -70,10 +70,11 @@ import org.openide.windows.WindowManager;
  */
 public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoManager.RepoLoadedCallback {
 
+    public static final String DEFAULT_PLATFORM = "DEFAULT";
     private String displayName;
     private String sdkPath;
-    private Map<String, String> properties = Collections.emptyMap();
-    private Map<String, String> sysproperties = Collections.emptyMap();
+    private Map<String, String> properties = new HashMap<>();
+    private Map<String, String> sysproperties = new HashMap<>();
     private boolean defaultSdk;
     private AndroidSdkHandler androidSdkHandler;
     private RepoManager repoManager;
@@ -98,10 +99,20 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
         this.displayName = displayName;
         this.sdkPath = sdkPath;
         this.defaultSdk = defaultSdk;
-        this.properties = properties;
-        this.sysproperties = sysproperties;
-        for (AndroidPlatformInfo platform : platforms) {
-            platformsList.put(platform.getPlatformFolder().getAbsolutePath(), platform);
+        if (properties != null) {
+            this.properties = properties;
+        } else {
+            this.properties = new HashMap<>();
+        }
+        if (sysproperties != null) {
+            this.sysproperties = sysproperties;
+        } else {
+            this.sysproperties = new HashMap<>();
+        }
+        if (platforms != null) {
+            for (AndroidPlatformInfo platform : platforms) {
+                platformsList.put(platform.getPlatformFolder().getAbsolutePath(), platform);
+            }
         }
         final Runnable runnable = new Runnable() {
 
@@ -258,7 +269,9 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
 
     @Override
     public void setDefault(boolean defaultSdk) {
+        boolean last = this.defaultSdk;
         this.defaultSdk = defaultSdk;
+        firePropertyChange(DEFAULT_PLATFORM, last, defaultSdk);
     }
 
     @Override
