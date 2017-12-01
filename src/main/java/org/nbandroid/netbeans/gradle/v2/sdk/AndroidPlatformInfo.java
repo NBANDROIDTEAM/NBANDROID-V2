@@ -244,6 +244,10 @@ public class AndroidPlatformInfo {
         }
     }
 
+    public void removeBootPath(PathRecord record) {
+        bootPaths.remove(record);
+    }
+
     public final boolean addSrcPath(URL url, boolean user) {
         PathRecord record = new PathRecord(user, url);
         if (srcPaths.contains(record)) {
@@ -263,6 +267,10 @@ public class AndroidPlatformInfo {
         }
     }
 
+    public void removeSrcPath(PathRecord record) {
+        srcPaths.remove(record);
+    }
+
     public boolean addJavadocPath(URL url, boolean user) {
         PathRecord record = new PathRecord(user, url);
         if (javadocPaths.contains(record)) {
@@ -280,6 +288,10 @@ public class AndroidPlatformInfo {
             javadocPaths.add(record);
             return true;
         }
+    }
+
+    public void removeJavadocPath(PathRecord record) {
+        javadocPaths.remove(record);
     }
 
     public File getPlatformFolder() {

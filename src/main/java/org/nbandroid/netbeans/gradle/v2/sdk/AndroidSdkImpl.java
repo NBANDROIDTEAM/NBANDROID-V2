@@ -165,6 +165,10 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
         localListeners.add(l);
     }
 
+    public void store() {
+        firePropertyChange("STORE", false, true);
+    }
+
     /**
      * Get Android repo manager
      *

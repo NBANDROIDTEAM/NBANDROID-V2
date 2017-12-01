@@ -110,6 +110,7 @@
                         <StringItem index="4" value="Item 5"/>
                       </StringArray>
                     </Property>
+                    <Property name="selectionMode" type="int" value="0"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value=""/>
@@ -123,6 +124,9 @@
                   <ResourceString bundle="org/nbandroid/netbeans/gradle/v2/sdk/ui/Bundle.properties" key="AndroidPlatformCustomizer.addClasspath.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addClasspathActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JButton" name="removeClasspath">
               <Properties>
@@ -131,6 +135,9 @@
                 </Property>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeClasspathActionPerformed"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>
@@ -214,6 +221,7 @@
                         <StringItem index="4" value="Item 5"/>
                       </StringArray>
                     </Property>
+                    <Property name="selectionMode" type="int" value="0"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value=""/>
@@ -227,6 +235,9 @@
                   <ResourceString bundle="org/nbandroid/netbeans/gradle/v2/sdk/ui/Bundle.properties" key="AndroidPlatformCustomizer.addSources.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addSourcesActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JButton" name="removeSources">
               <Properties>
@@ -235,6 +246,9 @@
                 </Property>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeSourcesActionPerformed"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>
@@ -318,6 +332,7 @@
                         <StringItem index="4" value="Item 5"/>
                       </StringArray>
                     </Property>
+                    <Property name="selectionMode" type="int" value="0"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value=""/>
@@ -331,6 +346,9 @@
                   <ResourceString bundle="org/nbandroid/netbeans/gradle/v2/sdk/ui/Bundle.properties" key="AndroidPlatformCustomizer.addJavadoc.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addJavadocActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JButton" name="removeJavadoc">
               <Properties>
@@ -339,6 +357,9 @@
                 </Property>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeJavadocActionPerformed"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>

@@ -406,7 +406,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
     private void mkDefaultActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mkDefaultActionPerformed
         for (AndroidSdkImpl plt : platformsList) {
-            if(plt.isDefaultSdk()){
+            if (plt.isDefaultSdk()) {
                 plt.setDefault(false);
             }
         }
