@@ -25,6 +25,7 @@ import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.repository.meta.DetailsTypes;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -34,6 +35,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -315,6 +318,42 @@ public class AndroidPlatformInfo {
 
         public URL getUrl() {
             return url;
+        }
+
+        @Override
+        public String toString() {
+            String begin = "<html>";
+            String end = "</html>";
+            if (!userRecord) {
+                begin += "<b>";
+                end = "</b>" + end;
+            }
+            URL tmp = url;
+            if ("jar".equals(tmp.getProtocol())) {      //NOI18N
+                URL fileURL = FileUtil.getArchiveFile(tmp);
+                if (FileUtil.getArchiveRoot(fileURL).equals(tmp)) {
+                    // really the root
+                    tmp = fileURL;
+                } else {
+                    // some subdir, just show it as is
+                    FileObject fo = URLMapper.findFileObject(tmp);
+                    if (fo == null || !fo.isValid()) {
+                        begin += "<font color=#DF0101>";
+                        end = "</font>" + end;
+                    }
+                    return begin + tmp.toExternalForm() + end;
+                }
+            }
+            if ("file".equals(tmp.getProtocol())) {
+                File f = Utilities.toFile(URI.create(tmp.toExternalForm()));
+                if (!f.exists()) {
+                    begin += "<font color=#DF0101>";
+                    end = "</font>" + end;
+                }
+                return begin + f.getAbsolutePath() + end;
+            } else {
+                return begin + tmp.toExternalForm() + end;
+            }
         }
 
         @Override

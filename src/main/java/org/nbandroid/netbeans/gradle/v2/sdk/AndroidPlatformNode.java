@@ -21,6 +21,7 @@ package org.nbandroid.netbeans.gradle.v2.sdk;
 import com.android.sdklib.SdkVersionInfo;
 import java.awt.Image;
 import org.nbandroid.netbeans.gradle.core.ui.IconProvider;
+import org.nbandroid.netbeans.gradle.v2.sdk.ui.AndroidPlatformCustomizer;
 import org.openide.loaders.XMLDataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -33,10 +34,12 @@ import org.openide.util.lookup.Lookups;
 public class AndroidPlatformNode extends AbstractNode {
 
     private final AndroidPlatformInfo aPackage;
+    private final AndroidSdkImpl platform;
 
     AndroidPlatformNode(AndroidPlatformInfo aPackage, AndroidSdkImpl platform, XMLDataObject holder) {
         super(Children.LEAF, Lookups.fixed(new Object[]{platform, holder, aPackage}));
         this.aPackage = aPackage;
+        this.platform = platform;
     }
 
     @Override
@@ -52,6 +55,16 @@ public class AndroidPlatformNode extends AbstractNode {
     @Override
     public Image getOpenedIcon(int type) {
         return getIcon(type); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean hasCustomizer() {
+        return true;
+    }
+
+    @Override
+    public java.awt.Component getCustomizer() {
+        return new AndroidPlatformCustomizer(aPackage, platform);
     }
 
 }
