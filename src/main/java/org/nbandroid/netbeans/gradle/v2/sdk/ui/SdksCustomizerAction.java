@@ -28,14 +28,14 @@ import org.openide.util.NbBundle;
 /**
  * @author ArSi
  */
-@ActionID(id = "org.nbandroid.netbeans.gradle.v2.sdk.ui.PlatformsCustomizerAction", category = "Tools")
+@ActionID(id = "org.nbandroid.netbeans.gradle.v2.sdk.ui.SdksCustomizerAction", category = "Tools")
 @ActionRegistration(iconInMenu = false, displayName = "#CTL_PlatformManager")
-@ActionReference(position = 310, name = "AndroidPlatformsCustomizerAction", path = "Menu/Tools")
+@ActionReference(position = 310, name = "SdksCustomizerAction", path = "Menu/Tools")
 @NbBundle.Messages("CTL_PlatformManager=&Android SDKs")
-public final class PlatformsCustomizerAction implements ActionListener {
+public final class SdksCustomizerAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        PlatformsCustomizer.showCustomizer();
+        SdksCustomizer.showCustomizer();
     }
 }

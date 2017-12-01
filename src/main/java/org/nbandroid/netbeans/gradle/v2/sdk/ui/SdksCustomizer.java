@@ -70,9 +70,9 @@ import org.openide.util.RequestProcessor;
  * @author tom
  * @author arsi - android mod
  */
-public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyChangeListener, VetoableChangeListener, ExplorerManager.Provider {
+public class SdksCustomizer extends javax.swing.JPanel implements PropertyChangeListener, VetoableChangeListener, ExplorerManager.Provider {
 
-    private static final Logger LOG = Logger.getLogger(PlatformsCustomizer.class.getName());
+    private static final Logger LOG = Logger.getLogger(SdksCustomizer.class.getName());
 
     private static final String TEMPLATE = "Templates/Services/Platforms/org-netbeans-api-java-Platform/javaplatform.xml";  //NOI18N
     private static final String STORAGE = "Services/Platforms/org-nbandroid-netbeans-gradle-Platform";  //NOI18N
@@ -91,11 +91,11 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
      * @return boolean for future extension, currently always true
      */
     public static boolean showCustomizer() {
-        PlatformsCustomizer customizer
-                = new PlatformsCustomizer();
-        javax.swing.JButton close = new javax.swing.JButton(NbBundle.getMessage(PlatformsCustomizer.class, "CTL_Close"));
-        close.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PlatformsCustomizer.class, "AD_Close"));
-        DialogDescriptor descriptor = new DialogDescriptor(customizer, NbBundle.getMessage(PlatformsCustomizer.class,
+        SdksCustomizer customizer
+                = new SdksCustomizer();
+        javax.swing.JButton close = new javax.swing.JButton(NbBundle.getMessage(SdksCustomizer.class, "CTL_Close"));
+        close.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SdksCustomizer.class, "AD_Close"));
+        DialogDescriptor descriptor = new DialogDescriptor(customizer, NbBundle.getMessage(SdksCustomizer.class,
                 "TXT_PlatformsManager"), true, new Object[]{close}, close, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx("org.nbandroid.netbeans.gradle.v2.sdk.ui.PlatformsCustomizer"), null); // NOI18N
         Dialog dlg = null;
         try {
@@ -112,7 +112,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     /**
      * Creates new form PlatformsCustomizer
      */
-    public PlatformsCustomizer() {
+    public SdksCustomizer() {
         this.initialPlatform = null;
         initComponents();
     }
@@ -187,7 +187,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(PlatformsCustomizer.class, "TXT_PlatformsHint")); // NOI18N
+        jLabel4.setText(org.openide.util.NbBundle.getMessage(SdksCustomizer.class, "TXT_PlatformsHint")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -355,7 +355,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     }//GEN-LAST:event_removePlatform
 
     private void addNewPlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addNewPlatform
-        final PlatformsCustomizer self = this;
+        final SdksCustomizer self = this;
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
@@ -380,7 +380,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                 wiz.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
                 wiz.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
                 wiz.putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
-                wiz.setTitle(NbBundle.getMessage(PlatformsCustomizer.class, "CTL_AddPlatformTitle"));
+                wiz.setTitle(NbBundle.getMessage(SdksCustomizer.class, "CTL_AddPlatformTitle"));
                 wiz.setTitleFormat(new java.text.MessageFormat("{0}")); // NOI18N
                 Dialog dlg = DialogDisplayer.getDefault().createDialog(wiz);
                 try {
@@ -747,7 +747,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                         Exceptions.printStackTrace(e);
                     }
                 }
-                List<PlatformCategoriesDescriptor> keys = new ArrayList<PlatformsCustomizer.PlatformCategoriesDescriptor>(categories.values());
+                List<PlatformCategoriesDescriptor> keys = new ArrayList<SdksCustomizer.PlatformCategoriesDescriptor>(categories.values());
                 Collections.sort(keys);
                 setKeys(keys);
             }
