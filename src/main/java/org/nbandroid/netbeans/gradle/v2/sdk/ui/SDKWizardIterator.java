@@ -51,7 +51,6 @@ public final class SDKWizardIterator implements WizardDescriptor.InstantiatingIt
     @Override
     public java.util.Set instantiate() throws IOException {
         AndroidSdkImpl p = new AndroidSdkImpl((String) wizard.getProperty(SDKWizardPanelInstall.SDK_NAME), (String) wizard.getProperty(SDKWizardPanelInstall.SDK_PATH));
-        p.setDefault((boolean) wizard.getProperty(SDKWizardPanelInstall.SDK_DEFAULT));
 //        InstanceDataObject.create(
 //                DataFolder.findFolder(FileUtil.createFolder(FileUtil.getConfigRoot(), "Services/Platforms/org-nbandroid-netbeans-gradle-Platform")),
 //                null,

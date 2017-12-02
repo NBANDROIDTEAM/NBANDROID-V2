@@ -20,6 +20,7 @@ package org.nbandroid.netbeans.gradle.v2.sdk;
 
 import com.android.SdkConstants;
 import com.android.repository.api.Installer;
+import com.android.repository.api.License;
 import com.android.repository.api.LocalPackage;
 import com.android.repository.api.RepoManager;
 import com.android.repository.api.RepoPackage;
@@ -29,6 +30,7 @@ import com.android.repository.impl.installer.BasicInstallerFactory;
 import com.android.repository.impl.meta.RepositoryPackages;
 import com.android.repository.impl.meta.TypeDetails;
 import com.android.repository.io.FileOpUtils;
+import com.android.repository.io.impl.FileOpImpl;
 import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.repository.AndroidSdkHandler;
 import com.android.sdklib.repository.installer.MavenInstallListener;
@@ -48,6 +50,8 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import org.gradle.impldep.com.google.common.collect.ImmutableList;
 import org.nbandroid.netbeans.gradle.core.sdk.NbDownloader;
 import org.nbandroid.netbeans.gradle.core.sdk.NbOutputWindowProgressIndicator;
@@ -59,6 +63,9 @@ import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsMultiPackageN
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsPackageNode;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsRootNode;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsSupportNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.ui.AcceptLicenseForm;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -71,6 +78,7 @@ import org.openide.windows.WindowManager;
 public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoManager.RepoLoadedCallback {
 
     public static final String DEFAULT_PLATFORM = "DEFAULT";
+    public static final String LOCATION = "LOCATION";
     private String displayName;
     private String sdkPath;
     private Map<String, String> properties = new HashMap<>();
@@ -94,6 +102,9 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
                             SdkConstants.FD_GAPID));
     private SdkManagerToolsRootNode toolRoot;
     private final Map<String, AndroidPlatformInfo> platformsList = new ConcurrentHashMap<>();
+    private final Vector<String> licensesOnline = new Vector<>();
+    private static final ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
+
     public AndroidSdkImpl(String displayName, String sdkPath, Map<String, String> properties, Map<String, String> sysproperties, List<AndroidPlatformInfo> platforms, boolean defaultSdk) {
         this.displayName = displayName;
         this.sdkPath = sdkPath;
@@ -124,6 +135,12 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
                     repoManager.registerLocalChangeListener(AndroidSdkImpl.this);
                     repoManager.registerRemoteChangeListener(AndroidSdkImpl.this);
                     updateSdkPlatformPackages();
+                    scheduledThreadPool.scheduleWithFixedDelay(new Runnable() {
+                        @Override
+                        public void run() {
+                            repoManager.reloadLocalIfNeeded(new NbOutputWindowProgressIndicator());
+                        }
+                    }, 30, 30, TimeUnit.SECONDS);
                 } else {
                     repoManager = null;
                 }
@@ -135,6 +152,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
                 AndroidSdk.pool.submit(runnable);
             }
         });
+
     }
 
     public AndroidSdkImpl(String displayName, String sdkPath) {
@@ -149,6 +167,11 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
     public AndroidSdkHandler getAndroidSdkHandler() {
         return androidSdkHandler;
     }
+
+    public String getSdkPath() {
+        return sdkPath;
+    }
+
 
     @Override
     public void addLocalPlatformChangeListener(LocalPlatformChangeListener l) {
@@ -268,7 +291,38 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
 
     @Override
     public void setSdkRootFolder(String sdkPath) {
+        String last = this.sdkPath;
         this.sdkPath = sdkPath;
+        firePropertyChange(LOCATION, last, sdkPath);
+        platforms.clear();
+        platformsList.clear();
+        final Runnable runnable = new Runnable() {
+
+            @Override
+            public void run() {
+                androidSdkHandler = AndroidSdkHandler.getInstance(new File(sdkPath));
+                if (androidSdkHandler != null) {
+                    repoManager = androidSdkHandler.getSdkManager(new NbOutputWindowProgressIndicator());
+                    repoManager.registerLocalChangeListener(AndroidSdkImpl.this);
+                    repoManager.registerRemoteChangeListener(AndroidSdkImpl.this);
+                    updateSdkPlatformPackages();
+                    scheduledThreadPool.scheduleWithFixedDelay(new Runnable() {
+                        @Override
+                        public void run() {
+                            repoManager.reloadLocalIfNeeded(new NbOutputWindowProgressIndicator());
+                        }
+                    }, 30, 30, TimeUnit.SECONDS);
+                } else {
+                    repoManager = null;
+                }
+            }
+        };
+        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+            @Override
+            public void run() {
+                AndroidSdk.pool.submit(runnable);
+            }
+        });
     }
 
     @Override
@@ -322,6 +376,22 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
         for (UpdatablePackage info : packages.getConsolidatedPkgs().values()) {
             RepoPackage p = info.getRepresentative();
             TypeDetails details = p.getTypeDetails();
+            if (info.hasLocal()) {
+                License license = info.getRemote().getLicense();
+                if (license != null) {
+                    if (!license.checkAccepted(FileUtil.toFile(getInstallFolder()), new FileOpImpl())) {
+                        if (!license.getValue().isEmpty() && !licensesOnline.contains(info.getRepresentative().getDisplayName())) {
+                            licensesOnline.add(info.getRepresentative().getDisplayName());
+                            NotifyDescriptor nd = new NotifyDescriptor.Message(new AcceptLicenseForm(license.getValue(), info.getRepresentative().getDisplayName()), NotifyDescriptor.INFORMATION_MESSAGE);
+                            DialogDisplayer.getDefault().notifyLater(nd);
+                            license.setAccepted(FileUtil.toFile(getInstallFolder()), new FileOpImpl());
+                            licensesOnline.remove(info.getRepresentative().getDisplayName());
+                        } else {
+                            license.setAccepted(FileUtil.toFile(getInstallFolder()), new FileOpImpl());
+                        }
+                    }
+                }
+            }
             if ((details instanceof DetailsTypes.PlatformDetailsType) && info.hasLocal()) {
                 platformsTmp.add(info);
             }
@@ -437,7 +507,6 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
                 Exceptions.printStackTrace(e);
             }
         }
-
     }
 
     /**
@@ -491,6 +560,16 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
         };
 
         DOWNLOAD_POOL.execute(runnable);
+    }
+
+    @Override
+    public boolean isBroken() {
+        return !AndroidSdkTools.isSdkFolder(FileUtil.toFile(getInstallFolder()));
+    }
+
+    @Override
+    public boolean isValid() {
+        return AndroidSdkTools.isSdkFolder(FileUtil.toFile(getInstallFolder()));
     }
 
 }
