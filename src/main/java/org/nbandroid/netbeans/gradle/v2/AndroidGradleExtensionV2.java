@@ -61,11 +61,14 @@ import org.nbandroid.netbeans.gradle.testrunner.TestOutputConsumerLookupProvider
 import org.nbandroid.netbeans.gradle.ui.AndroidTestsProvider;
 import org.nbandroid.netbeans.gradle.ui.BuildCustomizerProvider;
 import org.nbandroid.netbeans.gradle.v2.gradle.GradleAndroidRepositoriesProvider;
+import org.nbandroid.netbeans.gradle.v2.project.AndroidSdkConfigProvider;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.netbeans.api.project.Project;
 import org.netbeans.gradle.project.api.entry.GradleProjectExtension2;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -94,9 +97,13 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
     volatile AndroidProject aPrj = null;
     @VisibleForTesting
     volatile GradleBuild gradleBuild = null;
+    private AndroidSdk sdk;
+    private final FileObject localProperties;
 
-    public AndroidGradleExtensionV2(Project project) {
+    public AndroidGradleExtensionV2(Project project, AndroidSdk sdk, FileObject localProperties) {
         this.project = Preconditions.checkNotNull(project);
+        this.sdk = sdk;
+        this.localProperties = localProperties;
         ic = new InstanceContent();
         projectAddOnLookup = new AbstractLookup(ic);
         final AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
@@ -105,6 +112,7 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         items.add(buildCfg);
         items.add(testCfg);
         items.add(levelQuery);
+        items.add(new AndroidSdkConfigProvider());
         items.add(new GradleAndroidRepositoriesProvider(project));
         items.add(new GradlePlatformResolver());
         items.add(new GradleAndroidSources(project, buildCfg));
@@ -139,6 +147,14 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         return items;
     }
 
+    public AndroidSdk getSdk() {
+        return sdk;
+    }
+
+    public FileObject getLocalProperties() {
+        return localProperties;
+    }
+
     @Override
     public Lookup getPermanentProjectLookup() {
         LOG.log(Level.FINE, "lookup requested");
@@ -147,7 +163,9 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
 
     @Override
     public void activateExtension(SerializableLookup parsedModel) {
-        modelsLoaded(parsedModel.lookup);
+        if (sdk != null && sdk.isValid()) {
+            modelsLoaded(parsedModel.lookup);
+        }
     }
 
     @Override

@@ -41,7 +41,7 @@ public abstract class AndroidJavaPlatformProvider implements JavaPlatformProvide
     protected final AtomicReference<JavaPlatform> defaultPlatform = new AtomicReference<>(null);
 
     public AndroidJavaPlatformProvider() {
-        AndroidSdkProvider.getDefaultPlatform().addLocalPlatformChangeListener(this);
+        AndroidSdkProvider.getDefaultSdk().addLocalPlatformChangeListener(this);
     }
 
     @Override

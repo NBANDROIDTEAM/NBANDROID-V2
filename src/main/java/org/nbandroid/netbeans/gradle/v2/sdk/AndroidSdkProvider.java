@@ -7,6 +7,7 @@ package org.nbandroid.netbeans.gradle.v2.sdk;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +37,16 @@ public class AndroidSdkProvider implements FileChangeListener {
     public static final String PROP_INSTALLED_PLATFORMS = "PROP_INSTALLED_PLATFORMS";
     private static FileObject storageCache;
     private static FileObject lastFound;
+
+    public static AndroidSdk findSdk(File file) {
+        AndroidSdk[] installedPlatforms = Lookup.getDefault().lookup(AndroidSdkProvider.class).getInstalledSDKsInt();
+        for (AndroidSdk installedPlatform : installedPlatforms) {
+            if (installedPlatform.getInstallFolder().equals(FileUtil.toFileObject(file))) {
+                return installedPlatform;
+            }
+        }
+        return null;
+    }
     private FileChangeListener pathListener;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private static final Logger LOG = Logger.getLogger(AndroidSdkProvider.class.getName());
@@ -45,8 +56,8 @@ public class AndroidSdkProvider implements FileChangeListener {
      *
      * @return AndroidSdk
      */
-    public static final AndroidSdk getDefaultPlatform() {
-        AndroidSdk[] installedPlatforms = Lookup.getDefault().lookup(AndroidSdkProvider.class).getInstalledPlatformsInt();
+    public static final AndroidSdk getDefaultSdk() {
+        AndroidSdk[] installedPlatforms = Lookup.getDefault().lookup(AndroidSdkProvider.class).getInstalledSDKsInt();
         switch (installedPlatforms.length) {
             case 1:
                 return installedPlatforms[0];
@@ -67,14 +78,14 @@ public class AndroidSdkProvider implements FileChangeListener {
         return Lookup.getDefault().lookup(AndroidSdkProvider.class);
     }
 
-    public static final AndroidSdk[] getInstalledPlatforms() {
-        return Lookup.getDefault().lookup(AndroidSdkProvider.class).getInstalledPlatformsInt();
+    public static final AndroidSdk[] getInstalledSDKs() {
+        return Lookup.getDefault().lookup(AndroidSdkProvider.class).getInstalledSDKsInt();
     }
 
     public AndroidSdkProvider() {
     }
 
-    protected final AndroidSdk[] getInstalledPlatformsInt() {
+    protected final AndroidSdk[] getInstalledSDKsInt() {
         final List<AndroidSdk> platforms = new ArrayList<>();
         final FileObject storage = getStorage();
         if (storage != null) {

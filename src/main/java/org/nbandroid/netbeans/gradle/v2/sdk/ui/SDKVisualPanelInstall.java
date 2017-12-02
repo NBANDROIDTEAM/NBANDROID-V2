@@ -74,10 +74,6 @@ public final class SDKVisualPanelInstall extends JPanel implements DocumentListe
         return sdkName.getText();
     }
 
-    public boolean isSdkDefault() {
-        return sdkDefault.isSelected();
-    }
-
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -91,7 +87,6 @@ public final class SDKVisualPanelInstall extends JPanel implements DocumentListe
         warning = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         sdkName = new javax.swing.JTextField();
-        sdkDefault = new javax.swing.JCheckBox();
 
         setMaximumSize(new java.awt.Dimension(611, 154));
 
@@ -177,9 +172,6 @@ public final class SDKVisualPanelInstall extends JPanel implements DocumentListe
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        sdkDefault.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(sdkDefault, org.openide.util.NbBundle.getMessage(SDKVisualPanelInstall.class, "SDKVisualPanelInstall.sdkDefault.text")); // NOI18N
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -191,7 +183,6 @@ public final class SDKVisualPanelInstall extends JPanel implements DocumentListe
                     .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(sdkDefault)
                             .addComponent(warning)
                             .addComponent(jLabel2)
                             .addGroup(layout.createSequentialGroup()
@@ -210,16 +201,13 @@ public final class SDKVisualPanelInstall extends JPanel implements DocumentListe
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(sdkDefault)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 28, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 69, Short.MAX_VALUE)
                 .addComponent(warning)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void installActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installActionPerformed
-        // TODO add your handling code here:
         browse.setEnabled(false);
         install.setEnabled(false);
         Runnable runnable = new Runnable() {
@@ -267,7 +255,6 @@ public final class SDKVisualPanelInstall extends JPanel implements DocumentListe
     private javax.swing.JPanel jPanel2;
     private javax.swing.JTextField path;
     private javax.swing.JProgressBar progress;
-    private javax.swing.JCheckBox sdkDefault;
     private javax.swing.JTextField sdkName;
     private javax.swing.JLabel warning;
     // End of variables declaration//GEN-END:variables

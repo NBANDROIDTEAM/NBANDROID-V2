@@ -28,8 +28,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.cookies.*;
 import org.openide.filesystems.*;
@@ -92,32 +90,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         this.holder.getPrimaryFile().addFileChangeListener(new FileChangeAdapter() {
             @Override
             public void fileDeleted(final FileEvent fe) {
-                if (!defaultPlatform) {
-                    try {
-                        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                            @Override
-                            public Void run() throws IOException {
-                                String systemName = fe.getFile().getName();
-                                String propPrefix = "platforms." + systemName + ".";   //NOI18N
-                                boolean changed = false;
-                                EditableProperties props = PropertyUtils.getGlobalProperties();
-                                for (Iterator<String> it = props.keySet().iterator(); it.hasNext();) {
-                                    String key = it.next();
-                                    if (key.startsWith(propPrefix)) {
-                                        it.remove();
-                                        changed = true;
-                                    }
-                                }
-                                if (changed) {
-                                    PropertyUtils.putGlobalProperties(props);
-                                }
-                                return null;
-                            }
-                        });
-                    } catch (MutexException e) {
-                        Exceptions.printStackTrace(e);
-                    }
-                }
+
             }
         });
         cookies = new InstanceContent();
@@ -276,9 +249,6 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         return antName;
     }
 
-    public static void generatePlatformProperties(AndroidSdkImpl platform, String systemName, EditableProperties props) throws IOException {
-    }
-
     public static String createName(String platName, String propType) {
         return "platforms." + platName + "." + propType;        //NOI18N
     }
@@ -286,27 +256,6 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     private static DataObject create(final AndroidSdkImpl plat, final DataFolder f, final String idName) throws IOException {
         W w = new W(plat, f, idName);
         f.getPrimaryFile().getFileSystem().runAtomicAction(w);
-        try {
-            ProjectManager.mutex().writeAccess(
-                    new Mutex.ExceptionAction<Void>() {
-                @Override
-                public Void run() throws Exception {
-                    EditableProperties props = PropertyUtils.getGlobalProperties();
-                    generatePlatformProperties(plat, idName, props);
-                    PropertyUtils.putGlobalProperties(props);
-                    return null;
-                }
-            });
-        } catch (MutexException me) {
-            Exception originalException = me.getException();
-            if (originalException instanceof RuntimeException) {
-                throw (RuntimeException) originalException;
-            } else if (originalException instanceof IOException) {
-                throw (IOException) originalException;
-            } else {
-                throw new IllegalStateException(); //Should never happen
-            }
-        }
         return w.holder;
     }
 

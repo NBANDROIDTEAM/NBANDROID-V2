@@ -68,8 +68,9 @@ public final class SDKVisualPanelSelect extends JPanel implements DocumentListen
         return sdkName.getText();
     }
 
-    public boolean isSdkDefault() {
-        return sdkDefault.isSelected();
+    public void setSdkName(String name) {
+        sdkName.setText(name);
+        sdkName.setEditable(false);
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -83,7 +84,6 @@ public final class SDKVisualPanelSelect extends JPanel implements DocumentListen
         warning = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         sdkName = new javax.swing.JTextField();
-        sdkDefault = new javax.swing.JCheckBox();
 
         setMaximumSize(new java.awt.Dimension(611, 154));
 
@@ -150,9 +150,6 @@ public final class SDKVisualPanelSelect extends JPanel implements DocumentListen
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        sdkDefault.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(sdkDefault, org.openide.util.NbBundle.getMessage(SDKVisualPanelSelect.class, "SDKVisualPanelSelect.sdkDefault.text")); // NOI18N
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -160,9 +157,6 @@ public final class SDKVisualPanelSelect extends JPanel implements DocumentListen
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(sdkDefault)
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -187,9 +181,7 @@ public final class SDKVisualPanelSelect extends JPanel implements DocumentListen
                 .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(sdkDefault)
-                .addGap(22, 22, 22)
+                .addGap(53, 53, 53)
                 .addComponent(warning)
                 .addContainerGap())
         );
@@ -214,7 +206,6 @@ public final class SDKVisualPanelSelect extends JPanel implements DocumentListen
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JTextField path;
-    private javax.swing.JCheckBox sdkDefault;
     private javax.swing.JTextField sdkName;
     private javax.swing.JLabel warning;
     // End of variables declaration//GEN-END:variables

@@ -131,6 +131,10 @@ public abstract class AndroidSdk {
 
     public abstract void setSdkRootFolder(String sdkPath);
 
+    public abstract boolean isBroken();
+
+    public abstract boolean isValid();
+
     protected class DownloadErrorCallback implements Runnable {
 
         @Override

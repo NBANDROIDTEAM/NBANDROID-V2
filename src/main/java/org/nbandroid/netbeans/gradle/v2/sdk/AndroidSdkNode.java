@@ -23,8 +23,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.JPanel;
 import org.nbandroid.netbeans.gradle.core.ui.IconProvider;
 import org.nbandroid.netbeans.gradle.v2.sdk.ui.AndroidSdkCustomizer;
+import org.nbandroid.netbeans.gradle.v2.sdk.ui.BrokenPlatformCustomizer;
 import org.openide.loaders.XMLDataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
@@ -37,7 +39,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author arsi
  */
-class AndroidSdkNode extends AbstractNode implements PropertyChangeListener {
+class AndroidSdkNode extends AbstractNode implements PropertyChangeListener, BrokenPlatformCustomizer.SdkValidListener {
 
     private final AndroidSdkImpl platform;
     private final XMLDataObject holder;
@@ -52,22 +54,26 @@ class AndroidSdkNode extends AbstractNode implements PropertyChangeListener {
 
     @Override
     public String getDisplayName() {
-        return platform.getDisplayName(); //To change body of generated methods, choose Tools | Templates.
+        return platform.getDisplayName();
     }
 
     @Override
     public String getHtmlDisplayName() {
-        return platform.getHtmlDisplayName(); //To change body of generated methods, choose Tools | Templates.
+        return platform.getHtmlDisplayName();
     }
 
     @Override
     public Image getIcon(int type) {
-        return IconProvider.IMG_ANDROID_SDK_ICON; //To change body of generated methods, choose Tools | Templates.
+        if (platform.isValid()) {
+            return IconProvider.IMG_ANDROID_SDK_ICON;
+        } else {
+            return IconProvider.IMG_ANDROID_SDK_BROKEN_ICON;
+        }
     }
 
     @Override
     public Image getOpenedIcon(int type) {
-        return getIcon(type); //To change body of generated methods, choose Tools | Templates.
+        return getIcon(type);
     }
 
     @Override
@@ -75,9 +81,21 @@ class AndroidSdkNode extends AbstractNode implements PropertyChangeListener {
         return true;
     }
 
+    private final AtomicReference<JPanel> lastBrokenPanel = new AtomicReference<>(null);
+
     @Override
     public java.awt.Component getCustomizer() {
-        return new AndroidSdkCustomizer(platform, holder);
+        if (platform.isValid()) {
+            return new AndroidSdkCustomizer(platform, holder);
+        } else {
+            JPanel tmp = new JPanel();
+            tmp.setLayout(new java.awt.CardLayout());
+            tmp.add(new BrokenPlatformCustomizer(platform, holder, this));
+            tmp.invalidate();
+            tmp.repaint();
+            lastBrokenPanel.set(tmp);
+            return tmp;
+        }
     }
 
     @Override
@@ -86,6 +104,24 @@ class AndroidSdkNode extends AbstractNode implements PropertyChangeListener {
             fireDisplayNameChange(getDisplayName(), getHtmlDisplayName());
         } else {
             fireDisplayNameChange(getHtmlDisplayName(), getDisplayName());
+        }
+    }
+
+    @Override
+    public void sdkValid() {
+        fireIconChange();
+        fireOpenedIconChange();
+        setChildren(Children.create(new AndroidPlatformChildrenFactory(platform, holder), false));
+        JPanel tmp = lastBrokenPanel.get();
+        if (tmp != null) {
+            tmp.removeAll();
+            tmp.invalidate();
+            tmp.repaint();
+            tmp.setLayout(new java.awt.CardLayout());
+            tmp.add(new AndroidSdkCustomizer(platform, holder));
+            tmp.revalidate();
+            tmp.repaint();
+            tmp.requestFocus();
         }
     }
 
@@ -104,8 +140,10 @@ class AndroidSdkNode extends AbstractNode implements PropertyChangeListener {
 
         @Override
         protected boolean createKeys(List<AndroidPlatformInfo> toPopulate) {
-            List<AndroidPlatformInfo> tmp = platforms.get();
-            toPopulate.addAll(tmp);
+            if (platformImpl.isValid()) {
+                List<AndroidPlatformInfo> tmp = platforms.get();
+                toPopulate.addAll(tmp);
+            }
             return true;
         }
 

@@ -86,7 +86,6 @@ public class SDKWizardPanelSelect implements WizardDescriptor.Panel<WizardDescri
         // use wiz.putProperty to remember current panel state
         wiz.putProperty(SDKWizardPanelInstall.SDK_PATH, getComponent().getSdkPath());
         wiz.putProperty(SDKWizardPanelInstall.SDK_NAME, getComponent().getSdkName());
-        wiz.putProperty(SDKWizardPanelInstall.SDK_DEFAULT, getComponent().isSdkDefault());
     }
 
     @Override

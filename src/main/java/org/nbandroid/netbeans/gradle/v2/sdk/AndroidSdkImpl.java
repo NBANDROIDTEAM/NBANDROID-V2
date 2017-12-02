@@ -50,7 +50,8 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import org.gradle.impldep.com.google.common.collect.ImmutableList;
 import org.nbandroid.netbeans.gradle.core.sdk.NbDownloader;
 import org.nbandroid.netbeans.gradle.core.sdk.NbOutputWindowProgressIndicator;
@@ -77,6 +78,7 @@ import org.openide.windows.WindowManager;
 public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoManager.RepoLoadedCallback {
 
     public static final String DEFAULT_PLATFORM = "DEFAULT";
+    public static final String LOCATION = "LOCATION";
     private String displayName;
     private String sdkPath;
     private Map<String, String> properties = new HashMap<>();
@@ -100,6 +102,8 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
                             SdkConstants.FD_GAPID));
     private SdkManagerToolsRootNode toolRoot;
     private final Map<String, AndroidPlatformInfo> platformsList = new ConcurrentHashMap<>();
+    private final Vector<String> licensesOnline = new Vector<>();
+    private static final ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
 
     public AndroidSdkImpl(String displayName, String sdkPath, Map<String, String> properties, Map<String, String> sysproperties, List<AndroidPlatformInfo> platforms, boolean defaultSdk) {
         this.displayName = displayName;
@@ -131,6 +135,12 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
                     repoManager.registerLocalChangeListener(AndroidSdkImpl.this);
                     repoManager.registerRemoteChangeListener(AndroidSdkImpl.this);
                     updateSdkPlatformPackages();
+                    scheduledThreadPool.scheduleWithFixedDelay(new Runnable() {
+                        @Override
+                        public void run() {
+                            repoManager.reloadLocalIfNeeded(new NbOutputWindowProgressIndicator());
+                        }
+                    }, 30, 30, TimeUnit.SECONDS);
                 } else {
                     repoManager = null;
                 }
@@ -142,6 +152,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
                 AndroidSdk.pool.submit(runnable);
             }
         });
+
     }
 
     public AndroidSdkImpl(String displayName, String sdkPath) {
@@ -156,6 +167,11 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
     public AndroidSdkHandler getAndroidSdkHandler() {
         return androidSdkHandler;
     }
+
+    public String getSdkPath() {
+        return sdkPath;
+    }
+
 
     @Override
     public void addLocalPlatformChangeListener(LocalPlatformChangeListener l) {
@@ -275,7 +291,38 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
 
     @Override
     public void setSdkRootFolder(String sdkPath) {
+        String last = this.sdkPath;
         this.sdkPath = sdkPath;
+        firePropertyChange(LOCATION, last, sdkPath);
+        platforms.clear();
+        platformsList.clear();
+        final Runnable runnable = new Runnable() {
+
+            @Override
+            public void run() {
+                androidSdkHandler = AndroidSdkHandler.getInstance(new File(sdkPath));
+                if (androidSdkHandler != null) {
+                    repoManager = androidSdkHandler.getSdkManager(new NbOutputWindowProgressIndicator());
+                    repoManager.registerLocalChangeListener(AndroidSdkImpl.this);
+                    repoManager.registerRemoteChangeListener(AndroidSdkImpl.this);
+                    updateSdkPlatformPackages();
+                    scheduledThreadPool.scheduleWithFixedDelay(new Runnable() {
+                        @Override
+                        public void run() {
+                            repoManager.reloadLocalIfNeeded(new NbOutputWindowProgressIndicator());
+                        }
+                    }, 30, 30, TimeUnit.SECONDS);
+                } else {
+                    repoManager = null;
+                }
+            }
+        };
+        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+            @Override
+            public void run() {
+                AndroidSdk.pool.submit(runnable);
+            }
+        });
     }
 
     @Override
@@ -316,154 +363,149 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
         }
     }
 
-    private final ReentrantLock lock = new ReentrantLock(true);
-
     @Override
     public void doRun(RepositoryPackages packages) {
         loadPackages(packages);
     }
 
     private void loadPackages(RepositoryPackages packages) {
-        lock.lock();
-        try {
-            List<AndroidVersionNode> tmpPackages = new ArrayList<>();
-            Map<AndroidVersion, AndroidVersionNode> tmp = new HashMap<>();
-            toolsPackages = new ArrayList<>();
-            Vector<UpdatablePackage> platformsTmp = new Vector<>();
-            for (UpdatablePackage info : packages.getConsolidatedPkgs().values()) {
-                RepoPackage p = info.getRepresentative();
-                TypeDetails details = p.getTypeDetails();
-                if (info.hasLocal()) {
-                    License license = info.getRemote().getLicense();
-                    if (license != null) {
-                        if (!license.checkAccepted(FileUtil.toFile(getInstallFolder()), new FileOpImpl())) {
-                            if (!license.getValue().isEmpty()) {
-                                NotifyDescriptor nd = new NotifyDescriptor.Message(new AcceptLicenseForm(license.getValue(), info.getRepresentative().getDisplayName()), NotifyDescriptor.INFORMATION_MESSAGE);
-                                DialogDisplayer.getDefault().notifyLater(nd);
-                                license.setAccepted(FileUtil.toFile(getInstallFolder()), new FileOpImpl());
-                            } else {
-                                license.setAccepted(FileUtil.toFile(getInstallFolder()), new FileOpImpl());
-                            }
+        List<AndroidVersionNode> tmpPackages = new ArrayList<>();
+        Map<AndroidVersion, AndroidVersionNode> tmp = new HashMap<>();
+        toolsPackages = new ArrayList<>();
+        Vector<UpdatablePackage> platformsTmp = new Vector<>();
+        for (UpdatablePackage info : packages.getConsolidatedPkgs().values()) {
+            RepoPackage p = info.getRepresentative();
+            TypeDetails details = p.getTypeDetails();
+            if (info.hasLocal()) {
+                License license = info.getRemote().getLicense();
+                if (license != null) {
+                    if (!license.checkAccepted(FileUtil.toFile(getInstallFolder()), new FileOpImpl())) {
+                        if (!license.getValue().isEmpty() && !licensesOnline.contains(info.getRepresentative().getDisplayName())) {
+                            licensesOnline.add(info.getRepresentative().getDisplayName());
+                            NotifyDescriptor nd = new NotifyDescriptor.Message(new AcceptLicenseForm(license.getValue(), info.getRepresentative().getDisplayName()), NotifyDescriptor.INFORMATION_MESSAGE);
+                            DialogDisplayer.getDefault().notifyLater(nd);
+                            license.setAccepted(FileUtil.toFile(getInstallFolder()), new FileOpImpl());
+                            licensesOnline.remove(info.getRepresentative().getDisplayName());
+                        } else {
+                            license.setAccepted(FileUtil.toFile(getInstallFolder()), new FileOpImpl());
                         }
                     }
                 }
-                if ((details instanceof DetailsTypes.PlatformDetailsType) && info.hasLocal()) {
-                    platformsTmp.add(info);
-                }
+            }
+            if ((details instanceof DetailsTypes.PlatformDetailsType) && info.hasLocal()) {
+                platformsTmp.add(info);
+            }
 
-                if (details instanceof DetailsTypes.ApiDetailsType) {
-                    AndroidVersion androidVersion = ((DetailsTypes.ApiDetailsType) details).getAndroidVersion();
-                    if (tmp.containsKey(androidVersion)) {
-                        AndroidVersionNode avd = tmp.get(androidVersion);
-                        avd.addPackage(new SdkManagerPackageNode(avd, info));
-                    } else {
-                        AndroidVersionNode avd = new AndroidVersionNode(androidVersion);
-                        avd.addPackage(new SdkManagerPackageNode(avd, info));
-                        tmp.put(androidVersion, avd);
-                        tmpPackages.add(avd);
-                    }
+            if (details instanceof DetailsTypes.ApiDetailsType) {
+                AndroidVersion androidVersion = ((DetailsTypes.ApiDetailsType) details).getAndroidVersion();
+                if (tmp.containsKey(androidVersion)) {
+                    AndroidVersionNode avd = tmp.get(androidVersion);
+                    avd.addPackage(new SdkManagerPackageNode(avd, info));
                 } else {
-                    toolsPackages.add(info);
+                    AndroidVersionNode avd = new AndroidVersionNode(androidVersion);
+                    avd.addPackage(new SdkManagerPackageNode(avd, info));
+                    tmp.put(androidVersion, avd);
+                    tmpPackages.add(avd);
+                }
+            } else {
+                toolsPackages.add(info);
+            }
+        }
+        platforms = platformsTmp;
+        for (UpdatablePackage up : platformsTmp) {
+            AndroidPlatformInfo info = platformsList.get(up.getLocal().getLocation().getAbsolutePath());
+            if (info != null) {
+                try {
+                    info.update();
+                } catch (FileNotFoundException ex) {
+                    platformsList.remove(up.getLocal().getLocation().getAbsolutePath());
+                }
+            } else {
+                try {
+                    info = new AndroidPlatformInfo(up);
+                    platformsList.put(up.getLocal().getLocation().getAbsolutePath(), info);
+                } catch (FileNotFoundException ex) {
                 }
             }
-            platforms = platformsTmp;
-            for (UpdatablePackage up : platformsTmp) {
-                AndroidPlatformInfo info = platformsList.get(up.getLocal().getLocation().getAbsolutePath());
-                if (info != null) {
-                    try {
-                        info.update();
-                    } catch (FileNotFoundException ex) {
-                        platformsList.remove(up.getLocal().getLocation().getAbsolutePath());
-                    }
-                } else {
-                    try {
-                        info = new AndroidPlatformInfo(up);
-                        platformsList.put(up.getLocal().getLocation().getAbsolutePath(), info);
-                    } catch (FileNotFoundException ex) {
-                    }
-                }
-            }
-            firePropertyChange("test", true, false);
+        }
+        firePropertyChange("test", true, false);
 
-            List<AndroidPlatformInfo> tmpPlatformList = new ArrayList<>(platformsList.values());
-            AndroidSdkTools.orderByApliLevel(tmpPlatformList);
-            for (LocalPlatformChangeListener localListener : localListeners) {
-                try {
-                    localListener.platformListChanged(tmpPlatformList);
-                } catch (Exception e) {
-                    Exceptions.printStackTrace(e);
-                }
+        List<AndroidPlatformInfo> tmpPlatformList = new ArrayList<>(platformsList.values());
+        AndroidSdkTools.orderByApliLevel(tmpPlatformList);
+        for (LocalPlatformChangeListener localListener : localListeners) {
+            try {
+                localListener.platformListChanged(tmpPlatformList);
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
             }
-            Collections.sort(tmpPackages, new Comparator<AndroidVersionNode>() {
-                @Override
-                public int compare(AndroidVersionNode o1, AndroidVersionNode o2) {
-                    return o2.getCodeName().compareTo(o1.getCodeName());
-                }
-            });
-            platformPackages = new SdkManagerPlatformPackagesRootNode(tmpPackages);
-            for (SdkManagerPlatformChangeListener listener : listeners) {
-                try {
-                    listener.packageListChanged(platformPackages);
-                } catch (Exception e) {
-                    Exceptions.printStackTrace(e);
-                }
+        }
+        Collections.sort(tmpPackages, new Comparator<AndroidVersionNode>() {
+            @Override
+            public int compare(AndroidVersionNode o1, AndroidVersionNode o2) {
+                return o2.getCodeName().compareTo(o1.getCodeName());
             }
-            Map<String, SdkManagerToolsMultiPackageNode> tmpMulti = new HashMap<>();
-            Map<String, SdkManagerToolsMultiPackageNode> tmpMultiSupport = new HashMap<>();
-            toolRoot = new SdkManagerToolsRootNode();
-            SdkManagerToolsSupportNode supportNode = new SdkManagerToolsSupportNode(toolRoot);
-            for (UpdatablePackage p : toolsPackages) {
-                String prefix = p.getRepresentative().getPath();
-                int lastSegmentIndex = prefix.lastIndexOf(';');
-                boolean found = false;
-                if (lastSegmentIndex > 0) {
-                    prefix = prefix.substring(0, lastSegmentIndex);
-                    if (prefix.equals("patcher")) {
-                        // We don't want to show the patcher in the UI
-                        continue;
-                    }
-                    if (MULTI_VERSION_PREFIXES.contains(prefix) || p.getRepresentative().getTypeDetails() instanceof DetailsTypes.MavenType) {
-                        if (!(p.getRepresentative().getTypeDetails() instanceof DetailsTypes.MavenType)) {
-                            if (tmpMulti.containsKey(prefix)) {
-                                SdkManagerToolsMultiPackageNode node = tmpMulti.get(prefix);
-                                node.addNode(new SdkManagerToolsPackageNode(node, p));
-                            } else {
-                                SdkManagerToolsMultiPackageNode node = new SdkManagerToolsMultiPackageNode(toolRoot, prefix);
-                                node.addNode(new SdkManagerToolsPackageNode(node, p));
-                                tmpMulti.put(prefix, node);
-                                toolRoot.addNode(node);
-                            }
-                        } else if (tmpMultiSupport.containsKey(prefix)) {
-                            SdkManagerToolsMultiPackageNode node = tmpMultiSupport.get(prefix);
+        });
+        platformPackages = new SdkManagerPlatformPackagesRootNode(tmpPackages);
+        for (SdkManagerPlatformChangeListener listener : listeners) {
+            try {
+                listener.packageListChanged(platformPackages);
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        Map<String, SdkManagerToolsMultiPackageNode> tmpMulti = new HashMap<>();
+        Map<String, SdkManagerToolsMultiPackageNode> tmpMultiSupport = new HashMap<>();
+        toolRoot = new SdkManagerToolsRootNode();
+        SdkManagerToolsSupportNode supportNode = new SdkManagerToolsSupportNode(toolRoot);
+        for (UpdatablePackage p : toolsPackages) {
+            String prefix = p.getRepresentative().getPath();
+            int lastSegmentIndex = prefix.lastIndexOf(';');
+            boolean found = false;
+            if (lastSegmentIndex > 0) {
+                prefix = prefix.substring(0, lastSegmentIndex);
+                if (prefix.equals("patcher")) {
+                    // We don't want to show the patcher in the UI
+                    continue;
+                }
+                if (MULTI_VERSION_PREFIXES.contains(prefix) || p.getRepresentative().getTypeDetails() instanceof DetailsTypes.MavenType) {
+                    if (!(p.getRepresentative().getTypeDetails() instanceof DetailsTypes.MavenType)) {
+                        if (tmpMulti.containsKey(prefix)) {
+                            SdkManagerToolsMultiPackageNode node = tmpMulti.get(prefix);
                             node.addNode(new SdkManagerToolsPackageNode(node, p));
                         } else {
-                            SdkManagerToolsMultiPackageNode node = new SdkManagerToolsMultiPackageNode(supportNode, prefix);
+                            SdkManagerToolsMultiPackageNode node = new SdkManagerToolsMultiPackageNode(toolRoot, prefix);
                             node.addNode(new SdkManagerToolsPackageNode(node, p));
-                            tmpMultiSupport.put(prefix, node);
-                            supportNode.addNode(node);
+                            tmpMulti.put(prefix, node);
+                            toolRoot.addNode(node);
                         }
-                        found = true;
-                    }
-                }
-                if (!found) {
-                    if (p.getRepresentative().getPath().endsWith(RepoPackage.PATH_SEPARATOR + MavenInstallListener.MAVEN_DIR_NAME)) {
-                        supportNode.addNode(new SdkManagerToolsPackageNode(toolRoot, p));
+                    } else if (tmpMultiSupport.containsKey(prefix)) {
+                        SdkManagerToolsMultiPackageNode node = tmpMultiSupport.get(prefix);
+                        node.addNode(new SdkManagerToolsPackageNode(node, p));
                     } else {
-                        toolRoot.addNode(new SdkManagerToolsPackageNode(toolRoot, p));
+                        SdkManagerToolsMultiPackageNode node = new SdkManagerToolsMultiPackageNode(supportNode, prefix);
+                        node.addNode(new SdkManagerToolsPackageNode(node, p));
+                        tmpMultiSupport.put(prefix, node);
+                        supportNode.addNode(node);
                     }
+                    found = true;
                 }
             }
-            toolRoot.addNode(supportNode);
+            if (!found) {
+                if (p.getRepresentative().getPath().endsWith(RepoPackage.PATH_SEPARATOR + MavenInstallListener.MAVEN_DIR_NAME)) {
+                    supportNode.addNode(new SdkManagerToolsPackageNode(toolRoot, p));
+                } else {
+                    toolRoot.addNode(new SdkManagerToolsPackageNode(toolRoot, p));
+                }
+            }
+        }
+        toolRoot.addNode(supportNode);
 
-            for (SdkManagerToolsChangeListener toolsListener : toolsListeners) {
-                try {
-                    toolsListener.packageListChanged(toolRoot);
-                } catch (Exception e) {
-                    Exceptions.printStackTrace(e);
-                }
+        for (SdkManagerToolsChangeListener toolsListener : toolsListeners) {
+            try {
+                toolsListener.packageListChanged(toolRoot);
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
             }
-        } finally {
-            lock.unlock();
         }
     }
 
@@ -518,6 +560,16 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
         };
 
         DOWNLOAD_POOL.execute(runnable);
+    }
+
+    @Override
+    public boolean isBroken() {
+        return !AndroidSdkTools.isSdkFolder(FileUtil.toFile(getInstallFolder()));
+    }
+
+    @Override
+    public boolean isValid() {
+        return AndroidSdkTools.isSdkFolder(FileUtil.toFile(getInstallFolder()));
     }
 
 }

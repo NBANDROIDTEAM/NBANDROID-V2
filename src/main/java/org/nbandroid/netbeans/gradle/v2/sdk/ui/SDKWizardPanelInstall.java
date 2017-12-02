@@ -44,7 +44,6 @@ public class SDKWizardPanelInstall implements WizardDescriptor.Panel<WizardDescr
     private final List<ChangeListener> listeners = new ArrayList<>();
     public static final String SDK_PATH = "SDK_PATH";
     public static final String SDK_NAME = "SDK_NAME";
-    public static final String SDK_DEFAULT = "SDK_DEFAULT";
 
     @Override
     public SDKVisualPanelInstall getComponent() {
@@ -88,7 +87,6 @@ public class SDKWizardPanelInstall implements WizardDescriptor.Panel<WizardDescr
         if (getComponent().isSdkInstalled()) {
             wiz.putProperty(SDK_PATH, getComponent().getSdkPath());
             wiz.putProperty(SDKWizardPanelInstall.SDK_NAME, getComponent().getSdkName());
-            wiz.putProperty(SDKWizardPanelInstall.SDK_DEFAULT, getComponent().isSdkDefault());
         }
     }
 
