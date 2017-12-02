@@ -94,7 +94,6 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
                             SdkConstants.FD_GAPID));
     private SdkManagerToolsRootNode toolRoot;
     private final Map<String, AndroidPlatformInfo> platformsList = new ConcurrentHashMap<>();
-
     public AndroidSdkImpl(String displayName, String sdkPath, Map<String, String> properties, Map<String, String> sysproperties, List<AndroidPlatformInfo> platforms, boolean defaultSdk) {
         this.displayName = displayName;
         this.sdkPath = sdkPath;
@@ -110,6 +109,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
             this.sysproperties = new HashMap<>();
         }
         if (platforms != null) {
+            AndroidSdkTools.orderByApliLevel(platforms);
             for (AndroidPlatformInfo platform : platforms) {
                 platformsList.put(platform.getPlatformFolder().getAbsolutePath(), platform);
             }
@@ -359,9 +359,12 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
             }
         }
         firePropertyChange("test", true, false);
+
+        List<AndroidPlatformInfo> tmpPlatformList = new ArrayList<>(platformsList.values());
+        AndroidSdkTools.orderByApliLevel(tmpPlatformList);
         for (LocalPlatformChangeListener localListener : localListeners) {
             try {
-                localListener.platformListChanged(new ArrayList<>(platformsList.values()));
+                localListener.platformListChanged(tmpPlatformList);
             } catch (Exception e) {
                 Exceptions.printStackTrace(e);
             }
