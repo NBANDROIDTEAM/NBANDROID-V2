@@ -20,6 +20,7 @@ package org.nbandroid.netbeans.gradle.v2.sdk;
 
 import com.android.SdkConstants;
 import com.android.repository.api.Installer;
+import com.android.repository.api.License;
 import com.android.repository.api.LocalPackage;
 import com.android.repository.api.RepoManager;
 import com.android.repository.api.RepoPackage;
@@ -29,6 +30,7 @@ import com.android.repository.impl.installer.BasicInstallerFactory;
 import com.android.repository.impl.meta.RepositoryPackages;
 import com.android.repository.impl.meta.TypeDetails;
 import com.android.repository.io.FileOpUtils;
+import com.android.repository.io.impl.FileOpImpl;
 import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.repository.AndroidSdkHandler;
 import com.android.sdklib.repository.installer.MavenInstallListener;
@@ -59,6 +61,8 @@ import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsMultiPackageN
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsPackageNode;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsRootNode;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsSupportNode;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -322,6 +326,22 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
         for (UpdatablePackage info : packages.getConsolidatedPkgs().values()) {
             RepoPackage p = info.getRepresentative();
             TypeDetails details = p.getTypeDetails();
+            if (info.hasLocal()) {
+                License license = info.getLocal().getLicense();
+                if (license != null) {
+                    if (!license.checkAccepted(FileUtil.toFile(getInstallFolder()), new FileOpImpl())) {
+                        if (!license.getValue().isEmpty()) {
+                            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(new AcceptLicenseForm(license.getValue()), "Accept Android license", NotifyDescriptor.OK_CANCEL_OPTION);
+                            Object notify = DialogDisplayer.getDefault().notify(nd);
+                            if (NotifyDescriptor.OK_OPTION.equals(notify)) {
+                                license.setAccepted(FileUtil.toFile(getInstallFolder()), new FileOpImpl());
+                            }
+                        } else {
+                            license.setAccepted(FileUtil.toFile(getInstallFolder()), new FileOpImpl());
+                        }
+                    }
+                }
+            }
             if ((details instanceof DetailsTypes.PlatformDetailsType) && info.hasLocal()) {
                 platformsTmp.add(info);
             }
