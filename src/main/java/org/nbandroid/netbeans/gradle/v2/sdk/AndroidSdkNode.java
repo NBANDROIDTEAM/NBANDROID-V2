@@ -21,7 +21,6 @@ package org.nbandroid.netbeans.gradle.v2.sdk;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import org.nbandroid.netbeans.gradle.core.ui.IconProvider;
@@ -44,7 +43,7 @@ class AndroidSdkNode extends AbstractNode implements PropertyChangeListener {
     private final XMLDataObject holder;
 
     public AndroidSdkNode(AndroidSdkImpl p, XMLDataObject holder) {
-        super(Children.create(new AndroidPlatformChildrenFactory(p, holder), true), Lookups.fixed(new Object[]{p, holder}));
+        super(Children.create(new AndroidPlatformChildrenFactory(p, holder), false), Lookups.fixed(new Object[]{p, holder}));
         this.platform = p;
         p.addPropertyChangeListener(WeakListeners.propertyChange(this, AndroidSdkImpl.DEFAULT_PLATFORM, p));
         this.holder = holder;
@@ -94,10 +93,11 @@ class AndroidSdkNode extends AbstractNode implements PropertyChangeListener {
 
         private final AndroidSdkImpl platformImpl;
         private final XMLDataObject holder;
-        private final AtomicReference<List<AndroidPlatformInfo>> platforms = new AtomicReference<>(new ArrayList<AndroidPlatformInfo>());
+        private final AtomicReference<List<AndroidPlatformInfo>> platforms = new AtomicReference<>();
 
         public AndroidPlatformChildrenFactory(AndroidSdkImpl platformImpl, XMLDataObject holder) {
             this.platformImpl = platformImpl;
+            platforms.set(AndroidSdkTools.orderByApliLevel(platformImpl.getPlatforms()));
             this.holder = holder;
             platformImpl.addLocalPlatformChangeListener(this);
         }
