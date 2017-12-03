@@ -43,12 +43,14 @@ class AndroidSdkNode extends AbstractNode implements PropertyChangeListener, Bro
 
     private final AndroidSdk platform;
     private final XMLDataObject holder;
+    private boolean valid;
 
     public AndroidSdkNode(AndroidSdk p, XMLDataObject holder) {
         super(Children.create(new AndroidPlatformChildrenFactory(p, holder), false), Lookups.fixed(new Object[]{p, holder}));
         this.platform = p;
         p.addPropertyChangeListener(WeakListeners.propertyChange(this, AndroidSdk.DEFAULT_SDK, p));
         this.holder = holder;
+        valid = platform.isValid();
         //   super.setIconBaseWithExtension("org/netbeans/modules/java/j2seplatform/resources/platform.gif");
     }
 
@@ -64,6 +66,7 @@ class AndroidSdkNode extends AbstractNode implements PropertyChangeListener, Bro
 
     @Override
     public Image getIcon(int type) {
+        updateCustomizer();
         if (platform.isValid()) {
             return IconProvider.IMG_ANDROID_SDK_ICON;
         } else {
@@ -86,7 +89,13 @@ class AndroidSdkNode extends AbstractNode implements PropertyChangeListener, Bro
     @Override
     public java.awt.Component getCustomizer() {
         if (platform.isValid()) {
-            return new AndroidSdkCustomizer(platform, holder);
+            JPanel tmp = new JPanel();
+            tmp.setLayout(new java.awt.CardLayout());
+            tmp.add(new AndroidSdkCustomizer(platform, holder));
+            tmp.invalidate();
+            tmp.repaint();
+            lastBrokenPanel.set(tmp);
+            return tmp;
         } else {
             JPanel tmp = new JPanel();
             tmp.setLayout(new java.awt.CardLayout());
@@ -122,6 +131,28 @@ class AndroidSdkNode extends AbstractNode implements PropertyChangeListener, Bro
             tmp.revalidate();
             tmp.repaint();
             tmp.requestFocus();
+        }
+    }
+
+    public void updateCustomizer() {
+        if (valid != platform.isValid()) {
+            valid = platform.isValid();
+            setChildren(Children.create(new AndroidPlatformChildrenFactory(platform, holder), false));
+            JPanel tmp = lastBrokenPanel.get();
+            if (tmp != null) {
+                tmp.removeAll();
+                tmp.invalidate();
+                tmp.repaint();
+                tmp.setLayout(new java.awt.CardLayout());
+                if (platform.isValid()) {
+                    tmp.add(new AndroidSdkCustomizer(platform, holder));
+                } else {
+                    tmp.add(new BrokenPlatformCustomizer(platform, holder, this));
+                }
+                tmp.revalidate();
+                tmp.repaint();
+                tmp.requestFocus();
+            }
         }
     }
 
