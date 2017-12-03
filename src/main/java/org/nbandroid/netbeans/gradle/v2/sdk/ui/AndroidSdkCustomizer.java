@@ -5,10 +5,10 @@
  */
 package org.nbandroid.netbeans.gradle.v2.sdk.ui;
 
+import javax.swing.JTabbedPane;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.ui.SdkPlatformPanel;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.ui.SdkToolsPanel;
-import javax.swing.JTabbedPane;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkImpl;
 import org.openide.loaders.XMLDataObject;
 
 /**
@@ -17,7 +17,7 @@ import org.openide.loaders.XMLDataObject;
  */
 public class AndroidSdkCustomizer extends JTabbedPane {
 
-    public AndroidSdkCustomizer(AndroidSdkImpl platform, XMLDataObject holder) {
+    public AndroidSdkCustomizer(AndroidSdk platform, XMLDataObject holder) {
         super();
         SdkPlatformPanel panel = new SdkPlatformPanel(platform);
         addTab("SDK Platforms", panel);

@@ -17,7 +17,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.gradle.impldep.org.apache.commons.io.FileUtils;
 import org.nbandroid.netbeans.gradle.v2.maven.MavenDownloader;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkImpl;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import static org.nbandroid.netbeans.gradle.v2.sdk.ui.SDKVisualPanelInstall.SDK_INSTALLED;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
@@ -48,12 +48,12 @@ public class PanelDownloadToBrokenSDK extends javax.swing.JPanel {
     private final List<String> files = new ArrayList<>();
     private File platformTools;
     private File tools;
-    private final AndroidSdkImpl sdk;
+    private final AndroidSdk sdk;
 
     /**
      * Creates new form PanelDownloadToBrokenSDK
      */
-    public PanelDownloadToBrokenSDK(AndroidSdkImpl sdk) {
+    public PanelDownloadToBrokenSDK(AndroidSdk sdk) {
         this.sdk = sdk;
         initComponents();
         warning.setVisible(false);

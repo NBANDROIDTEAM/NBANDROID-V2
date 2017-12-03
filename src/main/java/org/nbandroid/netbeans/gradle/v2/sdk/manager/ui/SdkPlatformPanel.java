@@ -36,9 +36,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.tree.DefaultTreeModel;
 import org.nbandroid.netbeans.gradle.core.ui.*;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkImpl;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidVersionNode;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPackageNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformChangeListener;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformPackagesRootNode;
 import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.OutlineModel;
@@ -48,7 +48,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.util.NbPreferences;
 import org.openide.util.WeakListeners;
 import org.openide.windows.WindowManager;
-import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformChangeListener;
 
 /**
  * Visual Android SDK platform installer
@@ -71,7 +70,7 @@ public class SdkPlatformPanel extends javax.swing.JPanel implements ExplorerMana
     /**
      * Creates new form SdkPlatformPanel
      */
-    public SdkPlatformPanel(AndroidSdkImpl platform) {
+    public SdkPlatformPanel(AndroidSdk platform) {
         initComponents();
         tableMenu.add(installMenuItem);
         tableMenu.add(updateMenuItem);

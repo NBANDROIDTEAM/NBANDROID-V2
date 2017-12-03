@@ -18,11 +18,8 @@
  */
 package org.nbandroid.netbeans.gradle.v2.sdk;
 
-import com.android.repository.api.RepoPackage;
-import com.android.repository.api.UpdatablePackage;
-import com.android.repository.impl.meta.TypeDetails;
 import com.android.sdklib.AndroidVersion;
-import com.android.sdklib.repository.meta.DetailsTypes;
+import com.android.sdklib.IAndroidTarget;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URI;
@@ -57,20 +54,22 @@ public class AndroidPlatformInfo {
     private final List<PathRecord> srcPaths = new ArrayList<>();
     private final List<PathRecord> javadocPaths = new ArrayList<>();
     private final AndroidVersion androidVersion;
+    private final String hashString;
+    private IAndroidTarget target = null;
 
-    public AndroidPlatformInfo(File platformFolder, String platformName, AndroidVersion androidVersion) {
+    public AndroidPlatformInfo(File platformFolder, String platformName, AndroidVersion androidVersion, String hashString) {
         this.platformFolder = platformFolder;
         this.platformName = platformName;
         this.androidVersion = androidVersion;
+        this.hashString = hashString;
     }
 
-    public AndroidPlatformInfo(UpdatablePackage pkg) throws FileNotFoundException {
-        this.platformFolder = pkg.getLocal().getLocation();
-        this.platformName = pkg.getLocal().getDisplayName();
-        RepoPackage p = pkg.getRepresentative();
-        TypeDetails details = p.getTypeDetails();
-        androidVersion = ((DetailsTypes.ApiDetailsType) details).getAndroidVersion();
-        update();
+    public AndroidPlatformInfo(IAndroidTarget target) throws FileNotFoundException {
+        this.platformFolder = new File(target.getLocation());
+        this.platformName = target.getFullName();
+        androidVersion = target.getVersion();
+        hashString = target.hashString();
+        update(target);
 
     }
 
@@ -78,7 +77,13 @@ public class AndroidPlatformInfo {
         return androidVersion;
     }
 
-    public final void update() throws FileNotFoundException {
+    public IAndroidTarget getAndroidTarget() {
+        return target;
+    }
+
+
+    public final void update(IAndroidTarget target) throws FileNotFoundException {
+        this.target = target;
         Iterator<PathRecord> iterator = bootPaths.iterator();
         while (iterator.hasNext()) {
             PathRecord next = iterator.next();
@@ -101,39 +106,30 @@ public class AndroidPlatformInfo {
         if (sourceDir != null) {
             addSrcPath(FileUtil.urlForArchiveOrDir(FileUtil.toFile(sourceDir)), false);
         }
-        FileObject dataDir = binaryRoot.getFileObject(DATA_FOLDER);
-        if (dataDir != null) {
-            Enumeration<? extends FileObject> children = dataDir.getChildren(true);
-            while (children.hasMoreElements()) {
-                FileObject nextElement = children.nextElement();
-                if (JAR.equals(nextElement.getExt())) {
-                    addBootPath(FileUtil.urlForArchiveOrDir(FileUtil.toFile(nextElement)), false);
-                }
-            }
+        List<String> bootClasspaths = target.getBootClasspath();
+        for (String bootClasspath : bootClasspaths) {
+            addBootPath(FileUtil.urlForArchiveOrDir(new File(bootClasspath)), false);
         }
-
-        FileObject optionalDir = binaryRoot.getFileObject(OPTIONAL_FOLDER);
-        if (optionalDir != null) {
-            Enumeration<? extends FileObject> children = optionalDir.getChildren(true);
-            while (children.hasMoreElements()) {
-                FileObject nextElement = children.nextElement();
-                if (JAR.equals(nextElement.getExt())) {
-                    addBootPath(FileUtil.urlForArchiveOrDir(FileUtil.toFile(nextElement)), false);
-                }
-            }
+        List<IAndroidTarget.OptionalLibrary> additionalLibraries = target.getAdditionalLibraries();
+        for (IAndroidTarget.OptionalLibrary additionalLibrarie : additionalLibraries) {
+            addBootPath(FileUtil.urlForArchiveOrDir(additionalLibrarie.getJar()), false);
+        }
+        List<IAndroidTarget.OptionalLibrary> optionalLibraries = target.getOptionalLibraries();
+        for (IAndroidTarget.OptionalLibrary optionalLibrarie : optionalLibraries) {
+            addBootPath(FileUtil.urlForArchiveOrDir(optionalLibrarie.getJar()), false);
         }
 
         Enumeration<? extends FileObject> children = binaryRoot.getChildren(false);
         while (children.hasMoreElements()) {
             FileObject nextElement = children.nextElement();
             if (JAR.equals(nextElement.getExt())) {
-                if (!"android-stubs-src.jar".equalsIgnoreCase(nextElement.getNameExt())) {
-                    addBootPath(FileUtil.urlForArchiveOrDir(FileUtil.toFile(nextElement)), false);
-                } else {
+                if (nextElement.getNameExt().endsWith("-src.jar")) {
                     FileObject archiveRoot = FileUtil.getArchiveRoot(nextElement);
                     FileObject src = archiveRoot.getFileObject("src");
                     if (src != null) {
                         addSrcPath(src.toURL(), false);
+                    } else {
+                        addSrcPath(archiveRoot.toURL(), false);
                     }
                 }
             }
@@ -427,6 +423,10 @@ public class AndroidPlatformInfo {
     @Override
     public String toString() {
         return platformName; //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public String getHashString() {
+        return hashString;
     }
 
 }

@@ -151,15 +151,15 @@ public class AndroidExtensionDef implements GradleProjectExtensionDef<Serializab
                         } while (!NotifyDescriptor.OK_OPTION.equals(notify1) && name != null && !name.isEmpty());
                         final String sdkName = name;
                         //this thread holds ProjectManager.mutex().read must be called outside
-                        Callable<AndroidSdkImpl> run = new Callable<AndroidSdkImpl>() {
+                        Callable<AndroidSdk> run = new Callable<AndroidSdk>() {
                             @Override
-                            public AndroidSdkImpl call() throws Exception {
+                            public AndroidSdk call() throws Exception {
                                 AndroidSdkImpl defaultSdk = new AndroidSdkImpl(sdkName, sdkDir);
                                 PlatformConvertor.create(defaultSdk);
                                 return defaultSdk;
                             }
                         };
-                        Future<AndroidSdkImpl> submit = Executors.newSingleThreadExecutor().submit(run);
+                        Future<AndroidSdk> submit = Executors.newSingleThreadExecutor().submit(run);
                         try {
                             defaultSdk = submit.get();
                         } catch (InterruptedException | ExecutionException ex) {

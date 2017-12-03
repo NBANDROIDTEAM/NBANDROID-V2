@@ -31,7 +31,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkImpl;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -45,7 +45,7 @@ import org.openide.util.WeakListeners;
 public class AndroidPlatformCustomizer extends javax.swing.JPanel {
 
     private AndroidPlatformInfo aPackage;
-    private AndroidSdkImpl sdk;
+    private AndroidSdk sdk;
     private final List<ListDataListener> classListeners = new ArrayList<>();
     private final List<ListDataListener> sourceListeners = new ArrayList<>();
     private final List<ListDataListener> javadocListeners = new ArrayList<>();
@@ -61,7 +61,7 @@ public class AndroidPlatformCustomizer extends javax.swing.JPanel {
 
     }
 
-    public AndroidPlatformCustomizer(AndroidPlatformInfo aPackage, AndroidSdkImpl sdk) {
+    public AndroidPlatformCustomizer(AndroidPlatformInfo aPackage, AndroidSdk sdk) {
         this();
         this.aPackage = aPackage;
         this.sdk = sdk;

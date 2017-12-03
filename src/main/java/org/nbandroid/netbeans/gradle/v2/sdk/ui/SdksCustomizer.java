@@ -45,7 +45,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkImpl;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -80,9 +80,9 @@ public class SdksCustomizer extends javax.swing.JPanel implements PropertyChange
 
     private PlatformCategoriesChildren children;
     private ExplorerManager manager;
-    private final AndroidSdkImpl initialPlatform;
-    private AndroidSdkImpl selectedPlatform;
-    private static final Vector<AndroidSdkImpl> platformsList = new Vector<>();
+    private final AndroidSdk initialPlatform;
+    private AndroidSdk selectedPlatform;
+    private static final Vector<AndroidSdk> platformsList = new Vector<>();
 
     /**
      * Shows platforms customizer
@@ -388,7 +388,7 @@ public class SdksCustomizer extends javax.swing.JPanel implements PropertyChange
                     if (wiz.getValue() == WizardDescriptor.FINISH_OPTION) {
                         self.getChildren().refreshPlatforms();
                         Set result = wiz.getInstantiatedObjects();
-                        self.expandPlatforms(result.isEmpty() ? null : (AndroidSdkImpl) result.iterator().next());
+                        self.expandPlatforms(result.isEmpty() ? null : (AndroidSdk) result.iterator().next());
                     }
                 } finally {
                     dlg.dispose();
@@ -405,7 +405,7 @@ public class SdksCustomizer extends javax.swing.JPanel implements PropertyChange
     }//GEN-LAST:event_addNewPlatform
 
     private void mkDefaultActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mkDefaultActionPerformed
-        for (AndroidSdkImpl plt : platformsList) {
+        for (AndroidSdk plt : platformsList) {
             if (plt.isDefaultSdk()) {
                 plt.setDefault(false);
             }
@@ -444,7 +444,7 @@ public class SdksCustomizer extends javax.swing.JPanel implements PropertyChange
         }
         JComponent target = messageArea;
         JComponent owner = messageArea;
-        selectedPlatform = pNode.getLookup().lookup(AndroidSdkImpl.class);
+        selectedPlatform = pNode.getLookup().lookup(AndroidSdk.class);
         if (pNode != getExplorerManager().getRootContext()) {
             if (selectedPlatform != null) {
                 mkDefault.setEnabled(!selectedPlatform.isDefaultSdk());
@@ -504,7 +504,7 @@ public class SdksCustomizer extends javax.swing.JPanel implements PropertyChange
         container.add(component);
     }
 
-    private boolean canRemove(final AndroidSdkImpl platform, final DataObject dobj) {
+    private boolean canRemove(final AndroidSdk platform, final DataObject dobj) {
         if (isDefaultPlatform(platform)) {
             return false;
         }
@@ -518,21 +518,21 @@ public class SdksCustomizer extends javax.swing.JPanel implements PropertyChange
         return true;
     }
 
-    private static boolean isDefaultPlatform(AndroidSdkImpl platform) {
+    private static boolean isDefaultPlatform(AndroidSdk platform) {
         return platform.isDefaultSdk();
     }
 
-    private void expandPlatforms(AndroidSdkImpl platform) {
+    private void expandPlatforms(AndroidSdk platform) {
         ExplorerManager mgr = this.getExplorerManager();
         Node node = mgr.getRootContext();
         expandAllNodes(this.platforms, node, mgr, platform);
     }
 
-    private static void expandAllNodes(BeanTreeView btv, Node node, ExplorerManager mgr, AndroidSdkImpl platform) {
+    private static void expandAllNodes(BeanTreeView btv, Node node, ExplorerManager mgr, AndroidSdk platform) {
         btv.expandNode(node);
         Children ch = node.getChildren();
         if (ch == Children.LEAF) {
-            if (platform != null && platform.equals(node.getLookup().lookup(AndroidSdkImpl.class))) {
+            if (platform != null && platform.equals(node.getLookup().lookup(AndroidSdk.class))) {
                 try {
                     mgr.setSelectedNodes(new Node[]{node});
                 } catch (PropertyVetoException e) {
@@ -729,7 +729,7 @@ public class SdksCustomizer extends javax.swing.JPanel implements PropertyChange
                     try {
                         final DataObject dobj = DataObject.find(child);
                         Node node = dobj.getNodeDelegate();
-                        AndroidSdkImpl platform = node.getLookup().lookup(AndroidSdkImpl.class);
+                        AndroidSdk platform = node.getLookup().lookup(AndroidSdk.class);
                         if (platform != null) {
                             platformsList.add(platform);
                             final String platformType = "Android";

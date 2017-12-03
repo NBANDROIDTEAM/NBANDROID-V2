@@ -41,13 +41,13 @@ import org.openide.util.lookup.Lookups;
  */
 class AndroidSdkNode extends AbstractNode implements PropertyChangeListener, BrokenPlatformCustomizer.SdkValidListener {
 
-    private final AndroidSdkImpl platform;
+    private final AndroidSdk platform;
     private final XMLDataObject holder;
 
-    public AndroidSdkNode(AndroidSdkImpl p, XMLDataObject holder) {
+    public AndroidSdkNode(AndroidSdk p, XMLDataObject holder) {
         super(Children.create(new AndroidPlatformChildrenFactory(p, holder), false), Lookups.fixed(new Object[]{p, holder}));
         this.platform = p;
-        p.addPropertyChangeListener(WeakListeners.propertyChange(this, AndroidSdkImpl.DEFAULT_PLATFORM, p));
+        p.addPropertyChangeListener(WeakListeners.propertyChange(this, AndroidSdk.DEFAULT_PLATFORM, p));
         this.holder = holder;
         //   super.setIconBaseWithExtension("org/netbeans/modules/java/j2seplatform/resources/platform.gif");
     }
@@ -127,11 +127,11 @@ class AndroidSdkNode extends AbstractNode implements PropertyChangeListener, Bro
 
     private static class AndroidPlatformChildrenFactory extends ChildFactory<AndroidPlatformInfo> implements LocalPlatformChangeListener {
 
-        private final AndroidSdkImpl platformImpl;
+        private final AndroidSdk platformImpl;
         private final XMLDataObject holder;
         private final AtomicReference<List<AndroidPlatformInfo>> platforms = new AtomicReference<>();
 
-        public AndroidPlatformChildrenFactory(AndroidSdkImpl platformImpl, XMLDataObject holder) {
+        public AndroidPlatformChildrenFactory(AndroidSdk platformImpl, XMLDataObject holder) {
             this.platformImpl = platformImpl;
             platforms.set(AndroidSdkTools.orderByApliLevel(platformImpl.getPlatforms()));
             this.holder = holder;

@@ -36,12 +36,10 @@ import java.util.logging.Logger;
 import org.gradle.tooling.model.gradle.GradleBuild;
 import org.nbandroid.netbeans.ext.navigation.ProjectResourceLocator;
 import org.nbandroid.netbeans.gradle.*;
-import org.nbandroid.netbeans.gradle.api.PropertyName;
 import org.nbandroid.netbeans.gradle.api.TestOutputConsumer;
 import org.nbandroid.netbeans.gradle.config.AndroidBuildVariants;
 import org.nbandroid.netbeans.gradle.config.AndroidTestRunConfiguration;
 import org.nbandroid.netbeans.gradle.config.BuildVariant;
-import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatformManager;
 import org.nbandroid.netbeans.gradle.core.sdk.StatsCollector;
 import org.nbandroid.netbeans.gradle.launch.GradleDebugInfo;
 import org.nbandroid.netbeans.gradle.launch.Launches;
@@ -66,8 +64,6 @@ import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.netbeans.api.project.Project;
 import org.netbeans.gradle.project.api.entry.GradleProjectExtension2;
 import org.netbeans.spi.project.AuxiliaryProperties;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -205,7 +201,6 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         if (LOG.isLoggable(Level.FINE)) {
             logLoadedProject(aPrj, build);
         }
-        ensurePlatformManager(FileUtil.toFile(project.getProjectDirectory()));
         for (Object item : items) {
             ic.add(item);
         }
@@ -221,21 +216,6 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         StatsCollector.getDefault().incrementCounter("gradleproject");
     }
 
-    // TODO should call with prjRoot of root project - not submodule
-    private static void ensurePlatformManager(File prjRoot) {
-        DalvikPlatformManager dpm = DalvikPlatformManager.getDefault();
-        if (dpm.getSdkLocation() == null) {
-            // TODO: can add fixed prop eval with ANDROID_HOME env var
-            PropertyEvaluator evaluator = PropertyUtils.sequentialPropertyEvaluator(
-                    PropertyUtils.propertiesFilePropertyProvider(new File(prjRoot, "local.properties")));
-            String sdkDir = evaluator.getProperty(PropertyName.SDK_DIR.getName());
-            if (sdkDir != null) {
-                dpm.setSdkLocation(sdkDir);
-            } else {
-                LOG.log(Level.CONFIG, "Android SDK home is not set in Android plugin");
-            }
-        }
-    }
 
     private void clearAndroidProject() {
         LOG.log(Level.FINE, "removing android support from {0}", project);

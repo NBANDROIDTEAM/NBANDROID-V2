@@ -42,6 +42,7 @@ public class GradlePlatformResolver implements DalvikPlatformResolver, AndroidMo
             return null;
         }
         LOG.log(Level.FINE, "look for dalvik platform for {0}", aPrj.getCompileTarget());
+        String compileTarget = aPrj.getCompileTarget();
         return DalvikPlatformManager.getDefault().findPlatformForTarget(aPrj.getCompileTarget());
     }
 
