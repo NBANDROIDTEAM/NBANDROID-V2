@@ -57,6 +57,7 @@ Sysproperties hold a list of system properties as reported by the SDK
     name CDATA #REQUIRED
     path CDATA #REQUIRED
     apilevel CDATA #REQUIRED
+    hash CDATA #REQUIRED
   >
 
 <!--- Boot classpath list -->

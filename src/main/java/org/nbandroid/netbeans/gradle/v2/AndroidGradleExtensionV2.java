@@ -28,20 +28,24 @@ import com.android.builder.model.Variant;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.gradle.tooling.model.gradle.GradleBuild;
 import org.nbandroid.netbeans.ext.navigation.ProjectResourceLocator;
 import org.nbandroid.netbeans.gradle.*;
-import org.nbandroid.netbeans.gradle.api.PropertyName;
 import org.nbandroid.netbeans.gradle.api.TestOutputConsumer;
 import org.nbandroid.netbeans.gradle.config.AndroidBuildVariants;
 import org.nbandroid.netbeans.gradle.config.AndroidTestRunConfiguration;
 import org.nbandroid.netbeans.gradle.config.BuildVariant;
-import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatformManager;
 import org.nbandroid.netbeans.gradle.core.sdk.StatsCollector;
 import org.nbandroid.netbeans.gradle.launch.GradleDebugInfo;
 import org.nbandroid.netbeans.gradle.launch.Launches;
@@ -60,17 +64,21 @@ import org.nbandroid.netbeans.gradle.spi.ProjectRefResolver;
 import org.nbandroid.netbeans.gradle.testrunner.TestOutputConsumerLookupProvider;
 import org.nbandroid.netbeans.gradle.ui.AndroidTestsProvider;
 import org.nbandroid.netbeans.gradle.ui.BuildCustomizerProvider;
+import static org.nbandroid.netbeans.gradle.v2.AndroidExtensionDef.COMMENT;
+import static org.nbandroid.netbeans.gradle.v2.AndroidExtensionDef.SDK_DIR;
 import org.nbandroid.netbeans.gradle.v2.gradle.GradleAndroidRepositoriesProvider;
 import org.nbandroid.netbeans.gradle.v2.project.AndroidSdkConfigProvider;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.netbeans.api.project.Project;
+import org.netbeans.gradle.project.NbGradleProject;
 import org.netbeans.gradle.project.api.entry.GradleProjectExtension2;
 import org.netbeans.spi.project.AuxiliaryProperties;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
@@ -79,7 +87,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author radim
  */
-public class AndroidGradleExtensionV2 implements GradleProjectExtension2<SerializableLookup> {
+public class AndroidGradleExtensionV2 implements GradleProjectExtension2<SerializableLookup>, PropertyChangeListener {
 
     private static final Logger LOG = Logger.getLogger(AndroidGradleExtensionV2.class.getName());
 
@@ -109,6 +117,13 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         final AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
         BuildVariant buildCfg = new BuildVariant(props);
         AndroidTestRunConfiguration testCfg = new AndroidTestRunConfiguration(props);
+        if (sdk != null) {
+            //add SDK  to lookup
+            items.add(sdk);
+        }
+        if (sdk == null || sdk.isDefaultSdk()) {
+            AndroidSdkProvider.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, AndroidSdkProvider.PROP_INSTALLED_SDKS, AndroidSdkProvider.getDefault()));
+        }
         items.add(buildCfg);
         items.add(testCfg);
         items.add(levelQuery);
@@ -205,7 +220,6 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         if (LOG.isLoggable(Level.FINE)) {
             logLoadedProject(aPrj, build);
         }
-        ensurePlatformManager(FileUtil.toFile(project.getProjectDirectory()));
         for (Object item : items) {
             ic.add(item);
         }
@@ -221,21 +235,6 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         StatsCollector.getDefault().incrementCounter("gradleproject");
     }
 
-    // TODO should call with prjRoot of root project - not submodule
-    private static void ensurePlatformManager(File prjRoot) {
-        DalvikPlatformManager dpm = DalvikPlatformManager.getDefault();
-        if (dpm.getSdkLocation() == null) {
-            // TODO: can add fixed prop eval with ANDROID_HOME env var
-            PropertyEvaluator evaluator = PropertyUtils.sequentialPropertyEvaluator(
-                    PropertyUtils.propertiesFilePropertyProvider(new File(prjRoot, "local.properties")));
-            String sdkDir = evaluator.getProperty(PropertyName.SDK_DIR.getName());
-            if (sdkDir != null) {
-                dpm.setSdkLocation(sdkDir);
-            } else {
-                LOG.log(Level.CONFIG, "Android SDK home is not set in Android plugin");
-            }
-        }
-    }
 
     private void clearAndroidProject() {
         LOG.log(Level.FINE, "removing android support from {0}", project);
@@ -307,6 +306,44 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
     @Override
     public Lookup getExtensionLookup() {
         return Lookup.EMPTY;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (localProperties != null) {
+            AndroidSdk defaultSdk = AndroidSdkProvider.getDefaultSdk();
+            if (defaultSdk != null) {
+                sdk = defaultSdk;
+                storeLocalProperties(defaultSdk, localProperties);
+                ((NbGradleProject) project).reloadProject();
+            }
+        }
+    }
+
+    public void storeLocalProperties(AndroidSdk defaultPlatform, FileObject localProperties) {
+        FileOutputStream fo = null;
+        try {
+            Properties properties = new Properties();
+            //have default SDK write to properties
+            properties.setProperty(SDK_DIR, defaultPlatform.getInstallFolder().getPath());
+            fo = new FileOutputStream(FileUtil.toFile(localProperties));
+            try {
+                properties.store(fo, COMMENT.replace("#DATE", new Date().toString()));
+            } finally {
+                try {
+                    fo.close();
+                } catch (IOException iOException) {
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            try {
+                fo.close();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
 }

@@ -5,7 +5,7 @@
  */
 package org.nbandroid.netbeans.gradle.v2.sdk.ui;
 
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkImpl;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.loaders.XMLDataObject;
@@ -16,13 +16,13 @@ import org.openide.loaders.XMLDataObject;
  */
 public class BrokenPlatformCustomizer extends javax.swing.JPanel {
 
-    private final AndroidSdkImpl platform;
+    private final AndroidSdk platform;
     private final XMLDataObject holder;
     private final SdkValidListener listener;
     /**
      * Creates new form BrokenPlatformCustomizer
      */
-    public BrokenPlatformCustomizer(AndroidSdkImpl platform, XMLDataObject holder, SdkValidListener listener) {
+    public BrokenPlatformCustomizer(AndroidSdk platform, XMLDataObject holder, SdkValidListener listener) {
         initComponents();
         this.platform = platform;
         this.holder = holder;

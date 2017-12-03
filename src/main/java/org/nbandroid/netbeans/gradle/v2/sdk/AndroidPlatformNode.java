@@ -34,9 +34,9 @@ import org.openide.util.lookup.Lookups;
 public class AndroidPlatformNode extends AbstractNode {
 
     private final AndroidPlatformInfo aPackage;
-    private final AndroidSdkImpl platform;
+    private final AndroidSdk platform;
 
-    AndroidPlatformNode(AndroidPlatformInfo aPackage, AndroidSdkImpl platform, XMLDataObject holder) {
+    AndroidPlatformNode(AndroidPlatformInfo aPackage, AndroidSdk platform, XMLDataObject holder) {
         super(Children.LEAF, Lookups.fixed(new Object[]{platform, holder, aPackage}));
         this.aPackage = aPackage;
         this.platform = platform;

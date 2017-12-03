@@ -115,11 +115,11 @@ public class AndroidExtensionDef implements GradleProjectExtensionDef<Serializab
     public GradleProjectExtension2<SerializableLookup> createExtension(Project project) throws IOException {
         boolean isAndroidProject = false;
         AndroidSdk defaultSdk = null;
+        FileObject localProperties = null;
         FileObject buildScript = project.getProjectDirectory().getFileObject(BUILD_GRADLE);
         if (buildScript != null) {
             isAndroidProject = FindAndroidVisitor.visit(FileUtil.toFile(buildScript));
         }
-        FileObject localProperties = null;
         if (isAndroidProject) {
             localProperties = findAndroidLocalProperties(project.getProjectDirectory(), project);
             if (localProperties == null) {
@@ -127,64 +127,64 @@ public class AndroidExtensionDef implements GradleProjectExtensionDef<Serializab
                 localProperties = rootProject.getProjectDirectory().createData(LOCAL_PROPERTIES);
             }
         }
-        if (localProperties != null && isAndroidProject) {
-            Properties properties = new Properties();
-            properties.load(localProperties.getInputStream());
-            final String sdkDir = properties.getProperty(SDK_DIR, null);
-            if (sdkDir == null || !AndroidSdkTools.isSdkFolder(new File(sdkDir))) {
-                //no local.properties
-                //no default SDK
-                defaultSdk = handleDefaultSdk(project, properties, localProperties);
-            } else {
-                //we have valid SDK folder
-                defaultSdk = AndroidSdkProvider.findSdk(new File(sdkDir));
-                if (defaultSdk == null) {
-                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation("<html>Project " + ((NbGradleProject) project).getDisplayName() + " contains a SDK that is not defined in the IDE.<br>Do you want to add this SDK?<br>When you choose No, the default SDK will be used.</html>", "Android SDK import", NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
-                    Object notify = DialogDisplayer.getDefault().notify(nd);
-                    if (NotifyDescriptor.YES_OPTION.equals(notify)) {
-                        NotifyDescriptor.InputLine nd1 = new NotifyDescriptor.InputLine("Please enter the name of SDK", "Android SDK import", NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
-                        Object notify1;
-                        String name = null;
-                        do {
-                            notify1 = DialogDisplayer.getDefault().notify(nd1);
-                            name = nd1.getInputText();
-                        } while (!NotifyDescriptor.OK_OPTION.equals(notify1) && name != null && !name.isEmpty());
-                        final String sdkName = name;
-                        //this thread holds ProjectManager.mutex().read must be called outside
-                        Callable<AndroidSdkImpl> run = new Callable<AndroidSdkImpl>() {
-                            @Override
-                            public AndroidSdkImpl call() throws Exception {
-                                AndroidSdkImpl defaultSdk = new AndroidSdkImpl(sdkName, sdkDir);
-                                PlatformConvertor.create(defaultSdk);
-                                return defaultSdk;
-                            }
-                        };
-                        Future<AndroidSdkImpl> submit = Executors.newSingleThreadExecutor().submit(run);
-                        try {
-                            defaultSdk = submit.get();
-                        } catch (InterruptedException | ExecutionException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                        if (defaultSdk != null) {
-                            storeLocalProperties(properties, defaultSdk, localProperties);
-                        } else {
-                            throw new IOException();
-                        }
-                    } else {
-                        //use default SDK
-                        defaultSdk = handleDefaultSdk(project, properties, localProperties);
-                    }
-                }
-                //SDK from local.properties is OK continue
-            }
+        try {
 
-        } else if (isAndroidProject) {
-            throw new IOException("Unable to create local.properties..");
+            if (localProperties != null && isAndroidProject) {
+                Properties properties = new Properties();
+                properties.load(localProperties.getInputStream());
+                final String sdkDir = properties.getProperty(SDK_DIR, null);
+                if (sdkDir == null || !AndroidSdkTools.isSdkFolder(new File(sdkDir))) {
+                    //no local.properties
+                    //no default SDK
+                    defaultSdk = handleDefaultSdk(project, properties, localProperties);
+                } else {
+                    //we have valid SDK folder
+                    defaultSdk = AndroidSdkProvider.findSdk(new File(sdkDir));
+                    if (defaultSdk == null) {
+                        NotifyDescriptor nd = new NotifyDescriptor.Confirmation("<html>Project " + ((NbGradleProject) project).getDisplayName() + " contains a SDK that is not defined in the IDE.<br>Do you want to add this SDK?<br>When you choose No, the default SDK will be used.</html>", "Android SDK import", NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
+                        Object notify = DialogDisplayer.getDefault().notify(nd);
+                        if (NotifyDescriptor.YES_OPTION.equals(notify)) {
+                            NotifyDescriptor.InputLine nd1 = new NotifyDescriptor.InputLine("Please enter the name of SDK", "Android SDK import", NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
+                            Object notify1;
+                            String name = null;
+                            do {
+                                notify1 = DialogDisplayer.getDefault().notify(nd1);
+                                name = nd1.getInputText();
+                            } while (!NotifyDescriptor.OK_OPTION.equals(notify1) && name != null && !name.isEmpty());
+                            final String sdkName = name;
+                            //this thread holds ProjectManager.mutex().read must be called outside
+                            Callable<AndroidSdk> run = new Callable<AndroidSdk>() {
+                                @Override
+                                public AndroidSdk call() throws Exception {
+                                    AndroidSdkImpl defaultSdk = new AndroidSdkImpl(sdkName, sdkDir);
+                                    PlatformConvertor.create(defaultSdk);
+                                    return defaultSdk;
+                                }
+                            };
+                            Future<AndroidSdk> submit = Executors.newSingleThreadExecutor().submit(run);
+                            try {
+                                defaultSdk = submit.get();
+                            } catch (InterruptedException | ExecutionException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                            if (defaultSdk != null) {
+                                storeLocalProperties(properties, defaultSdk, localProperties);
+                            }
+                        } else {
+                            //use default SDK
+                            defaultSdk = handleDefaultSdk(project, properties, localProperties);
+                        }
+                    }
+                    //SDK from local.properties is OK continue
+                }
+
+            }
+        } catch (IOException iOException) {
         }
         return new AndroidGradleExtensionV2(project, defaultSdk, localProperties);
     }
 
-    public AndroidSdk handleDefaultSdk(Project project, Properties properties, FileObject localProperties) throws IOException {
+    public AndroidSdk handleDefaultSdk(Project project, Properties properties, FileObject localProperties) {
         AndroidSdk defaultSdk = AndroidSdkProvider.getDefaultSdk();
         if (defaultSdk == null || defaultSdk.isBroken()) {//no default SDK
             NotifyDescriptor nd2 = null;
@@ -200,11 +200,7 @@ public class AndroidExtensionDef implements GradleProjectExtensionDef<Serializab
                     if (defaultSdk != null) {
                         storeLocalProperties(properties, defaultSdk, localProperties);
                         return defaultSdk;
-                    } else {
-                        throw new IOException("Default Android SDK is not defined..");
                     }
-                } else {
-                    throw new IOException("Default Android SDK is not defined..");
                 }
             } else {
                 nd2 = new NotifyDescriptor.Confirmation("<html><b>Broken Android SDK!</b><br>"
@@ -217,11 +213,7 @@ public class AndroidExtensionDef implements GradleProjectExtensionDef<Serializab
                     if (defaultSdk.isValid()) {
                         storeLocalProperties(properties, defaultSdk, localProperties);
                         return defaultSdk;
-                    } else {
-                        throw new IOException("Default Android SDK is not defined..");
                     }
-                } else {
-                    throw new IOException("Default Android SDK is not defined..");
                 }
             }
 
@@ -229,18 +221,30 @@ public class AndroidExtensionDef implements GradleProjectExtensionDef<Serializab
             storeLocalProperties(properties, defaultSdk, localProperties);
             return defaultSdk;
         }
+        return null;
     }
 
-    public void storeLocalProperties(Properties properties, AndroidSdk defaultPlatform, FileObject localProperties) throws IOException {
-        //have default SDK write to properties
-        properties.setProperty(SDK_DIR, defaultPlatform.getInstallFolder().getPath());
-        FileOutputStream fo = new FileOutputStream(FileUtil.toFile(localProperties));
+    public void storeLocalProperties(Properties properties, AndroidSdk defaultPlatform, FileObject localProperties) {
+        FileOutputStream fo = null;
         try {
-            properties.store(fo, COMMENT.replace("#DATE", new Date().toString()));
+            //have default SDK write to properties
+            properties.setProperty(SDK_DIR, defaultPlatform.getInstallFolder().getPath());
+            fo = new FileOutputStream(FileUtil.toFile(localProperties));
+            try {
+                properties.store(fo, COMMENT.replace("#DATE", new Date().toString()));
+            } finally {
+                try {
+                    fo.close();
+                } catch (IOException iOException) {
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         } finally {
             try {
                 fo.close();
-            } catch (IOException iOException) {
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     }

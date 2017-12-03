@@ -36,7 +36,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.tree.DefaultTreeModel;
 import org.nbandroid.netbeans.gradle.core.ui.*;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkImpl;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsChangeListener;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsMultiPackageNode;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsPackageNode;
@@ -70,7 +69,7 @@ public class SdkToolsPanel extends javax.swing.JPanel implements SdkManagerTools
     /**
      * Creates new form SdkToolsPanel
      */
-    public SdkToolsPanel(AndroidSdkImpl platform) {
+    public SdkToolsPanel(AndroidSdk platform) {
         initComponents();
         tableMenu.add(installMenuItem);
         tableMenu.add(updateMenuItem);

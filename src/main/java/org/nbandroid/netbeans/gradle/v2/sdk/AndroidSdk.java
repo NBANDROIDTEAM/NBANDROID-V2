@@ -24,6 +24,8 @@ import com.android.repository.api.ProgressRunner;
 import com.android.repository.api.RepoManager;
 import com.android.repository.api.SettingsController;
 import com.android.repository.api.UpdatablePackage;
+import com.android.sdklib.devices.Device;
+import com.android.sdklib.devices.DeviceManager;
 import com.android.sdklib.repository.AndroidSdkHandler;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -42,6 +44,9 @@ import org.openide.filesystems.FileObject;
  * @author arsi
  */
 public abstract class AndroidSdk {
+
+    public static final String DEFAULT_SDK = "DEFAULT_SDK";
+    public static final String LOCATION = "LOCATION";
 
     public static final ExecutorService pool = Executors.newCachedThreadPool();
     private PropertyChangeSupport supp;
@@ -63,12 +68,16 @@ public abstract class AndroidSdk {
 
     public abstract AndroidSdkHandler getAndroidSdkHandler();
 
+    public abstract List<AndroidPlatformInfo> getPlatforms();
+
     /**
      * Get Android repo manager
      *
      * @return RepoManager or null if no SDK location is set
      */
     public abstract RepoManager getRepoManager();
+
+    public abstract void store();
 
     /**
      * Update SDK platform pakages list After update is fired
@@ -106,6 +115,8 @@ public abstract class AndroidSdk {
      * @param aPackage UpdatablePackage
      */
     public abstract void installPackage(final UpdatablePackage aPackage);
+
+    public abstract String getSdkPath();
 
     public abstract void addLocalPlatformChangeListener(LocalPlatformChangeListener l);
 
@@ -211,5 +222,13 @@ public abstract class AndroidSdk {
             supp.firePropertyChange(propName, oldValue, newValue);
         }
     }
+
+    public abstract AndroidPlatformInfo findPlatformForTarget(String target);
+
+    public abstract AndroidPlatformInfo findPlatformForPlatformVersion(final int sdkVersion);
+
+    public abstract DeviceManager getDeviceManager();
+
+    public abstract Iterable<Device> getDevices();
 
 }

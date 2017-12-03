@@ -32,14 +32,19 @@ import com.android.repository.impl.meta.TypeDetails;
 import com.android.repository.io.FileOpUtils;
 import com.android.repository.io.impl.FileOpImpl;
 import com.android.sdklib.AndroidVersion;
+import com.android.sdklib.IAndroidTarget;
+import com.android.sdklib.devices.Device;
+import com.android.sdklib.devices.DeviceManager;
 import com.android.sdklib.repository.AndroidSdkHandler;
 import com.android.sdklib.repository.installer.MavenInstallListener;
 import com.android.sdklib.repository.meta.DetailsTypes;
+import com.android.sdklib.repository.targets.AndroidTargetManager;
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -55,6 +60,7 @@ import java.util.concurrent.TimeUnit;
 import org.gradle.impldep.com.google.common.collect.ImmutableList;
 import org.nbandroid.netbeans.gradle.core.sdk.NbDownloader;
 import org.nbandroid.netbeans.gradle.core.sdk.NbOutputWindowProgressIndicator;
+import org.nbandroid.netbeans.gradle.core.sdk.SdkLogProvider;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPackageNode;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformChangeListener;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformPackagesRootNode;
@@ -77,14 +83,13 @@ import org.openide.windows.WindowManager;
  */
 public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoManager.RepoLoadedCallback {
 
-    public static final String DEFAULT_PLATFORM = "DEFAULT";
-    public static final String LOCATION = "LOCATION";
     private String displayName;
     private String sdkPath;
     private Map<String, String> properties = new HashMap<>();
     private Map<String, String> sysproperties = new HashMap<>();
     private boolean defaultSdk;
     private AndroidSdkHandler androidSdkHandler;
+    private AndroidTargetManager androidTargetManager;
     private RepoManager repoManager;
     //max 3 paralel downloads
     public static final ExecutorService DOWNLOAD_POOL = Executors.newFixedThreadPool(3);
@@ -104,6 +109,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
     private final Map<String, AndroidPlatformInfo> platformsList = new ConcurrentHashMap<>();
     private final Vector<String> licensesOnline = new Vector<>();
     private static final ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
+    private DeviceManager deviceManager = null;
 
     public AndroidSdkImpl(String displayName, String sdkPath, Map<String, String> properties, Map<String, String> sysproperties, List<AndroidPlatformInfo> platforms, boolean defaultSdk) {
         this.displayName = displayName;
@@ -122,7 +128,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
         if (platforms != null) {
             AndroidSdkTools.orderByApliLevel(platforms);
             for (AndroidPlatformInfo platform : platforms) {
-                platformsList.put(platform.getPlatformFolder().getAbsolutePath(), platform);
+                platformsList.put(platform.getHashString(), platform);
             }
         }
         final Runnable runnable = new Runnable() {
@@ -134,6 +140,8 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
                     repoManager = androidSdkHandler.getSdkManager(new NbOutputWindowProgressIndicator());
                     repoManager.registerLocalChangeListener(AndroidSdkImpl.this);
                     repoManager.registerRemoteChangeListener(AndroidSdkImpl.this);
+                    androidTargetManager = androidSdkHandler.getAndroidTargetManager(new NbOutputWindowProgressIndicator() {
+                    });
                     updateSdkPlatformPackages();
                     scheduledThreadPool.scheduleWithFixedDelay(new Runnable() {
                         @Override
@@ -171,7 +179,6 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
     public String getSdkPath() {
         return sdkPath;
     }
-
 
     @Override
     public void addLocalPlatformChangeListener(LocalPlatformChangeListener l) {
@@ -305,6 +312,8 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
                     repoManager = androidSdkHandler.getSdkManager(new NbOutputWindowProgressIndicator());
                     repoManager.registerLocalChangeListener(AndroidSdkImpl.this);
                     repoManager.registerRemoteChangeListener(AndroidSdkImpl.this);
+                    androidTargetManager = androidSdkHandler.getAndroidTargetManager(new NbOutputWindowProgressIndicator() {
+                    });
                     updateSdkPlatformPackages();
                     scheduledThreadPool.scheduleWithFixedDelay(new Runnable() {
                         @Override
@@ -329,7 +338,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
     public void setDefault(boolean defaultSdk) {
         boolean last = this.defaultSdk;
         this.defaultSdk = defaultSdk;
-        firePropertyChange(DEFAULT_PLATFORM, last, defaultSdk);
+        firePropertyChange(DEFAULT_SDK, last, defaultSdk);
     }
 
     @Override
@@ -368,7 +377,70 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
         loadPackages(packages);
     }
 
+    @Override
+    public DeviceManager getDeviceManager() {
+        if (deviceManager == null) {
+            deviceManager = DeviceManager.createInstance(new File(sdkPath), SdkLogProvider.createLogger(true));
+        }
+        return deviceManager;
+    }
+
+    @Override
+    public Iterable<Device> getDevices() {
+        return getDeviceManager().getDevices(DeviceManager.ALL_DEVICES);
+    }
+
+    @Override
+    public AndroidPlatformInfo findPlatformForTarget(String target) {
+        if (target == null) {
+            return null;
+        }
+        return platformsList.get(target);
+    }
+
+    @Override
+    public AndroidPlatformInfo findPlatformForPlatformVersion(final int sdkVersion) {
+        for (Map.Entry<String, AndroidPlatformInfo> entry : platformsList.entrySet()) {
+            AndroidPlatformInfo info = entry.getValue();
+            if (info.getAndroidTarget().getVersion().getApiLevel() == sdkVersion) {
+                return info;
+            }
+        }
+        return null;
+    }
+
     private void loadPackages(RepositoryPackages packages) {
+        Collection<IAndroidTarget> targets = androidTargetManager.getTargets(new NbOutputWindowProgressIndicator() {
+        });
+        for (IAndroidTarget target : targets) {
+            if (target.isPlatform()) {
+                AndroidPlatformInfo info = platformsList.get(target.hashString());
+                if (info != null) {
+                    try {
+                        info.update(target);
+                    } catch (FileNotFoundException ex) {
+                        platformsList.remove(target.hashString());
+                    }
+                } else {
+                    try {
+                        info = new AndroidPlatformInfo(target);
+                        platformsList.put(target.hashString(), info);
+                    } catch (FileNotFoundException ex) {
+                    }
+                }
+            }
+        }
+        firePropertyChange("test", true, false);
+        List<AndroidPlatformInfo> tmpPlatformList = new ArrayList<>(platformsList.values());
+        AndroidSdkTools.orderByApliLevel(tmpPlatformList);
+        for (LocalPlatformChangeListener localListener : localListeners) {
+            try {
+                localListener.platformListChanged(tmpPlatformList);
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+
         List<AndroidVersionNode> tmpPackages = new ArrayList<>();
         Map<AndroidVersion, AndroidVersionNode> tmp = new HashMap<>();
         toolsPackages = new ArrayList<>();
@@ -411,34 +483,9 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
                 toolsPackages.add(info);
             }
         }
-        platforms = platformsTmp;
-        for (UpdatablePackage up : platformsTmp) {
-            AndroidPlatformInfo info = platformsList.get(up.getLocal().getLocation().getAbsolutePath());
-            if (info != null) {
-                try {
-                    info.update();
-                } catch (FileNotFoundException ex) {
-                    platformsList.remove(up.getLocal().getLocation().getAbsolutePath());
-                }
-            } else {
-                try {
-                    info = new AndroidPlatformInfo(up);
-                    platformsList.put(up.getLocal().getLocation().getAbsolutePath(), info);
-                } catch (FileNotFoundException ex) {
-                }
-            }
-        }
-        firePropertyChange("test", true, false);
 
-        List<AndroidPlatformInfo> tmpPlatformList = new ArrayList<>(platformsList.values());
-        AndroidSdkTools.orderByApliLevel(tmpPlatformList);
-        for (LocalPlatformChangeListener localListener : localListeners) {
-            try {
-                localListener.platformListChanged(tmpPlatformList);
-            } catch (Exception e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
+        platforms = platformsTmp;
+
         Collections.sort(tmpPackages, new Comparator<AndroidVersionNode>() {
             @Override
             public int compare(AndroidVersionNode o1, AndroidVersionNode o2) {
