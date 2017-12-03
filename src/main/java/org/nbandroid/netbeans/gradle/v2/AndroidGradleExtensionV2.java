@@ -122,7 +122,7 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
             items.add(sdk);
         }
         if (sdk == null || sdk.isDefaultSdk()) {
-            AndroidSdkProvider.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, AndroidSdkProvider.PROP_INSTALLED_SDKS, AndroidSdkProvider.getDefault()));
+            AndroidSdkProvider.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, AndroidSdkProvider.PROP_DEFAULT_SDK, AndroidSdkProvider.getDefault()));
         }
         items.add(buildCfg);
         items.add(testCfg);

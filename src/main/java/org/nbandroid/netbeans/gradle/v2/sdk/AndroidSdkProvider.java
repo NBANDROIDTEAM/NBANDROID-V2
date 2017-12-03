@@ -36,6 +36,7 @@ public class AndroidSdkProvider implements FileChangeListener {
 
     public static final String PLATFORM_STORAGE = "Services/Platforms/org-nbandroid-netbeans-gradle-Platform"; //NOI18N
     public static final String PROP_INSTALLED_SDKS = "PROP_INSTALLED_SDKS";
+    public static final String PROP_DEFAULT_SDK = "PROP_DEFAULT_SDK";
     private static FileObject storageCache;
     private static FileObject lastFound;
 
@@ -52,31 +53,19 @@ public class AndroidSdkProvider implements FileChangeListener {
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private static final Logger LOG = Logger.getLogger(AndroidSdkProvider.class.getName());
     private final AtomicReference<AndroidSdk[]> sdks = new AtomicReference<>(new AndroidSdk[0]);
+    private final AtomicReference<AndroidSdk> defaultSdk = new AtomicReference<>(null);
 
     protected AndroidSdk[] getSDKs() {
         return sdks.get();
     }
+
     /**
      * Get default SDK manager
      *
      * @return AndroidSdk
      */
     public static final AndroidSdk getDefaultSdk() {
-        AndroidSdk[] installedSDKs = Lookup.getDefault().lookup(AndroidSdkProvider.class).getSDKs();
-        switch (installedSDKs.length) {
-            case 1:
-                return installedSDKs[0];
-            case 0:
-                return null;
-            default: {
-                for (AndroidSdk installedPlatform : installedSDKs) {
-                    if (installedPlatform.isDefaultSdk()) {
-                        return installedPlatform;
-                    }
-                }
-                return installedSDKs[0];
-            }
-        }
+        return Lookup.getDefault().lookup(AndroidSdkProvider.class).getSdkDefault();
     }
 
     public static final AndroidSdkProvider getDefault() {
@@ -92,7 +81,11 @@ public class AndroidSdkProvider implements FileChangeListener {
         firePropertyChange();
     }
 
-    protected void updateSDKs() {
+    public AndroidSdk getSdkDefault() {
+        return defaultSdk.get();
+    }
+
+    protected AndroidSdk[] updateSDKs() {
         final List<AndroidSdk> platforms = new ArrayList<>();
         final FileObject storage = getStorage();
         if (storage != null) {
@@ -130,10 +123,7 @@ public class AndroidSdkProvider implements FileChangeListener {
                 Exceptions.printStackTrace(cnf);
             }
         }
-        if (platforms.size() == 1) {
-            platforms.get(0).setDefault(true);
-        }
-        sdks.set(platforms.toArray(new AndroidSdk[platforms.size()]));
+        return platforms.toArray(new AndroidSdk[platforms.size()]);
     }
 
     private synchronized FileObject getStorage() {
@@ -210,9 +200,36 @@ public class AndroidSdkProvider implements FileChangeListener {
     }
 
     private void firePropertyChange() {
-        AndroidSdk[] last = getSDKs();
-        updateSDKs();
-        pcs.firePropertyChange(PROP_INSTALLED_SDKS, last, getSDKs());
+        AndroidSdk[] updateSDKs = updateSDKs();
+        AndroidSdk[] last = sdks.getAndSet(updateSDKs);
+        if (updateSDKs.length == 1 && !updateSDKs[0].isDefaultSdk()) {
+            makeFirstSdkDefault(updateSDKs);
+        } else if (updateSDKs.length > 1) {//more SDKs find default
+            boolean err = true;
+            for (AndroidSdk updateSDK : updateSDKs) {
+                if (updateSDK.isDefaultSdk()) {
+                    AndroidSdk lastDef = defaultSdk.getAndSet(updateSDK);
+                    pcs.firePropertyChange(PROP_DEFAULT_SDK, lastDef, updateSDK);
+                    err = false;
+                    break;
+                }
+            }
+            if (err) {// no SDK is marked default, set first
+                makeFirstSdkDefault(updateSDKs);
+            }
+
+        } else {
+            AndroidSdk lastDef = defaultSdk.getAndSet(null);
+            pcs.firePropertyChange(PROP_DEFAULT_SDK, lastDef, null);
+        }
+        pcs.firePropertyChange(PROP_INSTALLED_SDKS, last, updateSDKs);
+
+    }
+
+    public void makeFirstSdkDefault(AndroidSdk[] updateSDKs) {
+        updateSDKs[0].setDefault(true);
+        AndroidSdk lastDef = defaultSdk.getAndSet(updateSDKs[0]);
+        pcs.firePropertyChange(PROP_DEFAULT_SDK, lastDef, updateSDKs[0]);
     }
 
     /**
