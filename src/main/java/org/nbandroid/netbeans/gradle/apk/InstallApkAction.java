@@ -18,12 +18,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.nbandroid.netbeans.gradle.avd.AvdSelector;
 import org.nbandroid.netbeans.gradle.configs.ConfigBuilder;
-import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatformManager;
 import org.nbandroid.netbeans.gradle.launch.AndroidLauncher;
 import org.nbandroid.netbeans.gradle.launch.AndroidLauncherImpl;
 import org.nbandroid.netbeans.gradle.launch.LaunchConfiguration;
 import org.nbandroid.netbeans.gradle.launch.LaunchConfiguration.TargetMode;
 import org.nbandroid.netbeans.gradle.launch.LaunchInfo;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
@@ -42,17 +44,23 @@ public final class InstallApkAction implements ActionListener {
 
             @Override
             public void run() {
-                AndroidLauncher launcher = new AndroidLauncherImpl();
-                LaunchConfiguration cfg = ConfigBuilder.builder()
-                        .withName("dummy").withTargetMode(TargetMode.AUTO).config().getLaunchConfiguration();
-                AvdSelector.LaunchData launchData = launcher.configAvd(
-                        DalvikPlatformManager.getDefault().getSdkManager(), null, cfg);
-                if (launchData == null || launchData.getDevice() == null) {
-                    return;
+                Project owner = FileOwnerQuery.getOwner(context.getDeployableFile());
+                if (owner != null) {
+                    AndroidSdk sdk = owner.getLookup().lookup(AndroidSdk.class);
+                    if (sdk != null) {
+                        AndroidLauncher launcher = new AndroidLauncherImpl();
+                        LaunchConfiguration cfg = ConfigBuilder.builder()
+                                .withName("dummy").withTargetMode(TargetMode.AUTO).config().getLaunchConfiguration();
+                        AvdSelector.LaunchData launchData = launcher.configAvd(
+                                sdk.getAndroidSdkHandler(), null, cfg);
+                        if (launchData == null || launchData.getDevice() == null) {
+                            return;
+                        }
+                        ManifestData manifest = new ApkUtils().apkPackageName(FileUtil.toFile(context.getDeployableFile()));
+                        launcher.simpleLaunch(new LaunchInfo(context.getDeployableFile(),
+                                /*reinstall*/ true, /*debug*/ false, null, manifest), launchData.getDevice());
+                    }
                 }
-                ManifestData manifest = new ApkUtils().apkPackageName(FileUtil.toFile(context.getDeployableFile()));
-                launcher.simpleLaunch(new LaunchInfo(context.getDeployableFile(),
-                        /*reinstall*/ true, /*debug*/ false, null, manifest), launchData.getDevice());
             }
         });
     }

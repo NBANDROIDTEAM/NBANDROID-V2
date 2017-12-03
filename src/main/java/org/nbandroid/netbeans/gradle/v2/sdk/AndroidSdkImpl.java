@@ -338,7 +338,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
     public void setDefault(boolean defaultSdk) {
         boolean last = this.defaultSdk;
         this.defaultSdk = defaultSdk;
-        firePropertyChange(DEFAULT_PLATFORM, last, defaultSdk);
+        firePropertyChange(DEFAULT_SDK, last, defaultSdk);
     }
 
     @Override

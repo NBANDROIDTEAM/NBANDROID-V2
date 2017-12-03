@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.nbandroid.netbeans.gradle.core.sdk.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -79,6 +80,21 @@ public class AndroidPlatformInfo {
 
     public IAndroidTarget getAndroidTarget() {
         return target;
+    }
+
+    public FileObject getSDKFolderFo() {
+        IAndroidTarget platformTarget = target;
+        while (platformTarget != null && !platformTarget.isPlatform()) {
+            platformTarget = platformTarget.getParent();
+        }
+        FileObject platformDir = platformTarget == null
+                ? null
+                : FileUtil.toFileObject(FileUtil.normalizeFile(new File(platformTarget.getLocation())));
+        return platformDir;
+    }
+
+    public FileObject findTool(String toolName) {
+        return Util.findTool(toolName, getSDKFolderFo());
     }
 
 
@@ -290,7 +306,7 @@ public class AndroidPlatformInfo {
         javadocPaths.remove(record);
     }
 
-    public File getPlatformFolder() {
+    public File getSDKFolder() {
         return platformFolder;
     }
 

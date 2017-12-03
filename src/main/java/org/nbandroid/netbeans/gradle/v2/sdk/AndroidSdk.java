@@ -45,7 +45,7 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class AndroidSdk {
 
-    public static final String DEFAULT_PLATFORM = "DEFAULT";
+    public static final String DEFAULT_SDK = "DEFAULT_SDK";
     public static final String LOCATION = "LOCATION";
 
     public static final ExecutorService pool = Executors.newCachedThreadPool();

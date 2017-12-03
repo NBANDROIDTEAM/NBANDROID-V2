@@ -47,7 +47,7 @@ class AndroidSdkNode extends AbstractNode implements PropertyChangeListener, Bro
     public AndroidSdkNode(AndroidSdk p, XMLDataObject holder) {
         super(Children.create(new AndroidPlatformChildrenFactory(p, holder), false), Lookups.fixed(new Object[]{p, holder}));
         this.platform = p;
-        p.addPropertyChangeListener(WeakListeners.propertyChange(this, AndroidSdk.DEFAULT_PLATFORM, p));
+        p.addPropertyChangeListener(WeakListeners.propertyChange(this, AndroidSdk.DEFAULT_SDK, p));
         this.holder = holder;
         //   super.setIconBaseWithExtension("org/netbeans/modules/java/j2seplatform/resources/platform.gif");
     }

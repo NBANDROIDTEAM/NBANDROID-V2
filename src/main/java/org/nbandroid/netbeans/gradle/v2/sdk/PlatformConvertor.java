@@ -358,7 +358,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 final Element platformElement = doc.createElement(ELEMENT_PLATFORM);
                 try {
                     platformElement.setAttribute(ATTR_PROPERTY_NAME, XMLUtil.toAttributeValue(platform.getPlatformName()));
-                    platformElement.setAttribute(ATTR_PLATFORM_PATH, XMLUtil.toAttributeValue(platform.getPlatformFolder().getPath()));
+                    platformElement.setAttribute(ATTR_PLATFORM_PATH, XMLUtil.toAttributeValue(platform.getSDKFolder().getPath()));
                     platformElement.setAttribute(ATTR_PLATFORM_APILEVEL, XMLUtil.toAttributeValue("" + platform.getAndroidVersion().getApiLevel()));
                     platformElement.setAttribute(ATTR_PLATFORM_HASH, XMLUtil.toAttributeValue(platform.getHashString()));
                 } catch (CharConversionException ex) {
@@ -367,7 +367,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                             "Cannot store attr: {0} value: {1}", //NOI18N
                             new Object[]{
                                 platform.getPlatformName(),
-                                platform.getPlatformFolder().getPath()
+                                platform.getSDKFolder().getPath()
                             });
                 }
 

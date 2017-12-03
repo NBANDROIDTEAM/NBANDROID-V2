@@ -125,7 +125,7 @@ public final class Util {
         return normalizedName.toString();
     }
 
-    static FileObject findTool(String toolName, FileObject installFolder) {
+    public static FileObject findTool(String toolName, FileObject installFolder) {
         assert toolName != null;
         Tool t = toTool(toolName);
         boolean isBinary = sdkTools().contains(t);

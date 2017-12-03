@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.cookies.InstanceCookie;
@@ -34,12 +35,12 @@ import org.openide.util.lookup.ServiceProvider;
 public class AndroidSdkProvider implements FileChangeListener {
 
     public static final String PLATFORM_STORAGE = "Services/Platforms/org-nbandroid-netbeans-gradle-Platform"; //NOI18N
-    public static final String PROP_INSTALLED_PLATFORMS = "PROP_INSTALLED_PLATFORMS";
+    public static final String PROP_INSTALLED_SDKS = "PROP_INSTALLED_SDKS";
     private static FileObject storageCache;
     private static FileObject lastFound;
 
     public static AndroidSdk findSdk(File file) {
-        AndroidSdk[] installedPlatforms = Lookup.getDefault().lookup(AndroidSdkProvider.class).getInstalledSDKsInt();
+        AndroidSdk[] installedPlatforms = Lookup.getDefault().lookup(AndroidSdkProvider.class).getSDKs();
         for (AndroidSdk installedPlatform : installedPlatforms) {
             if (installedPlatform.getInstallFolder().equals(FileUtil.toFileObject(file))) {
                 return installedPlatform;
@@ -50,26 +51,30 @@ public class AndroidSdkProvider implements FileChangeListener {
     private FileChangeListener pathListener;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private static final Logger LOG = Logger.getLogger(AndroidSdkProvider.class.getName());
+    private final AtomicReference<AndroidSdk[]> sdks = new AtomicReference<>(new AndroidSdk[0]);
 
+    protected AndroidSdk[] getSDKs() {
+        return sdks.get();
+    }
     /**
      * Get default SDK manager
      *
      * @return AndroidSdk
      */
     public static final AndroidSdk getDefaultSdk() {
-        AndroidSdk[] installedPlatforms = Lookup.getDefault().lookup(AndroidSdkProvider.class).getInstalledSDKsInt();
-        switch (installedPlatforms.length) {
+        AndroidSdk[] installedSDKs = Lookup.getDefault().lookup(AndroidSdkProvider.class).getSDKs();
+        switch (installedSDKs.length) {
             case 1:
-                return installedPlatforms[0];
+                return installedSDKs[0];
             case 0:
                 return null;
             default: {
-                for (AndroidSdk installedPlatform : installedPlatforms) {
+                for (AndroidSdk installedPlatform : installedSDKs) {
                     if (installedPlatform.isDefaultSdk()) {
                         return installedPlatform;
                     }
                 }
-                return installedPlatforms[0];
+                return installedSDKs[0];
             }
         }
     }
@@ -79,13 +84,15 @@ public class AndroidSdkProvider implements FileChangeListener {
     }
 
     public static final AndroidSdk[] getInstalledSDKs() {
-        return Lookup.getDefault().lookup(AndroidSdkProvider.class).getInstalledSDKsInt();
+        return Lookup.getDefault().lookup(AndroidSdkProvider.class).getSDKs();
     }
 
     public AndroidSdkProvider() {
+        getStorage();
+        firePropertyChange();
     }
 
-    protected final AndroidSdk[] getInstalledSDKsInt() {
+    protected void updateSDKs() {
         final List<AndroidSdk> platforms = new ArrayList<>();
         final FileObject storage = getStorage();
         if (storage != null) {
@@ -123,7 +130,10 @@ public class AndroidSdkProvider implements FileChangeListener {
                 Exceptions.printStackTrace(cnf);
             }
         }
-        return platforms.toArray(new AndroidSdk[platforms.size()]);
+        if (platforms.size() == 1) {
+            platforms.get(0).setDefault(true);
+        }
+        sdks.set(platforms.toArray(new AndroidSdk[platforms.size()]));
     }
 
     private synchronized FileObject getStorage() {
@@ -200,7 +210,9 @@ public class AndroidSdkProvider implements FileChangeListener {
     }
 
     private void firePropertyChange() {
-        pcs.firePropertyChange(PROP_INSTALLED_PLATFORMS, null, null);
+        AndroidSdk[] last = getSDKs();
+        updateSDKs();
+        pcs.firePropertyChange(PROP_INSTALLED_SDKS, last, getSDKs());
     }
 
     /**
