@@ -96,7 +96,7 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
     private final Lookup projectAddOnLookup;
     private final List<Object> items = Lists.newArrayList();
     private final GradleProjectOpenedHook openHook;
-    private final SourceLevelQueryImpl2 levelQuery = new SourceLevelQueryImpl2();
+    private final SourceLevelQueryImpl2 levelQuery;
     private final GradleAndroidClassPathProvider androidClassPathProvider;
     // testing support
     @VisibleForTesting
@@ -111,6 +111,7 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
     public AndroidGradleExtensionV2(Project project, AndroidSdk sdk, FileObject localProperties) {
         this.project = Preconditions.checkNotNull(project);
         this.sdk = sdk;
+        levelQuery = new SourceLevelQueryImpl2(project);
         this.localProperties = localProperties;
         ic = new InstanceContent();
         projectAddOnLookup = new AbstractLookup(ic);
