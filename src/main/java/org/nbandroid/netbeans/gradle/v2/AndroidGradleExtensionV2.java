@@ -46,6 +46,7 @@ import org.nbandroid.netbeans.gradle.api.TestOutputConsumer;
 import org.nbandroid.netbeans.gradle.config.AndroidBuildVariants;
 import org.nbandroid.netbeans.gradle.config.AndroidTestRunConfiguration;
 import org.nbandroid.netbeans.gradle.config.BuildVariant;
+import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatformManager;
 import org.nbandroid.netbeans.gradle.core.sdk.StatsCollector;
 import org.nbandroid.netbeans.gradle.launch.GradleDebugInfo;
 import org.nbandroid.netbeans.gradle.launch.Launches;
@@ -111,6 +112,9 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
     public AndroidGradleExtensionV2(Project project, AndroidSdk sdk, FileObject localProperties) {
         this.project = Preconditions.checkNotNull(project);
         this.sdk = sdk;
+        if (sdk != null) {//TODO remove, fix to make old android api functional
+            DalvikPlatformManager.getDefault().setSdkLocation(sdk.getSdkPath());
+        }
         levelQuery = new SourceLevelQueryImpl2(project);
         this.localProperties = localProperties;
         ic = new InstanceContent();
@@ -236,7 +240,6 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         StatsCollector.getDefault().incrementCounter("gradleproject");
     }
 
-
     private void clearAndroidProject() {
         LOG.log(Level.FINE, "removing android support from {0}", project);
         for (Object item : items) {
@@ -315,6 +318,9 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
             AndroidSdk defaultSdk = AndroidSdkProvider.getDefaultSdk();
             if (defaultSdk != null) {
                 sdk = defaultSdk;
+                if (sdk != null) {//TODO remove, fix to make old android api functional
+                    DalvikPlatformManager.getDefault().setSdkLocation(sdk.getSdkPath());
+                }
                 storeLocalProperties(defaultSdk, localProperties);
                 ((NbGradleProject) project).reloadProject();
             }
