@@ -34,5 +34,12 @@
       </repositories>
         </profile>
     </profiles>
+    <servers>
+      <server>
+       <id>nbandroid</id>
+       <username>nbandroid</username>
+       <password>${env.SITE_PASSWORD}</password>
+     </server>
+    </servers>    
 
 </settings>
