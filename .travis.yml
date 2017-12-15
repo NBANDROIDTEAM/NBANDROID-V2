@@ -12,3 +12,7 @@ before_install:
 script:
   - mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V nbm:autoupdate wagon:upload 
   - mvn test -B
+
+addons:
+  ssh_known_hosts:
+  - server.arsi.sk
