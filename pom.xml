@@ -95,7 +95,7 @@
                 </plugins>
             </build>
             <properties>
-                <version.nb>RELEASE81</version.nb>
+                <version.nb>RELEASE82</version.nb>
             </properties>
         </profile>
         <profile>
