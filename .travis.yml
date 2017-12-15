@@ -10,7 +10,8 @@ before_install:
  - cp .travis.maven.settings.xml $HOME/.m2/settings.xml
  
 script:
-  - mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V nbm:autoupdate wagon:upload 
+  - mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V 
+  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then mvn nbm:autoupdate wagon:upload ; fi'
   - mvn test -B
 
 addons:
