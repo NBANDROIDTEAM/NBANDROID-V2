@@ -8,7 +8,10 @@ The current version supports Netbeans 8.1 and 8.2
 
 **Many thanks to Radim Kubacki, the creator of the first NBANDROID!**</br>
 
-What Works:
+## SNAPSHOT
+The compiled version of the last commit is here http://server.arsi.sk/nbandroid/
+
+### What Works:
 * Code Assistance
 * Build
 * Run
@@ -17,7 +20,7 @@ What Works:
 * SDK Platform manager
 * SDK Tools manager
 
-What Dont works:
+### What Dont works:
 * SDK Platform manager - Integration to Gradle build system
 * SDK Manager - Update sites configuration
 * AVD Manager
