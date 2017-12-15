@@ -19,7 +19,8 @@
 package org.nbandroid.netbeans.gradle.query;
 
 import com.android.builder.model.AndroidProject;
-import java.util.Vector;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -37,7 +38,7 @@ public class SourceLevelQueryImpl2 implements SourceLevelQueryImplementation2, S
 
     private final AtomicReference<AndroidProject> androidProject = new AtomicReference<>(null);
     private final Project project;
-    private final Vector<ChangeListener> listeners = new Vector<>();
+    private final List<ChangeListener> listeners = new CopyOnWriteArrayList<>();
 
     public SourceLevelQueryImpl2(Project project) {
         this.project = project;

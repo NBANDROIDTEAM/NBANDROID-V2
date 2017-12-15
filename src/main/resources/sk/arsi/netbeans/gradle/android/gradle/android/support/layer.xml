@@ -6,7 +6,7 @@
             <file name="sk_arsi_netbeans_gradle_android_Gradle_Android_support_update_center.instance">
                 <attr name="displayName" bundlevalue="sk.arsi.netbeans.gradle.android.gradle.android.support.Bundle#Services/AutoupdateType/sk_arsi_netbeans_gradle_android_Gradle_Android_support_update_center.instance"/>
                 <attr name="enabled" boolvalue="true"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider"/>
+                <attr name="instanceCreate" methodvalue="sk.arsi.travis.build.autoupdate.NbVersionAutoupdateCatalogFactory.createUpdateProvider"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider"/>
                 <attr name="url" bundlevalue="sk.arsi.netbeans.gradle.android.gradle.android.support.Bundle#sk_arsi_netbeans_gradle_android_Gradle_Android_support_update_center"/>
             </file>
