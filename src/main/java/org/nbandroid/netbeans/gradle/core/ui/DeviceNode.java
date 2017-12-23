@@ -77,7 +77,7 @@ public class DeviceNode extends AbstractNode implements AndroidDebugBridge.IDevi
         emulatorControl = new EmulatorControlSupport(device);
         this.setDisplayName(device.getSerialNumber());
         this.updateDescription();
-        this.setIconBaseWithExtension("org/netbeans/modules/android/core/resources/phone.png");
+        this.setIconBaseWithExtension("org/netbeans/modules/android/project/resources/phone.png");
         AndroidDebugBridge.addDeviceChangeListener(this);
         this.addNodeListener(new NodeListener() {
 

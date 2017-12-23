@@ -54,8 +54,8 @@ import org.openide.xml.XMLUtil;
     "HINT_DevicesBroken=Android Devices are not accessible. Configure Android SDK?",})
 public class DevicesNode extends AbstractNode implements PropertyChangeListener {
 
-    public static final String NAME = "AndroidDevices";
-    public static final String ICON_PATH = "org/netbeans/modules/android/core/resources/android.png";
+    public static final String NAME = "Android Devices";
+    public static final String ICON_PATH = "org/netbeans/modules/android/project/resources/android.png";
     // TODO(radim): needs large refactoring. Either fix DalvikPlatformManager or use SdkManager
 
     private static DevicesNode node;
@@ -71,10 +71,10 @@ public class DevicesNode extends AbstractNode implements PropertyChangeListener 
 
     private void updateDescription() {
         setName(NAME);
-        setDisplayName("ddd");
+        setDisplayName(NAME);
         final AndroidDebugBridge debugBridge = AndroidDebugBridgeFactory.getDefault();
         broken = debugBridge == null;
-        String description = broken ? "brk" : "nbrk";
+        String description = broken ? "Debugbridge broken! Please restart ADB!" : NAME;
         setShortDescription(description);
     }
 
