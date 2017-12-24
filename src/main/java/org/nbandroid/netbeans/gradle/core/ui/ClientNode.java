@@ -53,7 +53,7 @@ public class ClientNode extends AbstractNode implements AndroidDebugBridge.IClie
         super(Children.LEAF, Lookups.fixed(client));
         assert client != null;
         this.client = client;
-        this.setIconBaseWithExtension("org/netbeans/modules/android/core/resources/client.png");
+        this.setIconBaseWithExtension("org/netbeans/modules/android/project/resources/application.png");
         updateInfo();
         AndroidDebugBridge.addClientChangeListener(this);
         this.addNodeListener(new NodeListener() {
