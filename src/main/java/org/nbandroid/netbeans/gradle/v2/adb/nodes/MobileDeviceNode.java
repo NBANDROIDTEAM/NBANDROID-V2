@@ -22,8 +22,10 @@ import com.android.ddmlib.AndroidDebugBridge;
 import com.android.ddmlib.Client;
 import com.android.ddmlib.IDevice;
 import com.android.ddmlib.NbAndroidAdbHelper;
+import com.android.sdklib.SdkVersionInfo;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
+import java.io.CharConversionException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.List;
@@ -48,6 +50,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
+import org.openide.xml.XMLUtil;
 
 /**
  *
@@ -65,7 +68,6 @@ public class MobileDeviceNode extends AbstractNode implements AndroidDebugBridge
         super(new DeviceChildren(device.getMasterDevice()), Lookups.fixed(device, device.getMasterDevice()));
         assert device != null;
         this.device = device;
-        this.setDisplayName(device.getSerialNumber());
         this.updateDescription();
         this.setIconBaseWithExtension("org/netbeans/modules/android/project/resources/phone.png");
         AndroidDebugBridge.addDeviceChangeListener(this);
@@ -93,12 +95,48 @@ public class MobileDeviceNode extends AbstractNode implements AndroidDebugBridge
             }
         });
         //after change to tcp mode connect to device
-          if (device.getSerialNumber() != null) {
+        if (device.getSerialNumber() != null) {
             DevicesNode.MobileDeviceHolder connect = doConnect.remove(device.getSerialNumber());
             if (connect != null) {
                 NbAndroidAdbHelper.connectEthernet(connect.getUsb().getSerialNumber(), connect.getIp(), 5555);
             }
         }
+    }
+
+    @Override
+    public String getHtmlDisplayName() {
+        String devName = device.getMasterDevice().getProperty("ro.product.display");
+        if (devName == null) {
+            devName = device.getMasterDevice().getProperty("ro.product.name");
+        }
+        try {
+            devName = XMLUtil.toElementContent(devName);
+        } catch (CharConversionException ex) {
+        }
+        String androidVersion = SdkVersionInfo.getVersionWithCodename(device.getMasterDevice().getVersion());
+        try {
+            androidVersion = XMLUtil.toElementContent(androidVersion);
+        } catch (CharConversionException ex) {
+        }
+        String serialNumber = device.getSerialNumber();
+        try {
+            serialNumber = XMLUtil.toElementContent(serialNumber);
+        } catch (CharConversionException ex) {
+        }
+
+        return "<html>"
+                + "<b>"
+                + serialNumber
+                + "  "
+                + "<font color=\"#0B610B\">"
+                + devName
+                + "</font>"
+                + "</b>"
+                + "  "
+                + "<i>"
+                + androidVersion
+                + "</i>"
+                + "</html>";
     }
 
     private void updateDescription() {
@@ -127,8 +165,6 @@ public class MobileDeviceNode extends AbstractNode implements AndroidDebugBridge
     public Image getOpenedIcon(int type) {
         return annotateUsbWifi(super.getIcon(type));
     }
-
-
 
     @Override
     public Action[] getActions(boolean context) {
@@ -160,7 +196,6 @@ public class MobileDeviceNode extends AbstractNode implements AndroidDebugBridge
                 return device.getMasterDevice().getState().toString();
             }
         });
-
 
         final Sheet.Set devset = new Sheet.Set();
         devset.setExpert(true);
@@ -300,6 +335,5 @@ public class MobileDeviceNode extends AbstractNode implements AndroidDebugBridge
         }
 
     }
-
 
 }
