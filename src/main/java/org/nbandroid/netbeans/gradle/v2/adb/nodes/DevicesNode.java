@@ -38,7 +38,6 @@ import javax.swing.SwingUtilities;
 import org.nbandroid.netbeans.gradle.core.ddm.AndroidDebugBridgeFactory;
 import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatformManager;
 import org.nbandroid.netbeans.gradle.v2.adb.nodes.actions.RestartADBAction;
-import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -47,7 +46,6 @@ import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
-import org.openide.util.NbBundle.Messages;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.xml.XMLUtil;
@@ -57,25 +55,33 @@ import org.openide.xml.XMLUtil;
  * @author tom
  * @author arsi
  */
-@ServicesTabNodeRegistration(name = DevicesNode.NAME,
-        displayName = "#TXT_Devices",
-        shortDescription = "#HINT_Devices",
-        iconResource = DevicesNode.ICON_PATH, position = 430)
-@Messages({
-    "TXT_Devices=Android Devices",
-    "HINT_Devices=Android Devices connected via ADB",
-    "HINT_DevicesBroken=Android Devices are not accessible. Configure Android SDK?",})
 public class DevicesNode extends AbstractNode implements PropertyChangeListener {
 
     public static final String NAME = "Android Devices";
-    public static final String ICON_PATH = "org/netbeans/modules/android/project/resources/android.png";
+    public static final String ICON_PATH = "org/netbeans/modules/android/project/resources/phones.png";
     public static final ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
     // TODO(radim): needs large refactoring. Either fix DalvikPlatformManager or use SdkManager
 
     private static DevicesNode node;
     private volatile boolean broken;
 
-    private DevicesNode() {
+    private static final String IP_PORT_PATTERN
+            = "^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
+            + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
+            + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
+            + "([01]?\\d\\d?|2[0-4]\\d|25[0-5]):"
+            + "([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$";
+    private static final Pattern PATTERN;
+
+    static {
+        PATTERN = Pattern.compile(IP_PORT_PATTERN);
+    }
+
+    public static boolean validate(final String s) {
+        return PATTERN.matcher(s).matches();
+    }
+
+    public DevicesNode() {
         super(new DevicesChildren());
         final DalvikPlatformManager dpm = DalvikPlatformManager.getDefault();
         dpm.addPropertyChangeListener(WeakListeners.propertyChange(this, dpm));
@@ -165,22 +171,6 @@ public class DevicesNode extends AbstractNode implements PropertyChangeListener 
             updateKeys();
         }
         //where
-
-        private static final String IP_PORT_PATTERN
-                = "^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
-                + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
-                + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
-                + "([01]?\\d\\d?|2[0-4]\\d|25[0-5]):"
-                + "([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$";
-        private static final Pattern PATTERN;
-
-        static {
-            PATTERN = Pattern.compile(IP_PORT_PATTERN);
-        }
-
-        public static boolean validate(final String s) {
-            return PATTERN.matcher(s).matches();
-        }
 
         private void updateKeys() {
             final List<DeviceHolder> keys = new ArrayList<>();
