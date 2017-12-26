@@ -22,8 +22,6 @@ import com.android.ddmlib.NbAndroidAdbHelper;
 import java.util.List;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
 import org.nbandroid.netbeans.gradle.v2.adb.AdbTools;
 import org.nbandroid.netbeans.gradle.v2.adb.nodes.DevicesNode;
 import org.nbandroid.netbeans.gradle.v2.adb.nodes.MobileDeviceNode;
@@ -59,13 +57,13 @@ public class SwitchEthernetAdbAction extends NodeAction {
             if (holder == null || !holder.hasUSB()) {
                 continue;
             }
-            List<AdbTools.IpRecord> deviceIps = AdbTools.getDeviceIps(holder.getUsb());
+            List<AdbTools.IpRecord> deviceIps = AdbTools.getDeviceIps(holder.getUsb(), false);
             if (deviceIps.isEmpty()) {
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation("<html>The " + holder.getSerialNumber() + " device does not have an active Ethernet adapter..<br>Please check the Wifi settings..</html>", "Wifi settings", NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
                 AdbTools.openWifiSettings(holder.getUsb());
                 Object notify = DialogDisplayer.getDefault().notify(nd);
                 if (NotifyDescriptor.OK_OPTION.equals(notify)) {
-                    deviceIps = AdbTools.getDeviceIps(holder.getUsb());
+                    deviceIps = AdbTools.getDeviceIps(holder.getUsb(), false);
                     if (deviceIps.isEmpty()) {
                         NotifyDescriptor nd1 = new NotifyDescriptor.Message("I did not find any active ip address", NotifyDescriptor.ERROR_MESSAGE);
                         DialogDisplayer.getDefault().notify(nd1);
@@ -79,7 +77,7 @@ public class SwitchEthernetAdbAction extends NodeAction {
             if (deviceIps.size() == 1) {
                 ip = deviceIps.get(0).getIp();
             } else {
-                JTable table = new JTable(new IpsTablemodel(deviceIps));
+                JTable table = new JTable(new DeviceIpListTablemodel(deviceIps));
                 JScrollPane pane = new JScrollPane(table);
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation(pane, "Please select Device IP address to use for ADB connection..", NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
                 Object notify = DialogDisplayer.getDefault().notify(nd);
@@ -104,68 +102,6 @@ public class SwitchEthernetAdbAction extends NodeAction {
                 }
 
             }
-        }
-
-        System.out.println("org.nbandroid.netbeans.gradle.v2.adb.nodes.actions.SwitchEthernetAdbAction.performAction()");
-    }
-
-    private class IpsTablemodel implements TableModel {
-
-        private final List<AdbTools.IpRecord> ips;
-
-        public IpsTablemodel(List<AdbTools.IpRecord> deviceIps) {
-            this.ips = deviceIps;
-        }
-
-        @Override
-        public int getRowCount() {
-            return ips.size();
-        }
-
-        @Override
-        public int getColumnCount() {
-            return 2;
-        }
-
-        @Override
-        public String getColumnName(int columnIndex) {
-            if (columnIndex == 0) {
-                return "Adapter name";
-            } else {
-                return "IP address";
-            }
-        }
-
-        @Override
-        public Class<?> getColumnClass(int columnIndex) {
-            return String.class;
-        }
-
-        @Override
-        public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return false;
-        }
-
-        @Override
-        public Object getValueAt(int rowIndex, int columnIndex) {
-            if (columnIndex == 0) {
-                return ips.get(rowIndex).getName();
-            } else {
-                return ips.get(rowIndex).getIp();
-            }
-        }
-
-        @Override
-        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void addTableModelListener(TableModelListener l) {
-        }
-
-        @Override
-        public void removeTableModelListener(TableModelListener l) {
         }
 
     }
