@@ -31,6 +31,7 @@ public class NbAndroidAdbHelper {
     private static final String SWITCH_TO_TCP = "tcpip:port";
     private static final String SWITCH_TO_USB = "usb:";
     private static final String CONNECT_TCP = "host:connect:ip:port";
+    private static final String CONNECT_TCP_ALL = "host:connect:";
 
     private static SocketChannel openAdbConnection() {
         try {
@@ -84,6 +85,20 @@ public class NbAndroidAdbHelper {
         }
 
     }
+
+    public static boolean connectEthernet(String ipPort) {
+        SocketChannel channel = openAdbConnection();
+        try {
+            return send(channel, CONNECT_TCP_ALL + ipPort);
+        } finally {
+            try {
+                channel.close();
+            } catch (IOException ex) {
+            }
+        }
+
+    }
+
 
     public static String sendAndReceive(SocketChannel mAdbConnection, String message) {
         if (mAdbConnection != null) {
