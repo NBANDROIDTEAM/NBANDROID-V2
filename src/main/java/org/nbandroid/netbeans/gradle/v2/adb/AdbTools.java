@@ -71,9 +71,9 @@ public class AdbTools {
         return true;
     }
 
-    public static List<IpRecord> getDeviceIps(IDevice device) {
+    public static List<IpRecord> getDeviceIps(IDevice device, boolean all) {
         CountDownLatch latch = new CountDownLatch(1);
-        IpReceiver outputReceiver = new IpReceiver(latch);
+        IpReceiver outputReceiver = new IpReceiver(latch, all);
         try {
             device.executeShellCommand("netcfg", outputReceiver);
         } catch (TimeoutException | AdbCommandRejectedException | ShellCommandUnresponsiveException | IOException ex) {
@@ -86,7 +86,7 @@ public class AdbTools {
         }
         if (!outputReceiver.isOk()) {
             latch = new CountDownLatch(1);
-            IfconfigReceiver ifconfigReceiver = new IfconfigReceiver(latch);
+            IfconfigReceiver ifconfigReceiver = new IfconfigReceiver(latch, all);
             try {
                 device.executeShellCommand("ifconfig", ifconfigReceiver);
             } catch (TimeoutException | AdbCommandRejectedException | ShellCommandUnresponsiveException | IOException ex) {
@@ -109,9 +109,11 @@ public class AdbTools {
         private final CountDownLatch mCompletionLatch;
 
         private boolean ok = true;
+        private final boolean all;
 
-        public IpReceiver(CountDownLatch mCompletionLatch) {
+        public IpReceiver(CountDownLatch mCompletionLatch, boolean all) {
             this.mCompletionLatch = mCompletionLatch;
+            this.all = all;
         }
 
         public List<IpRecord> getIps() {
@@ -131,7 +133,7 @@ public class AdbTools {
                     String ifName = tokenizer.nextToken();
                     String state = tokenizer.nextToken();
                     String ip = tokenizer.nextToken();
-                    if ("UP".equals(state) && !"lo".equals(ifName) && !"0.0.0.0/0".equals(ip) && !ifName.startsWith("rmnet_")) {
+                    if (all || ("UP".equals(state) && !"lo".equals(ifName) && !"0.0.0.0/0".equals(ip) && !ifName.startsWith("rmnet_"))) {
                         ips.add(new IpRecord(ifName, ip));
                     }
                 }
@@ -162,9 +164,11 @@ public class AdbTools {
         private final CountDownLatch mCompletionLatch;
 
         private boolean ok = true;
+        private final boolean all;
 
-        public IfconfigReceiver(CountDownLatch mCompletionLatch) {
+        public IfconfigReceiver(CountDownLatch mCompletionLatch, boolean all) {
             this.mCompletionLatch = mCompletionLatch;
+            this.all = all;
         }
 
         public List<IpRecord> getIps() {
@@ -209,7 +213,7 @@ public class AdbTools {
                             }
                         }
                     }
-                    if (ifName != null && mask != null && !"lo".equals(ifName) && ip != null && !ifName.startsWith("rmnet_")) {
+                    if (ifName != null && mask != null && (all || (!"lo".equals(ifName) && ip != null && !ifName.startsWith("rmnet_")))) {
                         int cidr = convertNetmaskToCIDR(mask);
                         ip = ip + "/" + cidr;
                         ips.add(new IpRecord(ifName, ip));
