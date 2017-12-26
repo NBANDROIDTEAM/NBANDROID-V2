@@ -61,6 +61,7 @@ import org.gradle.impldep.com.google.common.collect.ImmutableList;
 import org.nbandroid.netbeans.gradle.core.sdk.NbDownloader;
 import org.nbandroid.netbeans.gradle.core.sdk.NbOutputWindowProgressIndicator;
 import org.nbandroid.netbeans.gradle.core.sdk.SdkLogProvider;
+import org.nbandroid.netbeans.gradle.core.sdk.Util;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPackageNode;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformChangeListener;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformPackagesRootNode;
@@ -110,11 +111,15 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
     private final Vector<String> licensesOnline = new Vector<>();
     private static final ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
     private DeviceManager deviceManager = null;
+    private FileObject sdkRootFo;
+    private File sdkRoot;
 
     public AndroidSdkImpl(String displayName, String sdkPath, Map<String, String> properties, Map<String, String> sysproperties, List<AndroidPlatformInfo> platforms, boolean defaultSdk) {
         this.displayName = displayName;
         this.sdkPath = sdkPath;
         this.defaultSdk = defaultSdk;
+        sdkRoot = new File(sdkPath);
+        sdkRootFo = FileUtil.toFileObject(sdkRoot);
         if (properties != null) {
             this.properties = properties;
         } else {
@@ -135,7 +140,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
 
             @Override
             public void run() {
-                androidSdkHandler = AndroidSdkHandler.getInstance(new File(sdkPath));
+                androidSdkHandler = AndroidSdkHandler.getInstance(sdkRoot);
                 if (androidSdkHandler != null) {
                     repoManager = androidSdkHandler.getSdkManager(new NbOutputWindowProgressIndicator());
                     repoManager.registerLocalChangeListener(AndroidSdkImpl.this);
@@ -195,9 +200,16 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
         localListeners.add(l);
     }
 
+    @Override
     public void store() {
         firePropertyChange("STORE", false, true);
     }
+
+    @Override
+    public FileObject findTool(String toolName) {
+        return Util.findTool(toolName, sdkRootFo);
+    }
+
 
     /**
      * Get Android repo manager
@@ -288,7 +300,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
 
     @Override
     public FileObject getInstallFolder() {
-        return FileUtil.toFileObject(new File(sdkPath));
+        return sdkRootFo;
     }
 
     @Override
@@ -300,6 +312,8 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
     public void setSdkRootFolder(String sdkPath) {
         String last = this.sdkPath;
         this.sdkPath = sdkPath;
+        sdkRoot = new File(sdkPath);
+        sdkRootFo = FileUtil.toFileObject(sdkRoot);
         firePropertyChange(LOCATION, last, sdkPath);
         platforms.clear();
         platformsList.clear();
@@ -307,7 +321,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
 
             @Override
             public void run() {
-                androidSdkHandler = AndroidSdkHandler.getInstance(new File(sdkPath));
+                androidSdkHandler = AndroidSdkHandler.getInstance(sdkRoot);
                 if (androidSdkHandler != null) {
                     repoManager = androidSdkHandler.getSdkManager(new NbOutputWindowProgressIndicator());
                     repoManager.registerLocalChangeListener(AndroidSdkImpl.this);
@@ -380,7 +394,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
     @Override
     public DeviceManager getDeviceManager() {
         if (deviceManager == null) {
-            deviceManager = DeviceManager.createInstance(new File(sdkPath), SdkLogProvider.createLogger(true));
+            deviceManager = DeviceManager.createInstance(sdkRoot, SdkLogProvider.createLogger(true));
         }
         return deviceManager;
     }
