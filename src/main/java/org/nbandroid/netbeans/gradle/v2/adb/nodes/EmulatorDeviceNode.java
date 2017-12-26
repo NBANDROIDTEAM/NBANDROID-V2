@@ -1,18 +1,22 @@
 /*
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *  under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-package org.nbandroid.netbeans.gradle.core.ui;
+package org.nbandroid.netbeans.gradle.v2.adb.nodes;
 
 import com.android.ddmlib.AdbCommandRejectedException;
 import com.android.ddmlib.AndroidDebugBridge;
@@ -36,6 +40,7 @@ import javax.imageio.ImageIO;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.nbandroid.netbeans.gradle.core.ddm.EmulatorControlSupport;
+import org.nbandroid.netbeans.gradle.core.ui.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.PropertiesAction;
@@ -62,22 +67,23 @@ import org.openide.util.lookup.Lookups;
 /**
  *
  * @author tom
+ * @author arsi
  */
-public class DeviceNode extends AbstractNode implements AndroidDebugBridge.IDeviceChangeListener {
+public class EmulatorDeviceNode extends AbstractNode implements AndroidDebugBridge.IDeviceChangeListener {
 
-    private static final Logger LOG = Logger.getLogger(DeviceNode.class.getName());
+    private static final Logger LOG = Logger.getLogger(EmulatorDeviceNode.class.getName());
 
     private final IDevice device;
     private final EmulatorControlSupport emulatorControl;
 
-    DeviceNode(final IDevice device) {
+    EmulatorDeviceNode(final IDevice device) {
         super(new DeviceChildren(device), Lookups.fixed(device));
         assert device != null;
         this.device = device;
         emulatorControl = new EmulatorControlSupport(device);
         this.setDisplayName(device.getSerialNumber());
         this.updateDescription();
-        this.setIconBaseWithExtension("org/netbeans/modules/android/project/resources/phone.png");
+        this.setIconBaseWithExtension("org/netbeans/modules/android/project/resources/emulator.png");
         AndroidDebugBridge.addDeviceChangeListener(this);
         this.addNodeListener(new NodeListener() {
 
@@ -91,7 +97,7 @@ public class DeviceNode extends AbstractNode implements AndroidDebugBridge.IDevi
             }
 
             public void nodeDestroyed(NodeEvent event) {
-                AndroidDebugBridge.removeDeviceChangeListener(DeviceNode.this);
+                AndroidDebugBridge.removeDeviceChangeListener(EmulatorDeviceNode.this);
             }
 
             public void propertyChange(PropertyChangeEvent event) {
@@ -102,9 +108,11 @@ public class DeviceNode extends AbstractNode implements AndroidDebugBridge.IDevi
     private void updateDescription() {
         final String serNum = this.device.getSerialNumber();
         final IDevice.DeviceState state = this.device.getState();
-        this.setShortDescription(NbBundle.getMessage(DeviceNode.class, "HINT_Device",
+        this.setShortDescription(NbBundle.getMessage(EmulatorDeviceNode.class, "HINT_Device",
                 serNum, state != null ? state.toString() : "(unknown state)"));
     }
+
+
 
     @Override
     public Action[] getActions(boolean context) {
@@ -121,8 +129,8 @@ public class DeviceNode extends AbstractNode implements AndroidDebugBridge.IDevi
         defset.put(new PropertySupport.ReadOnly<String>(
                 "PROP_DeviceId",
                 String.class,
-                NbBundle.getMessage(DeviceNode.class, "PROP_DeviceId"),
-                NbBundle.getMessage(DeviceNode.class, "DESC_DeviceId")) {
+                NbBundle.getMessage(EmulatorDeviceNode.class, "PROP_DeviceId"),
+                NbBundle.getMessage(EmulatorDeviceNode.class, "DESC_DeviceId")) {
             @Override
             public String getValue() throws IllegalAccessException, InvocationTargetException {
                 return device.getSerialNumber();
@@ -131,8 +139,8 @@ public class DeviceNode extends AbstractNode implements AndroidDebugBridge.IDevi
         defset.put(new PropertySupport.ReadOnly<String>(
                 "PROP_State",
                 String.class,
-                NbBundle.getMessage(DeviceNode.class, "PROP_State"),
-                NbBundle.getMessage(DeviceNode.class, "DESC_State")) {
+                NbBundle.getMessage(EmulatorDeviceNode.class, "PROP_State"),
+                NbBundle.getMessage(EmulatorDeviceNode.class, "DESC_State")) {
 
             @Override
             public String getValue() throws IllegalAccessException, InvocationTargetException {
@@ -142,8 +150,8 @@ public class DeviceNode extends AbstractNode implements AndroidDebugBridge.IDevi
         defset.put(new PropertySupport.ReadOnly<Boolean>(
                 "PROP_Emulator",
                 Boolean.class,
-                NbBundle.getMessage(DeviceNode.class, "PROP_Emulator"),
-                NbBundle.getMessage(DeviceNode.class, "DESC_Emulator")) {
+                NbBundle.getMessage(EmulatorDeviceNode.class, "PROP_Emulator"),
+                NbBundle.getMessage(EmulatorDeviceNode.class, "DESC_Emulator")) {
 
             @Override
             public Boolean getValue() throws IllegalAccessException, InvocationTargetException {
@@ -156,7 +164,7 @@ public class DeviceNode extends AbstractNode implements AndroidDebugBridge.IDevi
         final Sheet.Set devset = new Sheet.Set();
         devset.setExpert(true);
         devset.setName("SET_DeviceProps");
-        devset.setDisplayName(NbBundle.getMessage(DeviceNode.class, "SET_DeviceProps"));
+        devset.setDisplayName(NbBundle.getMessage(EmulatorDeviceNode.class, "SET_DeviceProps"));
 
         class DeviceProperty extends PropertySupport.ReadOnly<String> {
 
@@ -386,17 +394,17 @@ public class DeviceNode extends AbstractNode implements AndroidDebugBridge.IDevi
             } catch (IOException ioe) {
                 LOG.log(Level.INFO, null, ioe);
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        NbBundle.getMessage(DeviceNode.class, "ERROR_ScreenShot"),
+                        NbBundle.getMessage(EmulatorDeviceNode.class, "ERROR_ScreenShot"),
                         NotifyDescriptor.ERROR_MESSAGE));
             } catch (TimeoutException ex) {
                 LOG.log(Level.INFO, null, ex);
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        NbBundle.getMessage(DeviceNode.class, "ERROR_ScreenShot"),
+                        NbBundle.getMessage(EmulatorDeviceNode.class, "ERROR_ScreenShot"),
                         NotifyDescriptor.ERROR_MESSAGE));
             } catch (AdbCommandRejectedException ex) {
                 LOG.log(Level.INFO, null, ex);
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        NbBundle.getMessage(DeviceNode.class, "ERROR_ScreenShot"),
+                        NbBundle.getMessage(EmulatorDeviceNode.class, "ERROR_ScreenShot"),
                         NotifyDescriptor.ERROR_MESSAGE));
             }
         }
@@ -416,7 +424,7 @@ public class DeviceNode extends AbstractNode implements AndroidDebugBridge.IDevi
 
         @Override
         public HelpCtx getHelpCtx() {
-            return new HelpCtx(DeviceNode.class.getName());
+            return new HelpCtx(EmulatorDeviceNode.class.getName());
         }
 
     }

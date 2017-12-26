@@ -18,6 +18,7 @@
  */
 package org.nbandroid.netbeans.gradle.v2.sdk.manager.ui;
 
+import org.nbandroid.netbeans.gradle.v2.ui.IconProvider;
 import com.android.repository.api.UpdatablePackage;
 import com.android.sdklib.repository.meta.DetailsTypes;
 import java.awt.Color;

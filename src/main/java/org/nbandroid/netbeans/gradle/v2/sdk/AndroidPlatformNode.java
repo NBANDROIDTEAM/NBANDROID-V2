@@ -20,7 +20,7 @@ package org.nbandroid.netbeans.gradle.v2.sdk;
 
 import com.android.sdklib.SdkVersionInfo;
 import java.awt.Image;
-import org.nbandroid.netbeans.gradle.core.ui.IconProvider;
+import org.nbandroid.netbeans.gradle.v2.ui.IconProvider;
 import org.nbandroid.netbeans.gradle.v2.sdk.ui.AndroidPlatformCustomizer;
 import org.openide.loaders.XMLDataObject;
 import org.openide.nodes.AbstractNode;

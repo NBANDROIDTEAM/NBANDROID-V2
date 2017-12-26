@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.core.ui;
+package org.nbandroid.netbeans.gradle.v2.ui;
 
 import java.awt.Image;
 import org.netbeans.api.annotations.common.StaticResource;
@@ -79,4 +79,12 @@ public class IconProvider {
     @StaticResource
     private static final String RESOURCE_ANDROID_SDK_BROKEN_ICON = "org/nbandroid/netbeans/gradle/v2/sdk/ui/android-sdk-broken.png";
     public static final Image IMG_ANDROID_SDK_BROKEN_ICON = ImageUtilities.loadImage(RESOURCE_ANDROID_SDK_BROKEN_ICON);
+
+    @StaticResource
+    private static final String RESOURCE_USB = "org/netbeans/modules/android/project/ui/resources/usb_badge.png";
+    public static final Image IMG_USB_BADGE = ImageUtilities.loadImage(RESOURCE_USB);
+
+    @StaticResource
+    private static final String RESOURCE_WIFI = "org/netbeans/modules/android/project/ui/resources/wifi_badge.png";
+    public static final Image IMG_WIFI_BADGE = ImageUtilities.loadImage(RESOURCE_WIFI);
 }

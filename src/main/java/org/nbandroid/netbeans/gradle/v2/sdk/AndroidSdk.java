@@ -231,4 +231,6 @@ public abstract class AndroidSdk {
 
     public abstract Iterable<Device> getDevices();
 
+    public abstract FileObject findTool(String toolName);
+
 }

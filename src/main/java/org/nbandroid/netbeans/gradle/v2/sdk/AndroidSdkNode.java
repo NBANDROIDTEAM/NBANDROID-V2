@@ -24,7 +24,7 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JPanel;
-import org.nbandroid.netbeans.gradle.core.ui.IconProvider;
+import org.nbandroid.netbeans.gradle.v2.ui.IconProvider;
 import org.nbandroid.netbeans.gradle.v2.sdk.ui.AndroidSdkCustomizer;
 import org.nbandroid.netbeans.gradle.v2.sdk.ui.BrokenPlatformCustomizer;
 import org.openide.loaders.XMLDataObject;

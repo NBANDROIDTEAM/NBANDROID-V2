@@ -27,7 +27,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.gradle.impldep.org.apache.commons.io.FilenameUtils;
-import org.nbandroid.netbeans.gradle.core.ui.IconProvider;
+import org.nbandroid.netbeans.gradle.v2.ui.IconProvider;
 import static org.nbandroid.netbeans.gradle.v2.nodes.DependencyNode.EXTRAS_ANDROID_M2;
 import static org.nbandroid.netbeans.gradle.v2.nodes.DependencyNode.EXTRAS_GOOGLE_M2;
 import static org.nbandroid.netbeans.gradle.v2.nodes.DependencyNode.EXTRAS_M2;
