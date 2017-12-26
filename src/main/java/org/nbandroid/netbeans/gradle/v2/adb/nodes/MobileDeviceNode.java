@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -98,7 +99,13 @@ public class MobileDeviceNode extends AbstractNode implements AndroidDebugBridge
         if (device.getSerialNumber() != null) {
             DevicesNode.MobileDeviceHolder connect = doConnect.remove(device.getSerialNumber());
             if (connect != null) {
-                NbAndroidAdbHelper.connectEthernet(connect.getUsb().getSerialNumber(), connect.getIp(), 5555);
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        NbAndroidAdbHelper.connectEthernet(connect.getUsb().getSerialNumber(), connect.getIp(), 5555);
+                    }
+                };
+                DevicesNode.pool.schedule(runnable, 1, TimeUnit.SECONDS);
             }
         }
     }
