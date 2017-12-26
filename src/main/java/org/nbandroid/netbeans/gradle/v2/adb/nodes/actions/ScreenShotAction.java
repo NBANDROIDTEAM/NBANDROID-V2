@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import org.nbandroid.netbeans.gradle.v2.adb.nodes.DevicesNode;
 import org.nbandroid.netbeans.gradle.v2.adb.nodes.MobileDeviceNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -68,7 +69,7 @@ public class ScreenShotAction extends NodeAction {
     protected void performAction(Node[] nodes) {
         assert nodes != null;
         assert nodes.length == 1;
-        final IDevice device = nodes[0].getLookup().lookup(IDevice.class);
+        final IDevice device = nodes[0].getLookup().lookup(DevicesNode.MobileDeviceHolder.class).getMasterDevice();
         assert device != null;
         try {
             final RawImage image = device.getScreenshot();

@@ -69,7 +69,7 @@ public class DevicesNode extends AbstractNode implements PropertyChangeListener 
 
     public static final String NAME = "Android Devices";
     public static final String ICON_PATH = "org/netbeans/modules/android/project/resources/android.png";
-    private static final ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
+    public static final ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
     // TODO(radim): needs large refactoring. Either fix DalvikPlatformManager or use SdkManager
 
     private static DevicesNode node;
@@ -165,7 +165,6 @@ public class DevicesNode extends AbstractNode implements PropertyChangeListener 
             updateKeys();
         }
         //where
-
 
         private static final String IP_PORT_PATTERN
                 = "^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
@@ -303,6 +302,7 @@ public class DevicesNode extends AbstractNode implements PropertyChangeListener 
 
         public final IDevice ethernet;
         private String ip = "127.0.0.1";
+        private boolean useUsb = true;
 
         public MobileDeviceHolder(IDevice usb, IDevice ethernet, String serialNumber) {
             super(usb, serialNumber);
@@ -315,7 +315,11 @@ public class DevicesNode extends AbstractNode implements PropertyChangeListener 
 
         public IDevice getMasterDevice() {
             if (usb != null) {
-                return usb;
+                if (useUsb || ethernet == null) {
+                    return usb;
+                } else {
+                    return ethernet;
+                }
             } else {
                 return ethernet;
             }
@@ -335,6 +339,14 @@ public class DevicesNode extends AbstractNode implements PropertyChangeListener 
 
         public void setIp(String ip) {
             this.ip = ip;
+        }
+
+        public boolean isUseUsb() {
+            return useUsb;
+        }
+
+        public void setUseUsb(boolean useUsb) {
+            this.useUsb = useUsb;
         }
 
     }
