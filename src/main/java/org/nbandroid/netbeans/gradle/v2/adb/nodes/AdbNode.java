@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.nbandroid.netbeans.gradle.v2.adb.nodes;
 
 import com.android.ddmlib.AndroidDebugBridge;
@@ -27,9 +26,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import org.nbandroid.netbeans.gradle.core.ddm.AndroidDebugBridgeFactory;
-import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatformManager;
 import org.nbandroid.netbeans.gradle.v2.adb.nodes.actions.RestartADBAction;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
@@ -60,10 +58,11 @@ public class AdbNode extends AbstractNode implements PropertyChangeListener {
     public static final String NAME = "Android debug bridge";
     public static final String ICON_PATH = "org/netbeans/modules/android/project/resources/android.png";
     private volatile boolean broken;
+
     public AdbNode() {
         super(Children.create(new ADBChildren(), true));
-        final DalvikPlatformManager dpm = DalvikPlatformManager.getDefault();
-        dpm.addPropertyChangeListener(WeakListeners.propertyChange(this, dpm));
+        AndroidSdkProvider sdkProvider = AndroidSdkProvider.getDefault();
+        sdkProvider.addPropertyChangeListener(WeakListeners.propertyChange(this, sdkProvider));
         updateDescription();
         setIconBaseWithExtension(ICON_PATH);
     }
@@ -87,7 +86,7 @@ public class AdbNode extends AbstractNode implements PropertyChangeListener {
                 NbBundle.getMessage(DevicesNode.class, "DESC_DebugBridgeConnected")) {
             @Override
             public Boolean getValue() throws IllegalAccessException, InvocationTargetException {
-                final AndroidDebugBridge jp = AndroidDebugBridgeFactory.getDefault();
+                final AndroidDebugBridge jp = AndroidSdkProvider.getAdb();
                 return jp == null ? Boolean.FALSE : jp.isConnected();
             }
         });
@@ -99,7 +98,7 @@ public class AdbNode extends AbstractNode implements PropertyChangeListener {
     private void updateDescription() {
         setName(NAME);
         setDisplayName(NAME);
-        final AndroidDebugBridge debugBridge = AndroidDebugBridgeFactory.getDefault();
+        final AndroidDebugBridge debugBridge = AndroidSdkProvider.getAdb();
         broken = debugBridge == null;
         String description = broken ? "Debugbridge broken! Please restart ADB!" : NAME;
         setShortDescription(description);
@@ -118,7 +117,7 @@ public class AdbNode extends AbstractNode implements PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        if (DalvikPlatformManager.PROP_INSTALLED_PLATFORMS.equals(event.getPropertyName())) {
+        if (AndroidSdkProvider.PROP_DEFAULT_ADB.equals(event.getPropertyName())) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {

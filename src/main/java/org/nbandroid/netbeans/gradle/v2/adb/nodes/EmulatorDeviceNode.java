@@ -39,7 +39,7 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import org.nbandroid.netbeans.gradle.core.ddm.EmulatorControlSupport;
+import org.nbandroid.netbeans.gradle.v2.adb.EmulatorControlSupport;
 import org.nbandroid.netbeans.gradle.core.ui.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

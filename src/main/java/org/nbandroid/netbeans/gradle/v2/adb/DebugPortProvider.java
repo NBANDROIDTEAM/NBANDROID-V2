@@ -12,7 +12,7 @@
  *  limitations under the License.
  *  under the License.
  */
-package org.nbandroid.netbeans.gradle.core.ddm;
+package org.nbandroid.netbeans.gradle.v2.adb;
 
 import com.android.ddmlib.DebugPortManager.IDebugPortProvider;
 import com.android.ddmlib.IDevice;
@@ -21,7 +21,7 @@ import com.android.ddmlib.IDevice;
  *
  * @author tom
  */
-final class DebugPortProvider implements IDebugPortProvider {
+public final class DebugPortProvider implements IDebugPortProvider {
 
     private static DebugPortProvider instance;
 
