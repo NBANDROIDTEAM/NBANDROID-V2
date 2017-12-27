@@ -51,8 +51,16 @@ public final class AndroidDebugBridgeFactory {
     private static DalvikPlatform usedPlatform;
     private static AndroidDebugBridge bridge;
     private static final String ADB_TOOL = "adb";    //NOI18N
+    private static String ADB_PATH = "";
 
     private AndroidDebugBridgeFactory() {
+    }
+
+    public static synchronized String getAdbPath() {
+        if (ADB_PATH == null) {
+            getDefault();
+        }
+        return ADB_PATH;
     }
 
     /**
@@ -144,6 +152,7 @@ public final class AndroidDebugBridgeFactory {
             LOG.log(Level.FINE, "Call init debug bridge");
             AndroidDebugBridge.init(true);
             String adbPath = FileUtil.toFile(path).getAbsolutePath();
+            ADB_PATH = adbPath;
             LOG.log(Level.FINE, "Force create new debug bridge using path {0}", adbPath);
             bridge = AndroidDebugBridge.createBridge(adbPath, true);
             LOG.log(Level.FINE, "Created debug bridge ", bridge);
