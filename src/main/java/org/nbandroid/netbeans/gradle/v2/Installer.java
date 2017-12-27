@@ -6,7 +6,6 @@
 package org.nbandroid.netbeans.gradle.v2;
 
 import com.android.ddmlib.AndroidDebugBridge;
-import org.nbandroid.netbeans.gradle.core.ddm.AndroidDebugBridgeFactory;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.netbeans.modules.dlight.terminal.ui.TerminalContainerTopComponent;
 import static org.netbeans.modules.dlight.terminal.ui.TerminalContainerTopComponent.AUTO_OPEN_LOCAL_PROPERTY;
@@ -30,7 +29,7 @@ public class Installer extends ModuleInstall {
     @Override
     public void close() {
         // TODO(radim): if we really need it then it belongs to core where ADBfactory lives
-        AndroidDebugBridge adb = AndroidDebugBridgeFactory.getDefault();
+        AndroidDebugBridge adb = AndroidSdkProvider.getAdb();
         if (adb != null && adb.isConnected()) {
             AndroidDebugBridge.disconnectBridge();
         }

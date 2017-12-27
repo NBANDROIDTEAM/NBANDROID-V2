@@ -21,8 +21,8 @@ package org.nbandroid.netbeans.gradle.v2.adb.nodes.actions;
 import com.android.ddmlib.AndroidDebugBridge;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import org.nbandroid.netbeans.gradle.core.ddm.AndroidDebugBridgeFactory;
 import org.nbandroid.netbeans.gradle.v2.adb.nodes.MobileDeviceNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -40,7 +40,7 @@ public class RestartADBAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        final AndroidDebugBridge debugBridge = AndroidDebugBridgeFactory.getDefault();
+        final AndroidDebugBridge debugBridge = AndroidSdkProvider.getAdb();
         if (debugBridge != null) {
             RequestProcessor.getDefault().post(new Runnable() {
 

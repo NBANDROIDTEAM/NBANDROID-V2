@@ -12,7 +12,7 @@
  *  limitations under the License.
  *  under the License.
  */
-package org.nbandroid.netbeans.gradle.core.ddm;
+package org.nbandroid.netbeans.gradle.v2.adb;
 
 import com.android.ddmlib.EmulatorConsole;
 import com.android.ddmlib.EmulatorConsole.GsmMode;

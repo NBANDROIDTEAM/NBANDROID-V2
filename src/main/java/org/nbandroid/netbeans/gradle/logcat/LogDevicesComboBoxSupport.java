@@ -31,7 +31,7 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import org.nbandroid.netbeans.gradle.core.ddm.AndroidDebugBridgeFactory;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -109,7 +109,7 @@ public class LogDevicesComboBoxSupport
         }
 
         // add all connected devices
-        AndroidDebugBridge bridge = AndroidDebugBridgeFactory.getDefault();
+        AndroidDebugBridge bridge = AndroidSdkProvider.getAdb();
         if (bridge != null) {
             for (IDevice device : bridge.getDevices()) {
                 add(device);

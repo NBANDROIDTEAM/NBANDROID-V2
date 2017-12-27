@@ -35,9 +35,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import org.nbandroid.netbeans.gradle.core.ddm.AndroidDebugBridgeFactory;
-import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatformManager;
 import org.nbandroid.netbeans.gradle.v2.adb.nodes.actions.RestartADBAction;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -83,8 +82,8 @@ public class DevicesNode extends AbstractNode implements PropertyChangeListener 
 
     public DevicesNode() {
         super(new DevicesChildren());
-        final DalvikPlatformManager dpm = DalvikPlatformManager.getDefault();
-        dpm.addPropertyChangeListener(WeakListeners.propertyChange(this, dpm));
+        AndroidSdkProvider sdkProvider = AndroidSdkProvider.getDefault();
+        sdkProvider.addPropertyChangeListener(WeakListeners.propertyChange(this, sdkProvider));
         updateDescription();
         setIconBaseWithExtension(ICON_PATH);
     }
@@ -92,7 +91,7 @@ public class DevicesNode extends AbstractNode implements PropertyChangeListener 
     private void updateDescription() {
         setName(NAME);
         setDisplayName(NAME);
-        final AndroidDebugBridge debugBridge = AndroidDebugBridgeFactory.getDefault();
+        final AndroidDebugBridge debugBridge = AndroidSdkProvider.getAdb();
         broken = debugBridge == null;
         String description = broken ? "Debugbridge broken! Please restart ADB!" : NAME;
         setShortDescription(description);
@@ -128,7 +127,7 @@ public class DevicesNode extends AbstractNode implements PropertyChangeListener 
                 NbBundle.getMessage(DevicesNode.class, "DESC_DebugBridgeConnected")) {
             @Override
             public Boolean getValue() throws IllegalAccessException, InvocationTargetException {
-                final AndroidDebugBridge jp = AndroidDebugBridgeFactory.getDefault();
+                final AndroidDebugBridge jp = AndroidSdkProvider.getAdb();
                 return jp == null ? Boolean.FALSE : jp.isConnected();
             }
         });
@@ -139,7 +138,7 @@ public class DevicesNode extends AbstractNode implements PropertyChangeListener 
 
     @Override
     public void propertyChange(final PropertyChangeEvent event) {
-        if (DalvikPlatformManager.PROP_INSTALLED_PLATFORMS.equals(event.getPropertyName())) {
+        if (AndroidSdkProvider.PROP_DEFAULT_ADB.equals(event.getPropertyName())) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -161,8 +160,8 @@ public class DevicesNode extends AbstractNode implements PropertyChangeListener 
     private static class DevicesChildren extends Children.Keys<DeviceHolder> implements PropertyChangeListener, AndroidDebugBridge.IDeviceChangeListener {
 
         public DevicesChildren() {
-            final DalvikPlatformManager jpm = DalvikPlatformManager.getDefault();
-            jpm.addPropertyChangeListener(WeakListeners.propertyChange(this, jpm));
+            AndroidSdkProvider sdkProvider = AndroidSdkProvider.getDefault();
+            sdkProvider.addPropertyChangeListener(WeakListeners.propertyChange(this, sdkProvider));
         }
 
         @Override
@@ -174,7 +173,7 @@ public class DevicesNode extends AbstractNode implements PropertyChangeListener 
 
         private void updateKeys() {
             final List<DeviceHolder> keys = new ArrayList<>();
-            final AndroidDebugBridge bridge = AndroidDebugBridgeFactory.getDefault();
+            final AndroidDebugBridge bridge = AndroidSdkProvider.getAdb();
             java.util.Map<String, IDevice> tmpUSB = new HashMap<>();
             java.util.Map<String, IDevice> tmpEthernet = new HashMap<>();
             if (bridge != null) {
@@ -246,7 +245,7 @@ public class DevicesNode extends AbstractNode implements PropertyChangeListener 
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(DalvikPlatformManager.PROP_INSTALLED_PLATFORMS)) {
+            if (AndroidSdkProvider.PROP_DEFAULT_ADB.equals(evt.getPropertyName())) {
                 updateKeysAsync();
             }
         }

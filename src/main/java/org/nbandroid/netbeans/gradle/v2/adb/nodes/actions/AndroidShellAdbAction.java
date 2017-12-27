@@ -37,8 +37,8 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.nbandroid.netbeans.gradle.core.ddm.AndroidDebugBridgeFactory;
 import org.nbandroid.netbeans.gradle.v2.adb.nodes.DevicesNode;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.netbeans.modules.dlight.terminal.action.TerminalSupportImpl;
 import org.netbeans.modules.dlight.terminal.ui.TerminalContainerTopComponent;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -277,7 +277,7 @@ public class AndroidShellAdbAction extends NodeAction {
                             npb.setWorkingDirectory(dir);
                         }
                         //override to call adb executable
-                        npb.setExecutable(AndroidDebugBridgeFactory.getAdbPath());
+                        npb.setExecutable(AndroidSdkProvider.getAdbPath());
                         npb.setArguments("-s", holder.getMasterDevice().getSerialNumber(), "shell");
                         NativeExecutionDescriptor descr;
                         descr = new NativeExecutionDescriptor().controllable(true).frontWindow(true).inputVisible(true).inputOutput(ioRef.get());

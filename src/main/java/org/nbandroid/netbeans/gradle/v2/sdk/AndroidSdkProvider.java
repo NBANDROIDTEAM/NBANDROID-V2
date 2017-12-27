@@ -5,6 +5,9 @@
  */
 package org.nbandroid.netbeans.gradle.v2.sdk;
 
+import com.android.ddmlib.AndroidDebugBridge;
+import com.android.ddmlib.ClientData;
+import com.android.ddmlib.DebugPortManager;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -14,6 +17,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.nbandroid.netbeans.gradle.v2.adb.DebugPortProvider;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
@@ -37,6 +41,9 @@ public class AndroidSdkProvider implements FileChangeListener {
     public static final String PLATFORM_STORAGE = "Services/Platforms/org-nbandroid-netbeans-gradle-Platform"; //NOI18N
     public static final String PROP_INSTALLED_SDKS = "PROP_INSTALLED_SDKS";
     public static final String PROP_DEFAULT_SDK = "PROP_DEFAULT_SDK";
+    public static final String PROP_DEFAULT_ADB = "PROP_DEFAULT_ADB";
+    public static final String PROP_DEFAULT_ADB_PATH = "PROP_DEFAULT_ADB_PATH";
+    private static final String ADB_TOOL = "adb";    //NOI18N
     private static FileObject storageCache;
     private static FileObject lastFound;
 
@@ -54,6 +61,8 @@ public class AndroidSdkProvider implements FileChangeListener {
     private static final Logger LOG = Logger.getLogger(AndroidSdkProvider.class.getName());
     private final AtomicReference<AndroidSdk[]> sdks = new AtomicReference<>(new AndroidSdk[0]);
     private final AtomicReference<AndroidSdk> defaultSdk = new AtomicReference<>(null);
+    private final AtomicReference<AndroidDebugBridge> adb = new AtomicReference<>(null);
+    private final AtomicReference<String> adbPath = new AtomicReference<>(null);
 
     protected AndroidSdk[] getSDKs() {
         return sdks.get();
@@ -74,6 +83,14 @@ public class AndroidSdkProvider implements FileChangeListener {
 
     public static final AndroidSdk[] getInstalledSDKs() {
         return Lookup.getDefault().lookup(AndroidSdkProvider.class).getSDKs();
+    }
+
+    public static final AndroidDebugBridge getAdb() {
+        return Lookup.getDefault().lookup(AndroidSdkProvider.class).adb.get();
+    }
+
+    public static final String getAdbPath() {
+        return Lookup.getDefault().lookup(AndroidSdkProvider.class).adbPath.get();
     }
 
     public AndroidSdkProvider() {
@@ -209,6 +226,7 @@ public class AndroidSdkProvider implements FileChangeListener {
             for (AndroidSdk updateSDK : updateSDKs) {
                 if (updateSDK.isDefaultSdk()) {
                     AndroidSdk lastDef = defaultSdk.getAndSet(updateSDK);
+                    updateAdb();
                     pcs.firePropertyChange(PROP_DEFAULT_SDK, lastDef, updateSDK);
                     err = false;
                     break;
@@ -220,6 +238,7 @@ public class AndroidSdkProvider implements FileChangeListener {
 
         } else {
             AndroidSdk lastDef = defaultSdk.getAndSet(null);
+            updateAdb();
             pcs.firePropertyChange(PROP_DEFAULT_SDK, lastDef, null);
         }
         pcs.firePropertyChange(PROP_INSTALLED_SDKS, last, updateSDKs);
@@ -229,6 +248,7 @@ public class AndroidSdkProvider implements FileChangeListener {
     public void makeFirstSdkDefault(AndroidSdk[] updateSDKs) {
         updateSDKs[0].setDefault(true);
         AndroidSdk lastDef = defaultSdk.getAndSet(updateSDKs[0]);
+        updateAdb();
         pcs.firePropertyChange(PROP_DEFAULT_SDK, lastDef, updateSDKs[0]);
     }
 
@@ -243,6 +263,21 @@ public class AndroidSdkProvider implements FileChangeListener {
             pathListener = null;
             lastFound = null;
         }
+    }
+
+    //***************ADB*********************
+    protected void updateAdb() {
+        AndroidSdk sdk = defaultSdk.get();
+        final FileObject path = sdk.findTool(ADB_TOOL);
+        ClientData.class.getClassLoader().clearAssertionStatus();      //qattern
+        DebugPortManager.setProvider(DebugPortProvider.getDefault());
+        AndroidDebugBridge.initIfNeeded(true);
+        String adbLocation = FileUtil.toFile(path).getAbsolutePath();
+        String lastLocation = adbPath.getAndSet(adbLocation);
+        pcs.firePropertyChange(PROP_DEFAULT_ADB_PATH, lastLocation, adbLocation);
+        AndroidDebugBridge bridge = AndroidDebugBridge.createBridge(adbLocation, true);
+        AndroidDebugBridge lastAdb = adb.getAndSet(bridge);
+        pcs.firePropertyChange(PROP_DEFAULT_ADB, lastAdb, bridge);
     }
 
 }

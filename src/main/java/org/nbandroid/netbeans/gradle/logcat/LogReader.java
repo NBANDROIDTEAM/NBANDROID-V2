@@ -38,7 +38,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.nbandroid.netbeans.gradle.core.ddm.AndroidDebugBridgeFactory;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -88,7 +88,7 @@ public class LogReader {
         changeSupport = new PropertyChangeSupport(this);
         listeners = new HashSet<>();
 
-        adb = AndroidDebugBridgeFactory.getDefault();
+        adb = AndroidSdkProvider.getAdb();
         checkReadingStatusTimer = new Timer();
         checkReadingStatusTimer.schedule(new TimerTask() {
 

@@ -38,12 +38,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.nbandroid.netbeans.gradle.AndroidIO;
 import org.nbandroid.netbeans.gradle.avd.AvdSelector;
-import org.nbandroid.netbeans.gradle.core.ddm.AndroidDebugBridgeFactory;
 import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatform;
 import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatformManager;
 import org.nbandroid.netbeans.gradle.core.sdk.SdkLogProvider;
 import org.nbandroid.netbeans.gradle.core.sdk.StatsCollector;
 import org.nbandroid.netbeans.gradle.core.ui.DeviceChooserImpl;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.netbeans.api.project.Project;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -157,7 +157,7 @@ public class AndroidLauncherImpl implements AndroidLauncher {
                     return avdMgr;
                 }
             };
-            AndroidDebugBridge adb = AndroidDebugBridgeFactory.getDefault();
+            AndroidDebugBridge adb = AndroidSdkProvider.getAdb();
             if (adb == null) {
                 LOG.log(Level.WARNING, "Android Debug Bridge is not configured. Cannot launch.");
                 return null;
