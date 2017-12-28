@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.nbandroid.netbeans.gradle.v2.adb.nodes.actions;
 
 import org.openide.actions.PropertiesAction;
@@ -37,7 +36,8 @@ import org.openide.awt.ActionRegistration;
         displayName = "", lazy = false
 )
 @ActionReferences({
-    @ActionReference(path = "Android/ADB/MobileDevice", position = 9999),})
+    @ActionReference(path = "Android/ADB/MobileDevice", position = 9999),
+    @ActionReference(path = "Android/ADB/EmulatorDevice", position = 9999),})
 public class DevicePropertiesAction extends PropertiesAction {
 
 }

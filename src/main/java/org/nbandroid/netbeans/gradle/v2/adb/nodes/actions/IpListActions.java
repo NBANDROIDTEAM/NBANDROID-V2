@@ -45,7 +45,8 @@ import org.openide.util.actions.NodeAction;
         displayName = "", lazy = false
 )
 @ActionReferences({
-    @ActionReference(path = "Android/ADB/MobileDevice", position = 9990),})
+    @ActionReference(path = "Android/ADB/MobileDevice", position = 9990),
+    @ActionReference(path = "Android/ADB/EmulatorDevice", position = 9990),})
 public class IpListActions extends NodeAction {
 
     @Override

@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.nbandroid.netbeans.gradle.v2.adb.nodes.actions;
 
 import com.android.ddmlib.AdbCommandRejectedException;
@@ -44,14 +43,14 @@ import org.openide.util.actions.NodeAction;
         displayName = "", lazy = false
 )
 @ActionReferences({
-    @ActionReference(path = "Android/ADB/MobileDevice", position = 9980),})
+    @ActionReference(path = "Android/ADB/MobileDevice", position = 9980),
+    @ActionReference(path = "Android/ADB/EmulatorDevice", position = 9980),})
 public class RebootDeviceAdbAction extends NodeAction {
 
     @Override
     protected void performAction(Node[] activatedNodes) {
         for (Node activatedNode : activatedNodes) {
-            DevicesNode.MobileDeviceHolder holder = activatedNode.getLookup().lookup(DevicesNode.MobileDeviceHolder.class
-            );
+            DevicesNode.MobileDeviceHolder holder = activatedNode.getLookup().lookup(DevicesNode.MobileDeviceHolder.class);
             if (holder != null) {
                 try {
                     holder.getMasterDevice().reboot(null);
@@ -65,8 +64,7 @@ public class RebootDeviceAdbAction extends NodeAction {
     @Override
     protected boolean enable(Node[] activatedNodes) {
         for (Node activatedNode : activatedNodes) {
-            DevicesNode.MobileDeviceHolder holder = activatedNode.getLookup().lookup(DevicesNode.MobileDeviceHolder.class
-            );
+            DevicesNode.MobileDeviceHolder holder = activatedNode.getLookup().lookup(DevicesNode.MobileDeviceHolder.class);
             if (holder == null) {
                 return false;
             }
