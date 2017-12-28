@@ -58,8 +58,8 @@ import org.openide.util.actions.NodeAction;
         displayName = "", lazy = false
 )
 @ActionReferences({
-    @ActionReference(path = "Android/ADB/MobileDevice", position = 1),
-    @ActionReference(path = "Android/ADB/EmulatorDevice", position = 1),})
+    @ActionReference(path = "Android/ADB/MobileDevice", position = 1000),
+    @ActionReference(path = "Android/ADB/EmulatorDevice", position = 1000),})
 public class ScreenShotAction extends NodeAction {
 
     private static final String PNG = "png";

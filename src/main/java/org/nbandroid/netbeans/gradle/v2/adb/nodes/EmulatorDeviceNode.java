@@ -77,10 +77,10 @@ public class EmulatorDeviceNode extends AbstractNode implements AndroidDebugBrid
     private final EmulatorControlSupport emulatorControl;
 
     EmulatorDeviceNode(final IDevice device) {
-        super(new DeviceChildren(device), Lookups.fixed(device, new DevicesNode.MobileDeviceHolder(device, null, device.getSerialNumber())));
+        super(new DeviceChildren(device), Lookups.fixed(device, new EmulatorControlSupport(device), new DevicesNode.MobileDeviceHolder(device, null, device.getSerialNumber())));
         assert device != null;
         this.device = device;
-        emulatorControl = new EmulatorControlSupport(device);
+        emulatorControl = getLookup().lookup(EmulatorControlSupport.class);
         this.setDisplayName(device.getSerialNumber());
         this.updateDescription();
         this.setIconBaseWithExtension("org/netbeans/modules/android/project/resources/emulator.png");

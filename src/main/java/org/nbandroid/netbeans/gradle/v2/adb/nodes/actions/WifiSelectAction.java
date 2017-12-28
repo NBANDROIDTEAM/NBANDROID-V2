@@ -44,7 +44,7 @@ import org.openide.util.actions.Presenter;
         displayName = "", lazy = false
 )
 @ActionReferences({
-    @ActionReference(path = "Android/ADB/MobileDevice", position = 20, separatorAfter = 40, separatorBefore = 19),})
+    @ActionReference(path = "Android/ADB/MobileDevice", position = 4000, separatorAfter = 4100, separatorBefore = 3990),})
 public class WifiSelectAction extends NodeAction implements Action, Presenter.Menu, Presenter.Popup {
 
     private final JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem("Use Ethernet connection");

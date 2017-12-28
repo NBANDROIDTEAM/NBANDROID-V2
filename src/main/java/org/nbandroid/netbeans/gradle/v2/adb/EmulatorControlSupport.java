@@ -205,4 +205,13 @@ public class EmulatorControlSupport {
         DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Message("Emulator console : " + result, NotifyDescriptor.WARNING_MESSAGE));
     }
+
+    public EmulatorConsole getConsole() {
+        return console;
+    }
+
+    public IDevice getDevice() {
+        return device;
+    }
+
 }
