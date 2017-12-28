@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.nbandroid.netbeans.gradle.v2.adb.nodes.actions.emu;
 
-package org.nbandroid.netbeans.gradle.v2.adb.nodes.actions;
-
-import com.android.ddmlib.NbAndroidAdbHelper;
-import org.nbandroid.netbeans.gradle.v2.adb.nodes.DevicesNode;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import org.nbandroid.netbeans.gradle.v2.adb.EmulatorControlSupport;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -34,47 +34,49 @@ import org.openide.util.actions.NodeAction;
  * @author arsi
  */
 @ActionID(
-        category = "ADB/MobileDevice",
-        id = "org.nbandroid.netbeans.gradle.v2.adb.nodes.actions.SwitchUsbAdbAction"
+        category = "ADB/EmulatorDevice",
+        id = "org.nbandroid.netbeans.gradle.v2.adb.nodes.actions.emu.CancelIncomingCallAction"
 )
 @ActionRegistration(
         displayName = "", lazy = false
 )
 @ActionReferences({
-    @ActionReference(path = "Android/ADB/MobileDevice", position = 3000),})
-public class SwitchUsbAdbAction extends NodeAction {
+    @ActionReference(path = "Android/ADB/EmulatorDevice", position = 1210),})
+public class CancelIncomingCallAction extends NodeAction {
+
+    private static final Map<String, String> calledNumbers = new ConcurrentHashMap<>();
+
+    public static final void addCalledNumber(String serial, String no) {
+        calledNumbers.put(serial, no);
+    }
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-        for (Node activatedNode : activatedNodes) {
-            DevicesNode.MobileDeviceHolder holder = activatedNode.getLookup().lookup(DevicesNode.MobileDeviceHolder.class);
-            if (holder == null || !holder.hasUSB()) {
-                continue;
+        EmulatorControlSupport emulatorControl = activatedNodes[0].getLookup().lookup(EmulatorControlSupport.class);
+        if (emulatorControl != null) {
+            String no = calledNumbers.remove(emulatorControl.getDevice().getSerialNumber());
+            if (no != null) {
+                emulatorControl.getConsole().cancelCall(no);
             }
-            NbAndroidAdbHelper.switchToUSB(holder.getSerialNumber());
         }
     }
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
-        for (Node activatedNode : activatedNodes) {
-            DevicesNode.MobileDeviceHolder holder = activatedNode.getLookup().lookup(DevicesNode.MobileDeviceHolder.class
-            );
-            if (holder == null || !holder.hasUSB()) {
-                return false;
-            }
+        if (activatedNodes.length != 1) {
+            return false;
         }
-        return true;
+        return activatedNodes[0].getLookup().lookup(EmulatorControlSupport.class) != null;
     }
 
     @Override
     public String getName() {
-        return "Switch ADB to USB";
+        return "Cancel incoming call";
     }
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.nbandroid.netbeans.gradle.v2.adb.nodes.actions.SwitchUsbAdbAction");
+        return null;
     }
 
 }

@@ -47,7 +47,7 @@ import org.openide.util.actions.NodeAction;
         displayName = "", lazy = false
 )
 @ActionReferences({
-    @ActionReference(path = "Android/ADB/MobileDevice", position = 2),})
+    @ActionReference(path = "Android/ADB/MobileDevice", position = 2000),})
 public class SwitchEthernetAdbAction extends NodeAction {
 
     @Override
