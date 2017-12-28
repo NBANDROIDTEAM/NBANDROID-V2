@@ -32,7 +32,7 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.progress.ProgressHandle;
-import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatformManager;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 
 /**
  * Helper to launch Android emulator.
@@ -59,14 +59,14 @@ public class EmulatorLauncher {
     private static final String FLAG_WIPE_DATA = "-wipe-data";
     private static final String FLAG_NO_BOOT_ANIM = "-no-boot-anim";
 
-    private final DalvikPlatformManager manager;
+    private final AndroidSdk sdk;
     private final AdbListener listener;
     private final Object connectLock = new Object();
     // @GuardedBy(connectLock)
     private final Set<IDevice> connectedDevices = new HashSet<IDevice>();
 
-    public EmulatorLauncher(DalvikPlatformManager manager) {
-        this.manager = manager;
+    public EmulatorLauncher(AndroidSdk sdk) {
+        this.sdk = sdk;
         listener = new AdbListener();
 //    AndroidDebugBridge.addDebugBridgeChangeListener(listener);
         AndroidDebugBridge.addDeviceChangeListener(listener);
@@ -158,7 +158,7 @@ public class EmulatorLauncher {
     }
 
     private String getEmulatorBinaryPath() {
-        return manager.getSdkLocation() + File.separator
+        return sdk.getSdkPath() + File.separator
                 + SdkConstants.OS_SDK_TOOLS_FOLDER + SdkConstants.FN_EMULATOR;
     }
 }

@@ -20,6 +20,7 @@ import com.android.sdklib.repository.AndroidSdkHandler;
 import java.util.concurrent.Future;
 import org.nbandroid.netbeans.gradle.avd.AvdSelector;
 import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatform;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.openide.util.Lookup;
 
 /**
@@ -51,7 +52,7 @@ public interface AndroidLauncher {
     Future<Client> launch(DalvikPlatform platform, Lookup context, String mode);
 
     AvdSelector.LaunchData configAvd(
-            AndroidSdkHandler sdkManager, IAndroidTarget target, LaunchConfiguration launchCfg);
+            AndroidSdkHandler sdkManager, AndroidSdk sdk, IAndroidTarget target, LaunchConfiguration launchCfg);
 
     /**
      * Simple launch that can be used to launch a file from filesystem (APK).
