@@ -18,7 +18,6 @@
  */
 package org.nbandroid.netbeans.gradle.v2.adb.nodes.actions;
 
-import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -85,7 +84,8 @@ import org.openide.windows.WindowManager;
         displayName = "", lazy = false
 )
 @ActionReferences({
-    @ActionReference(path = "Android/ADB/MobileDevice", position = 9970),})
+    @ActionReference(path = "Android/ADB/MobileDevice", position = 9970),
+    @ActionReference(path = "Android/ADB/EmulatorDevice", position = 9970),})
 public class AndroidShellAdbAction extends NodeAction {
 
     public static final ExecutorService POOL = Executors.newCachedThreadPool();
@@ -96,6 +96,7 @@ public class AndroidShellAdbAction extends NodeAction {
     protected void performAction(Node[] activatedNodes) {
 
         Runnable runnable = new Runnable() {
+            @Override
             public void run() {
                 for (Node activatedNode : activatedNodes) {
                     DevicesNode.MobileDeviceHolder holder = activatedNode.getLookup().lookup(DevicesNode.MobileDeviceHolder.class);
@@ -108,8 +109,6 @@ public class AndroidShellAdbAction extends NodeAction {
                         final ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
                         if (env != null) {
                             openTerminalImpl(ioContainer, env, null, false, false, 0, holder);
-                            Component[] components = instance.getComponents();
-                            System.out.println(".run()");
                         }
                     }
                 }
@@ -121,8 +120,7 @@ public class AndroidShellAdbAction extends NodeAction {
     @Override
     protected boolean enable(Node[] activatedNodes) {
         for (Node activatedNode : activatedNodes) {
-            DevicesNode.MobileDeviceHolder holder = activatedNode.getLookup().lookup(DevicesNode.MobileDeviceHolder.class
-            );
+            DevicesNode.MobileDeviceHolder holder = activatedNode.getLookup().lookup(DevicesNode.MobileDeviceHolder.class);
             if (holder == null) {
                 return false;
             }
@@ -161,7 +159,7 @@ public class AndroidShellAdbAction extends NodeAction {
             final DevicesNode.MobileDeviceHolder holder) {
         final IOProvider ioProvider = IOProvider.get("Terminal"); // NOI18N
         if (ioProvider != null) {
-            final AtomicReference<InputOutput> ioRef = new AtomicReference<InputOutput>();
+            final AtomicReference<InputOutput> ioRef = new AtomicReference<>();
             InputOutput io = ioProvider.getIO(holder.getSerialNumber(), null, ioContainer);
             ioRef.set(io);
             final AtomicBoolean destroyed = new AtomicBoolean(false);
@@ -237,9 +235,7 @@ public class AndroidShellAdbAction extends NodeAction {
                                 out.print(NbBundle.getMessage(TerminalSupportImpl.class, "LOG_DirNotExist", dir, env.getDisplayName()));
                                 return;
                             }
-                        } catch (ConnectException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (InterruptedException ex) {
+                        } catch (ConnectException | InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
                         }
 
@@ -261,10 +257,7 @@ public class AndroidShellAdbAction extends NodeAction {
                             }
                             return;
                         }
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                        return;
-                    } catch (ConnectionManager.CancellationException ex) {
+                    } catch (IOException | ConnectionManager.CancellationException ex) {
                         Exceptions.printStackTrace(ex);
                         return;
                     }
@@ -332,7 +325,7 @@ public class AndroidShellAdbAction extends NodeAction {
         public NativeProcessListener(InputOutput io, AtomicBoolean destroyed) {
             assert destroyed != null;
             this.destroyed = destroyed;
-            this.processRef = new AtomicReference<NativeProcess>();
+            this.processRef = new AtomicReference<>();
             try {
                 Class<?> iONotifier = CLASS_LOADER.loadClass("org.netbeans.modules.terminal.api.IONotifier");
                 Method m = iONotifier.getDeclaredMethod("addPropertyChangeListener", InputOutput.class, PropertyChangeListener.class);

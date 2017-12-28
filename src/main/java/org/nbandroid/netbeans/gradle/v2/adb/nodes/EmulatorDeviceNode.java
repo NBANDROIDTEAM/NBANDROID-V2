@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -39,11 +40,10 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import org.nbandroid.netbeans.gradle.v2.adb.EmulatorControlSupport;
 import org.nbandroid.netbeans.gradle.core.ui.PropertyUtils;
+import org.nbandroid.netbeans.gradle.v2.adb.EmulatorControlSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.actions.PropertiesAction;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -60,8 +60,8 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.NodeAction;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -77,7 +77,7 @@ public class EmulatorDeviceNode extends AbstractNode implements AndroidDebugBrid
     private final EmulatorControlSupport emulatorControl;
 
     EmulatorDeviceNode(final IDevice device) {
-        super(new DeviceChildren(device), Lookups.fixed(device));
+        super(new DeviceChildren(device), Lookups.fixed(device, new DevicesNode.MobileDeviceHolder(device, null, device.getSerialNumber())));
         assert device != null;
         this.device = device;
         emulatorControl = new EmulatorControlSupport(device);
@@ -87,19 +87,24 @@ public class EmulatorDeviceNode extends AbstractNode implements AndroidDebugBrid
         AndroidDebugBridge.addDeviceChangeListener(this);
         this.addNodeListener(new NodeListener() {
 
+            @Override
             public void childrenAdded(NodeMemberEvent event) {
             }
 
+            @Override
             public void childrenRemoved(NodeMemberEvent event) {
             }
 
+            @Override
             public void childrenReordered(NodeReorderEvent event) {
             }
 
+            @Override
             public void nodeDestroyed(NodeEvent event) {
                 AndroidDebugBridge.removeDeviceChangeListener(EmulatorDeviceNode.this);
             }
 
+            @Override
             public void propertyChange(PropertyChangeEvent event) {
             }
         });
@@ -116,11 +121,8 @@ public class EmulatorDeviceNode extends AbstractNode implements AndroidDebugBrid
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[]{
-            SystemAction.get(ScreenShotAction.class),
-            null,
-            SystemAction.get(PropertiesAction.class)
-        };
+        List<? extends Action> actionsForPath = Utilities.actionsForPath("Android/ADB/EmulatorDevice");
+        return actionsForPath.toArray(new Action[actionsForPath.size()]);
     }
 
     @Override
@@ -155,7 +157,7 @@ public class EmulatorDeviceNode extends AbstractNode implements AndroidDebugBrid
 
             @Override
             public Boolean getValue() throws IllegalAccessException, InvocationTargetException {
-                return Boolean.valueOf(device.isEmulator());
+                return device.isEmulator();
             }
         });
 
@@ -197,12 +199,15 @@ public class EmulatorDeviceNode extends AbstractNode implements AndroidDebugBrid
         };
     }
 
+    @Override
     public void deviceConnected(IDevice device) {
     }
 
+    @Override
     public void deviceDisconnected(IDevice device) {
     }
 
+    @Override
     public void deviceChanged(IDevice device, int changeType) {
         if (this.device.equals(device) && (changeType & IDevice.CHANGE_STATE) == IDevice.CHANGE_STATE) {
             this.updateDescription();
@@ -256,7 +261,7 @@ public class EmulatorDeviceNode extends AbstractNode implements AndroidDebugBrid
         }
 
         private void updateKeys() {
-            Set<ClientHolder> keys = new HashSet<ClientHolder>();
+            Set<ClientHolder> keys = new HashSet<>();
             final Client[] clients = device.getClients();
             for (Client client : clients) {
                 keys.add(new ClientHolder(client));
@@ -276,17 +281,21 @@ public class EmulatorDeviceNode extends AbstractNode implements AndroidDebugBrid
             return new Node[]{new ClientNode(key.client)};
         }
 
+        @Override
         public void deviceConnected(IDevice device) {
             //Not important
         }
 
+        @Override
         public void deviceDisconnected(IDevice device) {
             //Not important
         }
 
+        @Override
         public void deviceChanged(IDevice device, int eventType) {
             if (this.device.equals(device) && (eventType & IDevice.CHANGE_CLIENT_LIST) == IDevice.CHANGE_CLIENT_LIST) {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         updateKeys();
                     }
@@ -387,22 +396,12 @@ public class EmulatorDeviceNode extends AbstractNode implements AndroidDebugBrid
                 ImageIO.write(img, PNG, pictureFile);
                 final FileObject pictureFileObj = FileUtil.toFileObject(pictureFile);
                 DataObject dobj = DataObject.find(pictureFileObj);
-                OpenCookie oc = dobj.getCookie(OpenCookie.class);
+                OpenCookie oc = dobj.getLookup().lookup(OpenCookie.class);
                 if (oc != null) {
                     oc.open();
                 }
-            } catch (IOException ioe) {
+            } catch (IOException | TimeoutException | AdbCommandRejectedException ioe) {
                 LOG.log(Level.INFO, null, ioe);
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        NbBundle.getMessage(EmulatorDeviceNode.class, "ERROR_ScreenShot"),
-                        NotifyDescriptor.ERROR_MESSAGE));
-            } catch (TimeoutException ex) {
-                LOG.log(Level.INFO, null, ex);
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        NbBundle.getMessage(EmulatorDeviceNode.class, "ERROR_ScreenShot"),
-                        NotifyDescriptor.ERROR_MESSAGE));
-            } catch (AdbCommandRejectedException ex) {
-                LOG.log(Level.INFO, null, ex);
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                         NbBundle.getMessage(EmulatorDeviceNode.class, "ERROR_ScreenShot"),
                         NotifyDescriptor.ERROR_MESSAGE));
@@ -424,7 +423,7 @@ public class EmulatorDeviceNode extends AbstractNode implements AndroidDebugBrid
 
         @Override
         public HelpCtx getHelpCtx() {
-            return new HelpCtx(EmulatorDeviceNode.class.getName());
+            return new HelpCtx("org.nbandroid.netbeans.gradle.v2.adb.nodes.EmulatorDeviceNode");
         }
 
     }

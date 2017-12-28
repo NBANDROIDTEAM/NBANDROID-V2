@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.nbandroid.netbeans.gradle.v2.adb.nodes.actions;
 
 import com.android.ddmlib.AdbCommandRejectedException;
@@ -59,7 +58,8 @@ import org.openide.util.actions.NodeAction;
         displayName = "", lazy = false
 )
 @ActionReferences({
-    @ActionReference(path = "Android/ADB/MobileDevice", position = 1),})
+    @ActionReference(path = "Android/ADB/MobileDevice", position = 1),
+    @ActionReference(path = "Android/ADB/EmulatorDevice", position = 1),})
 public class ScreenShotAction extends NodeAction {
 
     private static final String PNG = "png";
@@ -149,7 +149,7 @@ public class ScreenShotAction extends NodeAction {
         if (nodes.length != 1) {
             return false;
         }
-        return nodes[0].getLookup().lookup(IDevice.class) != null;
+        return nodes[0].getLookup().lookup(DevicesNode.MobileDeviceHolder.class) != null;
     }
 
     @Override
