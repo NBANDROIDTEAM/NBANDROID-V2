@@ -281,7 +281,7 @@
             <version>3.0.0</version>
             <type>jar</type>
         </dependency>
-        <dependency> 
+        <dependency>
             <groupId>com.github.kelemen</groupId> 
             <artifactId>netbeans-gradle-plugin</artifactId> 
             <version>${version.nb.gradle}</version> 

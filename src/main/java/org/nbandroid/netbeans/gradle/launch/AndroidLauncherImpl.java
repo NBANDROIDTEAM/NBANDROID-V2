@@ -39,10 +39,10 @@ import java.util.regex.Pattern;
 import org.nbandroid.netbeans.gradle.AndroidIO;
 import org.nbandroid.netbeans.gradle.avd.AvdSelector;
 import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatform;
-import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatformManager;
 import org.nbandroid.netbeans.gradle.core.sdk.SdkLogProvider;
 import org.nbandroid.netbeans.gradle.core.sdk.StatsCollector;
 import org.nbandroid.netbeans.gradle.core.ui.DeviceChooserImpl;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.netbeans.api.project.Project;
 import org.openide.util.Exceptions;
@@ -77,9 +77,11 @@ public class AndroidLauncherImpl implements AndroidLauncher {
         collectStats();
         LaunchConfiguration launchCfg = context.lookup(LaunchConfiguration.class);
         AvdSelector.LaunchData launchData = context.lookup(AvdSelector.LaunchData.class);
+        Project project = Preconditions.checkNotNull(context.lookup(Project.class));
+        AndroidSdk sdk = Preconditions.checkNotNull(project.getLookup().lookup(AndroidSdk.class));
         if (launchData == null) {
             if (platform != null) {
-                launchData = configAvd(platform.getSdkManager(), platform.getAndroidTarget(), launchCfg);
+                launchData = configAvd(platform.getSdkManager(), sdk, platform.getAndroidTarget(), launchCfg);
             } else {
                 LOG.log(Level.INFO, "No target platform for launch. Canelling.");
             }
@@ -88,11 +90,13 @@ public class AndroidLauncherImpl implements AndroidLauncher {
             LOG.log(Level.INFO, "No target AVD selected or found. Cancelling launch");
             return null;
         }
+
         // TODO check if we need to start emulator
         if (launchData.getDevice() == null) {
             LOG.log(Level.INFO, "Device not running. Launch emulator");
             // TODO det Future<int> and stop launch asynchronously(?) if the command fails
-            Future<IDevice> toBeDevice = new EmulatorLauncher(DalvikPlatformManager.getDefault())
+
+            Future<IDevice> toBeDevice = new EmulatorLauncher(sdk)
                     .launchEmulator(launchData.getAvdInfo(), launchCfg);
             try {
                 launchData = new AvdSelector.LaunchData(launchData.getAvdInfo(), toBeDevice.get());
@@ -106,7 +110,7 @@ public class AndroidLauncherImpl implements AndroidLauncher {
             return null;
         }
         LaunchAction launchAction = Preconditions.checkNotNull(context.lookup(LaunchAction.class));
-        Project project = Preconditions.checkNotNull(context.lookup(Project.class));
+
         if (!launchAction.doLaunch(info, launchData.getDevice(), project)) {
             return null;
         }
@@ -124,7 +128,7 @@ public class AndroidLauncherImpl implements AndroidLauncher {
      */
     @Override
     public AvdSelector.LaunchData configAvd(
-            AndroidSdkHandler sdkManager, IAndroidTarget target, LaunchConfiguration launchCfg) {
+            AndroidSdkHandler sdkManager, AndroidSdk sdk, IAndroidTarget target, LaunchConfiguration launchCfg) {
         try {
             LaunchConfiguration.TargetMode mode = launchCfg.getTargetMode();
             String targetAvd = null;
@@ -187,7 +191,7 @@ public class AndroidLauncherImpl implements AndroidLauncher {
             if (launch.getDevice() == null) {
                 LOG.log(Level.INFO, "Device not running. Launch emulator");
                 // TODO det Future<int> and stop launch asynchronously(?) if the command fails
-                Future<IDevice> toBeDevice = new EmulatorLauncher(DalvikPlatformManager.getDefault())
+                Future<IDevice> toBeDevice = new EmulatorLauncher(sdk)
                         .launchEmulator(launch.getAvdInfo(), launchCfg);
                 try {
                     launch = new AvdSelector.LaunchData(launch.getAvdInfo(), toBeDevice.get());

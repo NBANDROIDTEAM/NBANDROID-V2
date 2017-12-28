@@ -3,8 +3,11 @@ package org.nbandroid.netbeans.gradle;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import java.awt.Image;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import javax.swing.Action;
 import org.nbandroid.netbeans.gradle.api.AndroidConstants;
 import org.nbandroid.netbeans.gradle.api.AndroidManifestSource;
 import org.nbandroid.netbeans.gradle.api.ui.AndroidPackagesNode;
@@ -12,6 +15,9 @@ import org.nbandroid.netbeans.gradle.api.ui.AndroidResourceNode;
 import org.nbandroid.netbeans.gradle.ui.DependenciesNode;
 import org.nbandroid.netbeans.gradle.ui.GeneratedSourcesNode;
 import org.nbandroid.netbeans.gradle.ui.InstrumentTestNode;
+import org.nbandroid.netbeans.gradle.v2.apk.actions.InstallApkAction;
+import org.nbandroid.netbeans.gradle.v2.apk.actions.SaveAsAction;
+import org.nbandroid.netbeans.gradle.v2.ui.IconProvider;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -20,12 +26,17 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.gradle.project.api.event.NbListenerRef;
 import org.netbeans.gradle.project.api.nodes.GradleProjectExtensionNodes;
 import org.netbeans.gradle.project.api.nodes.SingleNodeFactory;
+import org.openide.actions.CopyAction;
+import org.openide.actions.PropertiesAction;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -87,7 +98,8 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
                         new ManifestNodeFactory(),
                         new DependenciesNodeFactory(),
                         new InstrumentTestNodeFactory(),
-                        new GeneratedSourcesNodeFactory())));
+                        new GeneratedSourcesNodeFactory(),
+                        new ApkNodeFactory())));
     }
 
     private class GradleNodeFactory implements SingleNodeFactory {
@@ -145,6 +157,83 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
             return DependenciesNode.createCompileDependenciesNode(
                     NbBundle.getMessage(AndroidGradleNodes.class, "LBL_DependenciesNode"), p);
         }
+    }
+
+    private class ApkNodeFactory implements SingleNodeFactory {
+
+        @Override
+        public Node createNode() {
+            FileObject root = p.getProjectDirectory();
+            try {
+                FileObject apkFo = FileUtil.createFolder(FileUtil.createFolder(FileUtil.createFolder(root, "build"), "outputs"), "apk");
+                DataObject dob = DataObject.find(apkFo);
+                return new ApksFilterNode(dob.getNodeDelegate());
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return null;
+        }
+
+    }
+
+    private class ApksFilterNodeChildrens extends FilterNode.Children {
+
+        public ApksFilterNodeChildrens(Node or) {
+            super(or);
+        }
+
+        @Override
+        protected Node[] createNodes(Node key) {
+            return new Node[]{new ApkFilterNode(key)};
+        }
+
+    }
+
+    private class ApkFilterNode extends FilterNode {
+
+        public ApkFilterNode(Node original) {
+            super(original);
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[]{
+                SystemAction.get(SaveAsAction.class),
+                SystemAction.get(InstallApkAction.class),
+                SystemAction.get(CopyAction.class),
+                SystemAction.get(PropertiesAction.class)
+            };
+        }
+
+    }
+
+
+    private class ApksFilterNode extends FilterNode {
+
+        public ApksFilterNode(Node original) {
+            super(original, new ApksFilterNodeChildrens(original));
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "APKs";
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
+        }
+
+        @Override
+        public Image getOpenedIcon(int type) {
+            return IconProvider.IMG_APKS;
+        }
+
+        @Override
+        public Image getIcon(int type) {
+            return IconProvider.IMG_APKS;
+        }
+
     }
 
     private class GeneratedSourcesNodeFactory implements SingleNodeFactory {

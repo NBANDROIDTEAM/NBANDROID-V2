@@ -87,4 +87,8 @@ public class IconProvider {
     @StaticResource
     private static final String RESOURCE_WIFI = "org/netbeans/modules/android/project/ui/resources/wifi_badge.png";
     public static final Image IMG_WIFI_BADGE = ImageUtilities.loadImage(RESOURCE_WIFI);
+
+    @StaticResource
+    private static final String RESOURCE_APKS = "org/nbandroid/netbeans/gradle/v2/apk/apks.png";
+    public static final Image IMG_APKS = ImageUtilities.loadImage(RESOURCE_APKS);
 }
