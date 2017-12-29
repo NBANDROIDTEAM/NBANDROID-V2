@@ -15,8 +15,6 @@ import org.nbandroid.netbeans.gradle.api.ui.AndroidResourceNode;
 import org.nbandroid.netbeans.gradle.ui.DependenciesNode;
 import org.nbandroid.netbeans.gradle.ui.GeneratedSourcesNode;
 import org.nbandroid.netbeans.gradle.ui.InstrumentTestNode;
-import org.nbandroid.netbeans.gradle.v2.apk.actions.InstallApkAction;
-import org.nbandroid.netbeans.gradle.v2.apk.actions.SaveAsAction;
 import org.nbandroid.netbeans.gradle.v2.ui.IconProvider;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -26,8 +24,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.gradle.project.api.event.NbListenerRef;
 import org.netbeans.gradle.project.api.nodes.GradleProjectExtensionNodes;
 import org.netbeans.gradle.project.api.nodes.SingleNodeFactory;
-import org.openide.actions.CopyAction;
-import org.openide.actions.PropertiesAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -36,7 +32,6 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -184,28 +179,11 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
 
         @Override
         protected Node[] createNodes(Node key) {
-            return new Node[]{new ApkFilterNode(key)};
+            return new Node[]{new FilterNode(key)};
         }
 
     }
 
-    private class ApkFilterNode extends FilterNode {
-
-        public ApkFilterNode(Node original) {
-            super(original);
-        }
-
-        @Override
-        public Action[] getActions(boolean context) {
-            return new Action[]{
-                SystemAction.get(SaveAsAction.class),
-                SystemAction.get(InstallApkAction.class),
-                SystemAction.get(CopyAction.class),
-                SystemAction.get(PropertiesAction.class)
-            };
-        }
-
-    }
 
 
     private class ApksFilterNode extends FilterNode {
