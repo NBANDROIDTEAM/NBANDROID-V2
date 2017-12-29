@@ -22,7 +22,11 @@ import org.nbandroid.netbeans.gradle.v2.apk.actions.SignApkAction;
 import org.nbandroid.netbeans.gradle.v2.ui.IconProvider;
 import org.openide.actions.CopyAction;
 import org.openide.actions.PropertiesAction;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataNode;
@@ -35,6 +39,8 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -50,6 +56,9 @@ import org.openide.util.lookup.ProxyLookup;
         position = 479)
 public class ApkDataObject extends MultiDataObject implements Deployable {
 
+    private final FileObject pf;
+    private static final RequestProcessor RP = new RequestProcessor("APK Node update", 1);
+
     public static enum SignInfo {
         SIGNED_NOT,
         SIGNED_V1,
@@ -57,28 +66,9 @@ public class ApkDataObject extends MultiDataObject implements Deployable {
         SIGNED_V1V2
     }
 
-    private final SignInfo signInfo;
-
     public ApkDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        int fastSignInfo = org.nbandroid.netbeans.gradle.v2.apk.ApkUtils.fastSignInfo(FileUtil.toFile(pf));
-        switch (fastSignInfo) {
-            case org.nbandroid.netbeans.gradle.v2.apk.ApkUtils.SIGNED_NOT:
-                signInfo = SignInfo.SIGNED_NOT;
-                break;
-            case org.nbandroid.netbeans.gradle.v2.apk.ApkUtils.SIGNED_V1:
-                signInfo = SignInfo.SIGNED_V1;
-                break;
-            case org.nbandroid.netbeans.gradle.v2.apk.ApkUtils.SIGNED_V2:
-                signInfo = SignInfo.SIGNED_V2;
-                break;
-            case org.nbandroid.netbeans.gradle.v2.apk.ApkUtils.SIGNED_V1V2:
-                signInfo = SignInfo.SIGNED_V1V2;
-                break;
-            default:
-                signInfo = SignInfo.SIGNED_NOT;
-
-        }
+        this.pf = pf;
     }
 
     @Override
@@ -88,7 +78,7 @@ public class ApkDataObject extends MultiDataObject implements Deployable {
 
     @Override
     public Lookup getLookup() {
-        return new ProxyLookup(getCookieSet().getLookup(), Lookups.fixed(signInfo));
+        return getCookieSet().getLookup();
     }
 
     @Override
@@ -96,10 +86,30 @@ public class ApkDataObject extends MultiDataObject implements Deployable {
         return getPrimaryFile();
     }
 
-    private class ApkFilterNode extends FilterNode {
+    public static class SignInfoHolder {
+
+        private SignInfo info = SignInfo.SIGNED_NOT;
+
+        public SignInfo getInfo() {
+            return info;
+        }
+
+        public void setInfo(SignInfo info) {
+            this.info = info;
+        }
+
+    }
+
+    private class ApkFilterNode extends FilterNode implements FileChangeListener {
+
+        private SignInfo signInfo = SignInfo.SIGNED_NOT;
+        private final SignInfoHolder holder;
 
         public ApkFilterNode(Node original) {
-            super(original);
+            super(original, org.openide.nodes.Children.LEAF, new ProxyLookup(original.getLookup(), Lookups.fixed(new SignInfoHolder())));
+            holder = getLookup().lookup(SignInfoHolder.class);
+            pf.addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, pf));
+            refreshIcons();
         }
 
         @Override
@@ -139,6 +149,61 @@ public class ApkDataObject extends MultiDataObject implements Deployable {
             }
         }
 
+        private void refreshIcons() {
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    int fastSignInfo = org.nbandroid.netbeans.gradle.v2.apk.ApkUtils.fastSignInfo(FileUtil.toFile(pf));
+                    switch (fastSignInfo) {
+                        case org.nbandroid.netbeans.gradle.v2.apk.ApkUtils.SIGNED_NOT:
+                            signInfo = SignInfo.SIGNED_NOT;
+                            break;
+                        case org.nbandroid.netbeans.gradle.v2.apk.ApkUtils.SIGNED_V1:
+                            signInfo = SignInfo.SIGNED_V1;
+                            break;
+                        case org.nbandroid.netbeans.gradle.v2.apk.ApkUtils.SIGNED_V2:
+                            signInfo = SignInfo.SIGNED_V2;
+                            break;
+                        case org.nbandroid.netbeans.gradle.v2.apk.ApkUtils.SIGNED_V1V2:
+                            signInfo = SignInfo.SIGNED_V1V2;
+                            break;
+                        default:
+                            signInfo = SignInfo.SIGNED_NOT;
+                    }
+                    holder.setInfo(signInfo);
+                    fireIconChange();
+                    fireOpenedIconChange();
+                }
+            };
+            RP.execute(runnable);
+
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            refreshIcons();
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+        }
 
     }
+
 }

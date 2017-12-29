@@ -81,10 +81,10 @@ public class SignApkAction extends NodeAction {
             return false;
         }
         Node node = activatedNodes[0];
-        ApkDataObject.SignInfo signInfo = node.getLookup().lookup(ApkDataObject.SignInfo.class);
-        if (signInfo == null) {
+        ApkDataObject.SignInfoHolder signHolder = node.getLookup().lookup(ApkDataObject.SignInfoHolder.class);
+        if (signHolder == null) {
             return false;
-        } else if (signInfo == ApkDataObject.SignInfo.SIGNED_V1 || signInfo == ApkDataObject.SignInfo.SIGNED_V2 || signInfo == ApkDataObject.SignInfo.SIGNED_V1V2) {
+        } else if (signHolder.getInfo() == ApkDataObject.SignInfo.SIGNED_V1 || signHolder.getInfo() == ApkDataObject.SignInfo.SIGNED_V2 || signHolder.getInfo() == ApkDataObject.SignInfo.SIGNED_V1V2) {
             return false;
         }
         return true;
