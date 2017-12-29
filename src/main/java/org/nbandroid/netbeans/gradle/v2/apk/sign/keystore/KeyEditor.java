@@ -18,17 +18,75 @@
  */
 package org.nbandroid.netbeans.gradle.v2.apk.sign.keystore;
 
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.Arrays;
+import org.nbandroid.netbeans.gradle.v2.apk.ApkUtils;
+import org.openide.DialogDescriptor;
+
 /**
  *
  * @author arsi
  */
-public class KeyEditor extends javax.swing.JPanel {
+public class KeyEditor extends javax.swing.JPanel implements KeyListener {
+
+    private DialogDescriptor descriptor;
 
     /**
      * Creates new form KeyEditor
      */
     public KeyEditor() {
         initComponents();
+        passwd1.setText("");
+        passwd2.setText("");
+        passwd1.addKeyListener(this);
+        passwd2.addKeyListener(this);
+        alias.addKeyListener(this);
+        firstAndLastName.addKeyListener(this);
+        organizationUnit.addKeyListener(this);
+        organization.addKeyListener(this);
+        city.addKeyListener(this);
+        stateOrProvince.addKeyListener(this);
+        countryCode.addKeyListener(this);
+    }
+
+    public KeyEditor(KeyListener listener) {
+        initComponents();
+        passwd1.setText("");
+        passwd2.setText("");
+        passwd1.addKeyListener(listener);
+        passwd2.addKeyListener(listener);
+        alias.addKeyListener(listener);
+        firstAndLastName.addKeyListener(listener);
+        organizationUnit.addKeyListener(listener);
+        organization.addKeyListener(listener);
+        city.addKeyListener(listener);
+        stateOrProvince.addKeyListener(listener);
+        countryCode.addKeyListener(listener);
+    }
+
+    public void setDescriptor(DialogDescriptor descriptor) {
+        this.descriptor = descriptor;
+        keyReleased(null);
+    }
+
+    @Override
+    public void setEnabled(boolean enable) {
+        super.setEnabled(enable);
+        alias.setEnabled(enable);
+        passwd1.setEnabled(enable);
+        passwd2.setEnabled(enable);
+        validityYears.setEnabled(enable);
+        firstAndLastName.setEnabled(enable);
+        organizationUnit.setEnabled(enable);
+        organization.setEnabled(enable);
+        city.setEnabled(enable);
+        stateOrProvince.setEnabled(enable);
+        countryCode.setEnabled(enable);
+    }
+
+    public ApkUtils.DN getDn() {
+        return new ApkUtils.DN(alias.getText(), passwd1.getPassword(), (int) validityYears.getValue(), firstAndLastName.getText(), organizationUnit.getText(), organization.getText(), city.getText(), stateOrProvince.getText(), countryCode.getText());
     }
 
     /**
@@ -47,20 +105,21 @@ public class KeyEditor extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         passwd2 = new javax.swing.JPasswordField();
         jLabel4 = new javax.swing.JLabel();
-        years = new javax.swing.JSpinner();
+        validityYears = new javax.swing.JSpinner();
         jPanel1 = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
-        certName = new javax.swing.JTextField();
+        firstAndLastName = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
-        certUnit = new javax.swing.JTextField();
+        organizationUnit = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
-        certOrgan = new javax.swing.JTextField();
+        organization = new javax.swing.JTextField();
         jLabel8 = new javax.swing.JLabel();
-        certCity = new javax.swing.JTextField();
+        city = new javax.swing.JTextField();
         jLabel9 = new javax.swing.JLabel();
-        certProvince = new javax.swing.JTextField();
+        stateOrProvince = new javax.swing.JTextField();
         jLabel10 = new javax.swing.JLabel();
-        certCountry = new javax.swing.JTextField();
+        countryCode = new javax.swing.JTextField();
+        error = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.border.title"))); // NOI18N
 
@@ -78,33 +137,33 @@ public class KeyEditor extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.jLabel4.text")); // NOI18N
 
-        years.setModel(new javax.swing.SpinnerNumberModel(25, 1, 100, 1));
+        validityYears.setModel(new javax.swing.SpinnerNumberModel(25, 1, 100, 1));
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.jPanel1.border.title"))); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.jLabel5.text")); // NOI18N
 
-        certName.setText(org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.certName.text")); // NOI18N
+        firstAndLastName.setText(org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.firstAndLastName.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.jLabel6.text")); // NOI18N
 
-        certUnit.setText(org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.certUnit.text")); // NOI18N
+        organizationUnit.setText(org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.organizationUnit.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.jLabel7.text")); // NOI18N
 
-        certOrgan.setText(org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.certOrgan.text")); // NOI18N
+        organization.setText(org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.organization.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.jLabel8.text")); // NOI18N
 
-        certCity.setText(org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.certCity.text")); // NOI18N
+        city.setText(org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.city.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel9, org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.jLabel9.text")); // NOI18N
 
-        certProvince.setText(org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.certProvince.text")); // NOI18N
+        stateOrProvince.setText(org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.stateOrProvince.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel10, org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.jLabel10.text")); // NOI18N
 
-        certCountry.setText(org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.certCountry.text")); // NOI18N
+        countryCode.setText(org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.countryCode.text")); // NOI18N
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -121,12 +180,12 @@ public class KeyEditor extends javax.swing.JPanel {
                     .addComponent(jLabel5))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(certName)
-                    .addComponent(certUnit)
-                    .addComponent(certOrgan)
-                    .addComponent(certCity)
-                    .addComponent(certProvince)
-                    .addComponent(certCountry))
+                    .addComponent(firstAndLastName)
+                    .addComponent(organizationUnit)
+                    .addComponent(organization)
+                    .addComponent(city)
+                    .addComponent(stateOrProvince)
+                    .addComponent(countryCode))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -135,29 +194,32 @@ public class KeyEditor extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
-                    .addComponent(certName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(firstAndLastName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
-                    .addComponent(certUnit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(organizationUnit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel7)
-                    .addComponent(certOrgan, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(organization, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel8)
-                    .addComponent(certCity, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(city, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel9)
-                    .addComponent(certProvince, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(stateOrProvince, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel10)
-                    .addComponent(certCountry, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(countryCode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        error.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/nbandroid/netbeans/gradle/v2/sdk/ui/warning-badge.png"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(error, org.openide.util.NbBundle.getMessage(KeyEditor.class, "KeyEditor.error.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -169,7 +231,10 @@ public class KeyEditor extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jLabel4)
-                            .addComponent(jLabel2)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(error)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel2))
                             .addComponent(jLabel1))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -181,7 +246,7 @@ public class KeyEditor extends javax.swing.JPanel {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(passwd2, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(years, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(validityYears, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(0, 0, Short.MAX_VALUE))))
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -197,30 +262,38 @@ public class KeyEditor extends javax.swing.JPanel {
                     .addComponent(jLabel1)
                     .addComponent(alias, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(passwd1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3)
-                    .addComponent(passwd2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(error)
+                    .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
-                    .addComponent(years, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(validityYears, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(37, 37, 37)
+                        .addComponent(passwd2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(39, 39, 39)
+                        .addComponent(jLabel3))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(37, 37, 37)
+                        .addComponent(passwd1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(234, 234, 234))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField alias;
-    private javax.swing.JTextField certCity;
-    private javax.swing.JTextField certCountry;
-    private javax.swing.JTextField certName;
-    private javax.swing.JTextField certOrgan;
-    private javax.swing.JTextField certProvince;
-    private javax.swing.JTextField certUnit;
+    private javax.swing.JTextField city;
+    private javax.swing.JTextField countryCode;
+    private javax.swing.JLabel error;
+    private javax.swing.JTextField firstAndLastName;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
@@ -232,8 +305,32 @@ public class KeyEditor extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JTextField organization;
+    private javax.swing.JTextField organizationUnit;
     private javax.swing.JPasswordField passwd1;
     private javax.swing.JPasswordField passwd2;
-    private javax.swing.JSpinner years;
+    private javax.swing.JTextField stateOrProvince;
+    private javax.swing.JSpinner validityYears;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        boolean passwdOk = Arrays.equals(passwd1.getPassword(), passwd2.getPassword()) && passwd1.getPassword().length >= 6;
+        error.setVisible(!passwdOk);
+        boolean fieldsOk = alias.getText().length() > 0 && firstAndLastName.getText().length() > 0 && organizationUnit.getText().length() > 0
+                && organization.getText().length() > 0 && city.getText().length() > 0 && countryCode.getText().length() > 0;
+
+        boolean ok = passwdOk && fieldsOk;
+        if(descriptor!=null){
+            descriptor.setValid(ok);
+        }
+    }
 }

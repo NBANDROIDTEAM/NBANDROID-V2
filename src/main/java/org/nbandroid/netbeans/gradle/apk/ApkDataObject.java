@@ -18,7 +18,7 @@ import java.io.IOException;
 import javax.swing.Action;
 import org.nbandroid.netbeans.gradle.v2.apk.actions.InstallApkAction;
 import org.nbandroid.netbeans.gradle.v2.apk.actions.SaveAsAction;
-import org.nbandroid.netbeans.gradle.v2.apk.sign.keystore.SignApkAction;
+import org.nbandroid.netbeans.gradle.v2.apk.actions.SignApkAction;
 import org.nbandroid.netbeans.gradle.v2.ui.IconProvider;
 import org.openide.actions.CopyAction;
 import org.openide.actions.PropertiesAction;

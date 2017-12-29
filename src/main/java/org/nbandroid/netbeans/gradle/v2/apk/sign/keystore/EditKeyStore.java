@@ -18,22 +18,58 @@
  */
 package org.nbandroid.netbeans.gradle.v2.apk.sign.keystore;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.util.ArrayList;
+import java.util.Collections;
+import javax.swing.DefaultComboBoxModel;
+import org.nbandroid.netbeans.gradle.v2.apk.ApkUtils;
+import org.openide.DialogDescriptor;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author arsi
  */
-public class EditKeyStore extends javax.swing.JPanel {
+public class EditKeyStore extends javax.swing.JPanel implements ActionListener {
 
+    private DialogDescriptor descriptor = null;
+    private final KeyStore keyStore;
     /**
      * Creates new form EditKeyStore
      */
-    public EditKeyStore() {
+    public EditKeyStore(KeyStore keyStore, String alias) {
         initComponents();
-        // KeystoreHelper
-        //KeystoreHelper
-        //SignedJarBuilder
-        //  AndroidBuilder.signApk(in, new DefaultSigningConfig(TOOL_TIP_TEXT_KEY), out);
+        this.keyStore = keyStore;
+        try {
+            ArrayList<String> list = Collections.list(keyStore.aliases());
+            aliases.setModel(new DefaultComboBoxModel<>(list.toArray(new String[list.size()])));
+            aliases.setSelectedItem(alias);
+        } catch (KeyStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        useExisting.addActionListener(this);
+        createNew.addActionListener(this);
+
+
+    }
+
+    public void setDescriptor(DialogDescriptor descriptor) {
+        this.descriptor = descriptor;
+    }
+
+    public boolean isNewKey() {
+        return createNew.isSelected();
+    }
+
+    public String getAliasName() {
+        return (String) aliases.getSelectedItem();
+    }
+
+    public ApkUtils.DN getNewDN() {
+        return keyEditor.getDn();
     }
 
     /**
@@ -46,21 +82,22 @@ public class EditKeyStore extends javax.swing.JPanel {
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
-        jRadioButton1 = new javax.swing.JRadioButton();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        jRadioButton2 = new javax.swing.JRadioButton();
-        keyEditor1 = new org.nbandroid.netbeans.gradle.v2.apk.sign.keystore.KeyEditor();
+        useExisting = new javax.swing.JRadioButton();
+        aliases = new javax.swing.JComboBox<>();
+        createNew = new javax.swing.JRadioButton();
+        keyEditor = new org.nbandroid.netbeans.gradle.v2.apk.sign.keystore.KeyEditor();
 
-        buttonGroup1.add(jRadioButton1);
-        jRadioButton1.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton1, org.openide.util.NbBundle.getMessage(EditKeyStore.class, "EditKeyStore.jRadioButton1.text")); // NOI18N
+        buttonGroup1.add(useExisting);
+        useExisting.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(useExisting, org.openide.util.NbBundle.getMessage(EditKeyStore.class, "EditKeyStore.useExisting.text")); // NOI18N
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        aliases.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        buttonGroup1.add(jRadioButton2);
-        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton2, org.openide.util.NbBundle.getMessage(EditKeyStore.class, "EditKeyStore.jRadioButton2.text")); // NOI18N
+        buttonGroup1.add(createNew);
+        org.openide.awt.Mnemonics.setLocalizedText(createNew, org.openide.util.NbBundle.getMessage(EditKeyStore.class, "EditKeyStore.createNew.text")); // NOI18N
 
-        keyEditor1.setBorder(null);
+        keyEditor.setBorder(null);
+        keyEditor.setEnabled(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -70,13 +107,13 @@ public class EditKeyStore extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jRadioButton1)
+                        .addComponent(useExisting)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(aliases, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jRadioButton2)
-                            .addComponent(keyEditor1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(createNew)
+                            .addComponent(keyEditor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -85,22 +122,37 @@ public class EditKeyStore extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jRadioButton1))
+                    .addComponent(aliases, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(useExisting))
                 .addGap(18, 18, 18)
-                .addComponent(jRadioButton2)
+                .addComponent(createNew)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(keyEditor1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(keyEditor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<String> aliases;
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JRadioButton jRadioButton1;
-    private javax.swing.JRadioButton jRadioButton2;
-    private org.nbandroid.netbeans.gradle.v2.apk.sign.keystore.KeyEditor keyEditor1;
+    private javax.swing.JRadioButton createNew;
+    private org.nbandroid.netbeans.gradle.v2.apk.sign.keystore.KeyEditor keyEditor;
+    private javax.swing.JRadioButton useExisting;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (useExisting.isSelected()) {
+            aliases.setEnabled(true);
+            keyEditor.setEnabled(false);
+            keyEditor.setDescriptor(null);
+            descriptor.setValid(true);
+        } else {
+            aliases.setEnabled(false);
+            keyEditor.setEnabled(true);
+            keyEditor.setDescriptor(descriptor);
+        }
+    }
+
 }

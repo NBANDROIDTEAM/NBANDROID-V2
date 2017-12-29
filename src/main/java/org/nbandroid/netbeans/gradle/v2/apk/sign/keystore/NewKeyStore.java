@@ -18,17 +18,53 @@
  */
 package org.nbandroid.netbeans.gradle.v2.apk.sign.keystore;
 
+import java.awt.Component;
+import java.awt.Frame;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.io.File;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import org.nbandroid.netbeans.gradle.v2.apk.ApkUtils;
+import org.openide.DialogDescriptor;
+import org.openide.filesystems.FileChooserBuilder;
+
 /**
  *
  * @author arsi
  */
-public class NewKeyStore extends javax.swing.JPanel {
+public class NewKeyStore extends javax.swing.JPanel implements KeyListener {
+
+    private DialogDescriptor descriptor = null;
 
     /**
      * Creates new form NewKeyStore
      */
     public NewKeyStore() {
         initComponents();
+        passwd1.addKeyListener(this);
+        passwd2.addKeyListener(this);
+        path.addKeyListener(this);
+    }
+
+    public void setDescriptor(DialogDescriptor descriptor) {
+        this.descriptor = descriptor;
+        keyEditor1.setDescriptor(descriptor);
+    }
+
+    public String getPath() {
+        return path.getText();
+    }
+
+    public char[] getPassword() {
+        return passwd1.getPassword();
+    }
+
+    public ApkUtils.DN getDN() {
+        return keyEditor1.getDn();
     }
 
     /**
@@ -41,27 +77,36 @@ public class NewKeyStore extends javax.swing.JPanel {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
-        jTextField1 = new javax.swing.JTextField();
+        selectPath = new javax.swing.JButton();
+        path = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        jPasswordField1 = new javax.swing.JPasswordField();
+        passwd1 = new javax.swing.JPasswordField();
         jLabel3 = new javax.swing.JLabel();
-        jPasswordField2 = new javax.swing.JPasswordField();
-        keyEditor1 = new org.nbandroid.netbeans.gradle.v2.apk.sign.keystore.KeyEditor();
+        passwd2 = new javax.swing.JPasswordField();
+        keyEditor1 = new KeyEditor(this);
+        error = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(NewKeyStore.class, "NewKeyStore.jLabel1.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(NewKeyStore.class, "NewKeyStore.jButton1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(selectPath, org.openide.util.NbBundle.getMessage(NewKeyStore.class, "NewKeyStore.selectPath.text")); // NOI18N
+        selectPath.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectPathActionPerformed(evt);
+            }
+        });
 
-        jTextField1.setText(org.openide.util.NbBundle.getMessage(NewKeyStore.class, "NewKeyStore.jTextField1.text")); // NOI18N
+        path.setText(org.openide.util.NbBundle.getMessage(NewKeyStore.class, "NewKeyStore.path.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(NewKeyStore.class, "NewKeyStore.jLabel2.text")); // NOI18N
 
-        jPasswordField1.setText(org.openide.util.NbBundle.getMessage(NewKeyStore.class, "NewKeyStore.jPasswordField1.text")); // NOI18N
+        passwd1.setText(org.openide.util.NbBundle.getMessage(NewKeyStore.class, "NewKeyStore.passwd1.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(NewKeyStore.class, "NewKeyStore.jLabel3.text")); // NOI18N
 
-        jPasswordField2.setText(org.openide.util.NbBundle.getMessage(NewKeyStore.class, "NewKeyStore.jPasswordField2.text")); // NOI18N
+        passwd2.setText(org.openide.util.NbBundle.getMessage(NewKeyStore.class, "NewKeyStore.passwd2.text")); // NOI18N
+
+        error.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/nbandroid/netbeans/gradle/v2/sdk/ui/warning-badge.png"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(error, org.openide.util.NbBundle.getMessage(NewKeyStore.class, "NewKeyStore.error.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -72,26 +117,29 @@ public class NewKeyStore extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel2)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(error)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel2))
                             .addComponent(jLabel1))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jPasswordField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(passwd1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jLabel3)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jPasswordField2, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jTextField1))
+                                .addComponent(passwd2, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(path))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton1))
+                        .addComponent(selectPath))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(keyEditor1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(3, 3, 3)))
                 .addContainerGap())
         );
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jPasswordField1, jPasswordField2});
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {passwd1, passwd2});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -99,29 +147,98 @@ public class NewKeyStore extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(selectPath, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(path, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(error)
                     .addComponent(jLabel2)
-                    .addComponent(jPasswordField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(passwd1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3)
-                    .addComponent(jPasswordField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(passwd2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(keyEditor1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void selectPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectPathActionPerformed
+        // TODO add your handling code here:
+        FileChooserBuilder builder = new FileChooserBuilder(KeystoreSelector.class);
+        builder.setDirectoriesOnly(false);
+        builder.setApproveText("Create");
+        builder.setControlButtonsAreShown(true);
+        builder.setTitle("Create Key Store...");
+        builder.setFilesOnly(true);
+        builder.setFileFilter(new FileNameExtensionFilter("Key Store", "jks"));
+        JFileChooser chooser = builder.createFileChooser();
+        String text = path.getText();
+        if (!text.isEmpty()) {
+            File f = new File(text);
+            if (f.exists()) {
+                chooser.setSelectedFile(f);
+            }
+        }
+        int resp = chooser.showSaveDialog(findDialogParent());
+        if (JFileChooser.APPROVE_OPTION == resp) {
+            File f = chooser.getSelectedFile();
+            path.setText(f.getAbsolutePath());
+        }
+    }//GEN-LAST:event_selectPathActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
+    private javax.swing.JLabel error;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JPasswordField jPasswordField1;
-    private javax.swing.JPasswordField jPasswordField2;
-    private javax.swing.JTextField jTextField1;
     private org.nbandroid.netbeans.gradle.v2.apk.sign.keystore.KeyEditor keyEditor1;
+    private javax.swing.JPasswordField passwd1;
+    private javax.swing.JPasswordField passwd2;
+    private javax.swing.JTextField path;
+    private javax.swing.JButton selectPath;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        boolean passwdOk = Arrays.equals(passwd1.getPassword(), passwd2.getPassword()) && passwd1.getPassword().length >= 6;
+        error.setVisible(!passwdOk);
+        if ((path.getText().isEmpty() || !passwdOk || !isValidPath(path.getText())) && descriptor != null) {
+            descriptor.setValid(false);
+            return;
+        }
+        keyEditor1.keyReleased(null);
+    }
+
+    public static boolean isValidPath(String path) {
+
+        try {
+
+             Paths.get(path);
+        } catch (Exception ex) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private Component findDialogParent() {
+        Component parent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        if (parent == null) {
+            parent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+        }
+        if (parent == null) {
+            Frame[] f = Frame.getFrames();
+            parent = f.length == 0 ? null : f[f.length - 1];
+        }
+        return parent;
+    }
 }

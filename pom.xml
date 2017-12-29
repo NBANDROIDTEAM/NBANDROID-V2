@@ -49,6 +49,11 @@
                             <id>org.netbeans.modules:org-netbeans-modules-dlight-nativeexecution</id>
                             <type>impl</type>
                         </dependency>
+                        <dependency>
+                            <!--Private Package Reference-->
+                            <id>org.netbeans.api:org-netbeans-modules-keyring</id>
+                            <type>impl</type>
+                        </dependency>
                     </moduleDependencies>
                 </configuration>
             </plugin>
@@ -680,6 +685,11 @@
         <dependency>
             <groupId>org.netbeans.modules</groupId>
             <artifactId>org-netbeans-modules-dlight-nativeexecution</artifactId>
+            <version>${version.nb}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-keyring</artifactId>
             <version>${version.nb}</version>
         </dependency>
     </dependencies>
