@@ -38,10 +38,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.nbandroid.netbeans.gradle.AndroidIO;
 import org.nbandroid.netbeans.gradle.avd.AvdSelector;
-import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatform;
 import org.nbandroid.netbeans.gradle.core.sdk.SdkLogProvider;
 import org.nbandroid.netbeans.gradle.core.sdk.StatsCollector;
 import org.nbandroid.netbeans.gradle.core.ui.DeviceChooserImpl;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.netbeans.api.project.Project;
@@ -72,7 +72,7 @@ public class AndroidLauncherImpl implements AndroidLauncher {
     }
 
     @Override
-    public Future<Client> launch(DalvikPlatform platform, Lookup context, String mode) {
+    public Future<Client> launch(AndroidPlatformInfo platform, Lookup context, String mode) {
         initIO();
         collectStats();
         LaunchConfiguration launchCfg = context.lookup(LaunchConfiguration.class);
@@ -81,7 +81,7 @@ public class AndroidLauncherImpl implements AndroidLauncher {
         AndroidSdk sdk = Preconditions.checkNotNull(project.getLookup().lookup(AndroidSdk.class));
         if (launchData == null) {
             if (platform != null) {
-                launchData = configAvd(platform.getSdkManager(), sdk, platform.getAndroidTarget(), launchCfg);
+                launchData = configAvd(platform.getSdk().getAndroidSdkHandler(), sdk, platform.getAndroidTarget(), launchCfg);
             } else {
                 LOG.log(Level.INFO, "No target platform for launch. Canelling.");
             }

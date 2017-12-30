@@ -144,6 +144,9 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         AndroidSdkImpl p;
 
         p = new AndroidSdkImpl(handler.name, handler.installFolder, handler.properties, handler.sysProperties, handler.platforms, handler.isDefault);
+        for (AndroidPlatformInfo platform : handler.platforms) {
+            platform.setSdk(p);
+        }
         defaultPlatform = handler.isDefault;
         p.addPropertyChangeListener(this);
         return p;

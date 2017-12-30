@@ -21,34 +21,28 @@ package org.nbandroid.netbeans.gradle.query;
 import com.android.builder.model.AndroidProject;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.nbandroid.netbeans.gradle.AndroidModelAware;
-import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatform;
-import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatformManager;
-import org.nbandroid.netbeans.gradle.spi.DalvikPlatformResolver;
+import org.nbandroid.netbeans.gradle.spi.AndroidPlatformResolver;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
+import org.netbeans.api.project.Project;
 
 /**
  *
  * @author radim
  */
-public class GradlePlatformResolver implements DalvikPlatformResolver, AndroidModelAware {
+public class GradlePlatformResolver implements AndroidPlatformResolver {
 
     private static final Logger LOG = Logger.getLogger(GradlePlatformResolver.class.getName());
 
-    private AndroidProject aPrj;
-
     @Override
-    public DalvikPlatform findDalvikPlatform() {
-        if (aPrj == null) {
+    public AndroidPlatformInfo findAndroidPlatform(Project project) {
+        AndroidProject aPrj = project.getLookup().lookup(AndroidProject.class);
+        AndroidSdk sdk = project.getLookup().lookup(AndroidSdk.class);
+        if (aPrj == null || sdk == null) {
             return null;
         }
         LOG.log(Level.FINE, "look for dalvik platform for {0}", aPrj.getCompileTarget());
-        String compileTarget = aPrj.getCompileTarget();
-        return DalvikPlatformManager.getDefault().findPlatformForTarget(aPrj.getCompileTarget());
-    }
-
-    @Override
-    public void setAndroidProject(AndroidProject aPrj) {
-        this.aPrj = aPrj;
+        return sdk.findPlatformForTarget(aPrj.getCompileTarget());
     }
 
 }

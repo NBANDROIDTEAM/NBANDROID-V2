@@ -19,7 +19,7 @@ import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.repository.AndroidSdkHandler;
 import java.util.concurrent.Future;
 import org.nbandroid.netbeans.gradle.avd.AvdSelector;
-import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatform;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.openide.util.Lookup;
 
@@ -49,7 +49,7 @@ public interface AndroidLauncher {
      * {@link Client} when activity is started. When no activity is started it
      * returns null.
      */
-    Future<Client> launch(DalvikPlatform platform, Lookup context, String mode);
+    Future<Client> launch(AndroidPlatformInfo platform, Lookup context, String mode);
 
     AvdSelector.LaunchData configAvd(
             AndroidSdkHandler sdkManager, AndroidSdk sdk, IAndroidTarget target, LaunchConfiguration launchCfg);

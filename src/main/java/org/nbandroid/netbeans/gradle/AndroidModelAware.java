@@ -12,4 +12,5 @@ public interface AndroidModelAware {
      * Called to update the object with new version of AndroidProject.
      */
     void setAndroidProject(AndroidProject aPrj);
+
 }

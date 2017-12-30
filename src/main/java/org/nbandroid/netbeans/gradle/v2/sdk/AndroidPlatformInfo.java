@@ -57,22 +57,35 @@ public class AndroidPlatformInfo {
     private final AndroidVersion androidVersion;
     private final String hashString;
     private IAndroidTarget target = null;
+    private AndroidSdk sdk;
 
     public AndroidPlatformInfo(File platformFolder, String platformName, AndroidVersion androidVersion, String hashString) {
         this.platformFolder = platformFolder;
         this.platformName = platformName;
         this.androidVersion = androidVersion;
         this.hashString = hashString;
+        this.sdk = null;
     }
 
-    public AndroidPlatformInfo(IAndroidTarget target) throws FileNotFoundException {
+    public AndroidPlatformInfo(AndroidSdk sdk, IAndroidTarget target) throws FileNotFoundException {
         this.platformFolder = new File(target.getLocation());
         this.platformName = target.getFullName();
         androidVersion = target.getVersion();
         hashString = target.hashString();
+        this.sdk = sdk;
         update(target);
 
     }
+
+    public AndroidSdk getSdk() {
+        return sdk;
+    }
+
+    public void setSdk(AndroidSdk sdk) {
+        this.sdk = sdk;
+    }
+
+
 
     public AndroidVersion getAndroidVersion() {
         return androidVersion;
@@ -96,7 +109,6 @@ public class AndroidPlatformInfo {
     public FileObject findTool(String toolName) {
         return Util.findTool(toolName, getSDKFolderFo());
     }
-
 
     public final void update(IAndroidTarget target) throws FileNotFoundException {
         this.target = target;

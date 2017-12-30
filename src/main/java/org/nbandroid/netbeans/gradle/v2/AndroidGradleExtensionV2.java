@@ -223,6 +223,8 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
     }
 
     private void updateAndroidProject(AndroidProject aPrj, GradleBuild build) {
+        ic.add(aPrj);
+        ic.add(build);
         if (LOG.isLoggable(Level.FINE)) {
             logLoadedProject(aPrj, build);
         }
