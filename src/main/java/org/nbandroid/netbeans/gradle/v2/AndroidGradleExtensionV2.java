@@ -37,6 +37,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.gradle.tooling.model.gradle.GradleBuild;
@@ -98,6 +99,7 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
     private final GradleProjectOpenedHook openHook;
     private final SourceLevelQueryImpl2 levelQuery;
     private final GradleAndroidClassPathProvider androidClassPathProvider;
+    public static final String PROPERTY_CHANGE_SDK = "PROPERTY_CHANGE_SDK";
     // testing support
     @VisibleForTesting
     public final CountDownLatch loadedSignal = new CountDownLatch(1);
@@ -313,11 +315,30 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (localProperties != null) {
-            AndroidSdk defaultSdk = AndroidSdkProvider.getDefaultSdk();
-            if (defaultSdk != null) {
-                sdk = defaultSdk;
-                storeLocalProperties(defaultSdk, localProperties);
+        if (AndroidSdkProvider.PROP_DEFAULT_SDK.equals(evt.getPropertyName())) {
+            if (localProperties != null) {
+                AndroidSdk defaultSdk = AndroidSdkProvider.getDefaultSdk();
+                if (defaultSdk != null) {
+                    sdk = defaultSdk;
+                    storeLocalProperties(defaultSdk, localProperties);
+                    ((NbGradleProject) project).reloadProject();
+                }
+            }
+        } else if (PROPERTY_CHANGE_SDK.equals(evt.getPropertyName())) {
+            if (localProperties != null && (evt.getNewValue() instanceof AndroidSdk)) {
+                sdk = (AndroidSdk) evt.getNewValue();
+                items.replaceAll(new UnaryOperator<Object>() {
+                    @Override
+                    public Object apply(Object t) {
+                        if (t instanceof AndroidSdk) {
+                            ic.remove(t);
+                            ic.add(sdk);
+                            return sdk;
+                        }
+                        return t;
+                    }
+                });
+                storeLocalProperties((AndroidSdk) evt.getNewValue(), localProperties);
                 ((NbGradleProject) project).reloadProject();
             }
         }

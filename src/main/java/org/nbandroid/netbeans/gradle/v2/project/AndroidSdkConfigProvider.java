@@ -26,7 +26,7 @@ public class AndroidSdkConfigProvider implements ProjectCustomizer.CompositeCate
 
     @Override
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        return new AndroidProjectSdkConfig();
+        return new AndroidProjectSdkConfig(category, context);
     }
 
 }

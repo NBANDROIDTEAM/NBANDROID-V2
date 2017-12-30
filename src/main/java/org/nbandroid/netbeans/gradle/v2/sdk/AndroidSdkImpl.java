@@ -633,4 +633,13 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
         return AndroidSdkTools.isSdkFolder(FileUtil.toFile(getInstallFolder()));
     }
 
+    @Override
+    public String toString() {
+        if (isDefaultSdk()) {
+            return "<html><b>" + displayName + " (default)</b></html>";
+        }
+        return displayName; //To change body of generated methods, choose Tools | Templates.
+    }
+
+
 }

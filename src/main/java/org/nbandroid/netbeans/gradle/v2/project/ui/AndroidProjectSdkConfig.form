@@ -74,6 +74,9 @@
           <ResourceString bundle="org/nbandroid/netbeans/gradle/v2/project/ui/Bundle.properties" key="AndroidProjectSdkConfig.manage.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="manageActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>
