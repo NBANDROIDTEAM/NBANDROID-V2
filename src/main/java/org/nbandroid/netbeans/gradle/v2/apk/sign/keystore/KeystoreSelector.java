@@ -124,6 +124,9 @@ public class KeystoreSelector extends javax.swing.JPanel implements ActionListen
         if (rememberPasswd.isSelected()) {
             Keyring.save(hash + KEY_STORE_PASSWORD, keystorePassword.getPassword(), "NBANDROID Project Keystore Password");
             Keyring.save(hash + KEY_PASSWORD, keyPassword.getPassword(), "NBANDROID Project Keystore Key Password");
+        } else {
+            Keyring.delete(hash + KEY_STORE_PASSWORD);
+            Keyring.delete(hash + KEY_PASSWORD);
         }
         NbPreferences.forModule(KeystoreSelector.class).put(hash + KEY_STORE_PATH, path.getText());
         NbPreferences.forModule(KeystoreSelector.class).put(hash + KEY_ALIAS, alias.getText());
