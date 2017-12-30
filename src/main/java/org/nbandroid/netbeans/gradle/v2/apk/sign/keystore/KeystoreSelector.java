@@ -57,9 +57,11 @@ public class KeystoreSelector extends javax.swing.JPanel implements ActionListen
     private static final String KEY_PASSWORD = "_KEY_PASSWORD";
     private static final String APK_V1 = "_APK_V1";
     private static final String APK_V2 = "_APK_V2";
+    private static final String APK_RELEASE = "APK_RELEASE";
+    private static final String APK_DEBUG = "APK_DEBUG";
     private static final String REMEMBER_PASSWORDS = "_REMEMBER_PASSWORDS";
     private DialogDescriptor descriptor = null;
-
+    private final KeyEmulatorListener keyEmulatorListener = new KeyEmulatorListener();
     /**
      * Creates new form KeystoreSelector
      */
@@ -82,16 +84,40 @@ public class KeystoreSelector extends javax.swing.JPanel implements ActionListen
         alias.setText(NbPreferences.forModule(KeystoreSelector.class).get(hash + KEY_ALIAS, ""));
         v1.setSelected(NbPreferences.forModule(KeystoreSelector.class).getBoolean(hash + APK_V1, true));
         v2.setSelected(NbPreferences.forModule(KeystoreSelector.class).getBoolean(hash + APK_V2, true));
+        release.setSelected(NbPreferences.forModule(KeystoreSelector.class).getBoolean(hash + APK_RELEASE, true));
+        debug.setSelected(NbPreferences.forModule(KeystoreSelector.class).getBoolean(hash + APK_DEBUG, false));
         rememberPasswd.setSelected(NbPreferences.forModule(KeystoreSelector.class).getBoolean(hash + REMEMBER_PASSWORDS, true));
         path.addKeyListener(this);
         alias.addKeyListener(this);
         keystorePassword.addKeyListener(this);
         keyPassword.addKeyListener(this);
+        v1.addActionListener(keyEmulatorListener);
+        v2.addActionListener(keyEmulatorListener);
+        debug.addActionListener(keyEmulatorListener);
+        release.addActionListener(keyEmulatorListener);
+        keyReleased(null);
+    }
+
+    private final class KeyEmulatorListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            keyReleased(null);
+        }
+
     }
 
     public void setDescriptor(DialogDescriptor descriptor) {
         this.descriptor = descriptor;
         keyReleased(null);
+    }
+
+    public boolean isRelease() {
+        return release.isSelected();
+    }
+
+    public boolean isDebug() {
+        return debug.isSelected();
     }
 
     public void storeSettings() {
@@ -103,6 +129,8 @@ public class KeystoreSelector extends javax.swing.JPanel implements ActionListen
         NbPreferences.forModule(KeystoreSelector.class).put(hash + KEY_ALIAS, alias.getText());
         NbPreferences.forModule(KeystoreSelector.class).putBoolean(hash + APK_V1, v1.isSelected());
         NbPreferences.forModule(KeystoreSelector.class).putBoolean(hash + APK_V2, v2.isSelected());
+        NbPreferences.forModule(KeystoreSelector.class).putBoolean(hash + APK_RELEASE, release.isSelected());
+        NbPreferences.forModule(KeystoreSelector.class).putBoolean(hash + APK_DEBUG, debug.isSelected());
         NbPreferences.forModule(KeystoreSelector.class).putBoolean(hash + REMEMBER_PASSWORDS, rememberPasswd.isSelected());
     }
 
@@ -115,6 +143,7 @@ public class KeystoreSelector extends javax.swing.JPanel implements ActionListen
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
         jLabel1 = new javax.swing.JLabel();
         path = new javax.swing.JTextField();
         createNew = new javax.swing.JButton();
@@ -130,6 +159,9 @@ public class KeystoreSelector extends javax.swing.JPanel implements ActionListen
         v1 = new javax.swing.JRadioButton();
         v2 = new javax.swing.JRadioButton();
         selectPath = new javax.swing.JButton();
+        jLabel6 = new javax.swing.JLabel();
+        release = new javax.swing.JRadioButton();
+        debug = new javax.swing.JRadioButton();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(KeystoreSelector.class, "KeystoreSelector.jLabel1.text")); // NOI18N
 
@@ -183,6 +215,13 @@ public class KeystoreSelector extends javax.swing.JPanel implements ActionListen
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(KeystoreSelector.class, "KeystoreSelector.jLabel6.text")); // NOI18N
+
+        release.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(release, org.openide.util.NbBundle.getMessage(KeystoreSelector.class, "KeystoreSelector.release.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(debug, org.openide.util.NbBundle.getMessage(KeystoreSelector.class, "KeystoreSelector.debug.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -196,7 +235,8 @@ public class KeystoreSelector extends javax.swing.JPanel implements ActionListen
                             .addComponent(jLabel1)
                             .addComponent(jLabel3)
                             .addComponent(jLabel4)
-                            .addComponent(jLabel5))
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel6))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(keystorePassword)
@@ -206,17 +246,21 @@ public class KeystoreSelector extends javax.swing.JPanel implements ActionListen
                                 .addComponent(changeAlias))
                             .addComponent(keyPassword)
                             .addGroup(layout.createSequentialGroup()
+                                .addComponent(path, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(selectPath))
+                            .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(rememberPasswd)
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(v1)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(v2)))
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(path, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(selectPath))))
+                                        .addComponent(v2))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(release)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(debug)))
+                                .addGap(0, 0, Short.MAX_VALUE))))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(createNew)))
@@ -252,7 +296,12 @@ public class KeystoreSelector extends javax.swing.JPanel implements ActionListen
                     .addComponent(jLabel5)
                     .addComponent(v1)
                     .addComponent(v2))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel6)
+                    .addComponent(release)
+                    .addComponent(debug))
+                .addContainerGap(12, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -350,16 +399,20 @@ public class KeystoreSelector extends javax.swing.JPanel implements ActionListen
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField alias;
+    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton changeAlias;
     private javax.swing.JButton createNew;
+    private javax.swing.JRadioButton debug;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JPasswordField keyPassword;
     private javax.swing.JPasswordField keystorePassword;
     private javax.swing.JTextField path;
+    private javax.swing.JRadioButton release;
     private javax.swing.JCheckBox rememberPasswd;
     private javax.swing.JButton selectPath;
     private javax.swing.JRadioButton v1;
@@ -402,7 +455,7 @@ public class KeystoreSelector extends javax.swing.JPanel implements ActionListen
                 enableChangeAlias = true;
                 Key key = ks.getKey(alias.getText(), keyPassword.getPassword());
                 if (key != null && descriptor != null && (v1.isSelected() || v2.isSelected())) {
-                    descriptor.setValid(true);
+                    descriptor.setValid((v1.isSelected() || v2.isSelected()) && (debug.isSelected() || release.isSelected()));
                     changeAlias.setEnabled(enableChangeAlias);
                     return;
                 }

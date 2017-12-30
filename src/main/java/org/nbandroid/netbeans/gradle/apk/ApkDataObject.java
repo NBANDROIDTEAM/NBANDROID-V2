@@ -18,9 +18,11 @@ import java.io.IOException;
 import javax.swing.Action;
 import org.nbandroid.netbeans.gradle.v2.apk.actions.InstallApkAction;
 import org.nbandroid.netbeans.gradle.v2.apk.actions.SaveAsAction;
-import org.nbandroid.netbeans.gradle.v2.apk.actions.SignApkAction;
 import org.nbandroid.netbeans.gradle.v2.ui.IconProvider;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.openide.actions.CopyAction;
+import org.openide.actions.DeleteAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -104,10 +106,12 @@ public class ApkDataObject extends MultiDataObject implements Deployable {
 
         private SignInfo signInfo = SignInfo.SIGNED_NOT;
         private final SignInfoHolder holder;
+        private final Project project;
 
         public ApkFilterNode(Node original) {
             super(original, org.openide.nodes.Children.LEAF, new ProxyLookup(original.getLookup(), Lookups.fixed(new SignInfoHolder())));
             holder = getLookup().lookup(SignInfoHolder.class);
+            project = FileOwnerQuery.getOwner(pf);
             pf.addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, pf));
             refreshIcons();
         }
@@ -115,13 +119,29 @@ public class ApkDataObject extends MultiDataObject implements Deployable {
         @Override
         public Action[] getActions(boolean context) {
             return new Action[]{
-                SystemAction.get(SignApkAction.class),
                 SystemAction.get(SaveAsAction.class),
                 SystemAction.get(InstallApkAction.class),
                 SystemAction.get(CopyAction.class),
+                SystemAction.get(DeleteAction.class),
                 SystemAction.get(PropertiesAction.class)
             };
         }
+
+        @Override
+        public String getHtmlDisplayName() {
+            String name = super.getDisplayName();
+            if (project != null) {
+                if (pf.getParent().equals(project.getProjectDirectory())) {
+                    return "<html><font color=\"#00802b\"><b>" + name + "</b></font></html>";
+                } else {
+                    return name;
+                }
+            } else {
+                return name;
+            }
+        }
+
+
 
         @Override
         public Image getIcon(int type) {

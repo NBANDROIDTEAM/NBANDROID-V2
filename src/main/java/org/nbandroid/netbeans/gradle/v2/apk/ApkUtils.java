@@ -18,6 +18,7 @@
  */
 package org.nbandroid.netbeans.gradle.v2.apk;
 
+import com.android.builder.model.AndroidProject;
 import com.android.utils.Pair;
 import com.google.common.base.Preconditions;
 import com.google.common.io.Closeables;
@@ -40,7 +41,10 @@ import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import javax.security.auth.x500.X500Principal;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -52,6 +56,10 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.nbandroid.netbeans.gradle.v2.apk.sign.keystore.KeystoreSelector;
+import org.netbeans.gradle.project.NbGradleProject;
+import org.netbeans.gradle.project.api.task.CustomCommandActions;
+import org.netbeans.gradle.project.api.task.GradleCommandTemplate;
 
 /**
  *
@@ -68,6 +76,40 @@ public class ApkUtils {
 
     //  AndroidBuilder.signApk(in, new DefaultSigningConfig(TOOL_TIP_TEXT_KEY), out);
     public static void test() {
+    }
+
+    private static final String ARGUMENT = "-P";
+
+    private static String createArgument(String key, String value) {
+        return ARGUMENT + key + "=" + value;
+    }
+
+    public static void gradleSignApk(NbGradleProject project, String displayName, List<String> tasks, File in, KeystoreSelector keystoreSelector, File out) {
+
+        GradleCommandTemplate.Builder builder = new GradleCommandTemplate.Builder(
+                displayName != null ? displayName : "", tasks);
+        List<String> arguments = new ArrayList<>();
+        arguments.add(createArgument(AndroidProject.PROPERTY_SIGNING_STORE_FILE, keystoreSelector.getStoreFile().getAbsolutePath()));
+        arguments.add(createArgument(AndroidProject.PROPERTY_SIGNING_STORE_PASSWORD, keystoreSelector.getStorePassword()));
+        arguments.add(createArgument(AndroidProject.PROPERTY_SIGNING_KEY_ALIAS, keystoreSelector.getKeyAlias()));
+        arguments.add(createArgument(AndroidProject.PROPERTY_SIGNING_KEY_PASSWORD, keystoreSelector.getKeyPassword()));
+        arguments.add(createArgument(AndroidProject.PROPERTY_APK_LOCATION, out.getAbsolutePath()));
+
+        // These were introduced in 2.3, but gradle doesn't care if it doesn't know the properties and so they don't affect older versions.
+        arguments.add(createArgument(AndroidProject.PROPERTY_SIGNING_V1_ENABLED, Boolean.toString(keystoreSelector.isV1SigningEnabled())));
+        arguments.add(createArgument(AndroidProject.PROPERTY_SIGNING_V2_ENABLED, Boolean.toString(keystoreSelector.isV2SigningEnabled())));
+
+        builder.setArguments(arguments);
+        builder.setJvmArguments(Collections.EMPTY_LIST);
+        builder.setBlocking(true);
+        executeCommandTemplate(project, builder.create());
+    }
+
+    private static void executeCommandTemplate(NbGradleProject project, GradleCommandTemplate command) {
+        CustomCommandActions actions = command.isBlocking()
+                ? CustomCommandActions.OTHER
+                : CustomCommandActions.BUILD;
+        project.getGradleCommandExecutor().executeCommand(command, actions);
     }
 
     private static String encodeDN(DN dn) {

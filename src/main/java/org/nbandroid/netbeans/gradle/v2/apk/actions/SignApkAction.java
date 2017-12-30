@@ -16,19 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.nbandroid.netbeans.gradle.v2.apk.actions;
 
-import com.android.builder.core.AndroidBuilder;
-import com.android.builder.packaging.SigningException;
-import com.android.builder.packaging.ZipAbortException;
-import com.android.ide.common.signing.KeytoolException;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import org.nbandroid.netbeans.gradle.apk.ApkDataObject;
+import java.util.ArrayList;
+import java.util.List;
+import org.nbandroid.netbeans.gradle.v2.apk.ApkUtils;
 import org.nbandroid.netbeans.gradle.v2.apk.sign.keystore.KeystoreSelector;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.gradle.project.NbGradleProject;
+import org.netbeans.gradle.project.api.nodes.GradleActionType;
+import org.netbeans.gradle.project.api.nodes.GradleProjectAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -42,6 +40,7 @@ import org.openide.util.actions.NodeAction;
  *
  * @author arsi
  */
+@GradleProjectAction(GradleActionType.BUILD_ACTION)
 public class SignApkAction extends NodeAction {
 
     @Override
@@ -52,26 +51,26 @@ public class SignApkAction extends NodeAction {
         FileObject fo = activatedNodes[0].getLookup().lookup(FileObject.class);
         Project owner = FileOwnerQuery.getOwner(fo);
         if (owner != null) {
+            NbGradleProject gradleProject = owner.getLookup().lookup(NbGradleProject.class);
             KeystoreSelector selector = new KeystoreSelector(owner, fo);
             DialogDescriptor dd = new DialogDescriptor(selector, "Generate Signed APK", true, selector);
             selector.setDescriptor(dd);
             Object notify = DialogDisplayer.getDefault().notify(dd);
             if (DialogDescriptor.OK_OPTION.equals(notify)) {
                 try {
-                    String name = fo.getName();
-                    if (name.contains("-unsigned")) {
-                        name = name.replace("-unsigned", "-signed");
-                    } else {
-                        name = name + "-signed";
+                    List<String> tasks = new ArrayList<>();
+                    if (selector.isRelease()) {
+                        tasks.add("assembleRelease");
                     }
-                    FileObject out = owner.getProjectDirectory().createData(name, "apk");
-                    AndroidBuilder.signApk(FileUtil.toFile(fo), selector, FileUtil.toFile(out));
-                } catch (KeytoolException | SigningException | NoSuchAlgorithmException | ZipAbortException | com.android.builder.signing.SigningException | IOException ex) {
+                    if (selector.isDebug()) {
+                        tasks.add("assembleDebug");
+                    }
+                    ApkUtils.gradleSignApk(gradleProject, "", tasks, FileUtil.toFile(fo), selector, FileUtil.toFile(owner.getProjectDirectory()));
+                } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
         }
-
 
     }
 
@@ -80,19 +79,12 @@ public class SignApkAction extends NodeAction {
         if (activatedNodes.length != 1) {
             return false;
         }
-        Node node = activatedNodes[0];
-        ApkDataObject.SignInfoHolder signHolder = node.getLookup().lookup(ApkDataObject.SignInfoHolder.class);
-        if (signHolder == null) {
-            return false;
-        } else if (signHolder.getInfo() == ApkDataObject.SignInfo.SIGNED_V1 || signHolder.getInfo() == ApkDataObject.SignInfo.SIGNED_V2 || signHolder.getInfo() == ApkDataObject.SignInfo.SIGNED_V1V2) {
-            return false;
-        }
         return true;
     }
 
     @Override
     public String getName() {
-        return "Sign APK";
+        return "Build Signed APK..";
     }
 
     @Override
