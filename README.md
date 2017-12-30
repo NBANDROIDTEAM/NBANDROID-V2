@@ -28,7 +28,6 @@ Netbeans 8.2 http://server.arsi.sk/nbandroid82/
 * SDK Tools manager
 
 ### What Dont works:
-* SDK Platform manager - Integration to Gradle build system
 * SDK Manager - Update sites configuration
 * AVD Manager
 * we currently have no Visual Layout Editor 
