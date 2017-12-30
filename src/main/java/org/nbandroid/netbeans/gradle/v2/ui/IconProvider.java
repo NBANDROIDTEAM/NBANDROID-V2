@@ -91,4 +91,20 @@ public class IconProvider {
     @StaticResource
     private static final String RESOURCE_APKS = "org/nbandroid/netbeans/gradle/v2/apk/apks.png";
     public static final Image IMG_APKS = ImageUtilities.loadImage(RESOURCE_APKS);
+
+    @StaticResource
+    private static final String RESOURCE_APK = "org/nbandroid/netbeans/gradle/apk/apk.png";
+    public static final Image IMG_APK = ImageUtilities.loadImage(RESOURCE_APK);
+
+    @StaticResource
+    private static final String RESOURCE_V1 = "org/nbandroid/netbeans/gradle/apk/apkv1.png";
+    public static final Image IMG_V1_BADGE = ImageUtilities.loadImage(RESOURCE_V1);
+
+    @StaticResource
+    private static final String RESOURCE_V12 = "org/nbandroid/netbeans/gradle/apk/apkv12.png";
+    public static final Image IMG_V12_BADGE = ImageUtilities.loadImage(RESOURCE_V12);
+
+    @StaticResource
+    private static final String RESOURCE_V2 = "org/nbandroid/netbeans/gradle/apk/apkv2.png";
+    public static final Image IMG_V2_BADGE = ImageUtilities.loadImage(RESOURCE_V2);
 }

@@ -5,7 +5,10 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.awt.Image;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import javax.swing.Action;
 import org.nbandroid.netbeans.gradle.api.AndroidConstants;
@@ -15,8 +18,7 @@ import org.nbandroid.netbeans.gradle.api.ui.AndroidResourceNode;
 import org.nbandroid.netbeans.gradle.ui.DependenciesNode;
 import org.nbandroid.netbeans.gradle.ui.GeneratedSourcesNode;
 import org.nbandroid.netbeans.gradle.ui.InstrumentTestNode;
-import org.nbandroid.netbeans.gradle.v2.apk.actions.InstallApkAction;
-import org.nbandroid.netbeans.gradle.v2.apk.actions.SaveAsAction;
+import org.nbandroid.netbeans.gradle.v2.apk.actions.SignApkAction;
 import org.nbandroid.netbeans.gradle.v2.ui.IconProvider;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -26,16 +28,21 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.gradle.project.api.event.NbListenerRef;
 import org.netbeans.gradle.project.api.nodes.GradleProjectExtensionNodes;
 import org.netbeans.gradle.project.api.nodes.SingleNodeFactory;
-import org.openide.actions.CopyAction;
-import org.openide.actions.PropertiesAction;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -184,34 +191,101 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
 
         @Override
         protected Node[] createNodes(Node key) {
-            return new Node[]{new ApkFilterNode(key)};
+            return new Node[]{new FilterNode(key)};
         }
 
     }
 
-    private class ApkFilterNode extends FilterNode {
+    private static final RequestProcessor RP = new RequestProcessor("Refresh APK Nodes", 1);
 
-        public ApkFilterNode(Node original) {
-            super(original);
+    private class ApksFilterNodeChildrensV2 extends Children.Keys<DataObject> implements FileChangeListener {
+
+        private final Node original;
+        private final DataObject apkFolder;
+
+        public ApksFilterNodeChildrensV2(Node original) {
+            super(true);
+            this.original = original;
+            apkFolder = original.getLookup().lookup(DataObject.class);
+            apkFolder.getPrimaryFile().addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, apkFolder.getPrimaryFile()));
+            p.getProjectDirectory().addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, apkFolder.getPrimaryFile()));
+            refreshFolders();
+        }
+
+        private void refreshFolders() {
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    List<DataObject> keys = new ArrayList<>();
+                    FileObject[] childrens = p.getProjectDirectory().getChildren();
+                    for (FileObject children : childrens) {
+                        if ("apk".equals(children.getExt())) {
+                            try {
+                                keys.add(DataObject.find(children));
+                            } catch (DataObjectNotFoundException ex) {
+                            }
+                        }
+                    }
+                    childrens = apkFolder.getPrimaryFile().getChildren();
+                    for (FileObject children : childrens) {
+                        if ("apk".equals(children.getExt())) {
+                            try {
+                                keys.add(DataObject.find(children));
+                            } catch (DataObjectNotFoundException ex) {
+                            }
+                        }
+                    }
+                    Collections.sort(keys, new Comparator<DataObject>() {
+                        @Override
+                        public int compare(DataObject o1, DataObject o2) {
+                            return o1.getPrimaryFile().getName().compareTo(o2.getPrimaryFile().getName());
+                        }
+                    });
+                    setKeys(keys);
+                }
+            };
+            RP.execute(runnable);
         }
 
         @Override
-        public Action[] getActions(boolean context) {
-            return new Action[]{
-                SystemAction.get(SaveAsAction.class),
-                SystemAction.get(InstallApkAction.class),
-                SystemAction.get(CopyAction.class),
-                SystemAction.get(PropertiesAction.class)
-            };
+        protected Node[] createNodes(DataObject key) {
+            return new Node[]{new FilterNode(key.getNodeDelegate())};
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            refreshFolders();
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            refreshFolders();
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            refreshFolders();
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            refreshFolders();
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            refreshFolders();
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
         }
 
     }
-
 
     private class ApksFilterNode extends FilterNode {
 
         public ApksFilterNode(Node original) {
-            super(original, new ApksFilterNodeChildrens(original));
+            super(original, new ApksFilterNodeChildrensV2(original));
         }
 
         @Override
@@ -221,7 +295,8 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
 
         @Override
         public Action[] getActions(boolean context) {
-            return new Action[0];
+            return new Action[]{
+                SystemAction.get(SignApkAction.class),};
         }
 
         @Override

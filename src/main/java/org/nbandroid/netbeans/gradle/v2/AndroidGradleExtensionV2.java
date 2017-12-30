@@ -158,6 +158,7 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
                 return prjDir;
             }
         });
+        items.add(new AndroidProjectContextActions());
         ic.add(this);
         openHook = new GradleProjectOpenedHook(project);
         ic.add(openHook);
