@@ -17,8 +17,12 @@ Netbeans 8.2 http://server.arsi.sk/nbandroid82/
 ### What Works:
 * Code Assistance
 * Build
+* Build Signed APK + Key Store Manager
 * Run
 * Debug
+* Install APK
+* ADB Shell Terminal
+* Switch ADB device to Wifi/USB
 * Android emulator
 * SDK Platform manager
 * SDK Tools manager
