@@ -39,7 +39,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbPreferences;
 
 /**
@@ -48,8 +47,6 @@ import org.openide.util.NbPreferences;
  */
 public class KeystoreSelector extends javax.swing.JPanel implements ActionListener, KeyListener, SigningConfig {
 
-    private final Project project;
-    private final FileObject toSign;
     private final String hash;
     private static final String KEY_STORE_PATH = "_KEY_STORE_PATH";
     private static final String KEY_STORE_PASSWORD = "_KEY_STORE_PASSWORD";
@@ -65,12 +62,8 @@ public class KeystoreSelector extends javax.swing.JPanel implements ActionListen
     /**
      * Creates new form KeystoreSelector
      */
-    public KeystoreSelector(Project project, FileObject toSign) {
+    public KeystoreSelector(Project project) {
         initComponents();
-        assert project != null;
-        assert toSign != null;
-        this.project = project;
-        this.toSign = toSign;
         hash = "ANDROID_" + project.getProjectDirectory().getPath().hashCode();
         char[] keystorePasswd = Keyring.read(hash + KEY_STORE_PASSWORD);
         char[] keyPasswd = Keyring.read(hash + KEY_PASSWORD);

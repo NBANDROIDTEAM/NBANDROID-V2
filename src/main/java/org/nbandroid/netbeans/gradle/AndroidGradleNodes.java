@@ -4,7 +4,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.awt.Image;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,9 +32,9 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -44,6 +43,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -170,28 +170,7 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
 
         @Override
         public Node createNode() {
-            FileObject root = p.getProjectDirectory();
-            try {
-                FileObject apkFo = FileUtil.createFolder(FileUtil.createFolder(FileUtil.createFolder(root, "build"), "outputs"), "apk");
-                DataObject dob = DataObject.find(apkFo);
-                return new ApksFilterNode(dob.getNodeDelegate());
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            return null;
-        }
-
-    }
-
-    private class ApksFilterNodeChildrens extends FilterNode.Children {
-
-        public ApksFilterNodeChildrens(Node or) {
-            super(or);
-        }
-
-        @Override
-        protected Node[] createNodes(Node key) {
-            return new Node[]{new FilterNode(key)};
+            return new ApksFilterNode();
         }
 
     }
@@ -200,19 +179,18 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
 
     private class ApksFilterNodeChildrensV2 extends Children.Keys<DataObject> implements FileChangeListener {
 
-        private final Node original;
-        private final DataObject apkFolder;
-
-        public ApksFilterNodeChildrensV2(Node original) {
+        public ApksFilterNodeChildrensV2() {
             super(true);
-            this.original = original;
-            apkFolder = original.getLookup().lookup(DataObject.class);
-            apkFolder.getPrimaryFile().addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, apkFolder.getPrimaryFile()));
-            p.getProjectDirectory().addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, apkFolder.getPrimaryFile()));
-            refreshFolders();
+            p.getProjectDirectory().addRecursiveListener(WeakListeners.create(FileChangeListener.class, this, p.getProjectDirectory()));
+            refreshFolders(null);
         }
 
-        private void refreshFolders() {
+        private void refreshFolders(FileEvent fe) {
+            if (fe != null && !p.getProjectDirectory().equals(fe.getFile().getParent()) && !"apk".equalsIgnoreCase(fe.getFile().getParent().getName())
+                    && !"outputs".equalsIgnoreCase(fe.getFile().getParent().getParent().getName())) {
+                return;
+            }
+
             Runnable runnable = new Runnable() {
                 public void run() {
                     List<DataObject> keys = new ArrayList<>();
@@ -225,12 +203,21 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
                             }
                         }
                     }
-                    childrens = apkFolder.getPrimaryFile().getChildren();
-                    for (FileObject children : childrens) {
-                        if ("apk".equals(children.getExt())) {
-                            try {
-                                keys.add(DataObject.find(children));
-                            } catch (DataObjectNotFoundException ex) {
+                    FileObject build = p.getProjectDirectory().getFileObject("build");
+                    if (build != null) {
+                        FileObject outputs = build.getFileObject("outputs");
+                        if (outputs != null) {
+                            FileObject apkFolder = outputs.getFileObject("apk");
+                            if (apkFolder != null) {
+                                childrens = apkFolder.getChildren();
+                                for (FileObject children : childrens) {
+                                    if ("apk".equals(children.getExt())) {
+                                        try {
+                                            keys.add(DataObject.find(children));
+                                        } catch (DataObjectNotFoundException ex) {
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -253,27 +240,27 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
 
         @Override
         public void fileFolderCreated(FileEvent fe) {
-            refreshFolders();
+            refreshFolders(fe);
         }
 
         @Override
         public void fileDataCreated(FileEvent fe) {
-            refreshFolders();
+            refreshFolders(fe);
         }
 
         @Override
         public void fileChanged(FileEvent fe) {
-            refreshFolders();
+            refreshFolders(fe);
         }
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            refreshFolders();
+            refreshFolders(fe);
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            refreshFolders();
+            refreshFolders(fe);
         }
 
         @Override
@@ -282,10 +269,10 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
 
     }
 
-    private class ApksFilterNode extends FilterNode {
+    private class ApksFilterNode extends AbstractNode {
 
-        public ApksFilterNode(Node original) {
-            super(original, new ApksFilterNodeChildrensV2(original));
+        public ApksFilterNode() {
+            super(new ApksFilterNodeChildrensV2(), Lookups.fixed(p));
         }
 
         @Override

@@ -84,7 +84,7 @@ public class ApkUtils {
         return ARGUMENT + key + "=" + value;
     }
 
-    public static void gradleSignApk(NbGradleProject project, String displayName, List<String> tasks, File in, KeystoreSelector keystoreSelector, File out) {
+    public static void gradleSignApk(NbGradleProject project, String displayName, List<String> tasks, KeystoreSelector keystoreSelector, File out) {
 
         GradleCommandTemplate.Builder builder = new GradleCommandTemplate.Builder(
                 displayName != null ? displayName : "", tasks);

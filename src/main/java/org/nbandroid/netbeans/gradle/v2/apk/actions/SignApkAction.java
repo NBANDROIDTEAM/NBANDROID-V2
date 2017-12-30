@@ -22,14 +22,12 @@ import java.util.ArrayList;
 import java.util.List;
 import org.nbandroid.netbeans.gradle.v2.apk.ApkUtils;
 import org.nbandroid.netbeans.gradle.v2.apk.sign.keystore.KeystoreSelector;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.gradle.project.NbGradleProject;
 import org.netbeans.gradle.project.api.nodes.GradleActionType;
 import org.netbeans.gradle.project.api.nodes.GradleProjectAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -48,11 +46,10 @@ public class SignApkAction extends NodeAction {
         if (activatedNodes.length != 1) {
             return;
         }
-        FileObject fo = activatedNodes[0].getLookup().lookup(FileObject.class);
-        Project owner = FileOwnerQuery.getOwner(fo);
+        Project owner = activatedNodes[0].getLookup().lookup(Project.class);
         if (owner != null) {
             NbGradleProject gradleProject = owner.getLookup().lookup(NbGradleProject.class);
-            KeystoreSelector selector = new KeystoreSelector(owner, fo);
+            KeystoreSelector selector = new KeystoreSelector(owner);
             DialogDescriptor dd = new DialogDescriptor(selector, "Generate Signed APK", true, selector);
             selector.setDescriptor(dd);
             Object notify = DialogDisplayer.getDefault().notify(dd);
@@ -65,7 +62,7 @@ public class SignApkAction extends NodeAction {
                     if (selector.isDebug()) {
                         tasks.add("assembleDebug");
                     }
-                    ApkUtils.gradleSignApk(gradleProject, "", tasks, FileUtil.toFile(fo), selector, FileUtil.toFile(owner.getProjectDirectory()));
+                    ApkUtils.gradleSignApk(gradleProject, "", tasks, selector, FileUtil.toFile(owner.getProjectDirectory()));
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }
