@@ -25,8 +25,8 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.nbandroid.netbeans.gradle.api.AndroidClassPath;
-import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatform;
 import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -53,9 +53,9 @@ public final class PlatformNode extends AbstractNode {
     private static final String PLATFORM_ICON = "org/netbeans/modules/android/project/ui/resources/platform.gif";    //NOI18N
     private static final String ARCHIVE_ICON = "org/netbeans/modules/android/project/ui/resources/jar.gif"; //NOI18N
     private final Project project;
-    private final DalvikPlatform platform;
+    private final AndroidPlatformInfo platform;
 
-    public PlatformNode(@Nonnull Project project, @Nullable DalvikPlatform platform) {
+    public PlatformNode(@Nonnull Project project, @Nullable AndroidPlatformInfo platform) {
         super(new PlatformContentChildren() /*, Lookups.singleton (new JavadocProvider(pp))*/);
         this.project = project;
         this.platform = platform;

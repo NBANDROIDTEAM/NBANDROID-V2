@@ -437,7 +437,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
                     }
                 } else {
                     try {
-                        info = new AndroidPlatformInfo(target);
+                        info = new AndroidPlatformInfo(this, target);
                         platformsList.put(target.hashString(), info);
                     } catch (FileNotFoundException ex) {
                     }

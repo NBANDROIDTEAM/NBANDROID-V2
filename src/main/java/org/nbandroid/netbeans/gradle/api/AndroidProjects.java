@@ -23,8 +23,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.xml.parsers.ParserConfigurationException;
-import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatform;
-import org.nbandroid.netbeans.gradle.spi.DalvikPlatformResolver;
+import org.nbandroid.netbeans.gradle.spi.AndroidPlatformResolver;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 import org.xml.sax.SAXException;
@@ -76,10 +76,10 @@ public class AndroidProjects {
         return null;
     }
 
-    public static DalvikPlatform projectPlatform(Project project) {
-        DalvikPlatformResolver dpr = project.getLookup().lookup(DalvikPlatformResolver.class);
+    public static AndroidPlatformInfo projectPlatform(Project project) {
+        AndroidPlatformResolver dpr = project.getLookup().lookup(AndroidPlatformResolver.class);
         if (dpr != null) {
-            DalvikPlatform platform = dpr.findDalvikPlatform();
+            AndroidPlatformInfo platform = dpr.findAndroidPlatform(project);
             LOG.log(Level.FINE, "project {0} has DalvikPlatformResolver and resolves to {1}",
                     new Object[]{project, platform});
             if (platform != null) {
@@ -91,11 +91,11 @@ public class AndroidProjects {
     }
 
     public static boolean isAndroidMavenProject(Project p) {
-        DalvikPlatformResolver dpr = p != null ? p.getLookup().lookup(DalvikPlatformResolver.class) : null;
+        AndroidPlatformResolver dpr = p != null ? p.getLookup().lookup(AndroidPlatformResolver.class) : null;
         if (dpr == null) {
             return false;
         }
-        return dpr.findDalvikPlatform() != null;
+        return dpr.findAndroidPlatform(p) != null;
     }
 
     public static ReferenceResolver noReferenceResolver() {

@@ -16,8 +16,8 @@ import java.util.logging.Logger;
 import org.nbandroid.netbeans.gradle.api.AndroidProjects;
 import org.nbandroid.netbeans.gradle.config.AndroidTestRunConfiguration;
 import org.nbandroid.netbeans.gradle.configs.ConfigBuilder;
-import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatform;
 import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.netbeans.api.debugger.jpda.DebuggerStartException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -49,7 +49,7 @@ public class GradleLaunchExecutor {
         final LaunchConfiguration launchConfig = launchConfig();
         // project.getLookup().lookup(AndroidConfigProvider.class).getActiveConfiguration().getLaunchConfiguration();
 
-        final DalvikPlatform platform = AndroidProjects.projectPlatform(project);
+        final AndroidPlatformInfo platform = AndroidProjects.projectPlatform(project);
         final AndroidLauncher launcher = Preconditions.checkNotNull(
                 project.getLookup().lookup(AndroidLauncher.class));
         final LaunchInfo launchInfo = createLaunchInfo(artifactOutput, command, launchConfig);

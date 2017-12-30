@@ -13,15 +13,16 @@
  */
 package org.nbandroid.netbeans.gradle.spi;
 
-import org.nbandroid.netbeans.gradle.core.sdk.DalvikPlatform;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
+import org.netbeans.api.project.Project;
 
 /**
  * Extension registered into project lookup to provide information about
- * {@link DalvikPlatform} referenced by project.
+ * {@link AndroidPlatformInfo} referenced by project.
  *
  * @author radim
  */
-public interface DalvikPlatformResolver {
+public interface AndroidPlatformResolver {
 
-    DalvikPlatform findDalvikPlatform();
+    public AndroidPlatformInfo findAndroidPlatform(Project project);
 }
