@@ -5,17 +5,56 @@
  */
 package org.nbandroid.netbeans.gradle.v2.project.ui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.Action;
+import javax.swing.DefaultComboBoxModel;
+import org.nbandroid.netbeans.gradle.v2.AndroidGradleExtensionV2;
+import static org.nbandroid.netbeans.gradle.v2.AndroidGradleExtensionV2.PROPERTY_CHANGE_SDK;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
+import org.netbeans.gradle.project.NbGradleProject;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.Lookup;
+import org.openide.util.WeakListeners;
+
 /**
  *
  * @author arsi
  */
-public class AndroidProjectSdkConfig extends javax.swing.JPanel {
+public class AndroidProjectSdkConfig extends javax.swing.JPanel implements PropertyChangeListener {
+
+    private final ProjectCustomizer.Category category;
+    private final Lookup context;
+    private final AndroidSdk sdk;
+    private final AndroidGradleExtensionV2 androidGradleExtension;
 
     /**
      * Creates new form AndroidProjectSdkConfig
      */
-    public AndroidProjectSdkConfig() {
+    public AndroidProjectSdkConfig(ProjectCustomizer.Category category, Lookup context) {
         initComponents();
+        this.category = category;
+        this.context = context;
+        NbGradleProject project = context.lookup(NbGradleProject.class);
+        sdk = project.getLookup().lookup(AndroidSdk.class);
+        androidGradleExtension = project.getLookup().lookup(AndroidGradleExtensionV2.class);
+        if (sdk != null && androidGradleExtension != null) {
+            sdkList.setModel(new DefaultComboBoxModel(AndroidSdkProvider.getInstalledSDKs()));
+            sdkList.setSelectedItem(sdk);
+            AndroidSdkProvider.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, AndroidSdkProvider.PROP_INSTALLED_SDKS, AndroidSdkProvider.getDefault()));
+        }
+        System.out.println("org.nbandroid.netbeans.gradle.v2.project.ui.AndroidProjectSdkConfig.<init>()");
+        category.setStoreListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!sdk.equals(sdkList.getSelectedItem())) {
+                    androidGradleExtension.propertyChange(new PropertyChangeEvent(this, PROPERTY_CHANGE_SDK, null, sdkList.getSelectedItem()));
+                }
+            }
+        });
     }
 
     /**
@@ -36,6 +75,11 @@ public class AndroidProjectSdkConfig extends javax.swing.JPanel {
 
         manage.setMnemonic('S');
         org.openide.awt.Mnemonics.setLocalizedText(manage, org.openide.util.NbBundle.getMessage(AndroidProjectSdkConfig.class, "AndroidProjectSdkConfig.manage.text")); // NOI18N
+        manage.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manageActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -66,10 +110,25 @@ public class AndroidProjectSdkConfig extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void manageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageActionPerformed
+        // TODO add your handling code here:
+        Action action = org.openide.awt.Actions.forID("Tools", "org.nbandroid.netbeans.gradle.v2.sdk.ui.SdksCustomizerAction");
+        if (action != null) {
+            action.actionPerformed(evt);
+        }
+    }//GEN-LAST:event_manageActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JButton manage;
     private javax.swing.JComboBox sdkList;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        //Refresh SDK combo after Add/Remove SDK from SdksCustomizer
+        sdkList.setModel(new DefaultComboBoxModel(AndroidSdkProvider.getInstalledSDKs()));
+        sdkList.setSelectedItem(sdk);
+    }
 }
