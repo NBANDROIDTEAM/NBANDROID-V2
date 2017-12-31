@@ -105,6 +105,17 @@ public class ApkUtils {
         executeCommandTemplate(project, builder.create());
     }
 
+    public static void gradleBuild(NbGradleProject project, String displayName, List<String> tasks, List<String> arguments, List<String> jvmArguments, boolean blocking) {
+
+        GradleCommandTemplate.Builder builder = new GradleCommandTemplate.Builder(
+                displayName != null ? displayName : "", tasks);
+
+        builder.setArguments(arguments);
+        builder.setJvmArguments(jvmArguments);
+        builder.setBlocking(blocking);
+        executeCommandTemplate(project, builder.create());
+    }
+
     private static void executeCommandTemplate(NbGradleProject project, GradleCommandTemplate command) {
         CustomCommandActions actions = command.isBlocking()
                 ? CustomCommandActions.OTHER
