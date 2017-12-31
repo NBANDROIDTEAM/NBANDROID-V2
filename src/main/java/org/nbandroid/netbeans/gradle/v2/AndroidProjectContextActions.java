@@ -16,12 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.nbandroid.netbeans.gradle.v2;
 
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
+import org.nbandroid.netbeans.gradle.v2.apk.actions.DebugApkAction;
+import org.nbandroid.netbeans.gradle.v2.apk.actions.ReleaseUnsignedApkAction;
 import org.nbandroid.netbeans.gradle.v2.apk.actions.SignApkAction;
 import org.netbeans.gradle.project.api.nodes.GradleProjectContextActions;
 import org.openide.util.actions.SystemAction;
@@ -35,7 +36,9 @@ public class AndroidProjectContextActions implements GradleProjectContextActions
     @Override
     public List<Action> getContextActions() {
         List<Action> actions = new ArrayList<>();
+        actions.add(SystemAction.get(DebugApkAction.class));
         actions.add(SystemAction.get(SignApkAction.class));
+        actions.add(SystemAction.get(ReleaseUnsignedApkAction.class));
         return actions;
     }
 

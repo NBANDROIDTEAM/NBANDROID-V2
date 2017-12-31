@@ -17,6 +17,8 @@ import org.nbandroid.netbeans.gradle.api.ui.AndroidResourceNode;
 import org.nbandroid.netbeans.gradle.ui.DependenciesNode;
 import org.nbandroid.netbeans.gradle.ui.GeneratedSourcesNode;
 import org.nbandroid.netbeans.gradle.ui.InstrumentTestNode;
+import org.nbandroid.netbeans.gradle.v2.apk.actions.DebugApkAction;
+import org.nbandroid.netbeans.gradle.v2.apk.actions.ReleaseUnsignedApkAction;
 import org.nbandroid.netbeans.gradle.v2.apk.actions.SignApkAction;
 import org.nbandroid.netbeans.gradle.v2.ui.IconProvider;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -283,7 +285,9 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
         @Override
         public Action[] getActions(boolean context) {
             return new Action[]{
-                SystemAction.get(SignApkAction.class),};
+                SystemAction.get(DebugApkAction.class),
+                SystemAction.get(SignApkAction.class),
+                SystemAction.get(ReleaseUnsignedApkAction.class),};
         }
 
         @Override
