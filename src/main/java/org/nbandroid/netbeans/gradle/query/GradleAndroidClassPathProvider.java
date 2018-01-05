@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,15 +57,17 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.gradle.tooling.model.gradle.BasicGradleProject;
 import org.gradle.tooling.model.gradle.GradleBuild;
-import org.nbandroid.netbeans.gradle.AndroidModelAware;
-import org.nbandroid.netbeans.gradle.GradleBuildAware;
 import org.nbandroid.netbeans.gradle.api.AndroidClassPath;
 import org.nbandroid.netbeans.gradle.config.AndroidBuildVariants;
 import org.nbandroid.netbeans.gradle.config.BuildVariant;
 import org.nbandroid.netbeans.gradle.config.ProductFlavors;
 import org.nbandroid.netbeans.gradle.v2.maven.ArtifactData;
+import org.nbandroid.netbeans.gradle.v2.sdk.GlobalAndroidClassPathRegistry;
+import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatform;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.project.Project;
@@ -91,7 +94,7 @@ import org.openide.util.Utilities;
  * Defines the various class paths for a Android project.
  */
 public final class GradleAndroidClassPathProvider
-        implements ClassPathProvider, AndroidModelAware, GradleBuildAware, AndroidClassPath {
+        implements ClassPathProvider, AndroidClassPath {
 
     private static final Logger LOG = Logger.getLogger(GradleAndroidClassPathProvider.class.getName());
     private Map<URL, ArtifactData> artifactDatas = new HashMap<>();
@@ -109,9 +112,9 @@ public final class GradleAndroidClassPathProvider
     private final ClassPath source, boot, compile, execute, test, testCompile;
     private final BuildVariant buildConfig;
     private final Set<Refreshable> refreshables = Sets.newHashSet();
-    private AndroidProject androidProject = null;
+    private final AndroidProject androidProject;
     private final Project project;
-    private GradleBuild gradleBuild = null;
+    private final GradleBuild gradleBuild;
 
     //ARSI: Create virtual java package to override NB java 8 support check
     public static final File VIRTUALJAVA8ROOT_DIR = Places.getCacheSubdirectory("android_virtual_java8");
@@ -128,32 +131,17 @@ public final class GradleAndroidClassPathProvider
         }
     }
 
-    public GradleAndroidClassPathProvider(BuildVariant buildConfig, Project project) {
+    public GradleAndroidClassPathProvider(BuildVariant buildConfig, Project project, AndroidProject androidProject, GradleBuild gradleBuild) {
         this.buildConfig = Preconditions.checkNotNull(buildConfig);
         this.project = project;
+        this.androidProject = androidProject;
+        this.gradleBuild = gradleBuild;
         source = createSource();
         test = createTest();
         boot = createBoot();
         compile = createCompile();
         execute = createExecute(compile);
         testCompile = createTestCompile(execute);
-    }
-
-    @Override
-    public void setAndroidProject(AndroidProject project) {
-        this.androidProject = project;
-        // TODO rebuilt the classpath under lock?
-        for (Refreshable r : refreshables) {
-            r.refresh();
-        }
-    }
-
-    @Override
-    public void setGradleBuild(GradleBuild bgp) {
-        this.gradleBuild = bgp;
-        for (Refreshable r : refreshables) {
-            r.refresh();
-        }
     }
 
     public @Override
@@ -167,21 +155,42 @@ public final class GradleAndroidClassPathProvider
             if (ClassPath.SOURCE.equals(type)) {
                 return test;
             } else if (ClassPath.BOOT.equals(type)) {
-                return boot;
+                return createBoot();
             } else if (ClassPath.COMPILE.equals(type)) {
                 return testCompile;
             }
             return getClassPath(type);
         }
+
         LOG.log(Level.FINER, "cp not owning {0}", file);
         return null;
     }
+
 
     @Override
     public ClassPath getClassPath(String type) {
         if (type.equals(ClassPath.SOURCE)) {
             return source;
         } else if (type.equals(ClassPath.BOOT)) {
+            JavaPlatform[] installedPlatforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+            for (JavaPlatform installedPlatform : installedPlatforms) {
+                if (installedPlatform instanceof AndroidJavaPlatform) {
+                    File platformFolder = ((AndroidJavaPlatform) installedPlatform).getPkg().getPlatformFolder();
+                    List<String> paths = new ArrayList<>(androidProject.getBootClasspath());
+                    for (String path : paths) {
+                        if (platformFolder.equals(new File(path).getParentFile())) {
+                            String sourceCompatibility = androidProject.getJavaCompileOptions().getSourceCompatibility();
+                            if ("1.8".equals(sourceCompatibility)) {
+                                URL java8 = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(VIRTUALJAVA8ROOT_DIR));
+                                ClassPath java8ClassPath = ClassPathSupport.createClassPath(new URL[]{java8});
+                                return ClassPathSupport.createProxyClassPath(java8ClassPath, installedPlatform.getBootstrapLibraries());
+                            }
+
+                            return installedPlatform.getBootstrapLibraries();
+                        }
+                    }
+                }
+            }
             return boot;
         } else if (type.equals(ClassPath.COMPILE)) {
             return compile;
@@ -195,7 +204,7 @@ public final class GradleAndroidClassPathProvider
     @Override
     public void register() {
         GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[]{source});
-        GlobalPathRegistry.getDefault().register(ClassPath.BOOT, new ClassPath[]{boot});
+        //     GlobalPathRegistry.getDefault().register(ClassPath.BOOT, new ClassPath[]{boot});
         GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[]{compile});
         GlobalPathRegistry.getDefault().register(ClassPath.EXECUTE, new ClassPath[]{execute});
     }
@@ -203,7 +212,7 @@ public final class GradleAndroidClassPathProvider
     @Override
     public void unregister() {
         GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, new ClassPath[]{source});
-        GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, new ClassPath[]{boot});
+        //     GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, new ClassPath[]{boot});
         GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, new ClassPath[]{compile});
         GlobalPathRegistry.getDefault().unregister(ClassPath.EXECUTE, new ClassPath[]{execute});
     }
@@ -217,7 +226,8 @@ public final class GradleAndroidClassPathProvider
     }
 
     public ClassPath getBootPath() {
-        return boot;
+        JavaPlatform[] installedPlatforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        return createBoot();
     }
 
     private ClassPath createSource() {
@@ -311,7 +321,7 @@ public final class GradleAndroidClassPathProvider
             }
             LOG.log(Level.FINE, "compile CP roots: {0}", roots);
             artifactDatas = tmpArtifactDatas;
-            return roots.toArray(new URL[0]);
+            return roots.toArray(new URL[roots.size()]);
         }
 
         public void addAndroidLibraryDependencies(List<URL> roots, Map<URL, ArtifactData> libs, AndroidLibrary lib) {
@@ -325,6 +335,19 @@ public final class GradleAndroidClassPathProvider
             for (AndroidLibrary libraryDependencie : libraryDependencies) {
                 addAndroidLibraryDependencies(roots, libs, libraryDependencie);
             }
+            Iterator<File> localJars = lib.getLocalJars().iterator();
+            if (localJars != null) {
+                while (localJars.hasNext()) {
+                    File next = localJars.next();
+                    url = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(next));
+                    if (!roots.contains(url)) {
+                        roots.add(url);
+                        libs.put(url, new ArtifactData(lib, project));
+                    }
+
+                }
+            }
+
         }
 
         private void addJavaLibraryDependencies(List<URL> roots, Map<URL, ArtifactData> libs, JavaLibrary lib) {
@@ -375,49 +398,39 @@ public final class GradleAndroidClassPathProvider
     }
 
     private ClassPath createBoot() {
-        URLPathResources urlPathResources = new URLPathResources();
-        refreshables.add(urlPathResources);
-        return ClassPathSupport.createClassPath(
-                Collections.singletonList(urlPathResources));
+        return GlobalAndroidClassPathRegistry.getClassPath(ClassPath.BOOT, getBootRoots());
     }
 
-    private class URLPathResources extends AndroidPathResources {
-
-        public URLPathResources() {
+    private URL[] getBootRoots() {
+        if (androidProject == null) {
+            return new URL[0]; // broken platform
         }
-
-        @Override
-        public URL[] getRoots() {
-            if (androidProject == null) {
-                return new URL[0]; // broken platform
-            }
-            //ARSI: add virtual java package to boot classpath to override NB java 8 support check
-            String sourceCompatibility = androidProject.getJavaCompileOptions().getSourceCompatibility();
-            if ("1.8".equals(sourceCompatibility)) {
-                URL root = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(VIRTUALJAVA8ROOT_DIR));
-                URL[] basic = getBootUrls();
-                URL[] exttendet = new URL[basic.length + 1];
-                System.arraycopy(basic, 0, exttendet, 0, basic.length);
-                exttendet[basic.length] = root;
-                return exttendet;
-            } else {
-                return getBootUrls();
-            }
+        //ARSI: add virtual java package to boot classpath to override NB java 8 support check
+        String sourceCompatibility = androidProject.getJavaCompileOptions().getSourceCompatibility();
+        if ("1.8".equals(sourceCompatibility)) {
+            URL root = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(VIRTUALJAVA8ROOT_DIR));
+            URL[] basic = getBootUrls();
+            URL[] exttendet = new URL[basic.length + 1];
+            System.arraycopy(basic, 0, exttendet, 0, basic.length);
+            exttendet[basic.length] = root;
+            return exttendet;
+        } else {
+            return getBootUrls();
         }
+    }
 
-        private URL[] getBootUrls() {
-            return Iterables.toArray(
-                    Iterables.transform(
-                            androidProject.getBootClasspath(),
-                            new Function<String, URL>() {
+    private URL[] getBootUrls() {
+        return Iterables.toArray(
+                Iterables.transform(
+                        androidProject.getBootClasspath(),
+                        new Function<String, URL>() {
 
-                        @Override
-                        public URL apply(String f) {
-                            return FileUtil.urlForArchiveOrDir(new File(f));
-                        }
-                    }),
-                    URL.class);
-        }
+                    @Override
+                    public URL apply(String f) {
+                        return FileUtil.urlForArchiveOrDir(new File(f));
+                    }
+                }),
+                URL.class);
     }
 
     private ClassPath createCompile() {

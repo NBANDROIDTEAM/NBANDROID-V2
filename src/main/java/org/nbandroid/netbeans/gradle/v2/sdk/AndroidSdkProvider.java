@@ -27,8 +27,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.XMLDataObject;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -46,9 +47,10 @@ public class AndroidSdkProvider implements FileChangeListener {
     private static final String ADB_TOOL = "adb";    //NOI18N
     private static FileObject storageCache;
     private static FileObject lastFound;
+    private static AndroidSdkProvider instance = null;
 
     public static AndroidSdk findSdk(File file) {
-        AndroidSdk[] installedPlatforms = Lookup.getDefault().lookup(AndroidSdkProvider.class).getSDKs();
+        AndroidSdk[] installedPlatforms = getDefault().getSDKs();
         for (AndroidSdk installedPlatform : installedPlatforms) {
             if (installedPlatform.getInstallFolder().equals(FileUtil.toFileObject(file))) {
                 return installedPlatform;
@@ -64,7 +66,7 @@ public class AndroidSdkProvider implements FileChangeListener {
     private final AtomicReference<AndroidDebugBridge> adb = new AtomicReference<>(null);
     private final AtomicReference<String> adbPath = new AtomicReference<>(null);
 
-    protected AndroidSdk[] getSDKs() {
+    public AndroidSdk[] getSDKs() {
         return sdks.get();
     }
 
@@ -74,23 +76,26 @@ public class AndroidSdkProvider implements FileChangeListener {
      * @return AndroidSdk
      */
     public static final AndroidSdk getDefaultSdk() {
-        return Lookup.getDefault().lookup(AndroidSdkProvider.class).getSdkDefault();
+        return getDefault().getSdkDefault();
     }
 
     public static final AndroidSdkProvider getDefault() {
-        return Lookup.getDefault().lookup(AndroidSdkProvider.class);
+        if (instance == null) {
+            instance = new AndroidSdkProvider();
+        }
+        return instance;
     }
 
     public static final AndroidSdk[] getInstalledSDKs() {
-        return Lookup.getDefault().lookup(AndroidSdkProvider.class).getSDKs();
+        return getDefault().getSDKs();
     }
 
     public static final AndroidDebugBridge getAdb() {
-        return Lookup.getDefault().lookup(AndroidSdkProvider.class).adb.get();
+        return getDefault().adb.get();
     }
 
     public static final String getAdbPath() {
-        return Lookup.getDefault().lookup(AndroidSdkProvider.class).adbPath.get();
+        return getDefault().adbPath.get();
     }
 
     public AndroidSdkProvider() {
@@ -111,6 +116,16 @@ public class AndroidSdkProvider implements FileChangeListener {
                     DataObject dobj = DataObject.find(platformDefinition);
                     InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
                     if (ic == null) {
+                        FileObject[] childrens = storage.getChildren();
+                        for (FileObject children : childrens) {
+                            try {
+                                DataObject dob = DataObject.find(children);
+                                if (dob instanceof XMLDataObject) {
+                                    platforms.add(PlatformConvertor.localInstance(dob));
+                                }
+                            } catch (DataObjectNotFoundException dataObjectNotFoundException) {
+                            }
+                        }
                         LOG.log(
                                 Level.WARNING,
                                 "The file: {0} has no InstanceCookie", //NOI18N
@@ -268,16 +283,20 @@ public class AndroidSdkProvider implements FileChangeListener {
     //***************ADB*********************
     protected void updateAdb() {
         AndroidSdk sdk = defaultSdk.get();
-        final FileObject path = sdk.findTool(ADB_TOOL);
-        ClientData.class.getClassLoader().clearAssertionStatus();      //qattern
-        DebugPortManager.setProvider(DebugPortProvider.getDefault());
-        AndroidDebugBridge.initIfNeeded(true);
-        String adbLocation = FileUtil.toFile(path).getAbsolutePath();
-        String lastLocation = adbPath.getAndSet(adbLocation);
-        pcs.firePropertyChange(PROP_DEFAULT_ADB_PATH, lastLocation, adbLocation);
-        AndroidDebugBridge bridge = AndroidDebugBridge.createBridge(adbLocation, true);
-        AndroidDebugBridge lastAdb = adb.getAndSet(bridge);
-        pcs.firePropertyChange(PROP_DEFAULT_ADB, lastAdb, bridge);
+        if (sdk != null) {
+            final FileObject path = sdk.findTool(ADB_TOOL);
+            if (path != null) {
+                ClientData.class.getClassLoader().clearAssertionStatus();      //qattern
+                DebugPortManager.setProvider(DebugPortProvider.getDefault());
+                AndroidDebugBridge.initIfNeeded(true);
+                String adbLocation = FileUtil.toFile(path).getAbsolutePath();
+                String lastLocation = adbPath.getAndSet(adbLocation);
+                pcs.firePropertyChange(PROP_DEFAULT_ADB_PATH, lastLocation, adbLocation);
+                AndroidDebugBridge bridge = AndroidDebugBridge.createBridge(adbLocation, true);
+                AndroidDebugBridge lastAdb = adb.getAndSet(bridge);
+                pcs.firePropertyChange(PROP_DEFAULT_ADB, lastAdb, bridge);
+            }
+        }
     }
 
 }

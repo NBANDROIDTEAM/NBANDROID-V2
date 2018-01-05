@@ -28,42 +28,38 @@ import java.io.FileOutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.Places;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  * Hack to make android platform source folder read-only
  *
  * @author arsi
  */
-@ServiceProvider(service = URLMapper.class, position = 2000)
-public class ReadOnlyURLMapper extends URLMapper implements PropertyChangeListener, LookupListener {
+@ServiceProviders({
+    @ServiceProvider(service = URLMapper.class, position = 2000),
+    @ServiceProvider(service = ReadOnlyURLMapper.class)})
 
-    private static final Map<FileObject, FileObject> cache = new WeakHashMap<>();
-    private AtomicReference<AndroidJavaPlatformProvider8> platformProvider = new AtomicReference<>(null);
+public class ReadOnlyURLMapper extends URLMapper implements PropertyChangeListener {
+
     private final AtomicReference<String[]> reference = new AtomicReference<>(new String[0]);
-    private final Lookup.Result<JavaPlatformProvider> result = Lookup.getDefault().lookupResult(JavaPlatformProvider.class);
-    private static final File LASTPLATFORMS_FILE = Places.getCacheSubfile("NBANDROID/lastplatforms.xml");
+    private static final File LASTPLATFORMS_FILE = Places.getCacheSubfile("nbandroid/lastplatforms.xml");
+    private static final ExecutorService POOL = Executors.newFixedThreadPool(1);
 
     public ReadOnlyURLMapper() {
 
-        result.addLookupListener(this);
-        resultChanged(null);
         if (LASTPLATFORMS_FILE.exists()) {
             try {
                 XMLDecoder decoder = new XMLDecoder(new FileInputStream(LASTPLATFORMS_FILE));
@@ -100,45 +96,35 @@ public class ReadOnlyURLMapper extends URLMapper implements PropertyChangeListen
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        AndroidJavaPlatformProvider8 provider = platformProvider.get();
-        if (provider != null) {
-            JavaPlatform[] installedPlatforms = provider.getInstalledPlatforms();
-            List<String> tmp = new ArrayList<>();
-            for (JavaPlatform installedPlatform : installedPlatforms) {
-                List<ClassPath.Entry> entries = installedPlatform.getSourceFolders().entries();
-                for (ClassPath.Entry entrie : entries) {
-                    if (!tmp.contains(entrie.getURL().getPath())) {
-                        tmp.add(entrie.getURL().getPath());
+
+        Runnable runnable = new Runnable() {
+            public void run() {
+                Collection<? extends AndroidJavaPlatformProvider8> providers = Lookup.getDefault().lookupAll(AndroidJavaPlatformProvider8.class);
+                List<String> tmp = new ArrayList<>();
+                for (AndroidJavaPlatformProvider8 provider : providers) {
+                    if (provider != null) {
+                        JavaPlatform[] installedPlatforms = provider.getInstalledPlatforms();
+                        for (JavaPlatform installedPlatform : installedPlatforms) {
+                            List<ClassPath.Entry> entries = installedPlatform.getSourceFolders().entries();
+                            for (ClassPath.Entry entrie : entries) {
+                                if (!tmp.contains(entrie.getURL().getPath())) {
+                                    tmp.add(entrie.getURL().getPath());
+                                }
+                            }
+                        }
                     }
                 }
-            }
-            try {
-                XMLEncoder encoder = new XMLEncoder(new FileOutputStream(LASTPLATFORMS_FILE));
-                encoder.writeObject(tmp.toArray(new String[tmp.size()]));
-                encoder.flush();
-                encoder.close();
-            } catch (Exception ex) {
-            }
-            reference.set(tmp.toArray(new String[tmp.size()]));
-        }
-    }
-
-    @Override
-    public void resultChanged(LookupEvent ev) {
-        AndroidJavaPlatformProvider8 provider = platformProvider.get();
-        if (provider == null) {
-            Collection<? extends JavaPlatformProvider> lookupAll = result.allInstances();
-            Iterator<? extends JavaPlatformProvider> iterator = lookupAll.iterator();
-            while (iterator.hasNext()) {
-                JavaPlatformProvider next = iterator.next();
-                if (next instanceof AndroidJavaPlatformProvider8) {
-                    platformProvider.set((AndroidJavaPlatformProvider8) next);
-                    ((AndroidJavaPlatformProvider8) next).addPropertyChangeListener(this);
-                    propertyChange(null);
+                try {
+                    XMLEncoder encoder = new XMLEncoder(new FileOutputStream(LASTPLATFORMS_FILE));
+                    encoder.writeObject(tmp.toArray(new String[tmp.size()]));
+                    encoder.flush();
+                    encoder.close();
+                } catch (Exception ex) {
                 }
+                reference.set(tmp.toArray(new String[tmp.size()]));
             }
-        }
-
+        };
+        POOL.execute(runnable);
     }
 
 }

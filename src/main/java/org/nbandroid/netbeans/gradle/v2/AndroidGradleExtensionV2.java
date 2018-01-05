@@ -98,7 +98,7 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
     private final List<Object> items = Lists.newArrayList();
     private final GradleProjectOpenedHook openHook;
     private final SourceLevelQueryImpl2 levelQuery;
-    private final GradleAndroidClassPathProvider androidClassPathProvider;
+    private GradleAndroidClassPathProvider androidClassPathProvider = null;
     public static final String PROPERTY_CHANGE_SDK = "PROPERTY_CHANGE_SDK";
     // testing support
     @VisibleForTesting
@@ -109,6 +109,7 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
     volatile GradleBuild gradleBuild = null;
     private AndroidSdk sdk;
     private final FileObject localProperties;
+    private final BuildVariant buildCfg;
 
     public AndroidGradleExtensionV2(Project project, AndroidSdk sdk, FileObject localProperties) {
         this.project = Preconditions.checkNotNull(project);
@@ -118,7 +119,7 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         ic = new InstanceContent();
         projectAddOnLookup = new AbstractLookup(ic);
         final AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-        BuildVariant buildCfg = new BuildVariant(props);
+        buildCfg = new BuildVariant(props);
         AndroidTestRunConfiguration testCfg = new AndroidTestRunConfiguration(props);
         if (sdk != null) {
             //add SDK  to lookup
@@ -135,8 +136,7 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         items.add(new GradlePlatformResolver());
         items.add(new GradleAndroidSources(project, buildCfg));
         items.add(new GradleAndroidManifest(project, buildCfg));
-        androidClassPathProvider = new GradleAndroidClassPathProvider(buildCfg, project);
-        items.add(androidClassPathProvider);
+
         items.add(new GradleSourceForBinaryQuery(buildCfg));
         items.add(new AndroidGradleNodes(project));
         items.add(new ProjectResourceLocator(project));
@@ -204,6 +204,12 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
             LOG.log(Level.FINE, "lookup: {0}", modelLookup.lookupAll(Object.class));
             AndroidProject aProject = modelLookup.lookup(AndroidProject.class);
             GradleBuild build = modelLookup.lookup(GradleBuild.class);
+            if (androidClassPathProvider != null) {
+                ic.remove(androidClassPathProvider);
+            }
+            androidClassPathProvider = new GradleAndroidClassPathProvider(buildCfg, project, aProject, build);
+            ic.add(androidClassPathProvider);
+            androidClassPathProvider.register();
             AutoAndroidGradleSourceForBinaryQuery sourceForBinaryQuery = Lookup.getDefault().lookup(AutoAndroidGradleSourceForBinaryQuery.class);
             AutoAndroidGradleJavadocForBinaryQuery javadocForBinaryQuery = Lookup.getDefault().lookup(AutoAndroidGradleJavadocForBinaryQuery.class);
             if (aProject != null) {
