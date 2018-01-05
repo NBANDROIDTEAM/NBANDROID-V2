@@ -19,18 +19,22 @@
 package org.nbandroid.netbeans.gradle.v2.sdk.java.platform;
 
 import com.android.sdklib.SdkVersionInfo;
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import static org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider.VIRTUALJAVA8ROOT_DIR;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.GlobalAndroidClassPathRegistry;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 
 /**
@@ -48,7 +52,13 @@ public class AndroidJavaPlatform extends JavaPlatform {
     AndroidJavaPlatform(AndroidPlatformInfo pkg, String javaVersion) {
         this.pkg = pkg;
         this.specification = new Specification("j2se", new SpecificationVersion(javaVersion));
-        this.boot = GlobalAndroidClassPathRegistry.getClassPath(ClassPath.BOOT, pkg.getBootURLs());
+        if ("1.8".equals(javaVersion)) {
+            URL java8 = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(VIRTUALJAVA8ROOT_DIR));
+            ClassPath java8ClassPath = ClassPathSupport.createClassPath(new URL[]{java8});
+            this.boot = ClassPathSupport.createProxyClassPath(java8ClassPath, GlobalAndroidClassPathRegistry.getClassPath(ClassPath.BOOT, pkg.getBootURLs()));
+        } else {
+            this.boot = GlobalAndroidClassPathRegistry.getClassPath(ClassPath.BOOT, pkg.getBootURLs());
+        }
         this.source = GlobalAndroidClassPathRegistry.getClassPath(ClassPath.SOURCE, pkg.getSrcURLs());
     }
 
@@ -56,6 +66,17 @@ public class AndroidJavaPlatform extends JavaPlatform {
         return pkg;
     }
 
+    public String getHashString() {
+        return pkg.getHashString();
+    }
+
+    public String getPlatformName() {
+        return pkg.getPlatformName();
+    }
+
+    public File getPlatformFolder() {
+        return pkg.getPlatformFolder();
+    }
 
     @Override
     public String getDisplayName() {

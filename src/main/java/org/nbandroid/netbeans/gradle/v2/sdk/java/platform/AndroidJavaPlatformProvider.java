@@ -18,13 +18,16 @@
  */
 package org.nbandroid.netbeans.gradle.v2.sdk.java.platform;
 
+import com.google.common.collect.MapMaker;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
@@ -43,6 +46,15 @@ public abstract class AndroidJavaPlatformProvider implements JavaPlatformProvide
     protected final Vector<PropertyChangeListener> listeners = new Vector<>();
     protected final AtomicReference<JavaPlatform[]> platforms = new AtomicReference<>(new JavaPlatform[0]);
     protected final AtomicReference<JavaPlatform> defaultPlatform = new AtomicReference<>(null);
+    protected static final ConcurrentMap<String, AndroidJavaPlatform> cache = new MapMaker().weakValues().makeMap();
+
+    public static final AndroidJavaPlatform findPlatform(String file, String platformHash) {
+        File lib = new File(file);
+        if (!lib.exists() || lib.getParent() == null) {
+            return null;
+        }
+        return cache.get(lib.getParent() + "-" + platformHash);
+    }
 
     public AndroidJavaPlatformProvider() {
         AndroidSdkProvider.getDefault().addPropertyChangeListener(this);
@@ -68,6 +80,8 @@ public abstract class AndroidJavaPlatformProvider implements JavaPlatformProvide
         listeners.remove(listener);
     }
 
+    protected abstract void addToCache(String hash, AndroidJavaPlatform platform);
+
     @Override
     public synchronized void platformListChanged(List<AndroidPlatformInfo> pkgsX) {
         AndroidSdk[] sdKs = AndroidSdkProvider.getDefault().getSDKs();
@@ -77,7 +91,8 @@ public abstract class AndroidJavaPlatformProvider implements JavaPlatformProvide
         for (AndroidSdk sdk : sdKs) {
             List<AndroidPlatformInfo> pkgs = sdk.getPlatforms();
             for (int i = 0; i < pkgs.size(); i++) {
-                createPlatform(tmp, pkgs.get(i));
+                AndroidJavaPlatform platform = createPlatform(tmp, pkgs.get(i));
+                addToCache(platform.getPlatformFolder().getAbsolutePath() + "-" + platform.getHashString(), platform);
             }
 
         }
@@ -100,7 +115,7 @@ public abstract class AndroidJavaPlatformProvider implements JavaPlatformProvide
 
     }
 
-    protected abstract void createPlatform(List<JavaPlatform> tmp, AndroidPlatformInfo pkg);
+    protected abstract AndroidJavaPlatform createPlatform(List<JavaPlatform> tmp, AndroidPlatformInfo pkg);
 
     private final AtomicReference<AndroidSdk[]> lastSdks = new AtomicReference<>(null);
 

@@ -38,9 +38,16 @@ import org.openide.util.lookup.ServiceProviders;
 public class AndroidJavaPlatformProvider8 extends AndroidJavaPlatformProvider {
 
     @Override
-    protected void createPlatform(List<JavaPlatform> tmp, AndroidPlatformInfo pkg) {
-        tmp.add(new AndroidJavaPlatform(pkg, "1.8"));
+    protected AndroidJavaPlatform createPlatform(List<JavaPlatform> tmp, AndroidPlatformInfo pkg) {
+        AndroidJavaPlatform javaPlatform = new AndroidJavaPlatform(pkg, "1.8");
+        tmp.add(javaPlatform);
         //add ReadOnlyURLMapper as listener, to avoid lookup chaos when addPropertyChangeListener called directly from ReadOnlyURLMapper
         addPropertyChangeListener(Lookup.getDefault().lookup(ReadOnlyURLMapper.class));
+        return javaPlatform;
+    }
+
+    @Override
+    protected void addToCache(String hash, AndroidJavaPlatform platform) {
+        cache.put(hash, platform);
     }
 }
