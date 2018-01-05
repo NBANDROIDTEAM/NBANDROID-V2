@@ -21,18 +21,20 @@ package org.nbandroid.netbeans.gradle.v2.sdk.java.platform;
 import java.util.List;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * JavaPlatformProvider for Android platforms and java 1.7
  *
  * @author arsi
  */
-//@ServiceProvider(service = JavaPlatformProvider.class)
+@ServiceProvider(service = JavaPlatformProvider.class)
 public class AndroidJavaPlatformProvider7 extends AndroidJavaPlatformProvider {
 
     @Override
-    protected void createPlatform(JavaPlatform[] tmp, int i, List<AndroidPlatformInfo> pkgs) {
-        tmp[i] = new AndroidJavaPlatform(pkgs.get(i), "1.7");
+    protected void createPlatform(List<JavaPlatform> tmp, AndroidPlatformInfo pkg) {
+        tmp.add(new AndroidJavaPlatform(pkg, "1.7"));
     }
 
 }

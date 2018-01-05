@@ -85,8 +85,6 @@ public class AndroidPlatformInfo {
         this.sdk = sdk;
     }
 
-
-
     public AndroidVersion getAndroidVersion() {
         return androidVersion;
     }
@@ -318,7 +316,7 @@ public class AndroidPlatformInfo {
         javadocPaths.remove(record);
     }
 
-    public File getSDKFolder() {
+    public File getPlatformFolder() {
         return platformFolder;
     }
 

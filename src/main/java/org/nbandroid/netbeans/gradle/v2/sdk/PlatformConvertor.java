@@ -140,6 +140,34 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         }
     }
 
+    public static AndroidSdkImpl localInstance(DataObject dob) throws java.io.IOException, ClassNotFoundException {
+        H handler = new H();
+        try {
+            XMLReader reader = XMLUtil.createXMLReader();
+            InputSource is = new org.xml.sax.InputSource(
+                    dob.getPrimaryFile().getInputStream());
+            is.setSystemId(dob.getPrimaryFile().toURL().toExternalForm());
+            reader.setContentHandler(handler);
+            reader.setErrorHandler(handler);
+            reader.setEntityResolver(handler);
+
+            reader.parse(is);
+        } catch (SAXException ex) {
+            final Exception cause = ex.getException();
+            if (cause instanceof java.io.IOException) {
+                throw (IOException) cause;
+            } else {
+                throw new java.io.IOException(cause);
+            }
+        }
+
+        AndroidSdkImpl p = new AndroidSdkImpl(handler.name, handler.installFolder, handler.properties, handler.sysProperties, handler.platforms, handler.isDefault);
+        for (AndroidPlatformInfo platform : handler.platforms) {
+            platform.setSdk(p);
+        }
+        return p;
+    }
+
     AndroidSdk createPlatform(H handler) {
         AndroidSdkImpl p;
 
@@ -361,7 +389,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 final Element platformElement = doc.createElement(ELEMENT_PLATFORM);
                 try {
                     platformElement.setAttribute(ATTR_PROPERTY_NAME, XMLUtil.toAttributeValue(platform.getPlatformName()));
-                    platformElement.setAttribute(ATTR_PLATFORM_PATH, XMLUtil.toAttributeValue(platform.getSDKFolder().getPath()));
+                    platformElement.setAttribute(ATTR_PLATFORM_PATH, XMLUtil.toAttributeValue(platform.getPlatformFolder().getPath()));
                     platformElement.setAttribute(ATTR_PLATFORM_APILEVEL, XMLUtil.toAttributeValue("" + platform.getAndroidVersion().getApiLevel()));
                     platformElement.setAttribute(ATTR_PLATFORM_HASH, XMLUtil.toAttributeValue(platform.getHashString()));
                 } catch (CharConversionException ex) {
@@ -370,7 +398,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                             "Cannot store attr: {0} value: {1}", //NOI18N
                             new Object[]{
                                 platform.getPlatformName(),
-                                platform.getSDKFolder().getPath()
+                                platform.getPlatformFolder().getPath()
                             });
                 }
 

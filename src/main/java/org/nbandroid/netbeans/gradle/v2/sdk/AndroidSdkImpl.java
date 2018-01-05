@@ -207,7 +207,16 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
 
     @Override
     public FileObject findTool(String toolName) {
-        return Util.findTool(toolName, sdkRootFo);
+        if (sdkRootFo != null) {
+            return Util.findTool(toolName, sdkRootFo);
+        } else {
+            sdkRootFo = FileUtil.toFileObject(sdkRoot);
+            if (sdkRootFo != null) {
+                return Util.findTool(toolName, sdkRootFo);
+            } else {
+                return null;
+            }
+        }
     }
 
 

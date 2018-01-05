@@ -20,15 +20,16 @@ package org.nbandroid.netbeans.gradle.v2.sdk.java.platform;
 
 import com.android.sdklib.SdkVersionInfo;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
+import org.nbandroid.netbeans.gradle.v2.sdk.GlobalAndroidClassPathRegistry;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 
@@ -41,11 +42,20 @@ public class AndroidJavaPlatform extends JavaPlatform {
 
     private final AndroidPlatformInfo pkg;
     private final Specification specification;
+    private final ClassPath boot;
+    private final ClassPath source;
 
     AndroidJavaPlatform(AndroidPlatformInfo pkg, String javaVersion) {
         this.pkg = pkg;
         this.specification = new Specification("j2se", new SpecificationVersion(javaVersion));
+        this.boot = GlobalAndroidClassPathRegistry.getClassPath(ClassPath.BOOT, pkg.getBootURLs());
+        this.source = GlobalAndroidClassPathRegistry.getClassPath(ClassPath.SOURCE, pkg.getSrcURLs());
     }
+
+    public AndroidPlatformInfo getPkg() {
+        return pkg;
+    }
+
 
     @Override
     public String getDisplayName() {
@@ -59,7 +69,7 @@ public class AndroidJavaPlatform extends JavaPlatform {
 
     @Override
     public ClassPath getBootstrapLibraries() {
-        return ClassPathSupport.createClassPath(pkg.getBootURLs());
+        return boot;
     }
 
     @Override
@@ -79,7 +89,9 @@ public class AndroidJavaPlatform extends JavaPlatform {
 
     @Override
     public Collection<FileObject> getInstallFolders() {
-        return Collections.EMPTY_LIST;
+        List<FileObject> tmp = new ArrayList<>();
+        tmp.add(pkg.getSDKFolderFo());
+        return tmp;
     }
 
     @Override
@@ -89,7 +101,7 @@ public class AndroidJavaPlatform extends JavaPlatform {
 
     @Override
     public ClassPath getSourceFolders() {
-        return ClassPathSupport.createClassPath(pkg.getSrcURLs());
+        return source;
     }
 
     @Override

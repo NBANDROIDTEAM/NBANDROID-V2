@@ -20,28 +20,32 @@ package org.nbandroid.netbeans.gradle.v2.sdk.java.platform;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicReference;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.nbandroid.netbeans.gradle.v2.sdk.LocalPlatformChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
-import static org.netbeans.modules.java.platform.implspi.JavaPlatformProvider.PROP_INSTALLED_PLATFORMS;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author arsi
  */
-public abstract class AndroidJavaPlatformProvider implements JavaPlatformProvider, LocalPlatformChangeListener {
+public abstract class AndroidJavaPlatformProvider implements JavaPlatformProvider, LocalPlatformChangeListener, PropertyChangeListener {
 
     protected final Vector<PropertyChangeListener> listeners = new Vector<>();
     protected final AtomicReference<JavaPlatform[]> platforms = new AtomicReference<>(new JavaPlatform[0]);
     protected final AtomicReference<JavaPlatform> defaultPlatform = new AtomicReference<>(null);
 
     public AndroidJavaPlatformProvider() {
-        AndroidSdkProvider.getDefaultSdk().addLocalPlatformChangeListener(this);
+        AndroidSdkProvider.getDefault().addPropertyChangeListener(this);
     }
 
     @Override
@@ -65,20 +69,55 @@ public abstract class AndroidJavaPlatformProvider implements JavaPlatformProvide
     }
 
     @Override
-    public void platformListChanged(List<AndroidPlatformInfo> pkgs) {
-        JavaPlatform[] tmp = new JavaPlatform[pkgs.size()];
-        for (int i = 0; i < pkgs.size(); i++) {
-            createPlatform(tmp, i, pkgs);
+    public synchronized void platformListChanged(List<AndroidPlatformInfo> pkgsX) {
+        AndroidSdk[] sdKs = AndroidSdkProvider.getDefault().getSDKs();
+        Map<FileObject, JavaPlatform> filter = new HashMap<>();
+        Map<FileObject, JavaPlatform> filterLast = new HashMap<>();
+        List<JavaPlatform> tmp = new ArrayList<>();
+        for (AndroidSdk sdk : sdKs) {
+            List<AndroidPlatformInfo> pkgs = sdk.getPlatforms();
+            for (int i = 0; i < pkgs.size(); i++) {
+                createPlatform(tmp, pkgs.get(i));
+            }
+
         }
-        platforms.set(tmp);
-        if (tmp.length > 0) {
-            defaultPlatform.set(tmp[0]);
+        if (!tmp.isEmpty()) {
+            defaultPlatform.set(tmp.get(0));
+            for (JavaPlatform plat : tmp) {
+                filter.put(plat.getInstallFolders().iterator().next(), plat);
+            }
+        }
+        JavaPlatform[] current = tmp.toArray(new JavaPlatform[tmp.size()]);
+        JavaPlatform[] last = platforms.getAndSet(current);
+        if (last != null) {
+            for (JavaPlatform plat : last) {
+                filterLast.put(plat.getInstallFolders().iterator().next(), plat);
+            }
         }
         for (PropertyChangeListener listener : listeners) {
-            listener.propertyChange(new PropertyChangeEvent(this, PROP_INSTALLED_PLATFORMS, null, platforms));
+            listener.propertyChange(new PropertyChangeEvent(this, PROP_INSTALLED_PLATFORMS, last, current));
         }
+
     }
 
-    protected abstract void createPlatform(JavaPlatform[] tmp, int i, List<AndroidPlatformInfo> pkgs);
+    protected abstract void createPlatform(List<JavaPlatform> tmp, AndroidPlatformInfo pkg);
+
+    private final AtomicReference<AndroidSdk[]> lastSdks = new AtomicReference<>(null);
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (AndroidSdkProvider.PROP_INSTALLED_SDKS.equals(evt.getPropertyName())) {
+            AndroidSdk[] sdKs = AndroidSdkProvider.getDefault().getSDKs();
+            AndroidSdk[] lasts = lastSdks.getAndSet(sdKs);
+            if (lasts != null) {
+                for (AndroidSdk last : lasts) {
+                    last.removeLocalPlatformChangeListener(this);
+                }
+            }
+            for (AndroidSdk sdK : sdKs) {
+                sdK.addLocalPlatformChangeListener(this);
+            }
+        }
+    }
 
 }

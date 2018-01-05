@@ -100,6 +100,9 @@ public class DependencyNode extends FilterNode implements PropertyChangeListener
                 versionlessId = versionlessId.substring(lastIndexOf + 1);
             }
         }
+        if (super.getDisplayName().contains("internal_imp")) {
+            versionlessId += "-internal";
+        }
         return versionlessId;
     }
 

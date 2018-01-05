@@ -21,6 +21,10 @@ package org.nbandroid.netbeans.gradle.v2.sdk.java.platform;
 import java.util.List;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
@@ -28,13 +32,15 @@ import org.netbeans.api.java.platform.JavaPlatform;
  *
  * @author arsi
  */
-//@ServiceProviders({
-//    @ServiceProvider(service = JavaPlatformProvider.class),
-//    @ServiceProvider(service = AndroidJavaPlatformProvider8.class)})
+@ServiceProviders({
+    @ServiceProvider(service = JavaPlatformProvider.class),
+    @ServiceProvider(service = AndroidJavaPlatformProvider8.class)})
 public class AndroidJavaPlatformProvider8 extends AndroidJavaPlatformProvider {
 
     @Override
-    protected void createPlatform(JavaPlatform[] tmp, int i, List<AndroidPlatformInfo> pkgs) {
-        tmp[i] = new AndroidJavaPlatform(pkgs.get(i), "1.8");
+    protected void createPlatform(List<JavaPlatform> tmp, AndroidPlatformInfo pkg) {
+        tmp.add(new AndroidJavaPlatform(pkg, "1.8"));
+        //add ReadOnlyURLMapper as listener, to avoid lookup chaos when addPropertyChangeListener called directly from ReadOnlyURLMapper
+        addPropertyChangeListener(Lookup.getDefault().lookup(ReadOnlyURLMapper.class));
     }
 }
