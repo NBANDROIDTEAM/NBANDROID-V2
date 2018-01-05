@@ -62,12 +62,10 @@ import org.nbandroid.netbeans.gradle.config.AndroidBuildVariants;
 import org.nbandroid.netbeans.gradle.config.BuildVariant;
 import org.nbandroid.netbeans.gradle.config.ProductFlavors;
 import org.nbandroid.netbeans.gradle.v2.maven.ArtifactData;
-import org.nbandroid.netbeans.gradle.v2.sdk.GlobalAndroidClassPathRegistry;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatform;
+import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatformProvider;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.project.Project;
@@ -109,7 +107,7 @@ public final class GradleAndroidClassPathProvider
         return artifactDatas.get(url);
     }
 
-    private final ClassPath source, boot, compile, execute, test, testCompile;
+    private final ClassPath source, compile, execute, test, testCompile;
     private final BuildVariant buildConfig;
     private final Set<Refreshable> refreshables = Sets.newHashSet();
     private final AndroidProject androidProject;
@@ -138,7 +136,6 @@ public final class GradleAndroidClassPathProvider
         this.gradleBuild = gradleBuild;
         source = createSource();
         test = createTest();
-        boot = createBoot();
         compile = createCompile();
         execute = createExecute(compile);
         testCompile = createTestCompile(execute);
@@ -154,8 +151,6 @@ public final class GradleAndroidClassPathProvider
             LOG.log(Level.FINER, "cp owns {0}", file);
             if (ClassPath.SOURCE.equals(type)) {
                 return test;
-            } else if (ClassPath.BOOT.equals(type)) {
-                return createBoot();
             } else if (ClassPath.COMPILE.equals(type)) {
                 return testCompile;
             }
@@ -169,29 +164,19 @@ public final class GradleAndroidClassPathProvider
 
     @Override
     public ClassPath getClassPath(String type) {
+        androidProject.getCompileTarget();
         if (type.equals(ClassPath.SOURCE)) {
             return source;
         } else if (type.equals(ClassPath.BOOT)) {
-            JavaPlatform[] installedPlatforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
-            for (JavaPlatform installedPlatform : installedPlatforms) {
-                if (installedPlatform instanceof AndroidJavaPlatform) {
-                    File platformFolder = ((AndroidJavaPlatform) installedPlatform).getPkg().getPlatformFolder();
-                    List<String> paths = new ArrayList<>(androidProject.getBootClasspath());
-                    for (String path : paths) {
-                        if (platformFolder.equals(new File(path).getParentFile())) {
-                            String sourceCompatibility = androidProject.getJavaCompileOptions().getSourceCompatibility();
-                            if ("1.8".equals(sourceCompatibility)) {
-                                URL java8 = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(VIRTUALJAVA8ROOT_DIR));
-                                ClassPath java8ClassPath = ClassPathSupport.createClassPath(new URL[]{java8});
-                                return ClassPathSupport.createProxyClassPath(java8ClassPath, installedPlatform.getBootstrapLibraries());
-                            }
-
-                            return installedPlatform.getBootstrapLibraries();
-                        }
-                    }
-                }
+            if (androidProject.getBootClasspath().isEmpty()) {
+                return ClassPath.EMPTY;
             }
-            return boot;
+            String next = androidProject.getBootClasspath().iterator().next();
+            AndroidJavaPlatform findPlatform = AndroidJavaPlatformProvider.findPlatform(next, androidProject.getCompileTarget());
+            if (findPlatform != null) {
+                return findPlatform.getBootstrapLibraries();
+            }
+            return ClassPath.EMPTY;
         } else if (type.equals(ClassPath.COMPILE)) {
             return compile;
         } else if (type.equals(ClassPath.EXECUTE)) {
@@ -226,8 +211,7 @@ public final class GradleAndroidClassPathProvider
     }
 
     public ClassPath getBootPath() {
-        JavaPlatform[] installedPlatforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
-        return createBoot();
+        return getClassPath(ClassPath.BOOT);
     }
 
     private ClassPath createSource() {
@@ -395,42 +379,6 @@ public final class GradleAndroidClassPathProvider
             // TODO only fire change when set of roots is really different.
             firePropertyChange(PROP_ROOTS, null, null);
         }
-    }
-
-    private ClassPath createBoot() {
-        return GlobalAndroidClassPathRegistry.getClassPath(ClassPath.BOOT, getBootRoots());
-    }
-
-    private URL[] getBootRoots() {
-        if (androidProject == null) {
-            return new URL[0]; // broken platform
-        }
-        //ARSI: add virtual java package to boot classpath to override NB java 8 support check
-        String sourceCompatibility = androidProject.getJavaCompileOptions().getSourceCompatibility();
-        if ("1.8".equals(sourceCompatibility)) {
-            URL root = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(VIRTUALJAVA8ROOT_DIR));
-            URL[] basic = getBootUrls();
-            URL[] exttendet = new URL[basic.length + 1];
-            System.arraycopy(basic, 0, exttendet, 0, basic.length);
-            exttendet[basic.length] = root;
-            return exttendet;
-        } else {
-            return getBootUrls();
-        }
-    }
-
-    private URL[] getBootUrls() {
-        return Iterables.toArray(
-                Iterables.transform(
-                        androidProject.getBootClasspath(),
-                        new Function<String, URL>() {
-
-                    @Override
-                    public URL apply(String f) {
-                        return FileUtil.urlForArchiveOrDir(new File(f));
-                    }
-                }),
-                URL.class);
     }
 
     private ClassPath createCompile() {

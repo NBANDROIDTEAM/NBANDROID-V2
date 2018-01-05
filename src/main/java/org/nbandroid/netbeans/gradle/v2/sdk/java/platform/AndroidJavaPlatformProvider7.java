@@ -33,8 +33,14 @@ import org.openide.util.lookup.ServiceProvider;
 public class AndroidJavaPlatformProvider7 extends AndroidJavaPlatformProvider {
 
     @Override
-    protected void createPlatform(List<JavaPlatform> tmp, AndroidPlatformInfo pkg) {
-        tmp.add(new AndroidJavaPlatform(pkg, "1.7"));
+    protected AndroidJavaPlatform createPlatform(List<JavaPlatform> tmp, AndroidPlatformInfo pkg) {
+        AndroidJavaPlatform platform = new AndroidJavaPlatform(pkg, "1.7");
+        tmp.add(platform);
+        return platform;
+    }
+
+    @Override
+    protected void addToCache(String hash, AndroidJavaPlatform platform) {
     }
 
 }
