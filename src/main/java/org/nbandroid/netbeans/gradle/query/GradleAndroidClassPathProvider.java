@@ -196,10 +196,19 @@ public final class GradleAndroidClassPathProvider
 
     @Override
     public void unregister() {
-        GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, new ClassPath[]{source});
+        try {
+            GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, new ClassPath[]{source});
+        } catch (IllegalArgumentException illegalArgumentException) {
+        }
         //     GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, new ClassPath[]{boot});
-        GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, new ClassPath[]{compile});
-        GlobalPathRegistry.getDefault().unregister(ClassPath.EXECUTE, new ClassPath[]{execute});
+        try {
+            GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, new ClassPath[]{compile});
+        } catch (IllegalArgumentException illegalArgumentException) {
+        }
+        try {
+            GlobalPathRegistry.getDefault().unregister(ClassPath.EXECUTE, new ClassPath[]{execute});
+        } catch (IllegalArgumentException illegalArgumentException) {
+        }
     }
 
     public ClassPath getSourcePath() {

@@ -50,6 +50,7 @@ public class LogReader {
     public final static String PROPERTY_DEVICE_LIST = "DEVICE_LIST";
     public final static String PROPERTY_CURRENT_DEVICE = "CURRENT_DEVICE";
     public final static String PROPERTY_CURRENT_DEVICE_STATE = "CURRENT_DEVICE_STATE";
+    private static final RequestProcessor RP = new RequestProcessor(LogReader.class);
 
     private static final Logger LOG = Logger.getLogger(LogReader.class.getName());
     // These messages will not be added to log as events
@@ -264,7 +265,7 @@ public class LogReader {
             return;
         }
         if (!adb.isConnected()) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
                 @Override
                 public void run() {
@@ -327,7 +328,7 @@ public class LogReader {
             stopReading();
             shouldBeReading = true;
             receiver = new LogCatOutputReceiver(currentDevice);
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
                 @Override
                 public void run() {
