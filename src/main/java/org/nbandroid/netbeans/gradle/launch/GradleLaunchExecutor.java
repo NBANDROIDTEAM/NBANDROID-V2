@@ -11,6 +11,8 @@ import java.io.FileNotFoundException;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.nbandroid.netbeans.gradle.api.AndroidProjects;
@@ -24,6 +26,8 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
@@ -62,15 +66,21 @@ public class GradleLaunchExecutor {
                             project),
                     command);
         } else {
-            try {
-                final Future<Client> future = launcher.launch(platform,
-                        Lookups.fixed(launchInfo,
-                                launchAction,
-                                launchConfig,
-                                project),
-                        command);
-                if (future != null) {
-                    final Client c = future.get();
+            final Future<Client> future = launcher.launch(platform,
+                    Lookups.fixed(launchInfo,
+                            launchAction,
+                            launchConfig,
+                            project),
+                    command);
+            if (future != null) {
+                Client c = null;
+                try {
+                    c = future.get(20, TimeUnit.SECONDS);
+                } catch (InterruptedException interruptedException) {
+                } catch (ExecutionException executionException) {
+                } catch (TimeoutException timeoutException) {
+                }
+                if (c != null) {
                     final int port = c.getDebuggerListenPort();
                     final Map<String, Object> properties = Maps.newHashMap();
                     final GradleAndroidClassPathProvider cpp
@@ -83,10 +93,15 @@ public class GradleLaunchExecutor {
                     properties.put("name", ProjectUtils.getInformation(project).getDisplayName()); // NOI18N
                     properties.put("jdksources", Launches.toSourcePath(bootPath)); // NOI18N
                     properties.put("baseDir", FileUtil.toFile(project.getProjectDirectory()));   //NOI18N
-                    JPDADebugger.attach("localhost", port, new Object[]{properties}); //NOI18N
+                    try {
+                        JPDADebugger.attach("localhost", port, new Object[]{properties}); //NOI18N
+                    } catch (DebuggerStartException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else {
+                    NotifyDescriptor nd = new NotifyDescriptor.Message("Unable to get Android Client Info ", NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notifyLater(nd);
                 }
-            } catch (InterruptedException | ExecutionException | DebuggerStartException ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
     }

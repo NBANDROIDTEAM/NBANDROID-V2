@@ -67,8 +67,10 @@ public final class AutoAndroidGradleSourceForBinaryQuery extends AbstractSourceF
             if (artifactData != null && artifactData.isSrcLocal()) {
                 File src = new File(artifactData.getSrcPath());
                 FileObject srcFo = FileUtil.toFileObject(src);
-                backReferenceMap.put(srcFo, provider);
-                backReferenceMap.put(FileUtil.toFileObject(binaryRoot), provider);
+                if (srcFo != null) {
+                    backReferenceMap.put(srcFo, provider);
+                    backReferenceMap.put(FileUtil.toFileObject(binaryRoot), provider);
+                }
                 return new AndroidResult(artifactData);
             }
         }

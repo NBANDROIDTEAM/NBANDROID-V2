@@ -482,6 +482,10 @@ public class AndroidLauncherImpl implements AndroidLauncher {
                     result.set(client);
                     done.countDown();
                     break;
+                } else if (!device.isOnline()) {
+                    result.set(null);
+                    done.countDown();
+                    break;
                 }
                 //TODO: Busy waiting, replace by listener + Latch
                 try {

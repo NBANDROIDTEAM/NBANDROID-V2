@@ -292,7 +292,7 @@ public class AndroidSdkProvider implements FileChangeListener {
                 String adbLocation = FileUtil.toFile(path).getAbsolutePath();
                 String lastLocation = adbPath.getAndSet(adbLocation);
                 pcs.firePropertyChange(PROP_DEFAULT_ADB_PATH, lastLocation, adbLocation);
-                AndroidDebugBridge bridge = AndroidDebugBridge.createBridge(adbLocation, true);
+                AndroidDebugBridge bridge = AndroidDebugBridge.createBridge(adbLocation, false);
                 AndroidDebugBridge lastAdb = adb.getAndSet(bridge);
                 pcs.firePropertyChange(PROP_DEFAULT_ADB, lastAdb, bridge);
             }
