@@ -54,6 +54,27 @@
                             <id>org.netbeans.api:org-netbeans-modules-keyring</id>
                             <type>impl</type>
                         </dependency>
+                        <dependency>
+                            <!--Private Package Reference-->
+                            <id>org.netbeans.modules:org-netbeans-lib-terminalemulator</id>
+                            <type>impl</type>
+                        </dependency>
+                        <dependency>
+                            <!--Private Package Reference-->
+                            <id>org.netbeans.modules:org-netbeans-modules-terminal</id>
+                            <type>impl</type>
+                        </dependency>
+                        <dependency>
+                            <!--Private Package Reference-->
+                            <id>org.netbeans.modules:org-netbeans-modules-terminal-nb</id>
+                            <type>impl</type>
+                        </dependency>
+                        <dependency>
+                            <!--Private Package Reference-->
+                            <id>org.netbeans.modules:org-netbeans-libs-jna</id>
+                            <type>impl</type>
+                        </dependency>
+                        
                     </moduleDependencies>
                 </configuration>
             </plugin>
@@ -111,6 +132,7 @@
             </build>
             <properties>
                 <version.nb>RELEASE82</version.nb>
+                <asm.nb>asm-all-5.0.1</asm.nb>
             </properties>
         </profile>
         <profile>
@@ -139,6 +161,7 @@
             </build>
             <properties>
                 <version.nb>RELEASE81</version.nb>
+                <asm.nb>asm-all-4.0</asm.nb>
             </properties>
         </profile>
         <profile>
@@ -167,6 +190,7 @@
             </build>
             <properties>
                 <version.nb>RELEASE82</version.nb>
+                <asm.nb>asm-all-5.0.1</asm.nb>
             </properties>
         </profile>
         <profile>
@@ -190,6 +214,7 @@
             </build>
             <properties>
                 <version.nb>RELEASE81</version.nb>
+                <asm.nb>asm-all-4.0</asm.nb>
             </properties>
         </profile>
         <profile>
@@ -212,6 +237,7 @@
             </build>
             <properties>
                 <version.nb>RELEASE82</version.nb>
+                <asm.nb>asm-all-5.0.1</asm.nb>
             </properties>
         </profile>
     </profiles>
@@ -228,6 +254,14 @@
             <id>bintray-kelemen-maven</id>
             <name>bintray</name>
             <url>https://dl.bintray.com/kelemen/maven</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>google-android-android-tools</id>
+            <name>google</name>
+            <url>https://maven.google.com</url>
         </repository>
     </repositories>
     <dependencies>
@@ -267,12 +301,12 @@
         <dependency>
             <groupId>com.android.tools.build</groupId>
             <artifactId>builder</artifactId>
-            <version>2.3.0</version>
+            <version>${android.gradle.model.version}</version>
         </dependency>
         <dependency>
             <groupId>com.android.tools.build</groupId>
             <artifactId>builder-model</artifactId>
-            <version>2.3.0</version>
+            <version>${android.gradle.model.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -620,7 +654,7 @@
         <dependency>
             <groupId>com.android.tools.build</groupId>
             <artifactId>builder-test-api</artifactId>
-            <version>2.3.0</version>
+            <version>${android.gradle.model.version}</version>
         </dependency>
         <dependency>
             <groupId>net.sf.kxml</groupId>
@@ -692,11 +726,18 @@
             <artifactId>org-netbeans-modules-keyring</artifactId>
             <version>${version.nb}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.netbeans.external</groupId>
+            <artifactId>${asm.nb}</artifactId>
+            <version>${version.nb}</version>
+        </dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <version.android>25.3.0</version.android>
         <version.nb.gradle>1.4.2</version.nb.gradle>
+        <android.gradle.model.version>3.0.1</android.gradle.model.version>
         <!--1.4.2-->
     </properties>
 </project>
