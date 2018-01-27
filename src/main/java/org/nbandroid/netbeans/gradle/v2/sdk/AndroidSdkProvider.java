@@ -234,7 +234,7 @@ public class AndroidSdkProvider implements FileChangeListener {
     private void firePropertyChange() {
         AndroidSdk[] updateSDKs = updateSDKs();
         AndroidSdk[] last = sdks.getAndSet(updateSDKs);
-        if (updateSDKs.length == 1 && !updateSDKs[0].isDefaultSdk()) {
+        if (updateSDKs.length == 1 && defaultSdk.get() == null) {
             makeFirstSdkDefault(updateSDKs);
         } else if (updateSDKs.length > 1) {//more SDKs find default
             boolean err = true;
