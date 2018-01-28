@@ -22,9 +22,11 @@ import com.android.builder.model.AndroidProject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -49,6 +51,7 @@ import org.netbeans.gradle.project.api.entry.ParsedModel;
 import org.netbeans.gradle.project.api.modelquery.GradleModelDefQuery1;
 import org.netbeans.gradle.project.api.modelquery.GradleTarget;
 import org.netbeans.gradle.project.java.JavaExtensionDef;
+import org.netbeans.gradle.project.properties.global.CommonGlobalSettings;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -117,23 +120,23 @@ public class AndroidExtensionDef implements GradleProjectExtensionDef<Serializab
         boolean isAndroidProject = false;
         AndroidSdk defaultSdk = null;
         FileObject localProperties = null;
-        FileObject gradleProperties = null;
         FileObject buildScript = project.getProjectDirectory().getFileObject(BUILD_GRADLE);
         if (buildScript != null) {
             isAndroidProject = FindAndroidVisitor.visit(FileUtil.toFile(buildScript));
         }
         if (isAndroidProject) {
             localProperties = findAndroidLocalProperties(project.getProjectDirectory(), project);
-            gradleProperties = findGradleProperties(project.getProjectDirectory(), project);
-            if (gradleProperties == null) {
-                Project rootProject = findRootProject(project.getProjectDirectory(), project);
-                gradleProperties = rootProject.getProjectDirectory().createData(GRADLE_PROPERTIES);
-            }
             try {
-                Properties properties = new Properties();
-                properties.load(gradleProperties.getInputStream());
-                properties.put("android.injected.build.model.only.versioned", "3");
-                properties.store(new FileOutputStream(FileUtil.toFile(gradleProperties)), "");
+                List<String> current = null;
+                if (CommonGlobalSettings.getDefault().gradleArgs().getActiveValue() != null) {
+                    current = new ArrayList<>(CommonGlobalSettings.getDefault().gradleArgs().getActiveValue());
+                } else {
+                    current = new ArrayList<>();
+                }
+                if (!current.contains("-Pandroid.injected.build.model.only.versioned=3")) {
+                    current.add("-Pandroid.injected.build.model.only.versioned=3");
+                }
+                CommonGlobalSettings.getDefault().gradleArgs().setValue(current);
             } catch (Exception exception) {
             }
             if (localProperties == null) {
@@ -277,20 +280,6 @@ public class AndroidExtensionDef implements GradleProjectExtensionDef<Serializab
         }
     }
 
-    private FileObject findGradleProperties(FileObject root, Project current) {
-        FileObject fo = root.getFileObject(GRADLE_PROPERTIES);
-        if (fo != null) {
-            return fo;
-        } else {
-            Project owner = FileOwnerQuery.getOwner(root.getParent());
-            if ((owner instanceof NbGradleProject) && !owner.equals(current)) {
-                return findGradleProperties(root.getParent(), current);
-            } else {
-                return null;
-            }
-        }
-    }
-
     private Project findRootProject(FileObject root, Project current) {
         Project owner = FileOwnerQuery.getOwner(root.getParent());
         if ((owner instanceof NbGradleProject) && !owner.equals(current)) {
@@ -324,5 +313,6 @@ public class AndroidExtensionDef implements GradleProjectExtensionDef<Serializab
             return RESULT;
         }
     }
+
 
 }

@@ -33,6 +33,8 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -73,7 +75,9 @@ import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.netbeans.api.project.Project;
 import org.netbeans.gradle.project.NbGradleProject;
+import org.netbeans.gradle.project.api.config.GradleArgumentQuery;
 import org.netbeans.gradle.project.api.entry.GradleProjectExtension2;
+import org.netbeans.gradle.project.api.task.DaemonTaskContext;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -314,9 +318,10 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         return Lookup.EMPTY;
     }
 
+    private final Lookup extensionLookup = Lookups.fixed(new AndroidGradleArgumentQuery());
     @Override
     public Lookup getExtensionLookup() {
-        return Lookup.EMPTY;
+        return extensionLookup;
     }
 
     @Override
@@ -374,6 +379,22 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
                 Exceptions.printStackTrace(ex);
             }
         }
+    }
+
+    private static class AndroidGradleArgumentQuery implements GradleArgumentQuery {
+
+        @Override
+        public List<String> getExtraArgs(DaemonTaskContext context) {
+            List<String> tmp = new ArrayList<>();
+            tmp.add("-Pandroid.injected.build.model.only.versioned=3");
+            return tmp;
+        }
+
+        @Override
+        public List<String> getExtraJvmArgs(DaemonTaskContext context) {
+            return Collections.EMPTY_LIST;
+        }
+
     }
 
 }
