@@ -231,6 +231,7 @@
                         <extensions>true</extensions>
                         <configuration>
                             <netbeansInstallation>/ssd/nb/netbeans-8.2-e3/</netbeansInstallation>
+                            <netbeansUserdir>/jetty/netbeans/user_nb_android</netbeansUserdir>
                         </configuration>
                     </plugin>
                 </plugins>

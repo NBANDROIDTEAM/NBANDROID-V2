@@ -26,7 +26,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import static org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider.VIRTUALJAVA8ROOT_DIR;
+import org.nbandroid.netbeans.gradle.v2.layout.AndroidWidgetNamespace;
+import org.nbandroid.netbeans.gradle.v2.layout.parsers.WidgetPlatformXmlParser;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.GlobalAndroidClassPathRegistry;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -36,18 +39,21 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.RequestProcessor;
 
 /**
  * AndroidJavaPlatform from Android UpdatablePackage
  *
  * @author arsi
  */
-public class AndroidJavaPlatform extends JavaPlatform {
+public class AndroidJavaPlatform extends JavaPlatform implements Runnable {
 
     private final AndroidPlatformInfo pkg;
     private final Specification specification;
     private final ClassPath boot;
     private final ClassPath source;
+    private final Map<String, AndroidWidgetNamespace> widgetNamespaces = new ConcurrentHashMap<>();
+    private static final RequestProcessor RP = new RequestProcessor("Android Platform Widget parser", 1);
 
     AndroidJavaPlatform(AndroidPlatformInfo pkg, String javaVersion) {
         this.pkg = pkg;
@@ -60,11 +66,17 @@ public class AndroidJavaPlatform extends JavaPlatform {
             this.boot = GlobalAndroidClassPathRegistry.getClassPath(ClassPath.BOOT, pkg.getBootURLs());
         }
         this.source = GlobalAndroidClassPathRegistry.getClassPath(ClassPath.SOURCE, pkg.getSrcURLs());
+        RP.post(this);
     }
 
     public AndroidPlatformInfo getPkg() {
         return pkg;
     }
+
+    public Map<String, AndroidWidgetNamespace> getWidgetNamespaces() {
+        return widgetNamespaces;
+    }
+
 
     public String getHashString() {
         return pkg.getHashString();
@@ -128,6 +140,12 @@ public class AndroidJavaPlatform extends JavaPlatform {
     @Override
     public List<URL> getJavadocFolders() {
         return pkg.getJavadocURLs();
+    }
+
+    @Override
+    public void run() {
+        AndroidWidgetNamespace platformNamespace = WidgetPlatformXmlParser.parseXml(this);
+        widgetNamespaces.put(platformNamespace.getNamespace(), platformNamespace);
     }
 
 }
