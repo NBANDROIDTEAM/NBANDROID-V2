@@ -20,6 +20,8 @@ package org.nbandroid.netbeans.gradle.v2.layout.completion.analyzer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
+import java.util.StringTokenizer;
 
 public class StyleableResultCollector {
 
@@ -28,7 +30,11 @@ public class StyleableResultCollector {
     private final List<String> styleables = new ArrayList<>();
 
     protected void setSuperClassName(String superClass) {
-        this.superClassName = superClass;
+        if (superClass != null) {
+            this.superClassName = superClass.replace("/", ".");
+        } else {
+            this.superClassName = null;
+        }
     }
 
     public String getSuperClassName() {
@@ -36,8 +42,18 @@ public class StyleableResultCollector {
     }
 
     protected void addStyleable(String styleable) {
-        if (!styleables.contains(styleable)) {
-            styleables.add(styleable);
+        StringTokenizer tokenizer = new StringTokenizer(styleable, "_", false);
+        StringJoiner joiner = new StringJoiner("_");
+        while (tokenizer.hasMoreElements()) {
+            String nextToken = tokenizer.nextToken();
+            if (nextToken.length() > 0 && Character.isUpperCase(nextToken.charAt(0))) {
+                joiner.add(nextToken);
+            }
+
+        }
+        String outName = joiner.toString();
+        if (!styleables.contains(outName)) {
+            styleables.add(outName);
         }
     }
 
@@ -50,7 +66,11 @@ public class StyleableResultCollector {
     }
 
     protected void setClassName(String className) {
-        this.className = className;
+        if (className != null) {
+            this.className = className.replace("/", ".");
+        } else {
+            this.className = null;
+        }
     }
 
 }
