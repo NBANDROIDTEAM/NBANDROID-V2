@@ -46,7 +46,7 @@ public class AndroidWidgetAttr implements Serializable {
 
     public AndroidWidgetAttr(String name, String description, List<AndroidWidgetAttrFlag> flags, List<AndroidWidgetAttrEnum> enums, AndroidWidgetAttrType... attrTypes) {
         this.attrTypes = EnumSet.copyOf(Arrays.asList(attrTypes));
-        this.enums = enums.toArray(new AndroidWidgetAttrEnum[flags.size()]);;
+        this.enums = enums.toArray(new AndroidWidgetAttrEnum[enums.size()]);;
         this.flags = flags.toArray(new AndroidWidgetAttrFlag[flags.size()]);
         this.description = description;
         this.name = name;

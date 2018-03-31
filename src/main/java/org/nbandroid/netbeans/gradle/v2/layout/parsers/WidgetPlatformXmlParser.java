@@ -31,6 +31,7 @@ import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatform;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -74,6 +75,17 @@ public class WidgetPlatformXmlParser {
                 DocumentBuilder builder = builderFactory.newDocumentBuilder();
                 Document xmlDocument = builder.parse(fileIS);
                 XPath xPath = XPathFactory.newInstance().newXPath();
+                // Parse global ATTS, there are referenced fro widget ATTRS
+                NodeList allNodeList = (NodeList) xPath.compile("/resources").evaluate(xmlDocument, XPathConstants.NODESET);
+                Node rootNode = allNodeList.item(0);
+                NodeList childNodes = rootNode.getChildNodes();
+                List<AndroidWidgetAttr> globalWidgetAttrs = new ArrayList<>();
+                decodeAttrs(childNodes, globalWidgetAttrs);
+                Map<String, AndroidWidgetAttr> globalAttrsMap = new HashMap<>();
+                for (AndroidWidgetAttr globalWidgetAttr : globalWidgetAttrs) {
+                    globalAttrsMap.put(globalWidgetAttr.getName(), globalWidgetAttr);
+                }
+                //
                 String expression = "/resources/declare-styleable";
                 NodeList nodeList = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
                 for (int i = 0; i < nodeList.getLength(); i++) {
@@ -82,96 +94,26 @@ public class WidgetPlatformXmlParser {
                     Node witgetNode = attributes.getNamedItem("name");
                     String witgetName = witgetNode.getTextContent();
                     NodeList attrNodes = item.getChildNodes();
-                    String comment = "";
                     List<AndroidWidgetAttr> widgetAttrs = new ArrayList<>();
-                    for (int j = 0; j < attrNodes.getLength(); j++) {
-                        Node node = attrNodes.item(j);
-                        switch (node.getNodeType()) {
-                            case Node.COMMENT_NODE:
-                                if (!"".equals(comment)) {
-                                    comment += "\n";
-                                }
-                                comment += node.getTextContent();
-                                break;
-                            case Node.ELEMENT_NODE:
-                                String nodeName = node.getNodeName();
-                                switch (nodeName) {
-                                    case "eat-comment":
-                                        comment = "";
-                                        break;
-                                    case "attr":
-                                        Node namedAttrNode = node.getAttributes().getNamedItem("name");
-                                        String attrName = namedAttrNode.getTextContent();
-                                        Node formatAttrNode = node.getAttributes().getNamedItem("format");
-                                        String format = "unknown";
-                                        if (formatAttrNode != null) {
-                                            format = formatAttrNode.getTextContent();
-                                        }
-                                        List<AndroidWidgetAttrType> attrType = AndroidWidgetAttrType.decode(format);
-                                        List<AndroidWidgetAttrEnum> enums = new ArrayList<>();
-                                        List<AndroidWidgetAttrFlag> flags = new ArrayList<>();
-                                        if (node.hasChildNodes()) {
-                                            NodeList childNodes = node.getChildNodes();
-                                            String enumOrFlagComment = "";
-                                            for (int k = 0; k < childNodes.getLength(); k++) {
-                                                Node enumOrFlagOrCommentNode = childNodes.item(k);
-                                                switch (enumOrFlagOrCommentNode.getNodeType()) {
-                                                    case Node.COMMENT_NODE:
-                                                        if (!"".equals(enumOrFlagComment)) {
-                                                            enumOrFlagComment += "\n";
-                                                        }
-                                                        enumOrFlagComment += enumOrFlagOrCommentNode.getTextContent();
-                                                        break;
-                                                    case Node.ELEMENT_NODE:
-                                                        switch (enumOrFlagOrCommentNode.getNodeName()) {
-                                                            case "eat-comment":
-                                                                enumOrFlagComment = "";
-                                                                break;
-                                                            case "enum":
-                                                                Node namedItem = enumOrFlagOrCommentNode.getAttributes().getNamedItem("name");
-                                                                String enumName = namedItem.getTextContent();
-                                                                Node namedItem1 = enumOrFlagOrCommentNode.getAttributes().getNamedItem("value");
-                                                                String enumValue = namedItem1.getTextContent();
-                                                                enums.add(AndroidWidgetStore.getOrAddEnum(new AndroidWidgetAttrEnum(enumName, enumValue, enumOrFlagComment)));
-                                                                enumOrFlagComment = "";
-                                                                break;
-                                                            case "flag":
-                                                                Node namedItem2 = enumOrFlagOrCommentNode.getAttributes().getNamedItem("name");
-                                                                String flagName = namedItem2.getTextContent();
-                                                                Node namedItem3 = enumOrFlagOrCommentNode.getAttributes().getNamedItem("value");
-                                                                String flagValue = namedItem3.getTextContent();
-                                                                flags.add(AndroidWidgetStore.getOrAddFlag(new AndroidWidgetAttrFlag(flagName, flagValue, enumOrFlagComment)));
-                                                                enumOrFlagComment = "";
-                                                                break;
-                                                        }
-                                                }
-                                            }
-
-                                        }
-                                        if (!flags.isEmpty()) {
-                                            //add flag to format list and remove unknown
-                                            if (!attrType.contains(AndroidWidgetAttrType.Flag)) {
-                                                attrType.add(AndroidWidgetAttrType.Flag);
-                                                attrType.remove(AndroidWidgetAttrType.Unknown);
-                                            }
-                                        }
-                                        if (!enums.isEmpty()) {
-                                            //add enum to format list and remove unknown
-                                            if (!attrType.contains(AndroidWidgetAttrType.Enum)) {
-                                                attrType.add(AndroidWidgetAttrType.Enum);
-                                                attrType.remove(AndroidWidgetAttrType.Unknown);
-                                            }
-                                        }
-                                        widgetAttrs.add(AndroidWidgetStore.getOrAddAttr(new AndroidWidgetAttr(attrName, comment.trim(), flags, enums, attrType.toArray(new AndroidWidgetAttrType[attrType.size()]))));
-                                        comment = "";
-                                        break;
-                                }
-                                break;
-                        }
-
-                    }
+                    decodeAttrs(attrNodes, widgetAttrs);
                     AndroidWidget widget = new AndroidWidget(namespace, witgetName, superWidgetMap.get(witgetName));
-                    widget.getAttrs().addAll(widgetAttrs);
+                    List<AndroidWidgetAttr> widgetAttrsOut = new ArrayList<>();
+                    for (AndroidWidgetAttr widgetAttr : widgetAttrs) {
+                        if (widgetAttr.getAttrTypes().contains(AndroidWidgetAttrType.Unknown)) {
+                            AndroidWidgetAttr attr = globalAttrsMap.get(widgetAttr.getName());
+                            if (attr != null) {
+                                if (widgetAttr.getEnums().length > 0 || widgetAttr.getFlags().length > 0) {
+                                    System.out.println("org.nbandroid.netbeans.gradle.v2.layout.parsers.WidgetPlatformXmlParser.parseXml()");
+                                }
+                                widgetAttrsOut.add(AndroidWidgetStore.getOrAddAttr(attr));
+                            } else {
+                                widgetAttrsOut.add(AndroidWidgetStore.getOrAddAttr(widgetAttr));
+                            }
+                        } else {
+                            widgetAttrsOut.add(AndroidWidgetStore.getOrAddAttr(widgetAttr));
+                        }
+                    }
+                    widget.getAttrs().addAll(widgetAttrsOut);
                     widgetMap.put(witgetName, widget);
                 }
             } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException ex) {
@@ -185,9 +127,104 @@ public class WidgetPlatformXmlParser {
                 }
             }
             namespace.getWidgets().addAll(widgetMap.values());
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
         return namespace;
+    }
+
+    public static void decodeAttrs(NodeList attrNodes, List<AndroidWidgetAttr> widgetAttrs) throws DOMException {
+        String comment = "";
+        for (int j = 0; j < attrNodes.getLength(); j++) {
+            Node node = attrNodes.item(j);
+            switch (node.getNodeType()) {
+                case Node.COMMENT_NODE:
+                    if (!"".equals(comment)) {
+                        comment += "\n";
+                    }
+                    comment += node.getTextContent();
+                    break;
+                case Node.ELEMENT_NODE:
+                    String nodeName = node.getNodeName();
+                    switch (nodeName) {
+                        case "eat-comment":
+                            comment = "";
+                            break;
+                        case "attr":
+                            Node namedAttrNode = node.getAttributes().getNamedItem("name");
+                            String attrName = namedAttrNode.getTextContent();
+                            Node formatAttrNode = node.getAttributes().getNamedItem("format");
+                            String format = "unknown";
+                            if (formatAttrNode != null) {
+                                format = formatAttrNode.getTextContent();
+                            }
+                            List<AndroidWidgetAttrType> attrType = AndroidWidgetAttrType.decode(format);
+                            List<AndroidWidgetAttrEnum> enums = new ArrayList<>();
+                            List<AndroidWidgetAttrFlag> flags = new ArrayList<>();
+                            if (node.hasChildNodes()) {
+                                NodeList childNodes = node.getChildNodes();
+                                String enumOrFlagComment = "";
+                                for (int k = 0; k < childNodes.getLength(); k++) {
+                                    Node enumOrFlagOrCommentNode = childNodes.item(k);
+                                    switch (enumOrFlagOrCommentNode.getNodeType()) {
+                                        case Node.COMMENT_NODE:
+                                            if (!"".equals(enumOrFlagComment)) {
+                                                enumOrFlagComment += "\n";
+                                            }
+                                            enumOrFlagComment += enumOrFlagOrCommentNode.getTextContent();
+                                            break;
+                                        case Node.ELEMENT_NODE:
+                                            switch (enumOrFlagOrCommentNode.getNodeName()) {
+                                                case "eat-comment":
+                                                    enumOrFlagComment = "";
+                                                    break;
+                                                case "enum":
+                                                    Node namedItem = enumOrFlagOrCommentNode.getAttributes().getNamedItem("name");
+                                                    String enumName = namedItem.getTextContent();
+                                                    Node namedItem1 = enumOrFlagOrCommentNode.getAttributes().getNamedItem("value");
+                                                    String enumValue = namedItem1.getTextContent();
+                                                    enums.add(AndroidWidgetStore.getOrAddEnum(new AndroidWidgetAttrEnum(enumName, enumValue, enumOrFlagComment)));
+                                                    enumOrFlagComment = "";
+                                                    break;
+                                                case "flag":
+                                                    Node namedItem2 = enumOrFlagOrCommentNode.getAttributes().getNamedItem("name");
+                                                    String flagName = namedItem2.getTextContent();
+                                                    Node namedItem3 = enumOrFlagOrCommentNode.getAttributes().getNamedItem("value");
+                                                    String flagValue = namedItem3.getTextContent();
+                                                    flags.add(AndroidWidgetStore.getOrAddFlag(new AndroidWidgetAttrFlag(flagName, flagValue, enumOrFlagComment)));
+                                                    enumOrFlagComment = "";
+                                                    break;
+                                            }
+                                    }
+                                }
+
+                            }
+                            if (!flags.isEmpty()) {
+                                //add flag to format list and remove unknown
+                                if (!attrType.contains(AndroidWidgetAttrType.Flag)) {
+                                    attrType.add(AndroidWidgetAttrType.Flag);
+                                    attrType.remove(AndroidWidgetAttrType.Unknown);
+                                }
+                            }
+                            if (!enums.isEmpty()) {
+                                //add enum to format list and remove unknown
+                                if (!attrType.contains(AndroidWidgetAttrType.Enum)) {
+                                    attrType.add(AndroidWidgetAttrType.Enum);
+                                    attrType.remove(AndroidWidgetAttrType.Unknown);
+                                }
+                            }
+                            AndroidWidgetAttr widgetAttr = new AndroidWidgetAttr(attrName, comment.trim(), flags, enums, attrType.toArray(new AndroidWidgetAttrType[attrType.size()]));
+                            widgetAttrs.add(widgetAttr);
+                            comment = "";
+                            break;
+                        default:
+                            comment = "";
+                            break;
+                    }
+                    break;
+
+            }
+
+        }
     }
 }
