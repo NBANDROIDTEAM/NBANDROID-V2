@@ -57,22 +57,74 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
                         CompletionContextImpl context = new CompletionContextImpl(primaryFile, support, caretOffset);
                         if (context.initContext()) {
                             CompletionContext.CompletionType completionType = context.getCompletionType();
-                            HashMap<String, String> declaredNamespaces = context.getDeclaredNamespaces();
-                            String attribute = context.getAttribute();
-                            String typedChars = context.getTypedChars();
-                            List<QName> pathFromRoot = context.getPathFromRoot();
-                            if (!pathFromRoot.isEmpty()) {
-                                QName qname = pathFromRoot.get(pathFromRoot.size() - 1);
-                                String localPart = qname.getLocalPart();
-                                System.out.println("org.nbandroid.netbeans.gradle.v2.layout.completion.LayoutCompletionQuery.query()");
+                            switch (completionType) {
+                                case COMPLETION_TYPE_UNKNOWN:
+                                    break;
+                                case COMPLETION_TYPE_ATTRIBUTE:
+                                    makeAttribute(findPlatform, context, primaryFile, androidProject, resultSet, doc, caretOffset);
+                                    break;
+                                case COMPLETION_TYPE_ATTRIBUTE_VALUE:
+                                    makeAttributeValue(findPlatform, context, primaryFile, androidProject, resultSet, doc, caretOffset);
+                                    break;
+                                case COMPLETION_TYPE_ELEMENT:
+                                    makeElement(findPlatform, context, primaryFile, androidProject, resultSet, doc, caretOffset);
+                                    break;
+                                case COMPLETION_TYPE_ELEMENT_VALUE:
+                                    break;
+                                case COMPLETION_TYPE_ENTITY:
+                                    break;
+                                case COMPLETION_TYPE_NOTATION:
+                                    break;
+                                case COMPLETION_TYPE_DTD:
+                                    break;
+                                default:
+                                    throw new AssertionError(completionType.name());
+
                             }
+
                         }
-                        System.out.println("org.nbandroid.netbeans.gradle.v2.layout.completion.LayoutCompletionQuery.query()");
                     }
                 }
             }
         }
         resultSet.finish();
+    }
+
+    private void makeAttribute(AndroidJavaPlatform findPlatform, CompletionContextImpl context, FileObject primaryFile, AndroidProject androidProject, CompletionResultSet resultSet, Document doc, int caretOffset) {
+        HashMap<String, String> declaredNamespaces = context.getDeclaredNamespaces();
+        String typedChars = context.getTypedChars();
+        List<QName> pathFromRoot = context.getPathFromRoot();
+        String attributeRoot = null;
+        if (!pathFromRoot.isEmpty()) {
+            QName qname = pathFromRoot.get(pathFromRoot.size() - 1);
+            attributeRoot = qname.getLocalPart();
+        }
+        System.out.println("org.nbandroid.netbeans.gradle.v2.layout.completion.LayoutCompletionQuery.makeAttribute()");
+    }
+
+    private void makeAttributeValue(AndroidJavaPlatform findPlatform, CompletionContextImpl context, FileObject primaryFile, AndroidProject androidProject, CompletionResultSet resultSet, Document doc, int caretOffset) {
+        HashMap<String, String> declaredNamespaces = context.getDeclaredNamespaces();
+        String attribute = context.getAttribute();
+        String typedChars = context.getTypedChars();
+        String attributeRoot = null;
+        List<QName> pathFromRoot = context.getPathFromRoot();
+        if (!pathFromRoot.isEmpty()) {
+            QName qname = pathFromRoot.get(pathFromRoot.size() - 1);
+            attributeRoot = qname.getLocalPart();
+        }
+        System.out.println("org.nbandroid.netbeans.gradle.v2.layout.completion.LayoutCompletionQuery.makeAttributeValue()");
+    }
+
+    private void makeElement(AndroidJavaPlatform findPlatform, CompletionContextImpl context, FileObject primaryFile, AndroidProject androidProject, CompletionResultSet resultSet, Document doc, int caretOffset) {
+        HashMap<String, String> declaredNamespaces = context.getDeclaredNamespaces();
+        String typedChars = context.getTypedChars();
+        String elementRoot = null;
+        List<QName> pathFromRoot = context.getPathFromRoot();
+        if (!pathFromRoot.isEmpty()) {
+            QName qname = pathFromRoot.get(pathFromRoot.size() - 1);
+            elementRoot = qname.getLocalPart();
+        }
+        System.out.println("org.nbandroid.netbeans.gradle.v2.layout.completion.LayoutCompletionQuery.makeElement()");
     }
 
 }

@@ -5,15 +5,30 @@
  */
 package org.nbandroid.netbeans.gradle.v2.layout;
 
+import com.android.sdklib.IAndroidTarget;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
+import org.nbandroid.netbeans.gradle.query.GradlePlatformResolver;
+import org.nbandroid.netbeans.gradle.v2.layout.completion.analyzer.StyleableClassFileVisitor;
+import org.nbandroid.netbeans.gradle.v2.layout.completion.analyzer.StyleableResultCollector;
 import org.nbandroid.netbeans.gradle.v2.layout.parsers.WidgetPlatformXmlParser;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatform;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatformProvider8;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
@@ -60,11 +75,19 @@ public final class TestTopComponent extends TopComponent {
     private void initComponents() {
 
         jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
 
         org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(TestTopComponent.class, "TestTopComponent.jButton1.text")); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButton2, org.openide.util.NbBundle.getMessage(TestTopComponent.class, "TestTopComponent.jButton2.text")); // NOI18N
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
             }
         });
 
@@ -75,13 +98,17 @@ public final class TestTopComponent extends TopComponent {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jButton1)
-                .addContainerGap(294, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton2)
+                .addContainerGap(194, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton1)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton1)
+                    .addComponent(jButton2))
                 .addContainerGap(263, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -102,8 +129,36 @@ public final class TestTopComponent extends TopComponent {
         System.out.println("org.nbandroid.netbeans.gradle.v2.layout.TestTopComponent.jButton1ActionPerformed()");
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // TODO add your handling code here:
+        FileObject fo = FileUtil.toFileObject(new File("/veolia/EnergyManager/EnergyManager-Android/app/src/main/res/layout/activity_about.xml"));
+        Project owner = FileOwnerQuery.getOwner(fo);
+        GradlePlatformResolver resolver = owner.getLookup().lookup(GradlePlatformResolver.class);
+        GradleAndroidClassPathProvider classPathProvider = owner.getLookup().lookup(GradleAndroidClassPathProvider.class);
+        IAndroidTarget myTarget = resolver.findAndroidPlatform(owner).getAndroidTarget();
+        String attrsPath = myTarget.getPath(IAndroidTarget.ATTRIBUTES);
+        String attrsManifestPath = myTarget.getPath(IAndroidTarget.MANIFEST_ATTRIBUTES);
+        String witgets = myTarget.getPath(IAndroidTarget.WIDGETS);
+        String lay = myTarget.getPath(IAndroidTarget.LAYOUT_LIB);
+        List<ClassPath.Entry> entries = classPathProvider.getCompilePath().entries();
+        for (ClassPath.Entry entrie : entries) {
+            FileObject root = entrie.getRoot();
+            System.out.println("org.nbandroid.netbeans.gradle.v2.layout.TestTopComponent.jButton2ActionPerformed()");
+        }
+        try {
+            StyleableResultCollector resultCollector = StyleableClassFileVisitor.visitClass("ConstraintLayout", new FileInputStream("/jetty/NBSSOURCE/aa.class"));
+            System.out.println("org.nbandroid.netbeans.gradle.v2.layout.TestTopComponent.jButton2ActionPerformed()");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        System.out.println("org.nbandroid.netbeans.gradle.v2.layout.TestTopComponent.jButton2ActionPerformed()");
+
+
+    }//GEN-LAST:event_jButton2ActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     // End of variables declaration//GEN-END:variables
     @Override
     public void componentOpened() {
