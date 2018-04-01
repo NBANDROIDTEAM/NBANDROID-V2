@@ -7,9 +7,10 @@ package org.nbandroid.netbeans.gradle.v2.layout;
 
 import com.android.sdklib.IAndroidTarget;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
@@ -120,12 +121,11 @@ public final class TestTopComponent extends TopComponent {
         AndroidJavaPlatformProvider8 platformProvider8 = null;
         while (iterator.hasNext()) {
             JavaPlatformProvider next = iterator.next();
-            if(next instanceof AndroidJavaPlatformProvider8){
+            if (next instanceof AndroidJavaPlatformProvider8) {
                 platformProvider8 = (AndroidJavaPlatformProvider8) next;
             }
         }
-        WidgetPlatformXmlParser parser = new WidgetPlatformXmlParser();
-        AndroidWidgetNamespace namespace = parser.parseXml((AndroidJavaPlatform) platformProvider8.getDefaultPlatform());
+        AndroidWidgetNamespace namespace = WidgetPlatformXmlParser.parseAndroidPlatform((AndroidJavaPlatform) platformProvider8.getDefaultPlatform());
         System.out.println("org.nbandroid.netbeans.gradle.v2.layout.TestTopComponent.jButton1ActionPerformed()");
     }//GEN-LAST:event_jButton1ActionPerformed
 
@@ -141,18 +141,31 @@ public final class TestTopComponent extends TopComponent {
         String witgets = myTarget.getPath(IAndroidTarget.WIDGETS);
         String lay = myTarget.getPath(IAndroidTarget.LAYOUT_LIB);
         List<ClassPath.Entry> entries = classPathProvider.getCompilePath().entries();
+        long start = System.currentTimeMillis();
+        List<StyleableResultCollector> collectors = new ArrayList<>();
         for (ClassPath.Entry entrie : entries) {
             FileObject root = entrie.getRoot();
-            System.out.println("org.nbandroid.netbeans.gradle.v2.layout.TestTopComponent.jButton2ActionPerformed()");
-        }
-        try {
-            StyleableResultCollector resultCollector = StyleableClassFileVisitor.visitClass("ConstraintLayout", new FileInputStream("/jetty/NBSSOURCE/aa.class"));
-            System.out.println("org.nbandroid.netbeans.gradle.v2.layout.TestTopComponent.jButton2ActionPerformed()");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        System.out.println("org.nbandroid.netbeans.gradle.v2.layout.TestTopComponent.jButton2ActionPerformed()");
 
+            Collections.list(root.getChildren(true)).stream().forEach(nextElement -> {
+                if (nextElement.hasExt("class")) {
+                    try {
+                        StyleableResultCollector resultCollector = StyleableClassFileVisitor.visitClass(nextElement.getName(), nextElement.getInputStream());
+                        if (!resultCollector.getStyleables().isEmpty()) {
+                            collectors.add(resultCollector);
+                            if(resultCollector.getStyleables().size()>1){
+                                System.out.println("org.nbandroid.netbeans.gradle.v2.layout.TestTopComponent.jButton2ActionPerformed()");
+                            }
+                        }
+                    } catch (FileNotFoundException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+
+        }
+        long stop = System.currentTimeMillis();
+        long time = stop - start;
+        System.out.println("org.nbandroid.netbeans.gradle.v2.layout.TestTopComponent.jButton2ActionPerformed()");
 
     }//GEN-LAST:event_jButton2ActionPerformed
 

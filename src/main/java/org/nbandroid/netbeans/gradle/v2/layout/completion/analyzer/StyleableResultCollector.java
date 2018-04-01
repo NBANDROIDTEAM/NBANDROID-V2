@@ -48,6 +48,8 @@ public class StyleableResultCollector {
             String nextToken = tokenizer.nextToken();
             if (nextToken.length() > 0 && Character.isUpperCase(nextToken.charAt(0))) {
                 joiner.add(nextToken);
+            } else {
+                break;
             }
 
         }
@@ -72,5 +74,11 @@ public class StyleableResultCollector {
             this.className = null;
         }
     }
+
+    @Override
+    public String toString() {
+        return className + " [ " + superClassName + " ]"; //To change body of generated methods, choose Tools | Templates.
+    }
+
 
 }

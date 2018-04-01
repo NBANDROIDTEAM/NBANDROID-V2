@@ -6,13 +6,14 @@
 
 package org.nbandroid.netbeans.gradle.v2.layout;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  *
  * @author arsi
  */
-public class AndroidWidgetAttrEnum {
+public class AndroidWidgetAttrEnum implements Serializable {
 
     private final String name;
     private final String value;

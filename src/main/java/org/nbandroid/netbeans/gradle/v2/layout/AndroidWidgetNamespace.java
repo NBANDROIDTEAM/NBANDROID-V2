@@ -3,14 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.nbandroid.netbeans.gradle.v2.layout;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatform;
 
 /**
  *
@@ -19,38 +19,72 @@ import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatform;
 public class AndroidWidgetNamespace implements Serializable {
 
     private final String namespace;
-    private final AndroidJavaPlatform androidPlatform;
-    private final List<AndroidWidget> widgets = new ArrayList<>();
+    private final String androidPlatformHashString;
+    private final List<AndroidWidget> all = new ArrayList<>();
+    private final List<AndroidWidget> uknown = new ArrayList<>();
+    private final Map<String, AndroidWidget> layouts = new HashMap<>();
+    private final Map<String, AndroidWidget> layoutsParams = new HashMap<>();
+    private final Map<String, AndroidWidget> witgets = new HashMap<>();
+    private final Map<String, AndroidWidget> layoutsSimpleNames = new HashMap<>();
+    private final Map<String, AndroidWidget> layoutsParamsSimpleNames = new HashMap<>();
+    private final Map<String, AndroidWidget> witgetsSimpleNames = new HashMap<>();
 
-    public AndroidWidgetNamespace(String namespace, AndroidJavaPlatform androidPlatform) {
+    public AndroidWidgetNamespace(String namespace, String androidPlatformHashString) {
         this.namespace = namespace;
-        this.androidPlatform = androidPlatform;
+        this.androidPlatformHashString = androidPlatformHashString;
     }
 
     public String getNamespace() {
         return namespace;
     }
 
-    public List<AndroidWidget> getWidgets() {
-        return widgets;
+    public List<AndroidWidget> getAll() {
+        return all;
     }
 
-    public AndroidJavaPlatform getAndroidPlatform() {
-        return androidPlatform;
+    public String getAndroidPlatformHashString() {
+        return androidPlatformHashString;
     }
 
+    public List<AndroidWidget> getUknown() {
+        return uknown;
+    }
+
+    public Map<String, AndroidWidget> getLayouts() {
+        return layouts;
+    }
+
+    public Map<String, AndroidWidget> getLayoutsParams() {
+        return layoutsParams;
+    }
+
+    public Map<String, AndroidWidget> getWitgets() {
+        return witgets;
+    }
+
+    public Map<String, AndroidWidget> getLayoutsSimpleNames() {
+        return layoutsSimpleNames;
+    }
+
+    public Map<String, AndroidWidget> getLayoutsParamsSimpleNames() {
+        return layoutsParamsSimpleNames;
+    }
+
+    public Map<String, AndroidWidget> getWitgetsSimpleNames() {
+        return witgetsSimpleNames;
+    }
 
     @Override
     public String toString() {
-        return "AndroidWidgetNamespace{" + "namespace=" + namespace + ", widgets=" + widgets + '}';
+        return "AndroidWidgetNamespace{" + "namespace=" + namespace + ", widgets=" + all + '}';
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
         hash = 97 * hash + Objects.hashCode(this.namespace);
-        hash = 97 * hash + Objects.hashCode(this.androidPlatform);
-        hash = 97 * hash + Objects.hashCode(this.widgets);
+        hash = 97 * hash + Objects.hashCode(this.androidPlatformHashString);
+        hash = 97 * hash + Objects.hashCode(this.all);
         return hash;
     }
 
@@ -69,20 +103,13 @@ public class AndroidWidgetNamespace implements Serializable {
         if (!Objects.equals(this.namespace, other.namespace)) {
             return false;
         }
-        if (!Objects.equals(this.androidPlatform, other.androidPlatform)) {
-            if (this.androidPlatform != null && other.androidPlatform != null) {
-                if (!this.androidPlatform.getDisplayName().equals(other.androidPlatform.getDisplayName())) {
-                    return false;
-                }
-            } else {
-                return false;
-            }
+        if (!Objects.equals(this.androidPlatformHashString, other.androidPlatformHashString)) {
+            return false;
         }
-        if (!Objects.equals(this.widgets, other.widgets)) {
+        if (!Objects.equals(this.all, other.all)) {
             return false;
         }
         return true;
     }
-
 
 }

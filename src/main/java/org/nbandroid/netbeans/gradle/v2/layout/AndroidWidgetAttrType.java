@@ -18,6 +18,7 @@
  */
 package org.nbandroid.netbeans.gradle.v2.layout;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -26,7 +27,7 @@ import java.util.StringTokenizer;
  *
  * @author arsi
  */
-public enum AndroidWidgetAttrType {
+public enum AndroidWidgetAttrType implements Serializable {
     Boolean,
     Color,
     Reference,

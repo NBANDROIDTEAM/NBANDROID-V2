@@ -30,21 +30,27 @@ import java.util.Objects;
 public class AndroidWidget implements Serializable {
 
     private final AndroidWidgetNamespace nameSpace;
+    private final String nameSpacePath;
     private final String name;
     private final List<AndroidWidgetAttr> attrs = new ArrayList<>();
-    private final String superWidgetName;
+    private String superWidgetName;
     private AndroidWidget superWidget;
+    private String fullClassName;
+    private AndroidWidgetType androidWidgetType = AndroidWidgetType.ToBeDetermined;
 
-    public AndroidWidget(AndroidWidgetNamespace nameSpace, String name, String superWitgedName) {
+    public AndroidWidget(AndroidWidgetNamespace nameSpace, String name) {
         this.nameSpace = nameSpace;
         this.name = name;
-        if (superWitgedName != null) {
-            this.superWidgetName = superWitgedName;
-        } else if ("Object".equals(name)) {
-            this.superWidgetName = null;
+
+        if (nameSpace != null) {
+            this.nameSpacePath = nameSpace.getNamespace();
         } else {
-            this.superWidgetName = "Object";
+            this.nameSpacePath = null;
         }
+    }
+
+    public String getFullClassName() {
+        return fullClassName;
     }
 
     public AndroidWidgetNamespace getNameSpace() {
@@ -71,15 +77,39 @@ public class AndroidWidget implements Serializable {
         this.superWidget = superWidget;
     }
 
+    public AndroidWidgetType getAndroidWidgetType() {
+        return androidWidgetType;
+    }
+
+    public void setAndroidWidgetType(AndroidWidgetType androidWidgetType) {
+        if (androidWidgetType != null) {
+            this.androidWidgetType = androidWidgetType;
+        } else {
+            this.androidWidgetType = AndroidWidgetType.ToBeDetermined;
+        }
+    }
+
+    public void setSuperWidgetName(String superWidgetName) {
+        this.superWidgetName = superWidgetName;
+    }
+
+    public void setFullClassName(String fullClassName) {
+        this.fullClassName = fullClassName;
+    }
+
+    public String getNameSpacePath() {
+        return nameSpacePath;
+    }
+
     @Override
     public String toString() {
-        return "AndroidWidget{" + "nameSpace=" + nameSpace + ", name=" + name + ", attrs=" + attrs + '}';
+        return "AndroidWidget{" + ", name=" + name + ", type=" + androidWidgetType + ", attrs=" + attrs + "nameSpace=" + nameSpacePath + '}';
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 61 * hash + Objects.hashCode(this.nameSpace);
+        hash = 61 * hash + Objects.hashCode(this.nameSpacePath);
         hash = 61 * hash + Objects.hashCode(this.name);
         hash = 61 * hash + Objects.hashCode(this.attrs);
         hash = 61 * hash + Objects.hashCode(this.superWidgetName);
@@ -104,7 +134,7 @@ public class AndroidWidget implements Serializable {
         if (!Objects.equals(this.superWidgetName, other.superWidgetName)) {
             return false;
         }
-        if (!Objects.equals(this.nameSpace, other.nameSpace)) {
+        if (!Objects.equals(this.nameSpacePath, other.nameSpacePath)) {
             return false;
         }
         if (!Objects.equals(this.attrs, other.attrs)) {
