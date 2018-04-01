@@ -11,22 +11,22 @@ import java.io.Serializable;
  *
  * @author arsi
  */
-public enum AndroidWidgetType implements Serializable {
+public enum AndroidStyleableType implements Serializable {
     ToBeDetermined,
     Widget,
     Layout,
     LayoutParams,
     Other;
 
-    public static final AndroidWidgetType decode(String line) {
+    public static final AndroidStyleableType decode(String line) {
         switch (line.charAt(0)) {
             case 'L':
-                return AndroidWidgetType.Layout;
+                return AndroidStyleableType.Layout;
             case 'P':
-                return AndroidWidgetType.LayoutParams;
+                return AndroidStyleableType.LayoutParams;
             case 'W':
-                return AndroidWidgetType.Widget;
+                return AndroidStyleableType.Widget;
         }
-        return AndroidWidgetType.ToBeDetermined;
+        return AndroidStyleableType.ToBeDetermined;
     }
 }

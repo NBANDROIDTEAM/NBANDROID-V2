@@ -16,20 +16,20 @@ import java.util.Objects;
  *
  * @author arsi
  */
-public class AndroidWidgetNamespace implements Serializable {
+public class AndroidStyleableNamespace implements Serializable {
 
     private final String namespace;
     private final String androidPlatformHashString;
-    private final List<AndroidWidget> all = new ArrayList<>();
-    private final List<AndroidWidget> uknown = new ArrayList<>();
-    private final Map<String, AndroidWidget> layouts = new HashMap<>();
-    private final Map<String, AndroidWidget> layoutsParams = new HashMap<>();
-    private final Map<String, AndroidWidget> witgets = new HashMap<>();
-    private final Map<String, AndroidWidget> layoutsSimpleNames = new HashMap<>();
-    private final Map<String, AndroidWidget> layoutsParamsSimpleNames = new HashMap<>();
-    private final Map<String, AndroidWidget> witgetsSimpleNames = new HashMap<>();
+    private final List<AndroidStyleable> all = new ArrayList<>();
+    private final List<AndroidStyleable> uknown = new ArrayList<>();
+    private final Map<String, AndroidStyleable> layouts = new HashMap<>();
+    private final Map<String, AndroidStyleable> layoutsParams = new HashMap<>();
+    private final Map<String, AndroidStyleable> witgets = new HashMap<>();
+    private final Map<String, AndroidStyleable> layoutsSimpleNames = new HashMap<>();
+    private final Map<String, AndroidStyleable> layoutsParamsSimpleNames = new HashMap<>();
+    private final Map<String, AndroidStyleable> witgetsSimpleNames = new HashMap<>();
 
-    public AndroidWidgetNamespace(String namespace, String androidPlatformHashString) {
+    public AndroidStyleableNamespace(String namespace, String androidPlatformHashString) {
         this.namespace = namespace;
         this.androidPlatformHashString = androidPlatformHashString;
     }
@@ -38,7 +38,7 @@ public class AndroidWidgetNamespace implements Serializable {
         return namespace;
     }
 
-    public List<AndroidWidget> getAll() {
+    public List<AndroidStyleable> getAll() {
         return all;
     }
 
@@ -46,37 +46,37 @@ public class AndroidWidgetNamespace implements Serializable {
         return androidPlatformHashString;
     }
 
-    public List<AndroidWidget> getUknown() {
+    public List<AndroidStyleable> getUknown() {
         return uknown;
     }
 
-    public Map<String, AndroidWidget> getLayouts() {
+    public Map<String, AndroidStyleable> getLayouts() {
         return layouts;
     }
 
-    public Map<String, AndroidWidget> getLayoutsParams() {
+    public Map<String, AndroidStyleable> getLayoutsParams() {
         return layoutsParams;
     }
 
-    public Map<String, AndroidWidget> getWitgets() {
+    public Map<String, AndroidStyleable> getWitgets() {
         return witgets;
     }
 
-    public Map<String, AndroidWidget> getLayoutsSimpleNames() {
+    public Map<String, AndroidStyleable> getLayoutsSimpleNames() {
         return layoutsSimpleNames;
     }
 
-    public Map<String, AndroidWidget> getLayoutsParamsSimpleNames() {
+    public Map<String, AndroidStyleable> getLayoutsParamsSimpleNames() {
         return layoutsParamsSimpleNames;
     }
 
-    public Map<String, AndroidWidget> getWitgetsSimpleNames() {
+    public Map<String, AndroidStyleable> getWitgetsSimpleNames() {
         return witgetsSimpleNames;
     }
 
     @Override
     public String toString() {
-        return "AndroidWidgetNamespace{" + "namespace=" + namespace + ", widgets=" + all + '}';
+        return "AndroidStyleableNamespace{" + "namespace=" + namespace + ", Styleable=" + all + '}';
     }
 
     @Override
@@ -99,7 +99,7 @@ public class AndroidWidgetNamespace implements Serializable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final AndroidWidgetNamespace other = (AndroidWidgetNamespace) obj;
+        final AndroidStyleableNamespace other = (AndroidStyleableNamespace) obj;
         if (!Objects.equals(this.namespace, other.namespace)) {
             return false;
         }

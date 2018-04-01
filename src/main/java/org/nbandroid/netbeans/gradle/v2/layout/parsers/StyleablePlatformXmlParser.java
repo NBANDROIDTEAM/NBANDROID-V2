@@ -22,14 +22,14 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import org.nbandroid.netbeans.gradle.v2.layout.AndroidWidget;
-import org.nbandroid.netbeans.gradle.v2.layout.AndroidWidgetAttr;
-import org.nbandroid.netbeans.gradle.v2.layout.AndroidWidgetAttrEnum;
-import org.nbandroid.netbeans.gradle.v2.layout.AndroidWidgetAttrFlag;
-import org.nbandroid.netbeans.gradle.v2.layout.AndroidWidgetAttrType;
-import org.nbandroid.netbeans.gradle.v2.layout.AndroidWidgetNamespace;
-import org.nbandroid.netbeans.gradle.v2.layout.AndroidWidgetStore;
-import org.nbandroid.netbeans.gradle.v2.layout.AndroidWidgetType;
+import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleable;
+import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableAttr;
+import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableAttrEnum;
+import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableAttrFlag;
+import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableAttrType;
+import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableNamespace;
+import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableStore;
+import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableType;
 import org.nbandroid.netbeans.gradle.v2.layout.completion.analyzer.StyleableClassFileVisitor;
 import org.nbandroid.netbeans.gradle.v2.layout.completion.analyzer.StyleableResultCollector;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatform;
@@ -47,7 +47,7 @@ import org.xml.sax.SAXException;
  *
  * @author arsi
  */
-public class WidgetPlatformXmlParser {
+public class StyleablePlatformXmlParser {
 
     /**
      * get last token from full class name
@@ -85,28 +85,28 @@ public class WidgetPlatformXmlParser {
      * @param androidPlatform
      * @return
      */
-    public static final AndroidWidgetNamespace parseAndroidPlatform(AndroidJavaPlatform androidPlatform) {
-        AndroidWidgetNamespace namespace = new AndroidWidgetNamespace("http://schemas.android.com/apk/res/android", androidPlatform.getHashString());
+    public static final AndroidStyleableNamespace parseAndroidPlatform(AndroidJavaPlatform androidPlatform) {
+        AndroidStyleableNamespace namespace = new AndroidStyleableNamespace("http://schemas.android.com/apk/res/android", androidPlatform.getHashString());
         try {
-            // Full widget name -> Full super class name, from data/widgets.txt
-            Map<String, String> superWidgetMap = new HashMap<>();
-            //Full widget name -> widget type, from data/widgets.txt
-            Map<String, AndroidWidgetType> typeWidgetMap = new HashMap<>();
-            // Simple widget name -> Full widget name, from data/widgets.txt
-            Map<String, String> fullNameWidgetMap = new HashMap<>();
-            // Simple widget name -> Widget, from xml parser
-            Map<String, AndroidWidget> widgetMap = new HashMap<>();
-            // Full widget name -> Widget, after widget update from from data/widgets.txt and classes
-            Map<String, AndroidWidget> fullWidgetMap = new HashMap<>();
-            //Create java.lang.Object Widget, as basic super class
-            AndroidWidget objectWidget = new AndroidWidget(namespace, "Object");
-            objectWidget.setFullClassName("java.lang.Object");
-            objectWidget.setAndroidWidgetType(AndroidWidgetType.Other);
-            widgetMap.put("Object", objectWidget);
+            // Full styleable name -> Full super class name, from data/widgets.txt
+            Map<String, String> superStyleableMap = new HashMap<>();
+            //Full styleable name -> styleable type, from data/widgetstxt
+            Map<String, AndroidStyleableType> typeStyleableMap = new HashMap<>();
+            // Simple styleable name -> Full styleable name, from data/widgets.txt
+            Map<String, String> fullNameStyleableMap = new HashMap<>();
+            // Simple styleable name -> Styleable, from xml parser
+            Map<String, AndroidStyleable> styleableMap = new HashMap<>();
+            // Full styleable name -> Styleable, after styleable update from from data/widgets.txt and classes
+            Map<String, AndroidStyleable> fullStyleableMap = new HashMap<>();
+            //Create java.lang.Object Styleable, as basic super class
+            AndroidStyleable objectStyleable = new AndroidStyleable(namespace, "Object");
+            objectStyleable.setFullClassName("java.lang.Object");
+            objectStyleable.setAndroidStyleableType(AndroidStyleableType.Other);
+            styleableMap.put("Object", objectStyleable);
             //find FileObjects
             FileObject platformDir = FileUtil.toFileObject(androidPlatform.getPlatformFolder());
             FileObject attrFo = platformDir.getFileObject("data/res/values/attrs.xml");
-            FileObject widgetFo = platformDir.getFileObject("data/widgets.txt");
+            FileObject styleableFo = platformDir.getFileObject("data/widgets.txt");
             FileObject androidJar = platformDir.getFileObject("android.jar");
             FileObject layoutLibJar = platformDir.getFileObject("data/layoutlib.jar");
             List<FileObject> jars = new ArrayList<>();
@@ -115,102 +115,102 @@ public class WidgetPlatformXmlParser {
             // Make class map from jars
             ClassScanResult scanClasses = scanClasses(jars);
             //decode data/widgets.txt
-            List<String> asLines = widgetFo.asLines();
+            List<String> asLines = styleableFo.asLines();
             for (String line : asLines) {
-                AndroidWidgetType androidWidgetType = AndroidWidgetType.decode(line);
+                AndroidStyleableType androidStyleableType = AndroidStyleableType.decode(line);
                 line = line.substring(1);
                 StringTokenizer tok = new StringTokenizer(line, " ", false);
                 if (tok.countTokens() >= 2) {
                     String fullName = tok.nextToken();
                     while (tok.hasMoreElements()) {
-                        String widgetName = getLastToken(fullName, ".");
-                        widgetName = updateMethodName(widgetName, fullName);
-                        fullNameWidgetMap.put(widgetName, fullName);
-                        String superWidgetName = tok.nextToken();
-                        superWidgetMap.put(fullName, superWidgetName);
-                        typeWidgetMap.put(fullName, androidWidgetType);
-                        fullName = superWidgetName;
+                        String styleableName = getLastToken(fullName, ".");
+                        styleableName = updateMethodName(styleableName, fullName);
+                        fullNameStyleableMap.put(styleableName, fullName);
+                        String superStyleableName = tok.nextToken();
+                        superStyleableMap.put(fullName, superStyleableName);
+                        typeStyleableMap.put(fullName, androidStyleableType);
+                        fullName = superStyleableName;
                     }
 
                 }
             }
             //parse XML file
-            parseXml(attrFo, namespace, widgetMap);
+            parseXml(attrFo, namespace, styleableMap);
             //assign full class names from data/widgets.txt
-            for (Map.Entry<String, AndroidWidget> entry : widgetMap.entrySet()) {
-                AndroidWidget widget = entry.getValue();
-                String fullName = fullNameWidgetMap.get(widget.getName());
+            for (Map.Entry<String, AndroidStyleable> entry : styleableMap.entrySet()) {
+                AndroidStyleable styleable = entry.getValue();
+                String fullName = fullNameStyleableMap.get(styleable.getName());
                 if (fullName != null) {
-                    widget.setFullClassName(fullName);
-                    fullWidgetMap.put(fullName, widget);
+                    styleable.setFullClassName(fullName);
+                    fullStyleableMap.put(fullName, styleable);
                 }
             }
             //assign full class names from scanned classes
-            for (Map.Entry<String, AndroidWidget> entry : widgetMap.entrySet()) {
-                AndroidWidget widget = entry.getValue();
-                StyleableResultCollector result = scanClasses.simpleNameMap.get(widget.getName());
+            for (Map.Entry<String, AndroidStyleable> entry : styleableMap.entrySet()) {
+                AndroidStyleable styleable = entry.getValue();
+                StyleableResultCollector result = scanClasses.simpleNameMap.get(styleable.getName());
                 if (result != null) {
                     String className = result.getClassName().replace("$", ".");
-                    widget.setFullClassName(className);
-                    fullWidgetMap.put(className, widget);
+                    styleable.setFullClassName(className);
+                    fullStyleableMap.put(className, styleable);
                     if (result.getSuperClassName() != null) { //java.lang.Object has no super class
-                        superWidgetMap.put(className, result.getSuperClassName().replace("$", "."));
+                        superStyleableMap.put(className, result.getSuperClassName().replace("$", "."));
                     }
                 }
             }
-            //assign super widget and type
-            for (Map.Entry<String, AndroidWidget> entry : widgetMap.entrySet()) {
-                AndroidWidget widget = entry.getValue();
-                if (widget.getFullClassName() != null) {
-                    widget.setAndroidWidgetType(typeWidgetMap.get(widget.getFullClassName()));
-                    widget.setSuperWidgetName(superWidgetMap.get(widget.getFullClassName()));
-                    widget.setSuperWidget(fullWidgetMap.get(widget.getSuperWidgetName()));
+            //assign super styleable and type
+            for (Map.Entry<String, AndroidStyleable> entry : styleableMap.entrySet()) {
+                AndroidStyleable styleable = entry.getValue();
+                if (styleable.getFullClassName() != null) {
+                    styleable.setAndroidStyleableType(typeStyleableMap.get(styleable.getFullClassName()));
+                    styleable.setSuperStyleableName(superStyleableMap.get(styleable.getFullClassName()));
+                    styleable.setSuperStyleable(fullStyleableMap.get(styleable.getSuperStyleableName()));
                 }
             }
-            //assign widget type from super class, for scanned classes
-            for (Map.Entry<String, AndroidWidget> entry : widgetMap.entrySet()) {
-                AndroidWidget widget = entry.getValue();
-                if (widget.getSuperWidget() != null && widget.getAndroidWidgetType() == AndroidWidgetType.ToBeDetermined) {
-                    widget.setAndroidWidgetType(widget.getSuperWidget().getAndroidWidgetType());
+            //assign styleable type from super class, for scanned classes
+            for (Map.Entry<String, AndroidStyleable> entry : styleableMap.entrySet()) {
+                AndroidStyleable styleable = entry.getValue();
+                if (styleable.getSuperStyleable() != null && styleable.getAndroidStyleableType() == AndroidStyleableType.ToBeDetermined) {
+                    styleable.setAndroidStyleableType(styleable.getSuperStyleable().getAndroidStyleableType());
                 }
             }
-            //sort widgets
-            List<AndroidWidget> uknown = new ArrayList<>();
-            Map<String, AndroidWidget> layouts = new HashMap<>();
-            Map<String, AndroidWidget> layoutsSimple = new HashMap<>();
-            Map<String, AndroidWidget> layoutsParams = new HashMap<>();
-            Map<String, AndroidWidget> layoutsParamsSimple = new HashMap<>();
-            Map<String, AndroidWidget> witgets = new HashMap<>();
-            Map<String, AndroidWidget> witgetsSimple = new HashMap<>();
-            for (Map.Entry<String, AndroidWidget> entry : widgetMap.entrySet()) {
-                AndroidWidget widget = entry.getValue();
-                String superWidgetName = widget.getSuperWidgetName();
-                if (superWidgetName != null) {
-                    widget.setSuperWidget(widgetMap.get(superWidgetName));
+            //sort styleables
+            List<AndroidStyleable> uknown = new ArrayList<>();
+            Map<String, AndroidStyleable> layouts = new HashMap<>();
+            Map<String, AndroidStyleable> layoutsSimple = new HashMap<>();
+            Map<String, AndroidStyleable> layoutsParams = new HashMap<>();
+            Map<String, AndroidStyleable> layoutsParamsSimple = new HashMap<>();
+            Map<String, AndroidStyleable> witgets = new HashMap<>();
+            Map<String, AndroidStyleable> witgetsSimple = new HashMap<>();
+            for (Map.Entry<String, AndroidStyleable> entry : styleableMap.entrySet()) {
+                AndroidStyleable styleable = entry.getValue();
+                String superStyleableName = styleable.getSuperStyleableName();
+                if (superStyleableName != null) {
+                    styleable.setSuperStyleable(styleableMap.get(superStyleableName));
                 }
-                switch (widget.getAndroidWidgetType()) {
+                switch (styleable.getAndroidStyleableType()) {
 
                     case Widget:
-                        witgets.put(widget.getFullClassName(), widget);
-                        witgetsSimple.put(widget.getName(), widget);
+                        witgets.put(styleable.getFullClassName(), styleable);
+                        witgetsSimple.put(styleable.getName(), styleable);
                         break;
                     case Layout:
-                        layouts.put(widget.getFullClassName(), widget);
-                        layoutsSimple.put(widget.getName(), widget);
+                        layouts.put(styleable.getFullClassName(), styleable);
+                        layoutsSimple.put(styleable.getName(), styleable);
                         break;
                     case LayoutParams:
-                        layoutsParams.put(widget.getFullClassName(), widget);
-                        layoutsParamsSimple.put(widget.getName(), widget);
+                        layoutsParams.put(styleable.getFullClassName(), styleable);
+                        layoutsParamsSimple.put(styleable.getName(), styleable);
                         break;
                     case Other:
                     case ToBeDetermined:
-                        uknown.add(widget);
+                        uknown.add(styleable);
                         break;
 
                 }
             }
             //store Styleables
-            namespace.getAll().addAll(widgetMap.values());
+            namespace.getAll().addAll(styleableMap.values());
             namespace.getLayouts().putAll(layouts);
             namespace.getLayoutsSimpleNames().putAll(layoutsSimple);
             namespace.getLayoutsParams().putAll(layoutsParams);
@@ -225,29 +225,30 @@ public class WidgetPlatformXmlParser {
     }
 
     /**
-     * Parse widgets from xml, return basic widget with name and attributes
+     * Parse styleables from xml, return basic styleable with name and
+     * attributes
      *
      * @param attrFo FileObject xml file data/res/values/attrs.xml or
      * data/res/values/values.xml for .aar
      * @param namespace NamesPaspace
-     * @param widgetMap Map to add SimpleWidgetName->Widget
+     * @param styleableMap Map to add SimpleStyleableName->Styleable
      */
-    public static void parseXml(FileObject attrFo, AndroidWidgetNamespace namespace, Map<String, AndroidWidget> widgetMap) {
+    public static void parseXml(FileObject attrFo, AndroidStyleableNamespace namespace, Map<String, AndroidStyleable> styleableMap) {
         try (FileInputStream fileIS = new FileInputStream(attrFo.getPath())) {
             DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
             builderFactory.setIgnoringComments(false);
             DocumentBuilder builder = builderFactory.newDocumentBuilder();
             Document xmlDocument = builder.parse(fileIS);
             XPath xPath = XPathFactory.newInstance().newXPath();
-            // Parse global ATTS, there are referenced fro widget ATTRS
+            // Parse global ATTS, there are referenced fro styleable ATTRS
             NodeList allNodeList = (NodeList) xPath.compile("/resources").evaluate(xmlDocument, XPathConstants.NODESET);
             Node rootNode = allNodeList.item(0);
             NodeList childNodes = rootNode.getChildNodes();
-            List<AndroidWidgetAttr> globalWidgetAttrs = new ArrayList<>();
-            decodeAttrs(childNodes, globalWidgetAttrs);
-            Map<String, AndroidWidgetAttr> globalAttrsMap = new HashMap<>();
-            for (AndroidWidgetAttr globalWidgetAttr : globalWidgetAttrs) {
-                globalAttrsMap.put(globalWidgetAttr.getName(), globalWidgetAttr);
+            List<AndroidStyleableAttr> globalStyleableAttrs = new ArrayList<>();
+            decodeAttrs(childNodes, globalStyleableAttrs);
+            Map<String, AndroidStyleableAttr> globalAttrsMap = new HashMap<>();
+            for (AndroidStyleableAttr globalStyleableAttr : globalStyleableAttrs) {
+                globalAttrsMap.put(globalStyleableAttr.getName(), globalStyleableAttr);
             }
             //
             String expression = "/resources/declare-styleable";
@@ -261,27 +262,24 @@ public class WidgetPlatformXmlParser {
                     witgetName = witgetName.replace("_", ".") + "Params";
                 }
                 NodeList attrNodes = item.getChildNodes();
-                List<AndroidWidgetAttr> widgetAttrs = new ArrayList<>();
-                decodeAttrs(attrNodes, widgetAttrs);
-                AndroidWidget widget = new AndroidWidget(namespace, witgetName);
-                List<AndroidWidgetAttr> widgetAttrsOut = new ArrayList<>();
-                for (AndroidWidgetAttr widgetAttr : widgetAttrs) {
-                    if (widgetAttr.getAttrTypes().contains(AndroidWidgetAttrType.Unknown)) {
-                        AndroidWidgetAttr attr = globalAttrsMap.get(widgetAttr.getName());
+                List<AndroidStyleableAttr> styleableAttrs = new ArrayList<>();
+                decodeAttrs(attrNodes, styleableAttrs);
+                AndroidStyleable styleable = new AndroidStyleable(namespace, witgetName);
+                List<AndroidStyleableAttr> styleableAttrsOut = new ArrayList<>();
+                for (AndroidStyleableAttr styleableAttr : styleableAttrs) {
+                    if (styleableAttr.getAttrTypes().contains(AndroidStyleableAttrType.Unknown)) {
+                        AndroidStyleableAttr attr = globalAttrsMap.get(styleableAttr.getName());
                         if (attr != null) {
-                            if (widgetAttr.getEnums().length > 0 || widgetAttr.getFlags().length > 0) {
-                                System.out.println("org.nbandroid.netbeans.gradle.v2.layout.parsers.WidgetPlatformXmlParser.parseXml()");
-                            }
-                            widgetAttrsOut.add(AndroidWidgetStore.getOrAddAttr(attr));
+                            styleableAttrsOut.add(AndroidStyleableStore.getOrAddAttr(attr));
                         } else {
-                            widgetAttrsOut.add(AndroidWidgetStore.getOrAddAttr(widgetAttr));
+                            styleableAttrsOut.add(AndroidStyleableStore.getOrAddAttr(styleableAttr));
                         }
                     } else {
-                        widgetAttrsOut.add(AndroidWidgetStore.getOrAddAttr(widgetAttr));
+                        styleableAttrsOut.add(AndroidStyleableStore.getOrAddAttr(styleableAttr));
                     }
                 }
-                widget.getAttrs().addAll(widgetAttrsOut);
-                widgetMap.put(witgetName, widget);
+                styleable.getAttrs().addAll(styleableAttrsOut);
+                styleableMap.put(witgetName, styleable);
             }
         } catch (IOException | ParserConfigurationException | SAXException | DOMException | XPathExpressionException ex) {
             Exceptions.printStackTrace(ex);
@@ -334,25 +332,25 @@ public class WidgetPlatformXmlParser {
     /**
      * Convert xml name to inner class simple name
      *
-     * @param widgetName
+     * @param styleableName
      * @param fullName
      * @return
      */
-    public static String updateMethodName(String widgetName, String fullName) {
-        if (widgetName.endsWith("LayoutParams")) {
-            widgetName = getSecondLastToken(fullName, ".") + "." + widgetName;
+    public static String updateMethodName(String styleableName, String fullName) {
+        if (styleableName.endsWith("LayoutParams")) {
+            styleableName = getSecondLastToken(fullName, ".") + "." + styleableName;
         }
-        return widgetName;
+        return styleableName;
     }
 
     /**
      * Parse attibutes from xml
      *
      * @param attrNodes
-     * @param widgetAttrs
+     * @param styleableAttrs
      * @throws DOMException
      */
-    public static void decodeAttrs(NodeList attrNodes, List<AndroidWidgetAttr> widgetAttrs) throws DOMException {
+    public static void decodeAttrs(NodeList attrNodes, List<AndroidStyleableAttr> styleableAttrs) throws DOMException {
         String comment = "";
         for (int j = 0; j < attrNodes.getLength(); j++) {
             Node node = attrNodes.item(j);
@@ -377,9 +375,9 @@ public class WidgetPlatformXmlParser {
                             if (formatAttrNode != null) {
                                 format = formatAttrNode.getTextContent();
                             }
-                            List<AndroidWidgetAttrType> attrType = AndroidWidgetAttrType.decode(format);
-                            List<AndroidWidgetAttrEnum> enums = new ArrayList<>();
-                            List<AndroidWidgetAttrFlag> flags = new ArrayList<>();
+                            List<AndroidStyleableAttrType> attrType = AndroidStyleableAttrType.decode(format);
+                            List<AndroidStyleableAttrEnum> enums = new ArrayList<>();
+                            List<AndroidStyleableAttrFlag> flags = new ArrayList<>();
                             if (node.hasChildNodes()) {
                                 NodeList childNodes = node.getChildNodes();
                                 String enumOrFlagComment = "";
@@ -402,7 +400,7 @@ public class WidgetPlatformXmlParser {
                                                     String enumName = namedItem.getTextContent();
                                                     Node namedItem1 = enumOrFlagOrCommentNode.getAttributes().getNamedItem("value");
                                                     String enumValue = namedItem1.getTextContent();
-                                                    enums.add(AndroidWidgetStore.getOrAddEnum(new AndroidWidgetAttrEnum(enumName, enumValue, enumOrFlagComment)));
+                                                    enums.add(AndroidStyleableStore.getOrAddEnum(new AndroidStyleableAttrEnum(enumName, enumValue, enumOrFlagComment)));
                                                     enumOrFlagComment = "";
                                                     break;
                                                 case "flag":
@@ -410,7 +408,7 @@ public class WidgetPlatformXmlParser {
                                                     String flagName = namedItem2.getTextContent();
                                                     Node namedItem3 = enumOrFlagOrCommentNode.getAttributes().getNamedItem("value");
                                                     String flagValue = namedItem3.getTextContent();
-                                                    flags.add(AndroidWidgetStore.getOrAddFlag(new AndroidWidgetAttrFlag(flagName, flagValue, enumOrFlagComment)));
+                                                    flags.add(AndroidStyleableStore.getOrAddFlag(new AndroidStyleableAttrFlag(flagName, flagValue, enumOrFlagComment)));
                                                     enumOrFlagComment = "";
                                                     break;
                                             }
@@ -420,20 +418,20 @@ public class WidgetPlatformXmlParser {
                             }
                             if (!flags.isEmpty()) {
                                 //add flag to format list and remove unknown
-                                if (!attrType.contains(AndroidWidgetAttrType.Flag)) {
-                                    attrType.add(AndroidWidgetAttrType.Flag);
-                                    attrType.remove(AndroidWidgetAttrType.Unknown);
+                                if (!attrType.contains(AndroidStyleableAttrType.Flag)) {
+                                    attrType.add(AndroidStyleableAttrType.Flag);
+                                    attrType.remove(AndroidStyleableAttrType.Unknown);
                                 }
                             }
                             if (!enums.isEmpty()) {
                                 //add enum to format list and remove unknown
-                                if (!attrType.contains(AndroidWidgetAttrType.Enum)) {
-                                    attrType.add(AndroidWidgetAttrType.Enum);
-                                    attrType.remove(AndroidWidgetAttrType.Unknown);
+                                if (!attrType.contains(AndroidStyleableAttrType.Enum)) {
+                                    attrType.add(AndroidStyleableAttrType.Enum);
+                                    attrType.remove(AndroidStyleableAttrType.Unknown);
                                 }
                             }
-                            AndroidWidgetAttr widgetAttr = new AndroidWidgetAttr(attrName, comment.trim(), flags, enums, attrType.toArray(new AndroidWidgetAttrType[attrType.size()]));
-                            widgetAttrs.add(widgetAttr);
+                            AndroidStyleableAttr styleableAttr = new AndroidStyleableAttr(attrName, comment.trim(), flags, enums, attrType.toArray(new AndroidStyleableAttrType[attrType.size()]));
+                            styleableAttrs.add(styleableAttr);
                             comment = "";
                             break;
                         default:

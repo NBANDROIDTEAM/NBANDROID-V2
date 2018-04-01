@@ -12,13 +12,13 @@ import java.util.Objects;
  *
  * @author arsi
  */
-public class AndroidWidgetAttrFlag implements Serializable {
+public class AndroidStyleableAttrFlag implements Serializable {
 
     private final String name;
     private final String value;
     private final String comment;
 
-    public AndroidWidgetAttrFlag(String name, String value, String comment) {
+    public AndroidStyleableAttrFlag(String name, String value, String comment) {
         this.name = name;
         this.value = value;
         this.comment = comment;
@@ -56,7 +56,7 @@ public class AndroidWidgetAttrFlag implements Serializable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final AndroidWidgetAttrFlag other = (AndroidWidgetAttrFlag) obj;
+        final AndroidStyleableAttrFlag other = (AndroidStyleableAttrFlag) obj;
         if (!Objects.equals(this.name, other.name)) {
             return false;
         }

@@ -22,7 +22,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
-import org.nbandroid.netbeans.gradle.v2.layout.parsers.WidgetPlatformXmlParser;
+import org.nbandroid.netbeans.gradle.v2.layout.parsers.StyleablePlatformXmlParser;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatform;
 import static org.nbandroid.netbeans.gradle.v2.sdk.ui.SDKVisualPanel2Download.NBANDROID_FOLDER;
 import org.openide.modules.Places;
@@ -32,23 +32,23 @@ import org.openide.util.Exceptions;
  *
  * @author arsi
  */
-public class AndroidWidgetStore {
+public class AndroidStyleableStore {
 
-    private static final List<AndroidWidgetAttrEnum> ATTR_ENUMS = new ArrayList<>();
-    private static final List<AndroidWidgetAttrFlag> ATTR_FLAGS = new ArrayList<>();
-    private static final List<AndroidWidgetAttr> WIDGET_ATTRS = new ArrayList<>();
+    private static final List<AndroidStyleableAttrEnum> ATTR_ENUMS = new ArrayList<>();
+    private static final List<AndroidStyleableAttrFlag> ATTR_FLAGS = new ArrayList<>();
+    private static final List<AndroidStyleableAttr> STYLEABLE_ATTRS = new ArrayList<>();
     private static final ReentrantLock LOCK = new ReentrantLock(true);
-    private static final Map<String, AndroidWidgetNamespace> PLATFORM_WIDGET_NAMESPACES = new HashMap<>();
-    private static final String WIDGET_CACHE_FILENAME = "platformWidgetCache.obj";
-    private static final File cacheSubfile = Places.getCacheSubfile(NBANDROID_FOLDER + WIDGET_CACHE_FILENAME);
+    private static final Map<String, AndroidStyleableNamespace> PLATFORM_STYLEABLE_NAMESPACES_MAP = new HashMap<>();
+    private static final String STYLEABLE_CACHE_FILENAME_STRING = "platformStyleableCache.obj";
+    private static final File cacheSubfile = Places.getCacheSubfile(NBANDROID_FOLDER + STYLEABLE_CACHE_FILENAME_STRING);
     private static final ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
     private static final AtomicBoolean saveFlag = new AtomicBoolean(false);
 
     static {
         if (cacheSubfile.exists()) {
             try (ObjectInputStream objStream = new ObjectInputStream(new FileInputStream(cacheSubfile))) {
-                Map<String, AndroidWidgetNamespace> cacheObj = (Map<String, AndroidWidgetNamespace>) objStream.readObject();
-                PLATFORM_WIDGET_NAMESPACES.putAll(cacheObj);
+                Map<String, AndroidStyleableNamespace> cacheObj = (Map<String, AndroidStyleableNamespace>) objStream.readObject();
+                PLATFORM_STYLEABLE_NAMESPACES_MAP.putAll(cacheObj);
                 removeInvalidPlatforms();
             } catch (IOException | ClassNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
@@ -57,13 +57,13 @@ public class AndroidWidgetStore {
 
     }
 
-    public static final AndroidWidgetNamespace getPlatformWidgetNamespace(AndroidJavaPlatform androidJavaPlatform) {
+    public static final AndroidStyleableNamespace getPlatformStyleableNamespace(AndroidJavaPlatform androidJavaPlatform) {
         LOCK.lock();
         try {
-            AndroidWidgetNamespace namespace = PLATFORM_WIDGET_NAMESPACES.get(androidJavaPlatform.getPlatformFolder().toString());
+            AndroidStyleableNamespace namespace = PLATFORM_STYLEABLE_NAMESPACES_MAP.get(androidJavaPlatform.getPlatformFolder().toString());
             if (namespace == null) {
-                namespace = WidgetPlatformXmlParser.parseAndroidPlatform(androidJavaPlatform);
-                PLATFORM_WIDGET_NAMESPACES.put(androidJavaPlatform.getPlatformFolder().toString(), namespace);
+                namespace = StyleablePlatformXmlParser.parseAndroidPlatform(androidJavaPlatform);
+                PLATFORM_STYLEABLE_NAMESPACES_MAP.put(androidJavaPlatform.getPlatformFolder().toString(), namespace);
                 if (saveFlag.compareAndSet(false, true)) {
                     pool.schedule(new Runnable() {
                         @Override
@@ -71,7 +71,7 @@ public class AndroidWidgetStore {
                             saveFlag.set(false);
                             removeInvalidPlatforms();
                             try (ObjectOutputStream oStream = new ObjectOutputStream(new FileOutputStream(cacheSubfile))) {
-                                oStream.writeObject(PLATFORM_WIDGET_NAMESPACES);
+                                oStream.writeObject(PLATFORM_STYLEABLE_NAMESPACES_MAP);
                                 oStream.flush();
                             } catch (FileNotFoundException ex) {
                                 Exceptions.printStackTrace(ex);
@@ -93,16 +93,16 @@ public class AndroidWidgetStore {
      * Remove invalid platforms from map
      */
     private static void removeInvalidPlatforms() {
-        Iterator<Map.Entry<String, AndroidWidgetNamespace>> iterator = PLATFORM_WIDGET_NAMESPACES.entrySet().iterator();
+        Iterator<Map.Entry<String, AndroidStyleableNamespace>> iterator = PLATFORM_STYLEABLE_NAMESPACES_MAP.entrySet().iterator();
         while (iterator.hasNext()) {
-            Map.Entry<String, AndroidWidgetNamespace> next = iterator.next();
+            Map.Entry<String, AndroidStyleableNamespace> next = iterator.next();
             if (!new File(next.getKey()).exists()) {
                 iterator.remove();
             }
         }
     }
 
-    public static AndroidWidgetAttrEnum getOrAddEnum(AndroidWidgetAttrEnum attrEnum) {
+    public static AndroidStyleableAttrEnum getOrAddEnum(AndroidStyleableAttrEnum attrEnum) {
         LOCK.lock();
         try {
             if (ATTR_ENUMS.contains(attrEnum)) {
@@ -116,7 +116,7 @@ public class AndroidWidgetStore {
         }
     }
 
-    public static AndroidWidgetAttrFlag getOrAddFlag(AndroidWidgetAttrFlag attrFlag) {
+    public static AndroidStyleableAttrFlag getOrAddFlag(AndroidStyleableAttrFlag attrFlag) {
         LOCK.lock();
         try {
             if (ATTR_FLAGS.contains(attrFlag)) {
@@ -130,13 +130,13 @@ public class AndroidWidgetStore {
         }
     }
 
-    public static AndroidWidgetAttr getOrAddAttr(AndroidWidgetAttr attr) {
+    public static AndroidStyleableAttr getOrAddAttr(AndroidStyleableAttr attr) {
         LOCK.lock();
         try {
-            if (WIDGET_ATTRS.contains(attr)) {
-                return WIDGET_ATTRS.get(WIDGET_ATTRS.indexOf(attr));
+            if (STYLEABLE_ATTRS.contains(attr)) {
+                return STYLEABLE_ATTRS.get(STYLEABLE_ATTRS.indexOf(attr));
             } else {
-                WIDGET_ATTRS.add(attr);
+                STYLEABLE_ATTRS.add(attr);
                 return attr;
             }
         } finally {

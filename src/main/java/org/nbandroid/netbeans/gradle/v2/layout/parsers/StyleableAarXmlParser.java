@@ -10,6 +10,6 @@ package org.nbandroid.netbeans.gradle.v2.layout.parsers;
  *
  * @author arsi
  */
-public class WidgetAarXmlParser {
+public class StyleableAarXmlParser {
 
 }

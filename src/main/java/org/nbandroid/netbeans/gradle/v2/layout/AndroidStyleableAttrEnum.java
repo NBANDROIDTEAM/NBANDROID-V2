@@ -13,13 +13,13 @@ import java.util.Objects;
  *
  * @author arsi
  */
-public class AndroidWidgetAttrEnum implements Serializable {
+public class AndroidStyleableAttrEnum implements Serializable {
 
     private final String name;
     private final String value;
     private final String comment;
 
-    public AndroidWidgetAttrEnum(String name, String value, String comment) {
+    public AndroidStyleableAttrEnum(String name, String value, String comment) {
         this.name = name;
         this.value = value;
         this.comment = comment;
@@ -57,7 +57,7 @@ public class AndroidWidgetAttrEnum implements Serializable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final AndroidWidgetAttrEnum other = (AndroidWidgetAttrEnum) obj;
+        final AndroidStyleableAttrEnum other = (AndroidStyleableAttrEnum) obj;
         if (!Objects.equals(this.name, other.name)) {
             return false;
         }

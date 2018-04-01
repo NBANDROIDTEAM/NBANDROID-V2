@@ -27,8 +27,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import static org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider.VIRTUALJAVA8ROOT_DIR;
-import org.nbandroid.netbeans.gradle.v2.layout.AndroidWidgetNamespace;
-import org.nbandroid.netbeans.gradle.v2.layout.AndroidWidgetStore;
+import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableNamespace;
+import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableStore;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.GlobalAndroidClassPathRegistry;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -68,8 +68,8 @@ public class AndroidJavaPlatform extends JavaPlatform {
         return pkg;
     }
 
-    public AndroidWidgetNamespace getPlatformWidgetNamespaces() {
-        return AndroidWidgetStore.getPlatformWidgetNamespace(this);
+    public AndroidStyleableNamespace getPlatformWidgetNamespaces() {
+        return AndroidStyleableStore.getPlatformStyleableNamespace(this);
     }
 
 

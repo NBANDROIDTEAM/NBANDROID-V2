@@ -11,7 +11,7 @@ import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.xml.namespace.QName;
-import org.nbandroid.netbeans.gradle.v2.layout.AndroidWidgetNamespace;
+import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableNamespace;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatform;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatformProvider;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -99,7 +99,7 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
         if (!pathFromRoot.isEmpty()) {
             QName qname = pathFromRoot.get(pathFromRoot.size() - 1);
             attributeRoot = qname.getLocalPart();
-            AndroidWidgetNamespace platformWidgetNamespaces = findPlatform.getPlatformWidgetNamespaces();
+            AndroidStyleableNamespace platformWidgetNamespaces = findPlatform.getPlatformWidgetNamespaces();
         }
         System.out.println("org.nbandroid.netbeans.gradle.v2.layout.completion.LayoutCompletionQuery.makeAttribute()");
     }
@@ -113,7 +113,7 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
         if (!pathFromRoot.isEmpty()) {
             QName qname = pathFromRoot.get(pathFromRoot.size() - 1);
             attributeRoot = qname.getLocalPart();
-            AndroidWidgetNamespace platformWidgetNamespaces = findPlatform.getPlatformWidgetNamespaces();
+            AndroidStyleableNamespace platformWidgetNamespaces = findPlatform.getPlatformWidgetNamespaces();
         }
         System.out.println("org.nbandroid.netbeans.gradle.v2.layout.completion.LayoutCompletionQuery.makeAttributeValue()");
     }
@@ -126,7 +126,7 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
         if (!pathFromRoot.isEmpty()) {
             QName qname = pathFromRoot.get(pathFromRoot.size() - 1);
             elementRoot = qname.getLocalPart();
-            AndroidWidgetNamespace platformWidgetNamespaces = findPlatform.getPlatformWidgetNamespaces();
+            AndroidStyleableNamespace platformWidgetNamespaces = findPlatform.getPlatformWidgetNamespaces();
         }
         System.out.println("org.nbandroid.netbeans.gradle.v2.layout.completion.LayoutCompletionQuery.makeElement()");
     }

@@ -27,7 +27,7 @@ import java.util.StringTokenizer;
  *
  * @author arsi
  */
-public enum AndroidWidgetAttrType implements Serializable {
+public enum AndroidStyleableAttrType implements Serializable {
     Boolean,
     Color,
     Reference,
@@ -40,9 +40,9 @@ public enum AndroidWidgetAttrType implements Serializable {
     Fraction,
     Unknown;
 
-    public static List<AndroidWidgetAttrType> decode(String txt) {
+    public static List<AndroidStyleableAttrType> decode(String txt) {
 
-        List<AndroidWidgetAttrType> tmp = new ArrayList<>();
+        List<AndroidStyleableAttrType> tmp = new ArrayList<>();
         if (txt.contains("|")) {
             StringTokenizer tok = new StringTokenizer(txt, "|", false);
             while (tok.hasMoreElements()) {
@@ -55,7 +55,7 @@ public enum AndroidWidgetAttrType implements Serializable {
         }
     }
 
-    public static AndroidWidgetAttrType decodeSingle(String txt) {
+    public static AndroidStyleableAttrType decodeSingle(String txt) {
         switch (txt) {
             case "boolean":
                 return Boolean;

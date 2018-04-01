@@ -17,7 +17,7 @@ import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
 import org.nbandroid.netbeans.gradle.query.GradlePlatformResolver;
 import org.nbandroid.netbeans.gradle.v2.layout.completion.analyzer.StyleableClassFileVisitor;
 import org.nbandroid.netbeans.gradle.v2.layout.completion.analyzer.StyleableResultCollector;
-import org.nbandroid.netbeans.gradle.v2.layout.parsers.WidgetPlatformXmlParser;
+import org.nbandroid.netbeans.gradle.v2.layout.parsers.StyleablePlatformXmlParser;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatform;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatformProvider8;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -125,7 +125,7 @@ public final class TestTopComponent extends TopComponent {
                 platformProvider8 = (AndroidJavaPlatformProvider8) next;
             }
         }
-        AndroidWidgetNamespace namespace = WidgetPlatformXmlParser.parseAndroidPlatform((AndroidJavaPlatform) platformProvider8.getDefaultPlatform());
+        AndroidStyleableNamespace namespace = StyleablePlatformXmlParser.parseAndroidPlatform((AndroidJavaPlatform) platformProvider8.getDefaultPlatform());
         System.out.println("org.nbandroid.netbeans.gradle.v2.layout.TestTopComponent.jButton1ActionPerformed()");
     }//GEN-LAST:event_jButton1ActionPerformed
 

@@ -27,18 +27,18 @@ import java.util.Objects;
  *
  * @author arsi
  */
-public class AndroidWidget implements Serializable {
+public class AndroidStyleable implements Serializable {
 
-    private final AndroidWidgetNamespace nameSpace;
+    private final AndroidStyleableNamespace nameSpace;
     private final String nameSpacePath;
     private final String name;
-    private final List<AndroidWidgetAttr> attrs = new ArrayList<>();
-    private String superWidgetName;
-    private AndroidWidget superWidget;
+    private final List<AndroidStyleableAttr> attrs = new ArrayList<>();
+    private String superStyleableName;
+    private AndroidStyleable superStyleable;
     private String fullClassName;
-    private AndroidWidgetType androidWidgetType = AndroidWidgetType.ToBeDetermined;
+    private AndroidStyleableType androidStyleableType = AndroidStyleableType.ToBeDetermined;
 
-    public AndroidWidget(AndroidWidgetNamespace nameSpace, String name) {
+    public AndroidStyleable(AndroidStyleableNamespace nameSpace, String name) {
         this.nameSpace = nameSpace;
         this.name = name;
 
@@ -53,7 +53,7 @@ public class AndroidWidget implements Serializable {
         return fullClassName;
     }
 
-    public AndroidWidgetNamespace getNameSpace() {
+    public AndroidStyleableNamespace getNameSpace() {
         return nameSpace;
     }
 
@@ -61,36 +61,36 @@ public class AndroidWidget implements Serializable {
         return name;
     }
 
-    public List<AndroidWidgetAttr> getAttrs() {
+    public List<AndroidStyleableAttr> getAttrs() {
         return attrs;
     }
 
-    public AndroidWidget getSuperWidget() {
-        return superWidget;
+    public AndroidStyleable getSuperStyleable() {
+        return superStyleable;
     }
 
-    public String getSuperWidgetName() {
-        return superWidgetName;
+    public String getSuperStyleableName() {
+        return superStyleableName;
     }
 
-    public void setSuperWidget(AndroidWidget superWidget) {
-        this.superWidget = superWidget;
+    public void setSuperStyleable(AndroidStyleable superStyleable) {
+        this.superStyleable = superStyleable;
     }
 
-    public AndroidWidgetType getAndroidWidgetType() {
-        return androidWidgetType;
+    public AndroidStyleableType getAndroidStyleableType() {
+        return androidStyleableType;
     }
 
-    public void setAndroidWidgetType(AndroidWidgetType androidWidgetType) {
-        if (androidWidgetType != null) {
-            this.androidWidgetType = androidWidgetType;
+    public void setAndroidStyleableType(AndroidStyleableType androidStyleableType) {
+        if (androidStyleableType != null) {
+            this.androidStyleableType = androidStyleableType;
         } else {
-            this.androidWidgetType = AndroidWidgetType.ToBeDetermined;
+            this.androidStyleableType = AndroidStyleableType.ToBeDetermined;
         }
     }
 
-    public void setSuperWidgetName(String superWidgetName) {
-        this.superWidgetName = superWidgetName;
+    public void setSuperStyleableName(String superStyleableName) {
+        this.superStyleableName = superStyleableName;
     }
 
     public void setFullClassName(String fullClassName) {
@@ -103,7 +103,7 @@ public class AndroidWidget implements Serializable {
 
     @Override
     public String toString() {
-        return "AndroidWidget{" + ", name=" + name + ", type=" + androidWidgetType + ", attrs=" + attrs + "nameSpace=" + nameSpacePath + '}';
+        return "AndroidStyleable{" + ", name=" + name + ", type=" + androidStyleableType + ", attrs=" + attrs + "nameSpace=" + nameSpacePath + '}';
     }
 
     @Override
@@ -112,7 +112,7 @@ public class AndroidWidget implements Serializable {
         hash = 61 * hash + Objects.hashCode(this.nameSpacePath);
         hash = 61 * hash + Objects.hashCode(this.name);
         hash = 61 * hash + Objects.hashCode(this.attrs);
-        hash = 61 * hash + Objects.hashCode(this.superWidgetName);
+        hash = 61 * hash + Objects.hashCode(this.superStyleableName);
         return hash;
     }
 
@@ -127,11 +127,11 @@ public class AndroidWidget implements Serializable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final AndroidWidget other = (AndroidWidget) obj;
+        final AndroidStyleable other = (AndroidStyleable) obj;
         if (!Objects.equals(this.name, other.name)) {
             return false;
         }
-        if (!Objects.equals(this.superWidgetName, other.superWidgetName)) {
+        if (!Objects.equals(this.superStyleableName, other.superStyleableName)) {
             return false;
         }
         if (!Objects.equals(this.nameSpacePath, other.nameSpacePath)) {

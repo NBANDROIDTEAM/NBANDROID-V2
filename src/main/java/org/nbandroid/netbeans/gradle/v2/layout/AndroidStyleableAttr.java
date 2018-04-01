@@ -28,15 +28,15 @@ import java.util.Objects;
  *
  * @author arsi
  */
-public class AndroidWidgetAttr implements Serializable {
+public class AndroidStyleableAttr implements Serializable {
 
     private final String name;
-    private final EnumSet<AndroidWidgetAttrType> attrTypes;
-    private final AndroidWidgetAttrEnum[] enums;
-    private final AndroidWidgetAttrFlag[] flags;
+    private final EnumSet<AndroidStyleableAttrType> attrTypes;
+    private final AndroidStyleableAttrEnum[] enums;
+    private final AndroidStyleableAttrFlag[] flags;
     private final String description;
 
-    public AndroidWidgetAttr(String name, String description, AndroidWidgetAttrType... attrTypes) {
+    public AndroidStyleableAttr(String name, String description, AndroidStyleableAttrType... attrTypes) {
         this.attrTypes = EnumSet.copyOf(Arrays.asList(attrTypes));
         this.enums = null;
         this.flags = null;
@@ -44,10 +44,10 @@ public class AndroidWidgetAttr implements Serializable {
         this.name = name;
     }
 
-    public AndroidWidgetAttr(String name, String description, List<AndroidWidgetAttrFlag> flags, List<AndroidWidgetAttrEnum> enums, AndroidWidgetAttrType... attrTypes) {
+    public AndroidStyleableAttr(String name, String description, List<AndroidStyleableAttrFlag> flags, List<AndroidStyleableAttrEnum> enums, AndroidStyleableAttrType... attrTypes) {
         this.attrTypes = EnumSet.copyOf(Arrays.asList(attrTypes));
-        this.enums = enums.toArray(new AndroidWidgetAttrEnum[enums.size()]);;
-        this.flags = flags.toArray(new AndroidWidgetAttrFlag[flags.size()]);
+        this.enums = enums.toArray(new AndroidStyleableAttrEnum[enums.size()]);;
+        this.flags = flags.toArray(new AndroidStyleableAttrFlag[flags.size()]);
         this.description = description;
         this.name = name;
     }
@@ -60,29 +60,29 @@ public class AndroidWidgetAttr implements Serializable {
         return description;
     }
 
-    public AndroidWidgetAttrEnum[] getEnums() {
+    public AndroidStyleableAttrEnum[] getEnums() {
         if (enums != null) {
             return enums;
         } else {
-            return new AndroidWidgetAttrEnum[0];
+            return new AndroidStyleableAttrEnum[0];
         }
     }
 
-    public AndroidWidgetAttrFlag[] getFlags() {
+    public AndroidStyleableAttrFlag[] getFlags() {
         if (flags != null) {
             return flags;
         } else {
-            return new AndroidWidgetAttrFlag[0];
+            return new AndroidStyleableAttrFlag[0];
         }
     }
 
-    public EnumSet<AndroidWidgetAttrType> getAttrTypes() {
+    public EnumSet<AndroidStyleableAttrType> getAttrTypes() {
         return attrTypes;
     }
 
     @Override
     public String toString() {
-        return "AndroidWidgetAttr{" + "name=" + name + ", attrTypes=" + attrTypes + ", enums=" + enums + ", flags=" + flags + ", description=" + description + '}';
+        return "AndroidStyleableAttr{" + "name=" + name + ", attrTypes=" + attrTypes + ", enums=" + enums + ", flags=" + flags + ", description=" + description + '}';
     }
 
     @Override
@@ -107,7 +107,7 @@ public class AndroidWidgetAttr implements Serializable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final AndroidWidgetAttr other = (AndroidWidgetAttr) obj;
+        final AndroidStyleableAttr other = (AndroidStyleableAttr) obj;
         if (!Objects.equals(this.name, other.name)) {
             return false;
         }
