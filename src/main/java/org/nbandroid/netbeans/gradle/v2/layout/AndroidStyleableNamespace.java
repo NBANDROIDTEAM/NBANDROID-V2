@@ -19,6 +19,10 @@ import java.util.Objects;
 public class AndroidStyleableNamespace implements Serializable {
 
     private final String namespace;
+    /**
+     * Original library namespace for res-auto
+     */
+    private String primary_namespace = null;
     private final String androidPlatformHashString;
     private final List<AndroidStyleable> all = new ArrayList<>();
     private final List<AndroidStyleable> uknown = new ArrayList<>();
@@ -32,6 +36,39 @@ public class AndroidStyleableNamespace implements Serializable {
     public AndroidStyleableNamespace(String namespace, String androidPlatformHashString) {
         this.namespace = namespace;
         this.androidPlatformHashString = androidPlatformHashString;
+    }
+
+    public boolean isPlatformNamespace() {
+        return AndroidStyleableStore.ANDROID_NAMESPACE.equals(namespace);
+    }
+
+    public void mergeTo(AndroidStyleableNamespace to) {
+        to.all.addAll(all);
+        to.layouts.putAll(layouts);
+        to.layoutsParams.putAll(layoutsParams);
+        to.layoutsParamsSimpleNames.putAll(layoutsParamsSimpleNames);
+        to.layoutsSimpleNames.putAll(layoutsSimpleNames);
+        to.uknown.addAll(uknown);
+        to.witgets.putAll(witgets);
+        to.witgetsSimpleNames.putAll(witgetsSimpleNames);
+    }
+
+    /**
+     * get Original library namespace for res-auto
+     *
+     * @return
+     */
+    public String getPrimary_namespace() {
+        return primary_namespace;
+    }
+
+    /**
+     * set Original library namespace for res-auto
+     *
+     * @param primary_namespace
+     */
+    public void setPrimary_namespace(String primary_namespace) {
+        this.primary_namespace = primary_namespace;
     }
 
     public String getNamespace() {

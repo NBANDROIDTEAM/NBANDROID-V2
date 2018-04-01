@@ -28,7 +28,7 @@ import org.openide.filesystems.FileObject;
  * @author arsi
  */
 @MimeRegistration(mimeType = "text/xml", service = CompletionProvider.class)
-public class LatyoutCompletionProvider implements CompletionProvider {
+public class LayoutCompletionProvider implements CompletionProvider {
 
     @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {

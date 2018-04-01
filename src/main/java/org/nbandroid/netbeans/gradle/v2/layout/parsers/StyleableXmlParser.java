@@ -47,7 +47,7 @@ import org.xml.sax.SAXException;
  *
  * @author arsi
  */
-public class StyleablePlatformXmlParser {
+public class StyleableXmlParser {
 
     /**
      * get last token from full class name
@@ -86,7 +86,7 @@ public class StyleablePlatformXmlParser {
      * @return
      */
     public static final AndroidStyleableNamespace parseAndroidPlatform(AndroidJavaPlatform androidPlatform) {
-        AndroidStyleableNamespace namespace = new AndroidStyleableNamespace("http://schemas.android.com/apk/res/android", androidPlatform.getHashString());
+        AndroidStyleableNamespace namespace = new AndroidStyleableNamespace(AndroidStyleableStore.ANDROID_NAMESPACE, androidPlatform.getHashString());
         try {
             // Full styleable name -> Full super class name, from data/widgets.txt
             Map<String, String> superStyleableMap = new HashMap<>();
@@ -318,6 +318,106 @@ public class StyleablePlatformXmlParser {
             }
         }
         return result;
+    }
+
+    /**
+     * Parse Styleables from exploded .aar
+     *
+     * @param namespace
+     * @param platformNamespace
+     * @param jarFo
+     * @param xmlFo
+     * @return true if OK
+     */
+    public static boolean parseAar(AndroidStyleableNamespace namespace, AndroidStyleableNamespace platformNamespace, FileObject jarFo, FileObject xmlFo) {
+        Map<String, AndroidStyleable> styleableMap = new HashMap<>();
+        parseXml(xmlFo, namespace, styleableMap);
+        if (styleableMap.isEmpty()) {
+            return false;
+        }
+        List<FileObject> jars = new ArrayList<>();
+        jars.add(FileUtil.getArchiveFile(jarFo));
+        ClassScanResult scanClasses = scanClasses(jars);
+        //assign full class name and super full class name
+        Map<String, AndroidStyleable> fullNameMap = new HashMap<>();
+        for (Map.Entry<String, AndroidStyleable> entry : styleableMap.entrySet()) {
+            AndroidStyleable styleable = entry.getValue();
+            StyleableResultCollector result = scanClasses.simpleNameMap.get(styleable.getName());
+            if (result != null) {
+                styleable.setFullClassName(result.getClassName());
+                styleable.setSuperStyleableName(result.getSuperClassName());
+                fullNameMap.put(result.getClassName(), styleable);
+            }
+        }
+        //add Styleables from platform to fullNameMap
+        fullNameMap.putAll(platformNamespace.getLayouts());
+        fullNameMap.putAll(platformNamespace.getLayoutsParams());
+        fullNameMap.putAll(platformNamespace.getWitgets());
+        //assign super Styleables and type
+        for (Map.Entry<String, AndroidStyleable> entry : styleableMap.entrySet()) {
+            AndroidStyleable styleable = entry.getValue();
+            AndroidStyleable superStyleable = fullNameMap.get(styleable.getSuperStyleableName());
+            if (superStyleable != null) {
+                styleable.setSuperStyleable(superStyleable);
+                if (superStyleable.getAndroidStyleableType() != AndroidStyleableType.Other && superStyleable.getAndroidStyleableType() != AndroidStyleableType.ToBeDetermined) {
+                    styleable.setAndroidStyleableType(superStyleable.getAndroidStyleableType());
+                }
+            }
+        }
+        //assign type from super
+        for (Map.Entry<String, AndroidStyleable> entry : styleableMap.entrySet()) {
+            AndroidStyleable styleable = entry.getValue();
+            if (styleable.getSuperStyleable() != null && (styleable.getAndroidStyleableType() == AndroidStyleableType.ToBeDetermined || styleable.getAndroidStyleableType() == AndroidStyleableType.Other)) {
+                if (styleable.getSuperStyleable().getAndroidStyleableType() != AndroidStyleableType.Other && styleable.getSuperStyleable().getAndroidStyleableType() != AndroidStyleableType.ToBeDetermined) {
+                    styleable.setAndroidStyleableType(styleable.getSuperStyleable().getAndroidStyleableType());
+                }
+            }
+        }
+        //sort styleables
+        List<AndroidStyleable> uknown = new ArrayList<>();
+        Map<String, AndroidStyleable> layouts = new HashMap<>();
+        Map<String, AndroidStyleable> layoutsSimple = new HashMap<>();
+        Map<String, AndroidStyleable> layoutsParams = new HashMap<>();
+        Map<String, AndroidStyleable> layoutsParamsSimple = new HashMap<>();
+        Map<String, AndroidStyleable> witgets = new HashMap<>();
+        Map<String, AndroidStyleable> witgetsSimple = new HashMap<>();
+        for (Map.Entry<String, AndroidStyleable> entry : styleableMap.entrySet()) {
+            AndroidStyleable styleable = entry.getValue();
+            String superStyleableName = styleable.getSuperStyleableName();
+            if (superStyleableName != null) {
+                styleable.setSuperStyleable(styleableMap.get(superStyleableName));
+            }
+            switch (styleable.getAndroidStyleableType()) {
+
+                case Widget:
+                    witgets.put(styleable.getFullClassName(), styleable);
+                    witgetsSimple.put(styleable.getName(), styleable);
+                    break;
+                case Layout:
+                    layouts.put(styleable.getFullClassName(), styleable);
+                    layoutsSimple.put(styleable.getName(), styleable);
+                    break;
+                case LayoutParams:
+                    layoutsParams.put(styleable.getFullClassName(), styleable);
+                    layoutsParamsSimple.put(styleable.getName(), styleable);
+                    break;
+                case Other:
+                case ToBeDetermined:
+                    uknown.add(styleable);
+                    break;
+
+            }
+        }
+        //store Styleables
+        namespace.getAll().addAll(styleableMap.values());
+        namespace.getLayouts().putAll(layouts);
+        namespace.getLayoutsSimpleNames().putAll(layoutsSimple);
+        namespace.getLayoutsParams().putAll(layoutsParams);
+        namespace.getLayoutsParamsSimpleNames().putAll(layoutsParamsSimple);
+        namespace.getWitgets().putAll(witgets);
+        namespace.getWitgetsSimpleNames().putAll(witgetsSimple);
+        namespace.getUknown().addAll(uknown);
+        return !layouts.isEmpty() || !layoutsParams.isEmpty() || !witgets.isEmpty();
     }
 
     /**

@@ -5,31 +5,18 @@
  */
 package org.nbandroid.netbeans.gradle.v2.layout;
 
-import com.android.sdklib.IAndroidTarget;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
-import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
-import org.nbandroid.netbeans.gradle.query.GradlePlatformResolver;
-import org.nbandroid.netbeans.gradle.v2.layout.completion.analyzer.StyleableClassFileVisitor;
-import org.nbandroid.netbeans.gradle.v2.layout.completion.analyzer.StyleableResultCollector;
-import org.nbandroid.netbeans.gradle.v2.layout.parsers.StyleablePlatformXmlParser;
+import org.nbandroid.netbeans.gradle.v2.layout.parsers.StyleableXmlParser;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatform;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatformProvider8;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
@@ -125,48 +112,14 @@ public final class TestTopComponent extends TopComponent {
                 platformProvider8 = (AndroidJavaPlatformProvider8) next;
             }
         }
-        AndroidStyleableNamespace namespace = StyleablePlatformXmlParser.parseAndroidPlatform((AndroidJavaPlatform) platformProvider8.getDefaultPlatform());
+        AndroidStyleableNamespace namespace = StyleableXmlParser.parseAndroidPlatform((AndroidJavaPlatform) platformProvider8.getDefaultPlatform());
         System.out.println("org.nbandroid.netbeans.gradle.v2.layout.TestTopComponent.jButton1ActionPerformed()");
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
         FileObject fo = FileUtil.toFileObject(new File("/veolia/EnergyManager/EnergyManager-Android/app/src/main/res/layout/activity_about.xml"));
-        Project owner = FileOwnerQuery.getOwner(fo);
-        GradlePlatformResolver resolver = owner.getLookup().lookup(GradlePlatformResolver.class);
-        GradleAndroidClassPathProvider classPathProvider = owner.getLookup().lookup(GradleAndroidClassPathProvider.class);
-        IAndroidTarget myTarget = resolver.findAndroidPlatform(owner).getAndroidTarget();
-        String attrsPath = myTarget.getPath(IAndroidTarget.ATTRIBUTES);
-        String attrsManifestPath = myTarget.getPath(IAndroidTarget.MANIFEST_ATTRIBUTES);
-        String witgets = myTarget.getPath(IAndroidTarget.WIDGETS);
-        String lay = myTarget.getPath(IAndroidTarget.LAYOUT_LIB);
-        List<ClassPath.Entry> entries = classPathProvider.getCompilePath().entries();
-        long start = System.currentTimeMillis();
-        List<StyleableResultCollector> collectors = new ArrayList<>();
-        for (ClassPath.Entry entrie : entries) {
-            FileObject root = entrie.getRoot();
-
-            Collections.list(root.getChildren(true)).stream().forEach(nextElement -> {
-                if (nextElement.hasExt("class")) {
-                    try {
-                        StyleableResultCollector resultCollector = StyleableClassFileVisitor.visitClass(nextElement.getName(), nextElement.getInputStream());
-                        if (!resultCollector.getStyleables().isEmpty()) {
-                            collectors.add(resultCollector);
-                            if(resultCollector.getStyleables().size()>1){
-                                System.out.println("org.nbandroid.netbeans.gradle.v2.layout.TestTopComponent.jButton2ActionPerformed()");
-                            }
-                        }
-                    } catch (FileNotFoundException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            });
-
-        }
-        long stop = System.currentTimeMillis();
-        long time = stop - start;
-        System.out.println("org.nbandroid.netbeans.gradle.v2.layout.TestTopComponent.jButton2ActionPerformed()");
-
+        AndroidStyleableStore.findNamespaces(fo);
     }//GEN-LAST:event_jButton2ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

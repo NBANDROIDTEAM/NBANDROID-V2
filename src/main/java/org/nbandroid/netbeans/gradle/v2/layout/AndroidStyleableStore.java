@@ -5,6 +5,7 @@
  */
 package org.nbandroid.netbeans.gradle.v2.layout;
 
+import com.android.builder.model.AndroidProject;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -22,9 +23,17 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
-import org.nbandroid.netbeans.gradle.v2.layout.parsers.StyleablePlatformXmlParser;
+import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
+import org.nbandroid.netbeans.gradle.v2.layout.parsers.StyleableXmlParser;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatform;
+import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatformProvider;
 import static org.nbandroid.netbeans.gradle.v2.sdk.ui.SDKVisualPanel2Download.NBANDROID_FOLDER;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.gradle.project.NbGradleProject;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 
@@ -34,11 +43,16 @@ import org.openide.util.Exceptions;
  */
 public class AndroidStyleableStore {
 
+    public static final String ANDROID_NAMESPACE = "http://schemas.android.com/apk/res/android";
+    public static final String LIB_NAMESPACE = "LIB_NAMESPACE";
+    public static final String RES_AUTO_NAMESPACE = "http://schemas.android.com/apk/res-auto";
+    public static final String TOOLS_NAMESPACE = "http://schemas.android.com/tools";
     private static final List<AndroidStyleableAttrEnum> ATTR_ENUMS = new ArrayList<>();
     private static final List<AndroidStyleableAttrFlag> ATTR_FLAGS = new ArrayList<>();
     private static final List<AndroidStyleableAttr> STYLEABLE_ATTRS = new ArrayList<>();
     private static final ReentrantLock LOCK = new ReentrantLock(true);
     private static final Map<String, AndroidStyleableNamespace> PLATFORM_STYLEABLE_NAMESPACES_MAP = new HashMap<>();
+    private static final Map<String, AndroidStyleableNamespace> LIBS_STYLEABLE_NAMESPACES_MAP = new HashMap<>();
     private static final String STYLEABLE_CACHE_FILENAME_STRING = "platformStyleableCache.obj";
     private static final File cacheSubfile = Places.getCacheSubfile(NBANDROID_FOLDER + STYLEABLE_CACHE_FILENAME_STRING);
     private static final ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
@@ -54,7 +68,70 @@ public class AndroidStyleableStore {
                 Exceptions.printStackTrace(ex);
             }
         }
+    }
 
+    public static final Map<String, AndroidStyleableNamespace> findNamespaces(FileObject primaryFile) {
+        LOCK.lock();
+        try {
+            Map<String, AndroidStyleableNamespace> namespaces = new HashMap<>();
+            Project owner = FileOwnerQuery.getOwner(primaryFile);
+            if (owner instanceof NbGradleProject) {
+                AndroidStyleableNamespace platformNamespace = null;
+                AndroidProject androidProject = ((NbGradleProject) owner).getLookup().lookup(AndroidProject.class);
+                if (androidProject != null) {
+                    String next = androidProject.getBootClasspath().iterator().next();
+                    AndroidJavaPlatform platform = AndroidJavaPlatformProvider.findPlatform(next, androidProject.getCompileTarget());
+                    if (platform != null) {
+                        AndroidStyleableNamespace namespace = getPlatformStyleableNamespace(platform);
+                        if (namespace != null) {
+                            platformNamespace = namespace;
+                            namespaces.put(namespace.getNamespace(), namespace);
+                        }
+                    }
+                }
+                GradleAndroidClassPathProvider classPathProvider = owner.getLookup().lookup(GradleAndroidClassPathProvider.class);
+                if (classPathProvider != null && platformNamespace != null) {
+                    AndroidStyleableNamespace namespace = new AndroidStyleableNamespace(RES_AUTO_NAMESPACE, null);
+                    namespaces.put(namespace.getNamespace(), namespace);
+                    List<ClassPath.Entry> entries = classPathProvider.getCompilePath().entries();
+                    for (ClassPath.Entry entrie : entries) {
+                        FileObject root = entrie.getRoot();
+                        FileObject jarOrAarDir = FileUtil.getArchiveFile(root);
+                        if (jarOrAarDir.getPath().contains(".aar")) {
+                            //exploded arr structure
+                            //find root folder
+                            FileObject parent = jarOrAarDir.getParent();
+                            FileObject explodedRoot = null;
+                            while (parent != null && !parent.getPath().endsWith(".aar")) {
+                                explodedRoot = parent;
+                                parent = parent.getParent();
+                            }
+                            if (explodedRoot != null && explodedRoot.isFolder()) {
+                                FileObject attrFo = explodedRoot.getFileObject("res/values/attrs.xml");
+                                if (attrFo == null) {
+                                    attrFo = explodedRoot.getFileObject("res/values/values.xml");
+                                }
+                                if (attrFo != null) {
+                                    AndroidStyleableNamespace cachedNamespace = LIBS_STYLEABLE_NAMESPACES_MAP.get(jarOrAarDir.getPath());
+                                    if (cachedNamespace == null) {
+                                        AndroidStyleableNamespace libNamespace = new AndroidStyleableNamespace(RES_AUTO_NAMESPACE, null);
+                                        StyleableXmlParser.parseAar(libNamespace, platformNamespace, root, attrFo);
+                                        LIBS_STYLEABLE_NAMESPACES_MAP.put(jarOrAarDir.getPath(), libNamespace);
+                                        libNamespace.mergeTo(namespace);
+                                    } else {
+                                        cachedNamespace.mergeTo(namespace);
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+            return namespaces;
+        } finally {
+            LOCK.unlock();
+        }
     }
 
     public static final AndroidStyleableNamespace getPlatformStyleableNamespace(AndroidJavaPlatform androidJavaPlatform) {
@@ -62,7 +139,7 @@ public class AndroidStyleableStore {
         try {
             AndroidStyleableNamespace namespace = PLATFORM_STYLEABLE_NAMESPACES_MAP.get(androidJavaPlatform.getPlatformFolder().toString());
             if (namespace == null) {
-                namespace = StyleablePlatformXmlParser.parseAndroidPlatform(androidJavaPlatform);
+                namespace = StyleableXmlParser.parseAndroidPlatform(androidJavaPlatform);
                 PLATFORM_STYLEABLE_NAMESPACES_MAP.put(androidJavaPlatform.getPlatformFolder().toString(), namespace);
                 if (saveFlag.compareAndSet(false, true)) {
                     pool.schedule(new Runnable() {
