@@ -94,7 +94,11 @@
                             <id>org.netbeans.api:org-netbeans-modules-xml-schema-completion</id>
                             <type>impl</type>
                         </dependency>
-                        
+                        <dependency>
+                            <!--Private Package Reference-->
+                            <id>org.netbeans.api:org-netbeans-modules-java-source-base</id>
+                            <type>impl</type>
+                        </dependency>
                     </moduleDependencies>
                 </configuration>
             </plugin>

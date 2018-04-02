@@ -18,16 +18,27 @@
  */
 package org.nbandroid.netbeans.gradle.v2.layout.completion.analyzer;
 
+import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.StringTokenizer;
 
-public class StyleableResultCollector {
+public class StyleableResultCollector implements Serializable {
 
     private String superClassName = null;
     private String className = null;
     private final List<String> styleables = new ArrayList<>();
+    private final URL fileUrl;
+
+    public StyleableResultCollector(URL fileUrl) {
+        this.fileUrl = fileUrl;
+    }
+
+    public URL getFileUrl() {
+        return fileUrl;
+    }
 
     protected void setSuperClassName(String superClass) {
         if (superClass != null) {

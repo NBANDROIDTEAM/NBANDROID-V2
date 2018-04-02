@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
+import org.nbandroid.netbeans.gradle.v2.layout.completion.analyzer.StyleableResultCollector;
 import org.nbandroid.netbeans.gradle.v2.layout.parsers.StyleableXmlParser;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatform;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatformProvider;
@@ -70,9 +71,11 @@ public class AndroidStyleableStore {
         }
     }
 
-    public static final Map<String, AndroidStyleableNamespace> findNamespaces(FileObject primaryFile) {
+    public static Map<String, AndroidStyleableNamespace> findNamespaces(FileObject primaryFile) {
         LOCK.lock();
         try {
+//            PLATFORM_STYLEABLE_NAMESPACES_MAP.clear();
+//            LIBS_STYLEABLE_NAMESPACES_MAP.clear();
             Map<String, AndroidStyleableNamespace> namespaces = new HashMap<>();
             Project owner = FileOwnerQuery.getOwner(primaryFile);
             if (owner instanceof NbGradleProject) {
@@ -128,9 +131,93 @@ public class AndroidStyleableStore {
                     }
                 }
             }
+            List<AndroidStyleableNamespace> todos = new ArrayList<>();
+            for (Map.Entry<String, AndroidStyleableNamespace> entry : namespaces.entrySet()) {
+                AndroidStyleableNamespace namespace = entry.getValue();
+                if (namespace.hasTodo()) {
+                    todos.add(namespace);
+                }
+            }
+            if (!todos.isEmpty()) {
+                Map<String, StyleableResultCollector> fullNameClassMap = new HashMap<>();
+                Map<String, AndroidStyleable> fullStyleableMap = new HashMap<>();
+                for (Map.Entry<String, AndroidStyleableNamespace> entry : namespaces.entrySet()) {
+                    AndroidStyleableNamespace namespace = entry.getValue();
+                    namespace.addAllFullClassNamesTo(fullNameClassMap);
+                    namespace.addAllStyleablesTo(fullStyleableMap);
+                }
+                for (AndroidStyleableNamespace namespace : todos) {
+                    Iterator<AndroidStyleable> iterator = namespace.getTodo().iterator();
+                    while (iterator.hasNext()) {
+                        AndroidStyleable styleable = iterator.next();
+                        AndroidStyleable superStyleable = fullStyleableMap.get(styleable.getSuperStyleableName());
+                        if (superStyleable != null) {
+                            styleable.setSuperStyleable(superStyleable);
+                            styleable.setAndroidStyleableType(superStyleable.getAndroidStyleableType());
+                            iterator.remove();
+                            reorderStyleable(styleable, namespace);
+                            fullStyleableMap.put(styleable.getFullClassName(), styleable);
+                        } else {
+                            //handle from full name class map
+                            String superClassName = styleable.getSuperStyleableName();
+                            if (superClassName == null) {
+                                StyleableResultCollector result = fullNameClassMap.get(styleable.getFullClassName());
+                                if (result != null) {
+                                    superClassName = result.getSuperClassName();
+                                }
+                            }
+                            if (superClassName == null) {
+                                iterator.remove();
+                                namespace.getUknown().add(styleable);
+                            }
+                            while (superStyleable == null && superClassName != null) {
+                                StyleableResultCollector collector = fullNameClassMap.get(superClassName);
+                                if (collector == null) {
+                                    iterator.remove();
+                                    namespace.getUknown().add(styleable);
+                                    break;
+                                }
+                                superClassName = collector.getSuperClassName();
+                                superStyleable = fullStyleableMap.get(superClassName);
+                            }
+                            if (superStyleable != null) {
+                                styleable.setSuperStyleable(superStyleable);
+                                styleable.setAndroidStyleableType(superStyleable.getAndroidStyleableType());
+                                reorderStyleable(styleable, namespace);
+                            }
+
+                        }
+                    }
+                }
+                System.out.println("org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableStore.findNamespaces()");
+            }
             return namespaces;
         } finally {
             LOCK.unlock();
+        }
+    }
+
+    public static void reorderStyleable(AndroidStyleable styleable, AndroidStyleableNamespace namespace) throws AssertionError {
+        switch (styleable.getAndroidStyleableType()) {
+            case Widget:
+                namespace.getWitgets().put(styleable.getFullClassName(), styleable);
+                namespace.getWitgetsSimpleNames().put(styleable.getName(), styleable);
+                break;
+            case Layout:
+                namespace.getLayouts().put(styleable.getFullClassName(), styleable);
+                namespace.getLayoutsSimpleNames().put(styleable.getName(), styleable);
+                break;
+            case LayoutParams:
+                namespace.getLayoutsParams().put(styleable.getFullClassName(), styleable);
+                namespace.getLayoutsParamsSimpleNames().put(styleable.getName(), styleable);
+                break;
+            case ToBeDetermined:
+                break;
+            case Other:
+                break;
+            default:
+                throw new AssertionError(styleable.getAndroidStyleableType().name());
+
         }
     }
 

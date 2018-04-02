@@ -71,7 +71,7 @@ public class StyleableXmlParser {
      * @param splitter
      * @return
      */
-    private static String getSecondLastToken(String strValue, String splitter) {
+    public static String getSecondLastToken(String strValue, String splitter) {
         if (strValue != null) {
             String[] strArray = strValue.split(Pattern.quote(splitter));
             return strArray[strArray.length - 2];
@@ -103,6 +103,9 @@ public class StyleableXmlParser {
             objectStyleable.setFullClassName("java.lang.Object");
             objectStyleable.setAndroidStyleableType(AndroidStyleableType.Other);
             styleableMap.put("Object", objectStyleable);
+            fullStyleableMap.put("java.lang.Object", objectStyleable);
+            namespace.getOther().put("java.lang.Object", objectStyleable);
+            namespace.getOtherSimpleNames().put("Object", objectStyleable);
             //find FileObjects
             FileObject platformDir = FileUtil.toFileObject(androidPlatform.getPlatformFolder());
             FileObject attrFo = platformDir.getFileObject("data/res/values/attrs.xml");
@@ -161,7 +164,7 @@ public class StyleableXmlParser {
             //assign super styleable and type
             for (Map.Entry<String, AndroidStyleable> entry : styleableMap.entrySet()) {
                 AndroidStyleable styleable = entry.getValue();
-                if (styleable.getFullClassName() != null) {
+                if (styleable.getFullClassName() != null && !"java.lang.Object".equals(styleable.getFullClassName())) {
                     styleable.setAndroidStyleableType(typeStyleableMap.get(styleable.getFullClassName()));
                     styleable.setSuperStyleableName(superStyleableMap.get(styleable.getFullClassName()));
                     styleable.setSuperStyleable(fullStyleableMap.get(styleable.getSuperStyleableName()));
@@ -176,6 +179,7 @@ public class StyleableXmlParser {
             }
             //sort styleables
             List<AndroidStyleable> uknown = new ArrayList<>();
+            List<AndroidStyleable> todo = new ArrayList<>();
             Map<String, AndroidStyleable> layouts = new HashMap<>();
             Map<String, AndroidStyleable> layoutsSimple = new HashMap<>();
             Map<String, AndroidStyleable> layoutsParams = new HashMap<>();
@@ -203,10 +207,20 @@ public class StyleableXmlParser {
                         layoutsParamsSimple.put(styleable.getName(), styleable);
                         break;
                     case Other:
+                        break;
                     case ToBeDetermined:
-                        uknown.add(styleable);
+                        if (styleable.getFullClassName() != null) {
+                            todo.add(styleable);
+                        } else {
+                            if (!"java.lang.Object".equals(styleable.getFullClassName())) {
+                                uknown.add(styleable);
+                            }
+                        }
                         break;
 
+                }
+                if (scanClasses.fullNameMap.get(styleable.getFullClassName()) != null) {
+                    styleable.setClassFileURL(scanClasses.fullNameMap.get(styleable.getFullClassName()).getFileUrl());
                 }
             }
             //store Styleables
@@ -218,6 +232,13 @@ public class StyleableXmlParser {
             namespace.getWitgets().putAll(witgets);
             namespace.getWitgetsSimpleNames().putAll(witgetsSimple);
             namespace.getUknown().addAll(uknown);
+            namespace.getTodo().addAll(todo);
+            namespace.getFullClassNameMap().putAll(scanClasses.fullNameMap);
+            for (Map.Entry<String, AndroidStyleable> entry : layoutsParams.entrySet()) {
+                AndroidStyleable styleable = entry.getValue();
+                styleable.createLayuotIfNotExist(fullStyleableMap, namespace.getLayouts(), namespace.getLayoutsSimpleNames());
+
+            }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -299,7 +320,7 @@ public class StyleableXmlParser {
                 Collections.list(FileUtil.getArchiveRoot(fo).getChildren(true)).stream().forEach(nextElement -> {
                     if (nextElement.hasExt("class")) {
                         try {
-                            StyleableResultCollector resultCollector = StyleableClassFileVisitor.visitClass(nextElement.getName(), nextElement.getInputStream());
+                            StyleableResultCollector resultCollector = StyleableClassFileVisitor.visitClass(nextElement.getName(), nextElement.getInputStream(), nextElement.toURL());
                             result.fullNameMap.put(resultCollector.getClassName().replace("$", "."), resultCollector);
                             String fullName = resultCollector.getClassName();
                             if (fullName.contains("$")) {
@@ -344,9 +365,9 @@ public class StyleableXmlParser {
             AndroidStyleable styleable = entry.getValue();
             StyleableResultCollector result = scanClasses.simpleNameMap.get(styleable.getName());
             if (result != null) {
-                styleable.setFullClassName(result.getClassName());
-                styleable.setSuperStyleableName(result.getSuperClassName());
-                fullNameMap.put(result.getClassName(), styleable);
+                styleable.setFullClassName(result.getClassName().replace("$", "."));
+                styleable.setSuperStyleableName(result.getSuperClassName().replace("$", "."));
+                fullNameMap.put(result.getClassName().replace("$", "."), styleable);
             }
         }
         //add Styleables from platform to fullNameMap
@@ -375,6 +396,7 @@ public class StyleableXmlParser {
         }
         //sort styleables
         List<AndroidStyleable> uknown = new ArrayList<>();
+        List<AndroidStyleable> todo = new ArrayList<>();
         Map<String, AndroidStyleable> layouts = new HashMap<>();
         Map<String, AndroidStyleable> layoutsSimple = new HashMap<>();
         Map<String, AndroidStyleable> layoutsParams = new HashMap<>();
@@ -402,10 +424,18 @@ public class StyleableXmlParser {
                     layoutsParamsSimple.put(styleable.getName(), styleable);
                     break;
                 case Other:
+                    break;
                 case ToBeDetermined:
-                    uknown.add(styleable);
+                    if (styleable.getFullClassName() != null) {
+                        todo.add(styleable);
+                    } else {
+                        uknown.add(styleable);
+                    }
                     break;
 
+            }
+            if (scanClasses.fullNameMap.get(styleable.getFullClassName()) != null) {
+                styleable.setClassFileURL(scanClasses.fullNameMap.get(styleable.getFullClassName()).getFileUrl());
             }
         }
         //store Styleables
@@ -417,6 +447,13 @@ public class StyleableXmlParser {
         namespace.getWitgets().putAll(witgets);
         namespace.getWitgetsSimpleNames().putAll(witgetsSimple);
         namespace.getUknown().addAll(uknown);
+        namespace.getTodo().addAll(todo);
+        namespace.getFullClassNameMap().putAll(scanClasses.fullNameMap);
+        for (Map.Entry<String, AndroidStyleable> entry : layoutsParams.entrySet()) {
+            AndroidStyleable styleable = entry.getValue();
+            styleable.createLayuotIfNotExist(fullNameMap, namespace.getLayouts(), namespace.getLayoutsSimpleNames());
+
+        }
         return !layouts.isEmpty() || !layoutsParams.isEmpty() || !witgets.isEmpty();
     }
 

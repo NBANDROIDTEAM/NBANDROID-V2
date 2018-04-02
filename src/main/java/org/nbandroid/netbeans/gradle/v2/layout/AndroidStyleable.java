@@ -18,16 +18,42 @@
  */
 package org.nbandroid.netbeans.gradle.v2.layout;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.StringTokenizer;
+import javax.lang.model.element.TypeElement;
+import javax.swing.Action;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.ui.ElementJavadoc;
+import org.netbeans.spi.editor.completion.CompletionDocumentation;
+import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.spi.editor.completion.CompletionResultSet;
+import org.netbeans.spi.editor.completion.CompletionTask;
+import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
+import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author arsi
  */
-public class AndroidStyleable implements Serializable {
+public class AndroidStyleable implements Serializable, CompletionItem {
 
     private final AndroidStyleableNamespace nameSpace;
     private final String nameSpacePath;
@@ -37,6 +63,7 @@ public class AndroidStyleable implements Serializable {
     private AndroidStyleable superStyleable;
     private String fullClassName;
     private AndroidStyleableType androidStyleableType = AndroidStyleableType.ToBeDetermined;
+    private URL classFileURL = null;
 
     public AndroidStyleable(AndroidStyleableNamespace nameSpace, String name) {
         this.nameSpace = nameSpace;
@@ -49,6 +76,14 @@ public class AndroidStyleable implements Serializable {
         }
     }
 
+    public URL getClassFileURL() {
+        return classFileURL;
+    }
+
+    public void setClassFileURL(URL classFileURL) {
+        this.classFileURL = classFileURL;
+    }
+
     public String getFullClassName() {
         return fullClassName;
     }
@@ -59,6 +94,31 @@ public class AndroidStyleable implements Serializable {
 
     public String getName() {
         return name;
+    }
+
+    public void createLayuotIfNotExist(Map<String, AndroidStyleable> fullClassNames, Map<String, AndroidStyleable> layouts, Map<String, AndroidStyleable> layoutsSimple) {
+        if (androidStyleableType == AndroidStyleableType.LayoutParams) {
+            StringTokenizer tok = new StringTokenizer(name, ".", false);
+            if (tok.countTokens() == 2) {
+                AndroidStyleable laout = new AndroidStyleable(nameSpace, tok.nextToken());
+                String layoutText = tok.nextToken();
+                laout.setFullClassName(fullClassName.replace("." + layoutText, ""));
+                laout.setAndroidStyleableType(AndroidStyleableType.Layout);
+                String superName = null;
+                if (!"java.lang.Object".equals(superStyleableName)) {
+                    superName = superStyleableName.substring(0, superStyleableName.lastIndexOf('.'));
+                } else {
+                    superName = superStyleableName;
+                }
+                laout.setSuperStyleableName(superName);
+                laout.setSuperStyleable(fullClassNames.get(superName));
+                if (!layouts.containsKey(laout.fullClassName)) {
+                    layouts.put(laout.fullClassName, laout);
+                    layoutsSimple.put(laout.name, laout);
+                }
+
+            }
+        }
     }
 
     public List<AndroidStyleableAttr> getAttrs() {
@@ -141,6 +201,112 @@ public class AndroidStyleable implements Serializable {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void defaultAction(JTextComponent component) {
+    }
+
+    @Override
+    public void processKeyEvent(KeyEvent evt) {
+    }
+
+    @Override
+    public int getPreferredWidth(Graphics g, Font defaultFont) {
+        return CompletionUtilities.getPreferredWidth(getFullClassName(), getAndroidStyleableType().name(),
+                g, defaultFont);
+    }
+
+    @Override
+    public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
+        CompletionUtilities.renderHtml(null, getFullClassName(), getAndroidStyleableType().name(),
+                g, defaultFont, defaultColor, width, height, selected);
+    }
+
+    @Override
+    public CompletionTask createDocumentationTask() {
+        return new AsyncCompletionTask(new DocQuery());
+    }
+
+    @Override
+    public CompletionTask createToolTipTask() {
+        return null;
+    }
+
+    @Override
+    public boolean instantSubstitution(JTextComponent component) {
+        return false;
+    }
+
+    @Override
+    public int getSortPriority() {
+        return 1;
+    }
+
+    @Override
+    public CharSequence getSortText() {
+        return "";
+    }
+
+    @Override
+    public CharSequence getInsertPrefix() {
+        return "";
+    }
+
+    private class DocItem implements CompletionDocumentation {
+
+        String text = fullClassName;
+
+        public DocItem(String fullClassName) {
+            if (classFileURL != null) {
+                JavaSource javaSource = JavaSource.forFileObject(URLMapper.findFileObject(classFileURL));
+                try {
+                    javaSource.runUserActionTask(new Task<CompilationController>() {
+                        @Override
+                        public void run(CompilationController p) throws Exception {
+                            p.toPhase(Phase.ELEMENTS_RESOLVED);
+                            List<? extends TypeElement> topLevelElements = p.getTopLevelElements();
+                            ElementJavadoc javadoc = ElementJavadoc.create(p, topLevelElements.get(0));
+                            text = javadoc.getText();
+                        }
+                    }, true);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+
+        @Override
+        public URL getURL() {
+            return null;
+        }
+
+        @Override
+        public CompletionDocumentation resolveLink(String link) {
+            return null;
+        }
+
+        @Override
+        public Action getGotoSourceAction() {
+            return null;
+        }
+    }
+
+    private class DocQuery extends AsyncCompletionQuery {
+
+        public DocQuery() {
+        }
+
+        @Override
+        protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+            resultSet.setDocumentation(new DocItem(getFullClassName()));
+            resultSet.finish();
+        }
     }
 
 }

@@ -6,17 +6,24 @@
 package org.nbandroid.netbeans.gradle.v2.layout.completion;
 
 import com.android.builder.model.AndroidProject;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.xml.namespace.QName;
+import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleable;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableNamespace;
+import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableStore;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatform;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatformProvider;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.gradle.project.NbGradleProject;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 import org.netbeans.modules.xml.schema.completion.util.CompletionContextImpl;
@@ -25,6 +32,7 @@ import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -121,12 +129,43 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
     private void makeElement(AndroidJavaPlatform findPlatform, CompletionContextImpl context, FileObject primaryFile, AndroidProject androidProject, CompletionResultSet resultSet, Document doc, int caretOffset) {
         HashMap<String, String> declaredNamespaces = context.getDeclaredNamespaces();
         String typedChars = context.getTypedChars();
+        if (typedChars == null) {
+            try {
+                typedChars = Utilities.getIdentifierBefore((BaseDocument) doc, caretOffset);
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        if (typedChars == null) {
+            return;
+        }
+        final String typed = typedChars;
         String elementRoot = null;
         List<QName> pathFromRoot = context.getPathFromRoot();
         if (!pathFromRoot.isEmpty()) {
             QName qname = pathFromRoot.get(pathFromRoot.size() - 1);
             elementRoot = qname.getLocalPart();
-            AndroidStyleableNamespace platformWidgetNamespaces = findPlatform.getPlatformWidgetNamespaces();
+        }
+        Map<String, AndroidStyleableNamespace> namespacesIn = AndroidStyleableStore.findNamespaces(primaryFile);
+        Map<String, AndroidStyleableNamespace> namespaces = new HashMap<>();
+        List<AndroidStyleable> items = new ArrayList<>();
+        for (Map.Entry<String, String> entry : declaredNamespaces.entrySet()) {
+            String name = entry.getKey();
+            String nameSpace = entry.getValue();
+            AndroidStyleableNamespace tmp = namespacesIn.get(nameSpace);
+            if (tmp != null) {
+                namespaces.put(name, tmp);
+                items.addAll(tmp.getLayouts().values());
+                items.addAll(tmp.getWitgets().values());
+            }
+        }
+        if (namespaces.isEmpty()) {
+            return;
+        }
+        if ("".equals(typed)) {
+            resultSet.addAllItems(items);
+        } else {
+            resultSet.addAllItems(items.stream().filter(c -> c.getFullClassName().startsWith(typed) || c.getName().startsWith(typed)).collect(Collectors.toList()));
         }
         System.out.println("org.nbandroid.netbeans.gradle.v2.layout.completion.LayoutCompletionQuery.makeElement()");
     }

@@ -20,14 +20,15 @@ package org.nbandroid.netbeans.gradle.v2.layout.completion.analyzer;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 
 public class StyleableClassFileVisitor {
 
-    public static StyleableResultCollector visitClass(String className, InputStream in) {
-        StyleableResultCollector resultCollector = new StyleableResultCollector();
+    public static StyleableResultCollector visitClass(String className, InputStream in, URL url) {
+        StyleableResultCollector resultCollector = new StyleableResultCollector(url);
         try {
             ClassReader reader = new ClassReader(in);
             MethodVisitor mv = new StyleableMethodVisitor(resultCollector);
