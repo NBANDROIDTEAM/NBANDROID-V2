@@ -42,9 +42,11 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
 
     private JTextComponent component;
     private final FileObject primaryFile;
+    private final int queryType;
 
-    LayoutCompletionQuery(FileObject primaryFile) {
+    LayoutCompletionQuery(FileObject primaryFile, int queryType) {
         this.primaryFile = primaryFile;
+        this.queryType = queryType;
     }
 
     @Override
@@ -54,6 +56,7 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
 
     @Override
     protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+        resultSet.setWaitText("Loading android Styleables..");
         XMLSyntaxSupport support = (XMLSyntaxSupport) ((BaseDocument) doc).getSyntaxSupport();
         if (!support.noCompletion(component) && CompletionUtil.canProvideCompletion((BaseDocument) doc)) {
             Project owner = FileOwnerQuery.getOwner(primaryFile);
@@ -98,6 +101,18 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
         }
         resultSet.finish();
     }
+
+    @Override
+    protected boolean canFilter(JTextComponent component) {
+        return false; //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    protected void filter(CompletionResultSet resultSet) {
+        super.filter(resultSet); //To change body of generated methods, choose Tools | Templates.
+    }
+
+
 
     private void makeAttribute(AndroidJavaPlatform findPlatform, CompletionContextImpl context, FileObject primaryFile, AndroidProject androidProject, CompletionResultSet resultSet, Document doc, int caretOffset) {
         HashMap<String, String> declaredNamespaces = context.getDeclaredNamespaces();

@@ -189,7 +189,8 @@ public class AndroidStyleableStore {
                         }
                     }
                 }
-                System.out.println("org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableStore.findNamespaces()");
+                //TODO check all super classes for known styleables and create AndroidStyleable representation
+                // For styleables that have no XML attributes
             }
             return namespaces;
         } finally {

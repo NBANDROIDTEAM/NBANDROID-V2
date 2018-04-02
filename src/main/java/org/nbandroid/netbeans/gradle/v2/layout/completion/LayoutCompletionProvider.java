@@ -70,7 +70,7 @@ public class LayoutCompletionProvider implements CompletionProvider {
     @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if (queryType == COMPLETION_QUERY_TYPE || queryType == COMPLETION_ALL_QUERY_TYPE) {
-            return new AsyncCompletionTask(new LayoutCompletionQuery(CompletionUtil.getPrimaryFile(component.getDocument())), component);
+            return new AsyncCompletionTask(new LayoutCompletionQuery(CompletionUtil.getPrimaryFile(component.getDocument()), queryType), component);
         }
 
         return null;

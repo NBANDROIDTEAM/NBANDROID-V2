@@ -22,7 +22,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
@@ -30,10 +29,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.StringTokenizer;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -221,6 +223,9 @@ public class AndroidStyleable implements Serializable, CompletionItem {
     public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
         CompletionUtilities.renderHtml(null, getFullClassName(), getAndroidStyleableType().name(),
                 g, defaultFont, defaultColor, width, height, selected);
+        Completion c = Completion.get();
+        c.hideDocumentation();
+        c.showDocumentation();
     }
 
     @Override
@@ -245,7 +250,7 @@ public class AndroidStyleable implements Serializable, CompletionItem {
 
     @Override
     public CharSequence getSortText() {
-        return "";
+        return name;
     }
 
     @Override
@@ -255,25 +260,10 @@ public class AndroidStyleable implements Serializable, CompletionItem {
 
     private class DocItem implements CompletionDocumentation {
 
-        String text = fullClassName;
+        private final String text;
 
         public DocItem(String fullClassName) {
-            if (classFileURL != null) {
-                JavaSource javaSource = JavaSource.forFileObject(URLMapper.findFileObject(classFileURL));
-                try {
-                    javaSource.runUserActionTask(new Task<CompilationController>() {
-                        @Override
-                        public void run(CompilationController p) throws Exception {
-                            p.toPhase(Phase.ELEMENTS_RESOLVED);
-                            List<? extends TypeElement> topLevelElements = p.getTopLevelElements();
-                            ElementJavadoc javadoc = ElementJavadoc.create(p, topLevelElements.get(0));
-                            text = javadoc.getText();
-                        }
-                    }, true);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+            this.text = fullClassName;
         }
 
         @Override
@@ -297,6 +287,35 @@ public class AndroidStyleable implements Serializable, CompletionItem {
         }
     }
 
+    private class JavaDocItem implements CompletionDocumentation {
+
+        private final ElementJavadoc javadoc;
+
+        public JavaDocItem(ElementJavadoc javadoc) {
+            this.javadoc = javadoc;
+        }
+
+        @Override
+        public String getText() {
+            return javadoc.getText();
+        }
+
+        @Override
+        public URL getURL() {
+            return javadoc.getURL();
+        }
+
+        @Override
+        public CompletionDocumentation resolveLink(String link) {
+            return new JavaDocItem(javadoc.resolveLink(link));
+        }
+
+        @Override
+        public Action getGotoSourceAction() {
+            return javadoc.getGotoSourceAction();
+        }
+    }
+
     private class DocQuery extends AsyncCompletionQuery {
 
         public DocQuery() {
@@ -304,7 +323,28 @@ public class AndroidStyleable implements Serializable, CompletionItem {
 
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            resultSet.setDocumentation(new DocItem(getFullClassName()));
+            System.out.println("org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleable.DocQuery.query()");
+            if (classFileURL != null) {
+                JavaSource javaSource = JavaSource.forFileObject(URLMapper.findFileObject(classFileURL));
+                final CountDownLatch countDownLatch = new CountDownLatch(1);
+                try {
+                    javaSource.runUserActionTask(new Task<CompilationController>() {
+                        @Override
+                        public void run(CompilationController p) throws Exception {
+                            p.toPhase(Phase.ELEMENTS_RESOLVED);
+                            List<? extends TypeElement> topLevelElements = p.getTopLevelElements();
+                            ElementJavadoc javadoc = ElementJavadoc.create(p, topLevelElements.get(0));
+                            resultSet.setDocumentation(new JavaDocItem(javadoc));
+                            countDownLatch.countDown();
+                        }
+                    }, true);
+                    countDownLatch.await(10, TimeUnit.SECONDS);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            } else {
+                resultSet.setDocumentation(new DocItem(getFullClassName()));
+            }
             resultSet.finish();
         }
     }
