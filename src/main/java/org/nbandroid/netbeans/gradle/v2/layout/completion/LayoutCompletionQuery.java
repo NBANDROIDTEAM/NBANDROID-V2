@@ -43,6 +43,9 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
     private JTextComponent component;
     private final FileObject primaryFile;
     private final int queryType;
+    private CompletionContext.CompletionType currentMode = CompletionContext.CompletionType.COMPLETION_TYPE_UNKNOWN;
+    private List<AndroidStyleable> items = new ArrayList<>();
+    private String startChars = "";
 
     LayoutCompletionQuery(FileObject primaryFile, int queryType) {
         this.primaryFile = primaryFile;
@@ -101,18 +104,26 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
         }
         resultSet.finish();
     }
+    private String typedCharsFilter = "";
 
     @Override
     protected boolean canFilter(JTextComponent component) {
-        return false; //To change body of generated methods, choose Tools | Templates.
+        try {
+            typedCharsFilter = Utilities.getIdentifierBefore((BaseDocument) component.getDocument(), component.getCaretPosition());
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (typedCharsFilter == null) {
+            typedCharsFilter = "";
+        }
+        return true;
     }
 
     @Override
     protected void filter(CompletionResultSet resultSet) {
-        super.filter(resultSet); //To change body of generated methods, choose Tools | Templates.
+        resultSet.addAllItems(items.stream().filter(c -> c.getFullClassName().startsWith(typedCharsFilter) || c.getName().startsWith(typedCharsFilter)).collect(Collectors.toList()));
+        resultSet.finish();
     }
-
-
 
     private void makeAttribute(AndroidJavaPlatform findPlatform, CompletionContextImpl context, FileObject primaryFile, AndroidProject androidProject, CompletionResultSet resultSet, Document doc, int caretOffset) {
         HashMap<String, String> declaredNamespaces = context.getDeclaredNamespaces();
@@ -143,8 +154,10 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
 
     private void makeElement(AndroidJavaPlatform findPlatform, CompletionContextImpl context, FileObject primaryFile, AndroidProject androidProject, CompletionResultSet resultSet, Document doc, int caretOffset) {
         HashMap<String, String> declaredNamespaces = context.getDeclaredNamespaces();
+        currentMode = CompletionContext.CompletionType.COMPLETION_TYPE_ELEMENT;
         String typedChars = context.getTypedChars();
         if (typedChars == null) {
+            //when is cursor at end of text context returns null
             try {
                 typedChars = Utilities.getIdentifierBefore((BaseDocument) doc, caretOffset);
             } catch (BadLocationException ex) {
@@ -152,7 +165,8 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
             }
         }
         if (typedChars == null) {
-            return;
+            //cursor is after <
+            typedChars = "";
         }
         final String typed = typedChars;
         String elementRoot = null;
@@ -163,7 +177,6 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
         }
         Map<String, AndroidStyleableNamespace> namespacesIn = AndroidStyleableStore.findNamespaces(primaryFile);
         Map<String, AndroidStyleableNamespace> namespaces = new HashMap<>();
-        List<AndroidStyleable> items = new ArrayList<>();
         for (Map.Entry<String, String> entry : declaredNamespaces.entrySet()) {
             String name = entry.getKey();
             String nameSpace = entry.getValue();
@@ -177,6 +190,7 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
         if (namespaces.isEmpty()) {
             return;
         }
+        startChars = typed;
         if ("".equals(typed)) {
             resultSet.addAllItems(items);
         } else {

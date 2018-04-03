@@ -33,14 +33,18 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.nbandroid.netbeans.gradle.v2.layout.completion.RankingProvider;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -207,6 +211,27 @@ public class AndroidStyleable implements Serializable, CompletionItem {
 
     @Override
     public void defaultAction(JTextComponent component) {
+        if (component != null) {
+            try {
+                BaseDocument document = (BaseDocument) component.getDocument();
+                int caretPosition = component.getCaretPosition();
+                String text = Utilities.getIdentifierBefore(document, component.getCaretPosition());
+                if (text == null) {
+                    text = "";
+                }
+                int startPosition = caretPosition - text.length();
+                if (AndroidStyleableStore.ANDROID_NAMESPACE.equals(nameSpacePath)) {
+                    document.replace(startPosition, text.length(), name, null);
+                } else {
+                    document.replace(startPosition, text.length(), fullClassName, null);
+                }
+                Completion.get().hideDocumentation();
+                Completion.get().hideCompletion();
+                RankingProvider.inserted(fullClassName.hashCode());
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     @Override
@@ -245,7 +270,7 @@ public class AndroidStyleable implements Serializable, CompletionItem {
 
     @Override
     public int getSortPriority() {
-        return 1;
+        return RankingProvider.getRank(fullClassName.hashCode());
     }
 
     @Override

@@ -56,7 +56,7 @@ public class AndroidStyleableStore {
     private static final Map<String, AndroidStyleableNamespace> LIBS_STYLEABLE_NAMESPACES_MAP = new HashMap<>();
     private static final String STYLEABLE_CACHE_FILENAME_STRING = "platformStyleableCache.obj";
     private static final File cacheSubfile = Places.getCacheSubfile(NBANDROID_FOLDER + STYLEABLE_CACHE_FILENAME_STRING);
-    private static final ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
+    public static final ScheduledExecutorService POOL = Executors.newScheduledThreadPool(1);
     private static final AtomicBoolean saveFlag = new AtomicBoolean(false);
 
     static {
@@ -230,7 +230,7 @@ public class AndroidStyleableStore {
                 namespace = StyleableXmlParser.parseAndroidPlatform(androidJavaPlatform);
                 PLATFORM_STYLEABLE_NAMESPACES_MAP.put(androidJavaPlatform.getPlatformFolder().toString(), namespace);
                 if (saveFlag.compareAndSet(false, true)) {
-                    pool.schedule(new Runnable() {
+                    POOL.schedule(new Runnable() {
                         @Override
                         public void run() {
                             saveFlag.set(false);
