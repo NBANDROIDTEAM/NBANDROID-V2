@@ -20,9 +20,13 @@ package org.nbandroid.netbeans.gradle.v2.layout;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import org.nbandroid.netbeans.gradle.v2.layout.completion.StyleableAttrBugProvider;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -41,7 +45,12 @@ public class AndroidStyleableAttr implements Serializable {
         this.enums = null;
         this.flags = null;
         this.description = description;
-        this.name = name;
+        if (name.contains(":")) {
+            this.name = name.substring(name.lastIndexOf(':') + 1);
+        } else {
+            this.name = name;
+        }
+        handleBugs();
     }
 
     public AndroidStyleableAttr(String name, String description, List<AndroidStyleableAttrFlag> flags, List<AndroidStyleableAttrEnum> enums, AndroidStyleableAttrType... attrTypes) {
@@ -49,7 +58,23 @@ public class AndroidStyleableAttr implements Serializable {
         this.enums = enums.toArray(new AndroidStyleableAttrEnum[enums.size()]);;
         this.flags = flags.toArray(new AndroidStyleableAttrFlag[flags.size()]);
         this.description = description;
-        this.name = name;
+        if (name.contains(":")) {
+            this.name = name.substring(name.lastIndexOf(':') + 1);
+        } else {
+            this.name = name;
+        }
+        handleBugs();
+    }
+
+    private void handleBugs() {
+        Collection<? extends StyleableAttrBugProvider> bugProviders = Lookup.getDefault().lookupAll(StyleableAttrBugProvider.class);
+        Iterator<? extends StyleableAttrBugProvider> iterator = bugProviders.iterator();
+        while (iterator.hasNext()) {
+            StyleableAttrBugProvider next = iterator.next();
+            if (next.handleBugs(name, this.attrTypes)) {
+                break;
+            }
+        }
     }
 
     public String getName() {

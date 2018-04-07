@@ -269,7 +269,7 @@ public class StyleableXmlParser {
             decodeAttrs(childNodes, globalStyleableAttrs);
             Map<String, AndroidStyleableAttr> globalAttrsMap = new HashMap<>();
             for (AndroidStyleableAttr globalStyleableAttr : globalStyleableAttrs) {
-                globalAttrsMap.put(globalStyleableAttr.getName(), globalStyleableAttr);
+                globalAttrsMap.put(globalStyleableAttr.getName(), AndroidStyleableStore.getOrAddAttr(globalStyleableAttr));
             }
             //
             String expression = "/resources/declare-styleable";

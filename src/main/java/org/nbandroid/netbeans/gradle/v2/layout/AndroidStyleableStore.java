@@ -74,8 +74,8 @@ public class AndroidStyleableStore {
     public static Map<String, AndroidStyleableNamespace> findNamespaces(FileObject primaryFile) {
         LOCK.lock();
         try {
-            PLATFORM_STYLEABLE_NAMESPACES_MAP.clear();
-            LIBS_STYLEABLE_NAMESPACES_MAP.clear();
+//            PLATFORM_STYLEABLE_NAMESPACES_MAP.clear();
+//            LIBS_STYLEABLE_NAMESPACES_MAP.clear();
             Map<String, AndroidStyleableNamespace> namespaces = new HashMap<>();
             Project owner = FileOwnerQuery.getOwner(primaryFile);
             if (owner instanceof NbGradleProject) {

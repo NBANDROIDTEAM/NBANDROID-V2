@@ -129,7 +129,7 @@ public class AttrCompletionItem implements CompletionItem {
                     text = "";
                 }
                 int startPosition = caretPosition - text.length();
-                document.replace(startPosition, text.length(), completionText, null);
+                document.replace(startPosition, text.length(), completionText + "=\"\"", null);
                 Completion.get().hideAll();
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
