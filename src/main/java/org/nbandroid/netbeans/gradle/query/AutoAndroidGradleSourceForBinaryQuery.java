@@ -24,8 +24,9 @@ package org.nbandroid.netbeans.gradle.query;
  */
 import com.google.common.collect.MapMaker;
 import java.io.File;
-import java.util.Vector;
+import java.util.List;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.event.ChangeListener;
 import org.nbandroid.netbeans.gradle.v2.maven.ArtifactData;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -48,7 +49,7 @@ import org.openide.util.lookup.ServiceProviders;
 public final class AutoAndroidGradleSourceForBinaryQuery extends AbstractSourceForBinaryQuery implements ClassPathProvider {
 
     private static final FileObject[] NO_ROOTS = new FileObject[0];
-    private final Vector<GradleAndroidClassPathProvider> providers = new Vector<>();
+    private final List<GradleAndroidClassPathProvider> providers = new CopyOnWriteArrayList<>();
     private static final ConcurrentMap<FileObject, GradleAndroidClassPathProvider> backReferenceMap = new MapMaker().weakKeys().weakValues().makeMap();
     private static final ConcurrentMap<FileObject, ClassPath> cache = new MapMaker().weakKeys().makeMap();
 

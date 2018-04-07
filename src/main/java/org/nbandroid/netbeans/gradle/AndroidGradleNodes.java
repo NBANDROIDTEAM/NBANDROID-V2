@@ -1,13 +1,18 @@
 package org.nbandroid.netbeans.gradle;
 
+import com.android.builder.model.AndroidArtifactOutput;
+import com.android.builder.model.AndroidProject;
+import com.android.builder.model.Variant;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.awt.Image;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
 import org.nbandroid.netbeans.gradle.api.AndroidConstants;
@@ -183,6 +188,19 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
 
         public ApksFilterNodeChildrensV2() {
             super(true);
+            AndroidProject androidProject = p.getLookup().lookup(AndroidProject.class);
+            Iterator<Variant> variants = androidProject.getVariants().iterator();
+            while (variants.hasNext()) {
+                Variant next = variants.next();
+                Iterator<AndroidArtifactOutput> outputs = next.getMainArtifact().getOutputs().iterator();
+                while (outputs.hasNext()) {
+                    AndroidArtifactOutput output = outputs.next();
+                    File outputFile = output.getOutputFile();
+                }
+
+            }
+
+            //  aProject.getVariants().iterator().next().getMainArtifact().getOutputs().iterator().next().
             p.getProjectDirectory().addRecursiveListener(WeakListeners.create(FileChangeListener.class, this, p.getProjectDirectory()));
             refreshFolders(null);
         }

@@ -74,7 +74,31 @@
                             <id>org.netbeans.modules:org-netbeans-libs-jna</id>
                             <type>impl</type>
                         </dependency>
-                        
+                        <dependency>
+                            <!--Private Package Reference-->
+                            <id>org.netbeans.modules:org-netbeans-modules-xml-text</id>
+                            <type>impl</type>
+                        </dependency>
+                        <dependency>
+                            <!--Private Package Reference-->
+                            <id>org.netbeans.modules:org-netbeans-modules-editor-breadcrumbs</id>
+                            <type>impl</type>
+                        </dependency>
+                        <dependency>
+                            <!--Private Package Reference-->
+                            <id>org.netbeans.modules:org-netbeans-modules-editor-structure</id>
+                            <type>impl</type>
+                        </dependency>
+                        <dependency>
+                            <!--Private Package Reference-->
+                            <id>org.netbeans.api:org-netbeans-modules-xml-schema-completion</id>
+                            <type>impl</type>
+                        </dependency>
+                        <dependency>
+                            <!--Private Package Reference-->
+                            <id>org.netbeans.api:org-netbeans-modules-java-source-base</id>
+                            <type>impl</type>
+                        </dependency>
                     </moduleDependencies>
                 </configuration>
             </plugin>
@@ -231,6 +255,7 @@
                         <extensions>true</extensions>
                         <configuration>
                             <netbeansInstallation>/ssd/nb/netbeans-8.2-e3/</netbeansInstallation>
+                            <netbeansUserdir>/jetty/netbeans/user_nb_android</netbeansUserdir>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -730,6 +755,31 @@
         <dependency>
             <groupId>org.netbeans.external</groupId>
             <artifactId>${asm.nb}</artifactId>
+            <version>${version.nb}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-xml-schema-completion</artifactId>
+            <version>${version.nb}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-xml-text</artifactId>
+            <version>${version.nb}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-editor-completion</artifactId>
+            <version>${version.nb}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-editor-breadcrumbs</artifactId>
+            <version>${version.nb}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-editor-structure</artifactId>
             <version>${version.nb}</version>
         </dependency>
     </dependencies>
