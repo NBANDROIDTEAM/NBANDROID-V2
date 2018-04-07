@@ -12,14 +12,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import static org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableStore.POOL;
 import static org.nbandroid.netbeans.gradle.v2.sdk.ui.SDKVisualPanel2Download.NBANDROID_FOLDER;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
-import static org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableStore.POOL;
 
 /**
  *
@@ -48,7 +49,9 @@ public class RankingProvider {
         if (use == null) {
             useMap.put(hash, Integer.MAX_VALUE);
         } else {
-            useMap.put(hash, use - 1);
+            if (use > 1) {
+                useMap.put(hash, use - 1);
+            }
         }
         if (saveFlag.compareAndSet(false, true)) {
             POOL.schedule(new Runnable() {
@@ -56,7 +59,7 @@ public class RankingProvider {
                 public void run() {
                     saveFlag.set(false);
                     try (ObjectOutputStream oStream = new ObjectOutputStream(new FileOutputStream(cacheSubfile))) {
-                        oStream.writeObject(useMap);
+                        oStream.writeObject(new HashMap<>(useMap));
                         oStream.flush();
                     } catch (FileNotFoundException ex) {
                         Exceptions.printStackTrace(ex);

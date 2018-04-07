@@ -18,6 +18,7 @@ import javax.xml.namespace.QName;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleable;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableNamespace;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableStore;
+import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableType;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatform;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatformProvider;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -40,16 +41,24 @@ import org.openide.util.Exceptions;
  */
 public class LayoutCompletionQuery extends AsyncCompletionQuery {
 
+    private enum QueryType {
+        ELEMENT,
+        ATTRIBUTE,
+        VALUE,
+        UNKNOWN
+    }
+
     private JTextComponent component;
     private final FileObject primaryFile;
-    private final int queryType;
+    private QueryType queryType = QueryType.UNKNOWN;
     private CompletionContext.CompletionType currentMode = CompletionContext.CompletionType.COMPLETION_TYPE_UNKNOWN;
-    private List<AndroidStyleable> items = new ArrayList<>();
+    private Map<String, AndroidStyleable> items = new HashMap<>();
     private String startChars = "";
+    private boolean namespaceCompletion = false;
+    private final List<AttrCompletionItem> styleableAttrs = new ArrayList<>();
 
     LayoutCompletionQuery(FileObject primaryFile, int queryType) {
         this.primaryFile = primaryFile;
-        this.queryType = queryType;
     }
 
     @Override
@@ -74,14 +83,27 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
                             CompletionContext.CompletionType completionType = context.getCompletionType();
                             switch (completionType) {
                                 case COMPLETION_TYPE_UNKNOWN:
+                                    //handle bug in CompletionContextImpl
+                                    //at end of attr name it returns COMPLETION_TYPE_UNKNOWN
+                                    if (caretOffset > 10) {
+                                        context = new CompletionContextImpl(primaryFile, support, caretOffset - 1);
+                                        if (context.initContext()) {
+                                            if (context.getCompletionType() == CompletionContext.CompletionType.COMPLETION_TYPE_ATTRIBUTE) {
+                                                makeAttribute(findPlatform, context, primaryFile, androidProject, resultSet, doc, caretOffset);
+                                            }
+                                        }
+                                    }
                                     break;
                                 case COMPLETION_TYPE_ATTRIBUTE:
+                                    queryType = QueryType.ATTRIBUTE;
                                     makeAttribute(findPlatform, context, primaryFile, androidProject, resultSet, doc, caretOffset);
                                     break;
                                 case COMPLETION_TYPE_ATTRIBUTE_VALUE:
+                                    queryType = QueryType.VALUE;
                                     makeAttributeValue(findPlatform, context, primaryFile, androidProject, resultSet, doc, caretOffset);
                                     break;
                                 case COMPLETION_TYPE_ELEMENT:
+                                    queryType = QueryType.ELEMENT;
                                     makeElement(findPlatform, context, primaryFile, androidProject, resultSet, doc, caretOffset);
                                     break;
                                 case COMPLETION_TYPE_ELEMENT_VALUE:
@@ -92,8 +114,6 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
                                     break;
                                 case COMPLETION_TYPE_DTD:
                                     break;
-                                default:
-                                    throw new AssertionError(completionType.name());
 
                             }
 
@@ -108,6 +128,20 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
 
     @Override
     protected boolean canFilter(JTextComponent component) {
+        switch (queryType) {
+            case ELEMENT:
+                return canFilterElement(component);
+            case ATTRIBUTE:
+                return canFilterAttribute(component);
+            case VALUE:
+                return canFilterValue(component);
+            default:
+                return false;
+
+        }
+    }
+
+    private boolean canFilterElement(JTextComponent component) {
         try {
             typedCharsFilter = Utilities.getIdentifierBefore((BaseDocument) component.getDocument(), component.getCaretPosition());
         } catch (BadLocationException ex) {
@@ -119,15 +153,62 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
         return true;
     }
 
+    private boolean canFilterAttribute(JTextComponent component) {
+        try {
+            typedCharsFilter = Utilities.getIdentifierBefore((BaseDocument) component.getDocument(), component.getCaretPosition());
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (typedCharsFilter == null) {
+            typedCharsFilter = "";
+        }
+        return true;
+    }
+
+    private boolean canFilterValue(JTextComponent component) {
+        return false;
+    }
+
     @Override
     protected void filter(CompletionResultSet resultSet) {
-        resultSet.addAllItems(items.stream().filter(c -> c.getFullClassName().startsWith(typedCharsFilter) || c.getName().startsWith(typedCharsFilter)).collect(Collectors.toList()));
+        switch (queryType) {
+            case ELEMENT:
+                filterElement(resultSet);
+            case ATTRIBUTE:
+                filterAttribute(resultSet);
+                break;
+            case VALUE:
+                filterValue(resultSet);
+                break;
+            default:
+                throw new AssertionError(queryType.name());
+
+        }
         resultSet.finish();
+    }
+
+    private void filterElement(CompletionResultSet resultSet) {
+        resultSet.addAllItems(items.values().stream().filter(c -> c.getFullClassName().startsWith(typedCharsFilter) || c.getName().startsWith(typedCharsFilter)).collect(Collectors.toList()));
+    }
+
+    private void filterAttribute(CompletionResultSet resultSet) {
+        resultSet.addAllItems(styleableAttrs.stream().filter(c -> c.getCompletionText().startsWith(typedCharsFilter)).collect(Collectors.toList()));
+
+    }
+
+    private void filterValue(CompletionResultSet resultSet) {
+
     }
 
     private void makeAttribute(AndroidJavaPlatform findPlatform, CompletionContextImpl context, FileObject primaryFile, AndroidProject androidProject, CompletionResultSet resultSet, Document doc, int caretOffset) {
         HashMap<String, String> declaredNamespaces = context.getDeclaredNamespaces();
-        String typedChars = context.getTypedChars();
+        String typedChars = null;
+        //when is cursor at end of text context returns null
+        try {
+            typedChars = Utilities.getIdentifierBefore((BaseDocument) doc, caretOffset);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         List<QName> pathFromRoot = context.getPathFromRoot();
         String attributeRoot = null;
         if (!pathFromRoot.isEmpty()) {
@@ -135,7 +216,78 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
             attributeRoot = qname.getLocalPart();
             AndroidStyleableNamespace platformWidgetNamespaces = findPlatform.getPlatformWidgetNamespaces();
         }
+        if (typedChars == null) {
+            typedChars = "";
+        }
+        final String typed = typedChars;
+        if (attributeRoot == null || "".equals(attributeRoot)) {
+            return;
+        }
+        Map<String, AndroidStyleableNamespace> namespacesIn = AndroidStyleableStore.findNamespaces(primaryFile);
+        AndroidStyleable styleable = findStyleable(attributeRoot, namespacesIn);
+        if (styleable == null) {
+            return;
+        }
+        styleableAttrs.addAll(styleable.getAllAttrs(declaredNamespaces));
+        AndroidStyleable parentStyleable = null;
+        if (pathFromRoot.size() > 1) {
+            for (int i = 0; i < pathFromRoot.size() - 1; i++) {
+                QName qname = pathFromRoot.get(i);
+                attributeRoot = qname.getLocalPart();
+                parentStyleable = findStyleable(attributeRoot, namespacesIn);
+                if (parentStyleable != null && parentStyleable.getAndroidStyleableType() == AndroidStyleableType.Layout) {
+                    List<AndroidStyleable> findAllLayoutParams = parentStyleable.findAllLayoutParams();
+                    for (AndroidStyleable superS : findAllLayoutParams) {
+                        List<AttrCompletionItem> allAttrs = superS.getAllAttrs(declaredNamespaces);
+                        for (AttrCompletionItem allAttr : allAttrs) {
+                            if (!styleableAttrs.contains(allAttr)) {
+                                styleableAttrs.add(allAttr);
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+        if ("".equals(typed)) {
+            resultSet.addAllItems(styleableAttrs);
+        } else {
+            resultSet.addAllItems(styleableAttrs.stream().filter(c -> c.getCompletionText().startsWith(typed)).collect(Collectors.toList()));
+        }
         System.out.println("org.nbandroid.netbeans.gradle.v2.layout.completion.LayoutCompletionQuery.makeAttribute()");
+    }
+
+    public AndroidStyleable findStyleable(String attributeRoot, Map<String, AndroidStyleableNamespace> namespacesIn) {
+        AndroidStyleable styleable = null;
+        if (!attributeRoot.contains(".")) {
+            //android
+            for (Map.Entry<String, AndroidStyleableNamespace> entry : namespacesIn.entrySet()) {
+                AndroidStyleableNamespace androidStyleableNamespace = entry.getValue();
+                styleable = androidStyleableNamespace.getLayoutsSimpleNames().get(attributeRoot);
+                if (styleable != null) {
+                    break;
+                }
+                styleable = androidStyleableNamespace.getWitgetsSimpleNames().get(attributeRoot);
+                if (styleable != null) {
+                    break;
+                }
+
+            }
+            return styleable;
+        } else {
+            for (Map.Entry<String, AndroidStyleableNamespace> entry : namespacesIn.entrySet()) {
+                AndroidStyleableNamespace androidStyleableNamespace = entry.getValue();
+                styleable = androidStyleableNamespace.getLayouts().get(attributeRoot);
+                if (styleable != null) {
+                    break;
+                }
+                styleable = androidStyleableNamespace.getWitgets().get(attributeRoot);
+                if (styleable != null) {
+                    break;
+                }
+            }
+            return styleable;
+        }
     }
 
     private void makeAttributeValue(AndroidJavaPlatform findPlatform, CompletionContextImpl context, FileObject primaryFile, AndroidProject androidProject, CompletionResultSet resultSet, Document doc, int caretOffset) {
@@ -169,12 +321,6 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
             typedChars = "";
         }
         final String typed = typedChars;
-        String elementRoot = null;
-        List<QName> pathFromRoot = context.getPathFromRoot();
-        if (!pathFromRoot.isEmpty()) {
-            QName qname = pathFromRoot.get(pathFromRoot.size() - 1);
-            elementRoot = qname.getLocalPart();
-        }
         Map<String, AndroidStyleableNamespace> namespacesIn = AndroidStyleableStore.findNamespaces(primaryFile);
         Map<String, AndroidStyleableNamespace> namespaces = new HashMap<>();
         for (Map.Entry<String, String> entry : declaredNamespaces.entrySet()) {
@@ -183,8 +329,8 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
             AndroidStyleableNamespace tmp = namespacesIn.get(nameSpace);
             if (tmp != null) {
                 namespaces.put(name, tmp);
-                items.addAll(tmp.getLayouts().values());
-                items.addAll(tmp.getWitgets().values());
+                items.putAll(tmp.getLayouts());
+                items.putAll(tmp.getWitgets());
             }
         }
         if (namespaces.isEmpty()) {
@@ -192,11 +338,10 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
         }
         startChars = typed;
         if ("".equals(typed)) {
-            resultSet.addAllItems(items);
+            resultSet.addAllItems(items.values());
         } else {
-            resultSet.addAllItems(items.stream().filter(c -> c.getFullClassName().startsWith(typed) || c.getName().startsWith(typed)).collect(Collectors.toList()));
+            resultSet.addAllItems(items.values().stream().filter(c -> c.getFullClassName().startsWith(typed) || c.getName().startsWith(typed)).collect(Collectors.toList()));
         }
-        System.out.println("org.nbandroid.netbeans.gradle.v2.layout.completion.LayoutCompletionQuery.makeElement()");
     }
 
 }

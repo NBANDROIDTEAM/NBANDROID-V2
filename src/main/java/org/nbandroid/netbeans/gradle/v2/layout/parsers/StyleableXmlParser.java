@@ -190,7 +190,7 @@ public class StyleableXmlParser {
                 AndroidStyleable styleable = entry.getValue();
                 String superStyleableName = styleable.getSuperStyleableName();
                 if (superStyleableName != null) {
-                    styleable.setSuperStyleable(styleableMap.get(superStyleableName));
+                    styleable.setSuperStyleable(styleableMap.get(getSimpleClassName(superStyleableName)));
                 }
                 switch (styleable.getAndroidStyleableType()) {
 
@@ -293,7 +293,7 @@ public class StyleableXmlParser {
                         if (attr != null) {
                             styleableAttrsOut.add(AndroidStyleableStore.getOrAddAttr(attr));
                         } else {
-                            styleableAttrsOut.add(AndroidStyleableStore.getOrAddAttr(styleableAttr));
+                            styleableAttrsOut.add(AndroidStyleableStore.findOrAddAttr(styleableAttr));
                         }
                     } else {
                         styleableAttrsOut.add(AndroidStyleableStore.getOrAddAttr(styleableAttr));
@@ -455,6 +455,14 @@ public class StyleableXmlParser {
 
         }
         return !layouts.isEmpty() || !layoutsParams.isEmpty() || !witgets.isEmpty();
+    }
+
+    private static String getSimpleClassName(String superStyleableName) {
+        if (superStyleableName.contains(".")) {
+            return superStyleableName.substring(superStyleableName.lastIndexOf('.') + 1);
+        } else {
+            return superStyleableName;
+        }
     }
 
     /**

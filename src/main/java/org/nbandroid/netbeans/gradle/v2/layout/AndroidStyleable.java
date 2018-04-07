@@ -25,19 +25,28 @@ import java.awt.event.KeyEvent;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.nbandroid.netbeans.gradle.v2.layout.completion.AttrCompletionItem;
 import org.nbandroid.netbeans.gradle.v2.layout.completion.RankingProvider;
+import org.nbandroid.netbeans.gradle.v2.layout.completion.StyleableIconProvider;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -52,8 +61,10 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -127,8 +138,71 @@ public class AndroidStyleable implements Serializable, CompletionItem {
         }
     }
 
+    /**
+     * Get attributes from this styleable
+     *
+     * @return
+     */
     public List<AndroidStyleableAttr> getAttrs() {
         return attrs;
+    }
+
+    /**
+     * Get attributes from this styleable and its super classes
+     *
+     * @return
+     */
+    public List<AttrCompletionItem> getAllAttrs(HashMap<String, String> declaredNamespaces) {
+        Map<String, String> nameSpaces = declaredNamespaces.entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+        List<AttrCompletionItem> tmp = new ArrayList<>();
+        for (AndroidStyleableAttr attr : attrs) {
+            tmp.add(new AttrCompletionItem(this, attr, nameSpaces.get(nameSpace.getNamespace())));
+        }
+        AndroidStyleable superLoad = superStyleable;
+        while (superLoad != null) {
+            List<AndroidStyleableAttr> attrsSuper = superLoad.getAttrs();
+            for (AndroidStyleableAttr attr : attrsSuper) {
+                AttrCompletionItem item = new AttrCompletionItem(superLoad, attr, nameSpaces.get(superLoad.nameSpace.getNamespace()));
+                if (!tmp.contains(item)) {
+                    tmp.add(item);
+                }
+            }
+            superLoad = superLoad.getSuperStyleable();
+        }
+        return tmp;
+    }
+
+    public List<AndroidStyleable> findLayoutParams() {
+        List<AndroidStyleable> tmp = new ArrayList<>();
+        if (androidStyleableType != AndroidStyleableType.Layout) {
+            return null;
+        }
+        Map<String, AndroidStyleable> map = nameSpace.getLayoutsParamsSimpleNames();
+        for (Map.Entry<String, AndroidStyleable> entry : map.entrySet()) {
+            String key = entry.getKey();
+            AndroidStyleable value = entry.getValue();
+            if (key.endsWith("LayoutParams")) {
+                tmp.add(value);
+            }
+        }
+        return tmp;
+    }
+
+    public List<AndroidStyleable> findAllLayoutParams() {
+        List<AndroidStyleable> tmp = new ArrayList<>();
+        List<AndroidStyleable> local = findLayoutParams();
+        if (local != null) {
+            tmp.addAll(local);
+        }
+        AndroidStyleable superLoad = superStyleable;
+        while (superLoad != null) {
+            List<AndroidStyleable> ext = superLoad.findLayoutParams();
+            if (ext != null) {
+                tmp.addAll(ext);
+            }
+            superLoad = superLoad.getSuperStyleable();
+        }
+        return tmp;
     }
 
     public AndroidStyleable getSuperStyleable() {
@@ -246,7 +320,21 @@ public class AndroidStyleable implements Serializable, CompletionItem {
 
     @Override
     public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
-        CompletionUtilities.renderHtml(null, getFullClassName(), getAndroidStyleableType().name(),
+        ImageIcon icon = null;
+        Collection<? extends StyleableIconProvider> iconProviders = Lookup.getDefault().lookupAll(StyleableIconProvider.class);
+        Iterator<? extends StyleableIconProvider> iterator = iconProviders.iterator();
+        while (iterator.hasNext()) {
+            StyleableIconProvider iconProvider = iterator.next();
+            try {
+                icon = iconProvider.getIcon(fullClassName, androidStyleableType);
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+            }
+            if (icon != null) {
+                break;
+            }
+        }
+        CompletionUtilities.renderHtml(icon, getFullClassName(), getAndroidStyleableType().name(),
                 g, defaultFont, defaultColor, width, height, selected);
         Completion c = Completion.get();
         c.hideDocumentation();
@@ -348,7 +436,21 @@ public class AndroidStyleable implements Serializable, CompletionItem {
 
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            System.out.println("org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleable.DocQuery.query()");
+            //TODO code cleanup
+            if (classFileURL == null) {
+                //attempt to find the class in global classpath
+                for (ClassPath cp : GlobalPathRegistry.getDefault().getPaths(ClassPath.COMPILE)) {
+                    FileObject f = cp.findResource(fullClassName.replace(".", "/") + ".class");
+                    if (f != null) {
+                        classFileURL = f.toURL();
+                        break;
+                    }
+                }
+                FileObject fo = GlobalPathRegistry.getDefault().findResource(fullClassName.replace(".", "/") + ".java");
+                if (fo != null) {
+                    classFileURL = fo.toURL();
+                }
+            }
             if (classFileURL != null) {
                 JavaSource javaSource = JavaSource.forFileObject(URLMapper.findFileObject(classFileURL));
                 final CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -368,9 +470,27 @@ public class AndroidStyleable implements Serializable, CompletionItem {
                     Exceptions.printStackTrace(ex);
                 }
             } else {
-                resultSet.setDocumentation(new DocItem(getFullClassName()));
+                resultSet.setDocumentation(new DocItem(createNotFoundJavaDoc()));
             }
             resultSet.finish();
+        }
+
+        private static final String NOT_FOUND = "*package*<br><br>"
+                + "public class <b>*class*</b> extends *super*<br><br>"
+                + "<font color=\"#7c0000\">Javadoc not found.</font><br>";
+
+        private String createNotFoundJavaDoc() {
+            String packageName = "";
+            if (fullClassName.contains(".")) {
+                packageName = fullClassName.substring(0, fullClassName.lastIndexOf('.'));
+            }
+            String superName = "Object";
+            if (superStyleable != null) {
+                superName = superStyleable.name;
+            }
+            return NOT_FOUND.replace("*package*", packageName)
+                    .replace("*super*", superName)
+                    .replace("*class*", name);
         }
     }
 
