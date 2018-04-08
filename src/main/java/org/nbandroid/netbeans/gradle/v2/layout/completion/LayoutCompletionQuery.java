@@ -261,6 +261,20 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
                 }
             }
 
+        } else {
+            //#101 Root element styleable android:layout_width not found
+            AndroidStyleable superStyleable = styleable.getSuperStyleable();
+            if (superStyleable != null) {
+                List<AndroidStyleable> findAllLayoutParams = superStyleable.findAllLayoutParams();
+                for (AndroidStyleable superS : findAllLayoutParams) {
+                    List<AttrCompletionItem> allAttrs = superS.getAllAttrs(declaredNamespaces);
+                    for (AttrCompletionItem allAttr : allAttrs) {
+                        if (!styleableAttrs.contains(allAttr)) {
+                            styleableAttrs.add(allAttr);
+                        }
+                    }
+                }
+            }
         }
         if ("".equals(typed)) {
             resultSet.addAllItems(styleableAttrs);

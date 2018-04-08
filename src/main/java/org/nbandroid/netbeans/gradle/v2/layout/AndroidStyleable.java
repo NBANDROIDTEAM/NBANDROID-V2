@@ -368,7 +368,7 @@ public class AndroidStyleable implements Serializable, CompletionItem {
 
     @Override
     public CharSequence getInsertPrefix() {
-        return "";
+        return name;
     }
 
     private class DocItem implements CompletionDocumentation {
