@@ -193,7 +193,7 @@ public class AttrCompletionItem implements CompletionItem {
 
     @Override
     public CharSequence getInsertPrefix() {
-        return "";
+        return attr.getName();
     }
 
     @Override
@@ -288,5 +288,11 @@ public class AttrCompletionItem implements CompletionItem {
             return null;
         }
     }
+
+    @Override
+    public String toString() {
+        return completionText; //To change body of generated methods, choose Tools | Templates.
+    }
+
 
 }
