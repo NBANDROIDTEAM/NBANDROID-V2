@@ -1,0 +1,51 @@
+<!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.1//EN" "http://www.netbeans.org/dtds/mime-resolver-1_1.dtd">
+<MIME-resolver>
+    <file>
+        <name name="strings.xml"/>
+        <resolver mime="text/x-android-strings+xml">
+            <xml-rule>
+                <element name="resources"/>
+            </xml-rule>
+        </resolver>
+    </file>
+    <file>
+        <name name="colors.xml"/>
+        <resolver mime="text/x-android-colors+xml">
+            <xml-rule>
+                <element name="resources"/>
+            </xml-rule>
+        </resolver>
+    </file>
+    <file>
+        <name name="dimens.xml"/>
+        <resolver mime="text/x-android-dimens+xml">
+            <xml-rule>
+                <element name="resources"/>
+            </xml-rule>
+        </resolver>
+    </file>
+    <file>
+        <name name="styles.xml"/>
+        <resolver mime="text/x-android-styles+xml">
+            <xml-rule>
+                <element name="resources"/>
+            </xml-rule>
+        </resolver>
+    </file>
+    <file>
+        <name name="attrs.xml"/>
+        <resolver mime="text/x-android-attrs+xml">
+            <xml-rule>
+                <element name="resources"/>
+            </xml-rule>
+        </resolver>
+    </file>
+    <file>
+        <name name="array.xml"/>
+        <resolver mime="text/x-android-array+xml">
+            <xml-rule>
+                <element name="resources"/>
+            </xml-rule>
+        </resolver>
+    </file>
+</MIME-resolver>
