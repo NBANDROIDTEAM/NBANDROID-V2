@@ -288,6 +288,16 @@ public class GradleAndroidSources implements Sources, AndroidModelAware {
                         : srcDir.getAbsolutePath();
                 grps.add(GenericSources.group(project, src, srcName, "App resources " + srcName, null, null));
             }
+            for (File srcDir : aProject.getDefaultConfig().getSourceProvider().getAssetsDirectories()) {
+                if (!srcDir.exists()) {
+                    continue;
+                }
+                FileObject src = FileUtil.toFileObject(srcDir);
+                String srcName = FileUtil.isParentOf(prjDir, src)
+                        ? FileUtil.getRelativePath(prjDir, src)
+                        : srcDir.getAbsolutePath();
+                grps.add(GenericSources.group(project, src, srcName, "App assets " + srcName, null, null));
+            }
         }
         BuildTypeContainer buildTypeContainer = buildConfig.getCurrentBuildTypeContainer();
         if (buildTypeContainer != null) {
@@ -300,6 +310,16 @@ public class GradleAndroidSources implements Sources, AndroidModelAware {
                         ? FileUtil.getRelativePath(prjDir, src)
                         : srcDir.getAbsolutePath();
                 grps.add(GenericSources.group(project, src, srcName, "App resources " + srcName, null, null));
+            }
+            for (File srcDir : buildTypeContainer.getSourceProvider().getAssetsDirectories()) {
+                if (!srcDir.exists()) {
+                    continue;
+                }
+                FileObject src = FileUtil.toFileObject(srcDir);
+                String srcName = FileUtil.isParentOf(prjDir, src)
+                        ? FileUtil.getRelativePath(prjDir, src)
+                        : srcDir.getAbsolutePath();
+                grps.add(GenericSources.group(project, src, srcName, "App assets " + srcName, null, null));
             }
         }
         return grps.toArray(new SourceGroup[grps.size()]);
