@@ -786,7 +786,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <version.android>25.3.0</version.android>
-        <version.nb.gradle>1.4.2</version.nb.gradle>
+        <version.nb.gradle>1.4.3</version.nb.gradle>
         <android.gradle.model.version>3.0.1</android.gradle.model.version>
         <!--1.4.2-->
     </properties>
