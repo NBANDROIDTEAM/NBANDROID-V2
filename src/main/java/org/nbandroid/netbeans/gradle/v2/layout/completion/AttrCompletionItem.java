@@ -62,6 +62,8 @@ public class AttrCompletionItem implements CompletionItem {
     private final AndroidStyleableAttr attr;
     private final String prefix;
     private final String completionText;
+    private final String lowerCasecompletionText;
+    private final String lowerCaseSimpleCompletionText;
     private String classNameText;
     private final String typeNames;
 
@@ -81,6 +83,20 @@ public class AttrCompletionItem implements CompletionItem {
             types.add(t.toString());
         });
         typeNames = String.join(", ", types);
+        lowerCasecompletionText = completionText.toLowerCase();
+        if (attr.getName() != null) {
+            lowerCaseSimpleCompletionText = attr.getName().toLowerCase();
+        } else {
+            lowerCaseSimpleCompletionText = "";
+        }
+    }
+
+    public String getLowerCasecompletionText() {
+        return lowerCasecompletionText;
+    }
+
+    public String getLowerCaseSimpleCompletionText() {
+        return lowerCaseSimpleCompletionText;
     }
 
     public String getClassNameText() {
@@ -293,6 +309,5 @@ public class AttrCompletionItem implements CompletionItem {
     public String toString() {
         return completionText; //To change body of generated methods, choose Tools | Templates.
     }
-
 
 }

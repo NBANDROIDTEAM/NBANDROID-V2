@@ -163,6 +163,7 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
         if (typedCharsFilter == null) {
             typedCharsFilter = "";
         }
+        typedCharsFilter = typedCharsFilter.toLowerCase();
         return true;
     }
 
@@ -175,6 +176,7 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
         if (typedCharsFilter == null) {
             typedCharsFilter = "";
         }
+        typedCharsFilter = typedCharsFilter.toLowerCase();
         return true;
     }
 
@@ -201,12 +203,11 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
     }
 
     private void filterElement(CompletionResultSet resultSet) {
-        resultSet.addAllItems(items.values().stream().filter(c -> c.getFullClassName().startsWith(typedCharsFilter) || c.getName().startsWith(typedCharsFilter)).collect(Collectors.toList()));
+        resultSet.addAllItems(items.values().stream().filter(c -> c.getLowerCaseFullClassName().startsWith(typedCharsFilter) || c.getLowerCaseName().startsWith(typedCharsFilter) || c.getUpperCaseLetters().equals(typedCharsFilter)).collect(Collectors.toList()));
     }
 
     private void filterAttribute(CompletionResultSet resultSet) {
-        resultSet.addAllItems(styleableAttrs.stream().filter(c -> c.getCompletionText().startsWith(typedCharsFilter)).collect(Collectors.toList()));
-
+        resultSet.addAllItems(styleableAttrs.stream().filter(c -> c.getLowerCasecompletionText().startsWith(typedCharsFilter) || c.getLowerCaseSimpleCompletionText().startsWith(typedCharsFilter)).collect(Collectors.toList()));
     }
 
     private void filterValue(CompletionResultSet resultSet) {
@@ -232,10 +233,10 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
         if (typedChars == null) {
             typedChars = "";
         }
-        final String typed = typedChars;
         if (attributeRoot == null || "".equals(attributeRoot)) {
             return;
         }
+        final String typed = typedChars.toLowerCase();
         Map<String, AndroidStyleableNamespace> namespacesIn = AndroidStyleableStore.findNamespaces(primaryFile);
         AndroidStyleable styleable = findStyleable(attributeRoot, namespacesIn);
         if (styleable == null) {
@@ -279,7 +280,8 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
         if ("".equals(typed)) {
             resultSet.addAllItems(styleableAttrs);
         } else {
-            resultSet.addAllItems(styleableAttrs.stream().filter(c -> c.getCompletionText().startsWith(typed)).collect(Collectors.toList()));
+            resultSet.addAllItems(styleableAttrs.stream().filter(c -> c.getLowerCasecompletionText().startsWith(typed) || c.getLowerCaseSimpleCompletionText().startsWith(typed)).collect(Collectors.toList()));
+
         }
         System.out.println("org.nbandroid.netbeans.gradle.v2.layout.completion.LayoutCompletionQuery.makeAttribute()");
     }
@@ -347,7 +349,7 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
             //cursor is after <
             typedChars = "";
         }
-        final String typed = typedChars;
+        final String typed = typedChars.toLowerCase();
         Map<String, AndroidStyleableNamespace> namespacesIn = AndroidStyleableStore.findNamespaces(primaryFile);
         Map<String, AndroidStyleableNamespace> namespaces = new HashMap<>();
         for (Map.Entry<String, String> entry : declaredNamespaces.entrySet()) {
@@ -367,7 +369,7 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
         if ("".equals(typed)) {
             resultSet.addAllItems(items.values());
         } else {
-            resultSet.addAllItems(items.values().stream().filter(c -> c.getFullClassName().startsWith(typed) || c.getName().startsWith(typed)).collect(Collectors.toList()));
+            resultSet.addAllItems(items.values().stream().filter(c -> c.getLowerCaseFullClassName().startsWith(typed) || c.getLowerCaseName().startsWith(typed) || c.getUpperCaseLetters().equals(typed)).collect(Collectors.toList()));
         }
     }
 

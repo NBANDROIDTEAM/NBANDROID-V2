@@ -81,6 +81,9 @@ public class AndroidStyleable implements Serializable, CompletionItem {
     private String fullClassName;
     private AndroidStyleableType androidStyleableType = AndroidStyleableType.ToBeDetermined;
     private URL classFileURL = null;
+    private transient String lowerCaseFullClassName = null;
+    private transient String lowerCaseName = null;
+    private transient String upperCaseLetters = null;
 
     public AndroidStyleable(AndroidStyleableNamespace nameSpace, String name) {
         this.nameSpace = nameSpace;
@@ -111,6 +114,35 @@ public class AndroidStyleable implements Serializable, CompletionItem {
 
     public String getName() {
         return name;
+    }
+
+    public String getLowerCaseFullClassName() {
+        if (lowerCaseFullClassName == null && fullClassName != null) {
+            lowerCaseFullClassName = fullClassName.toLowerCase();
+        }
+        return lowerCaseFullClassName;
+    }
+
+    public String getLowerCaseName() {
+        if (lowerCaseName == null && name != null) {
+            lowerCaseName = name.toLowerCase();
+        }
+        return lowerCaseName;
+    }
+
+    public String getUpperCaseLetters() {
+        String tmp = "";
+        if (name != null && upperCaseLetters == null) {
+            for (char c : name.toCharArray()) {
+                if (Character.isUpperCase(c)) {
+                    tmp += c;
+                }
+            }
+            upperCaseLetters = tmp.toLowerCase();
+        } else if (upperCaseLetters != null) {
+            return upperCaseLetters;
+        }
+        return tmp;
     }
 
     public void createLayuotIfNotExist(Map<String, AndroidStyleable> fullClassNames, Map<String, AndroidStyleable> layouts, Map<String, AndroidStyleable> layoutsSimple) {
