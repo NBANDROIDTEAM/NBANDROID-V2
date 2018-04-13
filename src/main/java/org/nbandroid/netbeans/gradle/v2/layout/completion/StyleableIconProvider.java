@@ -61,4 +61,11 @@ public interface StyleableIconProvider {
      * @return
      */
     public ImageIcon getLayoutAttrIcon();
+
+    /**
+     * return icon for Tools attribute or null if not supported
+     *
+     * @return
+     */
+    public ImageIcon getToolsAttrIcon();
 }

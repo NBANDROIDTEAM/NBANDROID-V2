@@ -25,7 +25,7 @@ import java.util.Objects;
  *
  * @author arsi
  */
-public class AndroidStyleableAttrFlag implements Serializable {
+public class AndroidStyleableAttrFlag implements Serializable, AndroidStyleableAttrArray {
 
     private final String name;
     private final String value;

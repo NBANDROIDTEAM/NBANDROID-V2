@@ -29,9 +29,11 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.xml.namespace.QName;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleable;
+import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableAttr;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableNamespace;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableStore;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableType;
+import org.nbandroid.netbeans.gradle.v2.layout.tools.ToolsNamespaceProvider;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatform;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatformProvider;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -274,6 +276,16 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
                             styleableAttrs.add(allAttr);
                         }
                     }
+                }
+            }
+        }
+        for (Map.Entry<String, String> entry : declaredNamespaces.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            if (AndroidStyleableStore.TOOLS_NAMESPACE.equalsIgnoreCase(value)) {
+                List<AndroidStyleableAttr> allToolsAttrs = ToolsNamespaceProvider.getAllToolsAttrs();
+                for (AndroidStyleableAttr allToolsAttr : allToolsAttrs) {
+                    styleableAttrs.add(new AttrCompletionItem(null, allToolsAttr, key));
                 }
             }
         }

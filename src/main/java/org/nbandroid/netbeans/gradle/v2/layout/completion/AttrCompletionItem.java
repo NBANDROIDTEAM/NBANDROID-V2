@@ -114,28 +114,37 @@ public class AttrCompletionItem implements CompletionItem {
         while (iterator.hasNext()) {
             StyleableIconProvider iconProvider = iterator.next();
             try {
-                switch (styleable.getAndroidStyleableType()) {
-                    case Widget:
-                        try {
-                            icon = iconProvider.getWidgetAttrIcon();
-                        } catch (Exception e) {
-                            Exceptions.printStackTrace(e);
-                        }
-                        break;
-                    case Layout:
-                        try {
-                            icon = iconProvider.getLayoutAttrIcon();
-                        } catch (Exception e) {
-                            Exceptions.printStackTrace(e);
-                        }
-                        break;
-                    case LayoutParams:
-                        try {
-                            icon = iconProvider.getWidgetLayoutAttrIcon();
-                        } catch (Exception e) {
-                            Exceptions.printStackTrace(e);
-                        }
-                        break;
+                if (styleable != null) {
+                    switch (styleable.getAndroidStyleableType()) {
+                        case Widget:
+                            try {
+                                icon = iconProvider.getWidgetAttrIcon();
+                            } catch (Exception e) {
+                                Exceptions.printStackTrace(e);
+                            }
+                            break;
+                        case Layout:
+                            try {
+                                icon = iconProvider.getLayoutAttrIcon();
+                            } catch (Exception e) {
+                                Exceptions.printStackTrace(e);
+                            }
+                            break;
+                        case LayoutParams:
+                            try {
+                                icon = iconProvider.getWidgetLayoutAttrIcon();
+                            } catch (Exception e) {
+                                Exceptions.printStackTrace(e);
+                            }
+                            break;
+                    }
+                } else {
+                    try {
+                        icon = iconProvider.getToolsAttrIcon();
+                    } catch (Exception e) {
+                        Exceptions.printStackTrace(e);
+                    }
+                    break;
                 }
             } catch (Exception e) {
                 Exceptions.printStackTrace(e);
@@ -282,10 +291,15 @@ public class AttrCompletionItem implements CompletionItem {
 
         @Override
         public String getText() {
+            String cls = "";
+            if (styleable != null) {
+                cls = "Class: <b>" + styleable.getFullClassName() + "<br>";
+            }
             if (attr.getDescription() != null && !"".equals(attr.getDescription())) {
-                return "&nbsp;Attr: <b>" + attr.getName() + "</b><br>Class: <b>" + styleable.getFullClassName() + "<br></b>Value: <b>" + typeNames + "</b><br><br>" + attr.getDescription() + "<br><br>" + getEnums() + getFlags();
+
+                return "&nbsp;Attr: <b>" + attr.getName() + "</b><br>" + cls + "</b>Value: <b>" + typeNames + "</b><br><br>" + attr.getDescription() + "<br><br>" + getEnums() + getFlags();
             } else {
-                return "&nbsp;Attr: <b>" + attr.getName() + "</b><br>Class: <b>" + styleable.getFullClassName() + "<br></b>Value: <b>" + typeNames + "</b><br><br><font color=\"#7c0000\">Attribute doc not found.</font><br><br>" + getEnums() + getFlags();
+                return "&nbsp;Attr: <b>" + attr.getName() + "</b><br>" + cls + "</b>Value: <b>" + typeNames + "</b><br><br><font color=\"#7c0000\">Attribute doc not found.</font><br><br>" + getEnums() + getFlags();
             }
         }
 
