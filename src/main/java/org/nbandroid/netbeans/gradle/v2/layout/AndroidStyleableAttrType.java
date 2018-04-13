@@ -36,6 +36,7 @@ public enum AndroidStyleableAttrType implements Serializable {
     Flag,
     Integer,
     String,
+    Locale,
     Enum,
     Fraction,
     Unknown;
@@ -77,6 +78,8 @@ public enum AndroidStyleableAttrType implements Serializable {
                 return Enum;
             case "fraction":
                 return Fraction;
+            case "locale":
+                return Locale;
             default:
                 return Unknown;
         }

@@ -26,7 +26,7 @@ import java.util.Objects;
  *
  * @author arsi
  */
-public class AndroidStyleableAttrEnum implements Serializable {
+public class AndroidStyleableAttrEnum implements Serializable, AndroidStyleableAttrArray {
 
     private final String name;
     private final String value;

@@ -53,6 +53,10 @@ public class DefaultStyleableIconProvider implements StyleableIconProvider {
     private static final String WIDGET_LAYOUT_ATTR_ICON_RES = "org/nbandroid/netbeans/gradle/v2/layout/widget_layout_attr.png";
     public static final ImageIcon WIDGET_LAYOUT_ATTR = new ImageIcon(ImageUtilities.loadImage(WIDGET_LAYOUT_ATTR_ICON_RES));
 
+    @StaticResource
+    private static final String TOOLS_ATTR_ICON_RES = "org/nbandroid/netbeans/gradle/v2/layout/tools_attr.png";
+    public static final ImageIcon TOOLS_ATTR_ICON = new ImageIcon(ImageUtilities.loadImage(TOOLS_ATTR_ICON_RES));
+
     @Override
     public ImageIcon getIcon(String fullClassName, AndroidStyleableType androidStyleableType) {
         switch (androidStyleableType) {
@@ -78,6 +82,11 @@ public class DefaultStyleableIconProvider implements StyleableIconProvider {
     @Override
     public ImageIcon getWidgetLayoutAttrIcon() {
         return WIDGET_LAYOUT_ATTR;
+    }
+
+    @Override
+    public ImageIcon getToolsAttrIcon() {
+        return TOOLS_ATTR_ICON;
     }
 
 }

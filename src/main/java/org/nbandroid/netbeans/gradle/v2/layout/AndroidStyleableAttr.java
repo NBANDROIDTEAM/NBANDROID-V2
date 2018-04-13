@@ -66,6 +66,29 @@ public class AndroidStyleableAttr implements Serializable {
         handleBugs();
     }
 
+    public AndroidStyleableAttr(AndroidStyleableAttrType attrType, String name, String description, AndroidStyleableAttrArray... values) {
+        this.attrTypes = EnumSet.of(attrType);
+        if (values.length == 0) {
+            throw new UnsupportedOperationException("");
+        }
+        if (values[0] instanceof AndroidStyleableAttrFlag) {
+
+            this.enums = new AndroidStyleableAttrEnum[0];
+            this.flags = Arrays.copyOf(values, values.length, AndroidStyleableAttrFlag[].class);
+        } else {
+            this.enums = Arrays.copyOf(values, values.length, AndroidStyleableAttrEnum[].class);
+            this.flags = new AndroidStyleableAttrFlag[0];
+        }
+        this.description = description;
+        if (name.contains(":")) {
+            this.name = name.substring(name.lastIndexOf(':') + 1);
+        } else {
+            this.name = name;
+        }
+        handleBugs();
+    }
+
+
     private void handleBugs() {
         Collection<? extends StyleableAttrBugProvider> bugProviders = Lookup.getDefault().lookupAll(StyleableAttrBugProvider.class);
         Iterator<? extends StyleableAttrBugProvider> iterator = bugProviders.iterator();
