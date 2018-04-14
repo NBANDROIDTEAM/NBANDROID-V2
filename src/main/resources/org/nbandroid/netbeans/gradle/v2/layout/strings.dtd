@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+    TODO define vocabulary identification
+    PUBLIC ID: -//vendor//vocabulary//EN
+    SYSTEM ID: http://server/path/strings.dtd
+
+-->
+
+<!--
+    An example how to use this DTD from your XML document:
+
+    <?xml version="1.0"?>
+
+    <!DOCTYPE resources SYSTEM "strings.dtd">
+
+    <resources>
+    ...
+    </resources>
+-->
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT resources (string)*>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT string (#PCDATA)>
+<!ATTLIST string
+    name CDATA #IMPLIED
+  >

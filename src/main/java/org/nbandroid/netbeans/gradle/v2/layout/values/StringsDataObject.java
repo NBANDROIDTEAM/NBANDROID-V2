@@ -1,46 +1,75 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.nbandroid.netbeans.gradle.v2.layout.values;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
+import java.io.IOException;
+import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleable;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
-import org.openide.loaders.XMLDataObject;
+import org.openide.nodes.CookieSet;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
+import org.openide.windows.TopComponent;
 
 /**
  *
  * @author arsi
  */
-//@MIMEResolver.Registration(
-//        resource = "StringsResolver.xml",
-//        displayName = "Android strings.xml"
-//)
-//@DataObject.Registration(
-//        mimeType = "text/x-android-strings+xml",
-//        iconBase = "org/nbandroid/netbeans/gradle/v2/layout/layout.png",
-//        displayName = "strings.xml",
-//        position = 300
-//)
-public class StringsDataObject extends XMLDataObject {
+@MIMEResolver.Registration(
+        resource = "StringsResolver.xml",
+        displayName = "Android strings.xml"
+)
+@DataObject.Registration(
+        mimeType = "text/x-android-strings+xml",
+        iconBase = "org/nbandroid/netbeans/gradle/v2/layout/icon-text-16.png",
+        displayName = "strings.xml",
+        position = 300
+)
+public class StringsDataObject extends MultiDataObject {
 
-    public StringsDataObject(FileObject fo, MultiFileLoader loader) throws DataObjectExistsException {
-        super(fo, loader);
-        Project owner = FileOwnerQuery.getOwner(fo);
-        addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                System.out.println(evt.getPropertyName() + "=" + evt.getNewValue());
-            }
-        });
+    public static final String SETTINGS_MIME_TYPE = "text/x-android-strings+xml";
+
+    public StringsDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
+        super(pf, loader);
+        final CookieSet cookies = getCookieSet();
+        registerEditor(SETTINGS_MIME_TYPE, false);
+        cookies.add(new ResourceXsdValidateXMLSupport(DataObjectAdapters.inputSource(this), AndroidStyleable.class.getResource("strings.xsd")));
     }
 
+    @Messages("Source=&Source")
+    @MultiViewElement.Registration(
+            displayName = "#Source",
+            iconBase = "org/nbandroid/netbeans/gradle/v2/layout/icon-text-16.png",
+            mimeType = "text/x-android-strings+xml",
+            persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+            preferredID = "source",
+            position = 1
+    )
+    public static MultiViewEditorElement createEditor(Lookup lkp) {
+        return new MultiViewEditorElement(lkp);
+    }
 
 }
