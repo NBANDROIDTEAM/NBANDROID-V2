@@ -3,7 +3,7 @@
     <xs:element name="resources">
         <xs:complexType>
             <xs:sequence>
-                <xs:element maxOccurs="unbounded" name="string">
+                <xs:element maxOccurs="unbounded" name="color">
                     <xs:complexType>
                         <xs:simpleContent>
                             <xs:extension base="xs:string">
