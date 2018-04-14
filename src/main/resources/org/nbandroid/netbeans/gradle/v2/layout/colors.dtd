@@ -1,0 +1,10 @@
+<?xml encoding="UTF-8"?>
+
+<!ELEMENT resources (color)+>
+<!ATTLIST resources
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT color (#PCDATA)>
+<!ATTLIST color
+  xmlns CDATA #FIXED ''
+  name NMTOKEN #REQUIRED>

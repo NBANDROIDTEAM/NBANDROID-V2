@@ -1,0 +1,15 @@
+<?xml encoding="UTF-8"?>
+
+<!ELEMENT resources (string-array)+>
+<!ATTLIST resources
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT string-array (item)+>
+<!ATTLIST string-array
+  xmlns CDATA #FIXED ''
+  name NMTOKEN #REQUIRED>
+
+<!ELEMENT item (#PCDATA)>
+<!ATTLIST item
+  xmlns CDATA #FIXED ''>
+

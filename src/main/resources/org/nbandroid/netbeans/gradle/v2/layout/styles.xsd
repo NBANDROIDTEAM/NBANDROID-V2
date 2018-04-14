@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xs:element name="resources">
+        <xs:complexType>
+            <xs:choice maxOccurs="unbounded">
+                <xs:element ref="eat-comment"/>
+                <xs:element ref="style"/>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="eat-comment">
+        <xs:complexType/>
+    </xs:element>
+    <xs:element name="style">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="item"/>
+            </xs:sequence>
+            <xs:attribute name="name" use="required" type="xs:NCName"/>
+            <xs:attribute name="parent" type="xs:NCName"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="item">
+        <xs:complexType mixed="true">
+            <xs:attribute name="name" use="required" type="xs:NMTOKEN"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

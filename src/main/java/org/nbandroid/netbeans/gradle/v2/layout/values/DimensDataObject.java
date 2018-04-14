@@ -31,7 +31,6 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.CookieSet;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
 /**
@@ -40,32 +39,31 @@ import org.openide.windows.TopComponent;
  */
 @MIMEResolver.Registration(
         resource = "StringsResolver.xml",
-        displayName = "Android strings.xml"
+        displayName = "Android dimens.xml"
 )
 @DataObject.Registration(
-        mimeType = "text/x-android-strings+xml",
-        iconBase = "org/nbandroid/netbeans/gradle/v2/layout/icon-text-16.png",
-        displayName = "strings.xml",
+        mimeType = "text/x-android-dimens+xml",
+        iconBase = "org/nbandroid/netbeans/gradle/v2/layout/icons-dimens-16.png",
+        displayName = "dimens.xml",
         position = 300
 )
-public class StringsDataObject extends MultiDataObject {
+public class DimensDataObject extends MultiDataObject {
 
-    public static final String SETTINGS_MIME_TYPE = "text/x-android-strings+xml";
+    public static final String SETTINGS_MIME_TYPE = "text/x-android-dimens+xml";
 
-    public StringsDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
+    public DimensDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         final CookieSet cookies = getCookieSet();
         registerEditor(SETTINGS_MIME_TYPE, false);
-        cookies.add(new ResourceXsdValidateXMLSupport(DataObjectAdapters.inputSource(this), AndroidStyleable.class.getResource("strings.xsd")));
+        cookies.add(new ResourceXsdValidateXMLSupport(DataObjectAdapters.inputSource(this), AndroidStyleable.class.getResource("dimens.xsd")));
     }
 
-    @Messages("Source=&Source")
     @MultiViewElement.Registration(
-            displayName = "#Source",
-            iconBase = "org/nbandroid/netbeans/gradle/v2/layout/icon-text-16.png",
-            mimeType = "text/x-android-strings+xml",
+            displayName = "Dimens",
+            iconBase = "org/nbandroid/netbeans/gradle/v2/layout/icons-dimens-16.png",
+            mimeType = "text/x-android-dimens+xml",
             persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
-            preferredID = "source",
+            preferredID = "dimens",
             position = 1
     )
     public static MultiViewEditorElement createEditor(Lookup lkp) {

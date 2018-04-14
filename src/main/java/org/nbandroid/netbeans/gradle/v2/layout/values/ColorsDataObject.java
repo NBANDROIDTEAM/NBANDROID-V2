@@ -31,7 +31,6 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.CookieSet;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
 /**
@@ -40,32 +39,31 @@ import org.openide.windows.TopComponent;
  */
 @MIMEResolver.Registration(
         resource = "StringsResolver.xml",
-        displayName = "Android strings.xml"
+        displayName = "Android colors.xml"
 )
 @DataObject.Registration(
-        mimeType = "text/x-android-strings+xml",
-        iconBase = "org/nbandroid/netbeans/gradle/v2/layout/icon-text-16.png",
-        displayName = "strings.xml",
+        mimeType = "text/x-android-colors+xml",
+        iconBase = "org/nbandroid/netbeans/gradle/v2/layout/icons-colors-16.png",
+        displayName = "colors.xml",
         position = 300
 )
-public class StringsDataObject extends MultiDataObject {
+public class ColorsDataObject extends MultiDataObject {
 
-    public static final String SETTINGS_MIME_TYPE = "text/x-android-strings+xml";
+    public static final String SETTINGS_MIME_TYPE = "text/x-android-colors+xml";
 
-    public StringsDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
+    public ColorsDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         final CookieSet cookies = getCookieSet();
         registerEditor(SETTINGS_MIME_TYPE, false);
-        cookies.add(new ResourceXsdValidateXMLSupport(DataObjectAdapters.inputSource(this), AndroidStyleable.class.getResource("strings.xsd")));
+        cookies.add(new ResourceXsdValidateXMLSupport(DataObjectAdapters.inputSource(this), AndroidStyleable.class.getResource("colors.xsd")));
     }
 
-    @Messages("Source=&Source")
     @MultiViewElement.Registration(
-            displayName = "#Source",
-            iconBase = "org/nbandroid/netbeans/gradle/v2/layout/icon-text-16.png",
-            mimeType = "text/x-android-strings+xml",
+            displayName = "Colors",
+            iconBase = "org/nbandroid/netbeans/gradle/v2/layout/icons-colors-16.png",
+            mimeType = "text/text/x-android-colors+xml",
             persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
-            preferredID = "source",
+            preferredID = "colors",
             position = 1
     )
     public static MultiViewEditorElement createEditor(Lookup lkp) {

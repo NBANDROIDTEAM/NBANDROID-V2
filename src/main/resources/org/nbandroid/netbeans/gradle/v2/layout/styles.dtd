@@ -1,0 +1,20 @@
+<?xml encoding="UTF-8"?>
+
+<!ELEMENT resources (eat-comment|style)+>
+<!ATTLIST resources
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT eat-comment EMPTY>
+<!ATTLIST eat-comment
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT style (item)*>
+<!ATTLIST style
+  xmlns CDATA #FIXED ''
+  name NMTOKEN #REQUIRED
+  parent NMTOKEN #IMPLIED>
+
+<!ELEMENT item (#PCDATA)>
+<!ATTLIST item
+  xmlns CDATA #FIXED ''
+  name NMTOKEN #REQUIRED>
