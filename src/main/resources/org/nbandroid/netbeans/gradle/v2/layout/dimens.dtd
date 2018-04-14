@@ -1,0 +1,23 @@
+<?xml encoding="UTF-8"?>
+
+<!ELEMENT resources (dimen|integer|item)+>
+<!ATTLIST resources
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT dimen (#PCDATA)>
+<!ATTLIST dimen
+  xmlns CDATA #FIXED ''
+  name NMTOKEN #REQUIRED>
+
+<!ELEMENT integer (#PCDATA)>
+<!ATTLIST integer
+  xmlns CDATA #FIXED ''
+  name NMTOKEN #REQUIRED>
+
+<!ELEMENT item (#PCDATA)>
+<!ATTLIST item
+  xmlns CDATA #FIXED ''
+  format NMTOKEN #IMPLIED
+  name NMTOKEN #REQUIRED
+  type NMTOKEN #REQUIRED>
+
