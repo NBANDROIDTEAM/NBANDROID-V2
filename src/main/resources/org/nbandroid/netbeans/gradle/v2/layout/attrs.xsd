@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xs:element name="resources">
+        <xs:complexType>
+            <xs:choice maxOccurs="unbounded">
+                <xs:element ref="attr"/>
+                <xs:element ref="eat-comment"/>
+                <xs:element ref="declare-styleable"/>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="declare-styleable">
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="attr"/>
+                <xs:element ref="eat-comment"/>
+            </xs:choice>
+            <xs:attribute name="name" use="required" type="xs:NCName"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="eat-comment">
+        <xs:complexType/>
+    </xs:element>
+    <xs:element name="attr">
+        <xs:complexType>
+            <xs:choice>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="enum"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="flag"/>
+            </xs:choice>
+            <xs:attribute name="format"/>
+            <xs:attribute name="localization" type="xs:NCName"/>
+            <xs:attribute name="min" type="xs:integer"/>
+            <xs:attribute name="name" use="required" type="xs:NCName"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="enum">
+        <xs:complexType>
+            <xs:attribute name="name" use="required" type="xs:NCName"/>
+            <xs:attribute name="value" use="required" type="xs:NMTOKEN"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="flag">
+        <xs:complexType>
+            <xs:attribute name="name" use="required" type="xs:NCName"/>
+            <xs:attribute name="value" use="required" type="xs:NMTOKEN"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

@@ -1,0 +1,35 @@
+<?xml encoding="UTF-8"?>
+
+<!ELEMENT resources (attr|eat-comment|declare-styleable)+>
+<!ATTLIST resources
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT declare-styleable (attr|eat-comment)*>
+<!ATTLIST declare-styleable
+  xmlns CDATA #FIXED ''
+  name NMTOKEN #REQUIRED>
+
+<!ELEMENT attr (flag*|enum*)>
+<!ATTLIST attr
+  xmlns CDATA #FIXED ''
+  format CDATA #IMPLIED
+  localization NMTOKEN #IMPLIED
+  min CDATA #IMPLIED
+  name NMTOKEN #REQUIRED>
+
+<!ELEMENT flag EMPTY>
+<!ATTLIST flag
+  xmlns CDATA #FIXED ''
+  name NMTOKEN #REQUIRED
+  value NMTOKEN #REQUIRED>
+
+<!ELEMENT enum EMPTY>
+<!ATTLIST enum
+  xmlns CDATA #FIXED ''
+  name NMTOKEN #REQUIRED
+  value NMTOKEN #REQUIRED>
+
+<!ELEMENT eat-comment EMPTY>
+<!ATTLIST eat-comment
+  xmlns CDATA #FIXED ''>
+
