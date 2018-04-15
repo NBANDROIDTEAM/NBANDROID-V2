@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleable;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
@@ -44,7 +45,6 @@ import org.openide.windows.TopComponent;
 @DataObject.Registration(
         mimeType = "text/x-android-attrs+xml",
         iconBase = "org/nbandroid/netbeans/gradle/v2/layout/icons-attrs-16.png",
-        displayName = "attrs.xml",
         position = 300
 )
 public class AttrsDataObject extends MultiDataObject {
@@ -55,19 +55,30 @@ public class AttrsDataObject extends MultiDataObject {
         super(pf, loader);
         final CookieSet cookies = getCookieSet();
         registerEditor(SETTINGS_MIME_TYPE, false);
+        cookies.add(new CheckXMLSupport(DataObjectAdapters.inputSource(this)));
         cookies.add(new ResourceXsdValidateXMLSupport(DataObjectAdapters.inputSource(this), AndroidStyleable.class.getResource("attrs.xsd")));
     }
 
     @MultiViewElement.Registration(
-            displayName = "Attrs",
+            displayName = "#Source",
             iconBase = "org/nbandroid/netbeans/gradle/v2/layout/icons-attrs-16.png",
             mimeType = "text/x-android-attrs+xml",
             persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
-            preferredID = "attrs",
+            preferredID = "source",
             position = 1
     )
     public static MultiViewEditorElement createEditor(Lookup lkp) {
         return new MultiViewEditorElement(lkp);
+    }
+
+    @Override
+    protected int associateLookup() {
+        return 1;
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
 
 }

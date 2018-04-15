@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+    TODO define vocabulary identification
+    PUBLIC ID: -//vendor//vocabulary//EN
+    SYSTEM ID: http://server/path/bools.dtd
+
+-->
+
+<!--
+    An example how to use this DTD from your XML document:
+
+    <?xml version="1.0"?>
+
+    <!DOCTYPE resources SYSTEM "bools.dtd">
+
+    <resources>
+    ...
+    </resources>
+-->
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT resources (bool)*>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT bool (#PCDATA)>
+<!ATTLIST bool
+    name CDATA #IMPLIED
+  >

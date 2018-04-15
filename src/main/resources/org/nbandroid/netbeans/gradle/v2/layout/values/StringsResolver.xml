@@ -1,7 +1,8 @@
 <!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.1//EN" "http://www.netbeans.org/dtds/mime-resolver-1_1.dtd">
 <MIME-resolver>
     <file>
-        <name name="strings.xml"/>
+        <name name="string" ignorecase="true" substring="true"/>
+        <ext name="xml"/>
         <resolver mime="text/x-android-strings+xml">
             <xml-rule>
                 <element name="resources"/>
@@ -9,7 +10,8 @@
         </resolver>
     </file>
     <file>
-        <name name="colors.xml"/>
+        <name name="color" ignorecase="true" substring="true"/>
+        <ext name="xml"/>
         <resolver mime="text/x-android-colors+xml">
             <xml-rule>
                 <element name="resources"/>
@@ -17,7 +19,8 @@
         </resolver>
     </file>
     <file>
-        <name name="dimens.xml"/>
+        <name name="dimen" ignorecase="true" substring="true"/>
+        <ext name="xml"/>
         <resolver mime="text/x-android-dimens+xml">
             <xml-rule>
                 <element name="resources"/>
@@ -25,7 +28,8 @@
         </resolver>
     </file>
     <file>
-        <name name="styles.xml"/>
+        <name name="style" ignorecase="true" substring="true"/>
+        <ext name="xml"/>
         <resolver mime="text/x-android-styles+xml">
             <xml-rule>
                 <element name="resources"/>
@@ -33,7 +37,8 @@
         </resolver>
     </file>
     <file>
-        <name name="attrs.xml"/>
+        <name name="attr" ignorecase="true" substring="true"/>
+        <ext name="xml"/>
         <resolver mime="text/x-android-attrs+xml">
             <xml-rule>
                 <element name="resources"/>
@@ -41,11 +46,71 @@
         </resolver>
     </file>
     <file>
-        <name name="array.xml"/>
+        <name name="array" ignorecase="true" substring="true"/>
+        <ext name="xml"/>
         <resolver mime="text/x-android-array+xml">
             <xml-rule>
                 <element name="resources"/>
             </xml-rule>
+        </resolver>
+    </file>
+    <file>
+        <name name="bool" ignorecase="true" substring="true"/>
+        <ext name="xml"/>
+        <resolver mime="text/x-android-bool+xml">
+            <xml-rule>
+                <element name="resources"/>
+            </xml-rule>
+        </resolver>
+    </file>
+    <file>
+        <name name="integer" ignorecase="true" substring="true"/>
+        <ext name="xml"/>
+        <resolver mime="text/x-android-integer+xml">
+            <xml-rule>
+                <element name="resources"/>
+            </xml-rule>
+        </resolver>
+    </file>
+    <file>
+        <name name="id" ignorecase="true" substring="true"/>
+        <ext name="xml"/>
+        <resolver mime="text/x-android-ids+xml">
+            <xml-rule>
+                <element name="resources"/>
+            </xml-rule>
+        </resolver>
+    </file>
+    <file>
+        <name name="symbol" ignorecase="true" substring="true"/>
+        <ext name="xml"/>
+        <resolver mime="text/x-android-symbols+xml">
+            <xml-rule>
+                <element name="resources"/>
+            </xml-rule>
+        </resolver>
+    </file>
+    <file>
+        <ext name="xml"/>
+        <pattern value="&lt;bool" range="4000" ignorecase="false"></pattern>
+        <pattern value="&lt;color" range="4000" ignorecase="false"></pattern>
+        <pattern value="&lt;dimen" range="4000" ignorecase="false"></pattern>
+        <pattern value="&lt;item" range="4000" ignorecase="false"></pattern>
+        <pattern value="&lt;integer" range="4000" ignorecase="false"></pattern>
+        <pattern value="&lt;integer-array" range="4000" ignorecase="false"></pattern>
+        <pattern value="&lt;array" range="4000" ignorecase="false"></pattern>
+        <pattern value="&lt;string" range="4000" ignorecase="false"></pattern>
+        <pattern value="&lt;string-array" range="4000" ignorecase="false"></pattern>
+        <pattern value="&lt;plurals" range="4000" ignorecase="false"></pattern>
+        <pattern value="&lt;style" range="4000" ignorecase="false"></pattern>
+        <pattern value="&lt;declare-styleable" range="4000" ignorecase="false"></pattern>
+        <pattern value="&lt;eat-comment" range="4000" ignorecase="false"></pattern>
+        <pattern value="&lt;attr" range="4000" ignorecase="false"></pattern>
+        <resolver mime="text/x-android-values+xml">
+            <xml-rule>
+                <element name="resources"/>
+            </xml-rule>
+            
         </resolver>
     </file>
 </MIME-resolver>

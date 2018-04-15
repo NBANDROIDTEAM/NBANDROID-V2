@@ -1,0 +1,10 @@
+<?xml encoding="UTF-8"?>
+
+<!ELEMENT resources (integer)+>
+<!ATTLIST resources
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT integer (#PCDATA)>
+<!ATTLIST integer
+  xmlns CDATA #FIXED ''
+  name NMTOKEN #REQUIRED>
