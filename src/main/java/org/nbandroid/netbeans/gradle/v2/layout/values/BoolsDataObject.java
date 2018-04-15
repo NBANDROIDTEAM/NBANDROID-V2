@@ -40,29 +40,29 @@ import org.openide.windows.TopComponent;
  */
 @MIMEResolver.Registration(
         resource = "StringsResolver.xml",
-        displayName = "Android colors.xml"
+        displayName = "Android bools.xml"
 )
 @DataObject.Registration(
-        mimeType = "text/x-android-colors+xml",
-        iconBase = "org/nbandroid/netbeans/gradle/v2/layout/icons-colors-16.png",
+        mimeType = "text/x-android-bool+xml",
+        iconBase = "org/nbandroid/netbeans/gradle/v2/layout/icons-bools-16.png",
         position = 300
 )
-public class ColorsDataObject extends MultiDataObject {
+public class BoolsDataObject extends MultiDataObject {
 
-    public static final String SETTINGS_MIME_TYPE = "text/x-android-colors+xml";
+    public static final String SETTINGS_MIME_TYPE = "text/x-android-bool+xml";
 
-    public ColorsDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
+    public BoolsDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         final CookieSet cookies = getCookieSet();
         registerEditor(SETTINGS_MIME_TYPE, false);
         cookies.add(new CheckXMLSupport(DataObjectAdapters.inputSource(this)));
-        cookies.add(new ResourceXsdValidateXMLSupport(DataObjectAdapters.inputSource(this), AndroidStyleable.class.getResource("colors.xsd")));
+        cookies.add(new ResourceXsdValidateXMLSupport(DataObjectAdapters.inputSource(this), AndroidStyleable.class.getResource("bools.xsd")));
     }
 
     @MultiViewElement.Registration(
             displayName = "#Source",
-            iconBase = "org/nbandroid/netbeans/gradle/v2/layout/icons-colors-16.png",
-            mimeType = "text/text/x-android-colors+xml",
+            iconBase = "org/nbandroid/netbeans/gradle/v2/layout/icons-bools-16.png",
+            mimeType = "text/x-android-bool+xml",
             persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
             preferredID = "source",
             position = 1
@@ -80,6 +80,5 @@ public class ColorsDataObject extends MultiDataObject {
     public Lookup getLookup() {
         return getCookieSet().getLookup();
     }
-
 
 }

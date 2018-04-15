@@ -1,0 +1,11 @@
+<?xml encoding="UTF-8"?>
+
+<!ELEMENT resources (java-symbol)+>
+<!ATTLIST resources
+  xmlns CDATA #FIXED ''>
+
+<!ELEMENT java-symbol EMPTY>
+<!ATTLIST java-symbol
+  xmlns CDATA #FIXED ''
+  name NMTOKEN #REQUIRED
+  type NMTOKEN #REQUIRED>

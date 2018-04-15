@@ -31,7 +31,6 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.CookieSet;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
 /**
@@ -45,7 +44,6 @@ import org.openide.windows.TopComponent;
 @DataObject.Registration(
         mimeType = "text/x-android-strings+xml",
         iconBase = "org/nbandroid/netbeans/gradle/v2/layout/icon-text-16.png",
-        displayName = "strings.xml",
         position = 300
 )
 public class StringsDataObject extends MultiDataObject {
@@ -59,7 +57,6 @@ public class StringsDataObject extends MultiDataObject {
         cookies.add(new ResourceXsdValidateXMLSupport(DataObjectAdapters.inputSource(this), AndroidStyleable.class.getResource("strings.xsd")));
     }
 
-    @Messages("Source=&Source")
     @MultiViewElement.Registration(
             displayName = "#Source",
             iconBase = "org/nbandroid/netbeans/gradle/v2/layout/icon-text-16.png",
@@ -70,6 +67,16 @@ public class StringsDataObject extends MultiDataObject {
     )
     public static MultiViewEditorElement createEditor(Lookup lkp) {
         return new MultiViewEditorElement(lkp);
+    }
+
+    @Override
+    protected int associateLookup() {
+        return 1;
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
 
 }

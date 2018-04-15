@@ -1,0 +1,149 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+    TODO define vocabulary identification
+    PUBLIC ID: -//vendor//vocabulary//EN
+    SYSTEM ID: http://server/path/all.dtd
+
+-->
+
+<!--
+    An example how to use this DTD from your XML document:
+
+    <?xml version="1.0"?>
+
+    <!DOCTYPE resources SYSTEM "all.dtd">
+
+    <resources>
+    ...
+    </resources>
+-->
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT resources (dimen|array|plurals|skip|string-array|declare-styleable|eat-comment|attr|bool|drawable|color|style|java-symbol|item|string|integer)*>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT array (item)*>
+<!ATTLIST array
+    name CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT item (#PCDATA)>
+<!ATTLIST item
+    name CDATA #IMPLIED
+    type CDATA #IMPLIED
+    format CDATA #IMPLIED
+    quantity CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT string-array (item)*>
+<!ATTLIST string-array
+    translatable CDATA #IMPLIED
+    name CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT declare-styleable (eat-comment|attr)*>
+<!ATTLIST declare-styleable
+    name CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT eat-comment EMPTY>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT attr (flag|enum)*>
+<!ATTLIST attr
+    name CDATA #IMPLIED
+    format CDATA #IMPLIED
+    localization CDATA #IMPLIED
+    min CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT flag EMPTY>
+<!ATTLIST flag
+    name CDATA #IMPLIED
+    value CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT enum EMPTY>
+<!ATTLIST enum
+    name CDATA #IMPLIED
+    value CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT bool (#PCDATA)>
+<!ATTLIST bool
+    name CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT drawable (#PCDATA)>
+<!ATTLIST drawable
+    name CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT color (#PCDATA)>
+<!ATTLIST color
+    name CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT dimen (#PCDATA)>
+<!ATTLIST dimen
+    name CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT integer (#PCDATA)>
+<!ATTLIST integer
+    name CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT string (#PCDATA|font|b)*>
+<!ATTLIST string
+    name CDATA #IMPLIED
+    product CDATA #IMPLIED
+    translatable CDATA #IMPLIED
+    msgid CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT skip EMPTY>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT plurals (item)*>
+<!ATTLIST plurals
+    name CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT font (#PCDATA)>
+<!ATTLIST font
+    size CDATA #IMPLIED
+    fgcolor CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT b (#PCDATA)>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT style (item)*>
+<!ATTLIST style
+    name CDATA #IMPLIED
+    parent CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT java-symbol EMPTY>
+<!ATTLIST java-symbol
+    type CDATA #IMPLIED
+    name CDATA #IMPLIED
+  >
