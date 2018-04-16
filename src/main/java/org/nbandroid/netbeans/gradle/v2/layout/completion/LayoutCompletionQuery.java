@@ -33,7 +33,9 @@ import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableAttr;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableNamespace;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableStore;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableType;
+import org.nbandroid.netbeans.gradle.v2.layout.parsers.AndroidResValuesProvider;
 import org.nbandroid.netbeans.gradle.v2.layout.tools.ToolsNamespaceProvider;
+import org.nbandroid.netbeans.gradle.v2.layout.values.completion.BasicValuesCompletionItem;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatform;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatformProvider;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -71,6 +73,7 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
     private String startChars = "";
     private boolean namespaceCompletion = false;
     private final List<AttrCompletionItem> styleableAttrs = new ArrayList<>();
+    private final List<BasicValuesCompletionItem> attrValues = new ArrayList<>();
 
     LayoutCompletionQuery(FileObject primaryFile, int queryType) {
         this.primaryFile = primaryFile;
@@ -115,7 +118,8 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
                                     break;
                                 case COMPLETION_TYPE_ATTRIBUTE_VALUE:
                                     queryType = QueryType.VALUE;
-                                    makeAttributeValue(findPlatform, context, primaryFile, androidProject, resultSet, doc, caretOffset);
+                                    AndroidResValuesProvider valuesProvider = owner.getLookup().lookup(AndroidResValuesProvider.class);
+                                    makeAttributeValue(valuesProvider, findPlatform, context, primaryFile, androidProject, resultSet, doc, caretOffset);
                                     break;
                                 case COMPLETION_TYPE_ELEMENT:
                                     queryType = QueryType.ELEMENT;
@@ -213,6 +217,7 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
     }
 
     private void filterValue(CompletionResultSet resultSet) {
+        resultSet.addAllItems(attrValues.stream().filter(c -> c.getCompletionText().startsWith(typedCharsFilter)).collect(Collectors.toList()));
 
     }
 
@@ -235,16 +240,25 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
         if (typedChars == null) {
             typedChars = "";
         }
+        final String typed = typedChars.toLowerCase();
         if (attributeRoot == null || "".equals(attributeRoot)) {
             return;
         }
-        final String typed = typedChars.toLowerCase();
-        Map<String, AndroidStyleableNamespace> namespacesIn = AndroidStyleableStore.findNamespaces(primaryFile);
+        findAttributes(styleableAttrs, primaryFile, attributeRoot, declaredNamespaces, pathFromRoot);
+        if ("".equals(typed)) {
+            resultSet.addAllItems(styleableAttrs);
+        } else {
+            resultSet.addAllItems(styleableAttrs.stream().filter(c -> c.getLowerCasecompletionText().startsWith(typed) || c.getLowerCaseSimpleCompletionText().startsWith(typed)).collect(Collectors.toList()));
+        }
+    }
+
+    private void findAttributes(List<AttrCompletionItem> tmpAttrs, FileObject primaryFile1, String attributeRoot, HashMap<String, String> declaredNamespaces, List<QName> pathFromRoot) {
+        Map<String, AndroidStyleableNamespace> namespacesIn = AndroidStyleableStore.findNamespaces(primaryFile1);
         AndroidStyleable styleable = findStyleable(attributeRoot, namespacesIn);
         if (styleable == null) {
             return;
         }
-        styleableAttrs.addAll(styleable.getAllAttrs(declaredNamespaces));
+        tmpAttrs.addAll(styleable.getAllAttrs(declaredNamespaces));
         AndroidStyleable parentStyleable = null;
         if (pathFromRoot.size() > 1) {
             for (int i = 0; i < pathFromRoot.size() - 1; i++) {
@@ -256,8 +270,8 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
                     for (AndroidStyleable superS : findAllLayoutParams) {
                         List<AttrCompletionItem> allAttrs = superS.getAllAttrs(declaredNamespaces);
                         for (AttrCompletionItem allAttr : allAttrs) {
-                            if (!styleableAttrs.contains(allAttr)) {
-                                styleableAttrs.add(allAttr);
+                            if (!tmpAttrs.contains(allAttr)) {
+                                tmpAttrs.add(allAttr);
                             }
                         }
                     }
@@ -272,8 +286,8 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
                 for (AndroidStyleable superS : findAllLayoutParams) {
                     List<AttrCompletionItem> allAttrs = superS.getAllAttrs(declaredNamespaces);
                     for (AttrCompletionItem allAttr : allAttrs) {
-                        if (!styleableAttrs.contains(allAttr)) {
-                            styleableAttrs.add(allAttr);
+                        if (!tmpAttrs.contains(allAttr)) {
+                            tmpAttrs.add(allAttr);
                         }
                     }
                 }
@@ -285,17 +299,10 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
             if (AndroidStyleableStore.TOOLS_NAMESPACE.equalsIgnoreCase(value)) {
                 List<AndroidStyleableAttr> allToolsAttrs = ToolsNamespaceProvider.getAllToolsAttrs();
                 for (AndroidStyleableAttr allToolsAttr : allToolsAttrs) {
-                    styleableAttrs.add(new AttrCompletionItem(null, allToolsAttr, key));
+                    tmpAttrs.add(new AttrCompletionItem(null, allToolsAttr, key));
                 }
             }
         }
-        if ("".equals(typed)) {
-            resultSet.addAllItems(styleableAttrs);
-        } else {
-            resultSet.addAllItems(styleableAttrs.stream().filter(c -> c.getLowerCasecompletionText().startsWith(typed) || c.getLowerCaseSimpleCompletionText().startsWith(typed)).collect(Collectors.toList()));
-
-        }
-        System.out.println("org.nbandroid.netbeans.gradle.v2.layout.completion.LayoutCompletionQuery.makeAttribute()");
     }
 
     public AndroidStyleable findStyleable(String attributeRoot, Map<String, AndroidStyleableNamespace> namespacesIn) {
@@ -331,18 +338,42 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void makeAttributeValue(AndroidJavaPlatform findPlatform, CompletionContextImpl context, FileObject primaryFile, AndroidProject androidProject, CompletionResultSet resultSet, Document doc, int caretOffset) {
+    private void makeAttributeValue(AndroidResValuesProvider valuesProvider, AndroidJavaPlatform findPlatform, CompletionContextImpl context, FileObject primaryFile, AndroidProject androidProject, CompletionResultSet resultSet, Document doc, int caretOffset) {
         HashMap<String, String> declaredNamespaces = context.getDeclaredNamespaces();
         String attribute = context.getAttribute();
         String typedChars = context.getTypedChars();
+        if (typedChars == null) {
+            try {
+                typedChars = Utilities.getIdentifierBefore((BaseDocument) doc, caretOffset);
+            } catch (BadLocationException ex) {
+            }
+        }
+        if (typedChars == null) {
+            typedChars = "";
+        }
         String attributeRoot = null;
         List<QName> pathFromRoot = context.getPathFromRoot();
+        List<AttrCompletionItem> tmpAttrs = new ArrayList<>();
         if (!pathFromRoot.isEmpty()) {
-            QName qname = pathFromRoot.get(pathFromRoot.size() - 1);
-            attributeRoot = qname.getLocalPart();
-            AndroidStyleableNamespace platformWidgetNamespaces = findPlatform.getPlatformWidgetNamespaces();
+            if (attrValues.isEmpty()) {
+                QName qname = pathFromRoot.get(pathFromRoot.size() - 1);
+                attributeRoot = qname.getLocalPart();
+                findAttributes(tmpAttrs, primaryFile, attributeRoot, declaredNamespaces, pathFromRoot);
+                for (AttrCompletionItem tmpAttr : tmpAttrs) {
+                    if (attribute.equals(tmpAttr.getCompletionText())) {
+                        List<BasicValuesCompletionItem> forType = valuesProvider.forType(tmpAttr.getAttr().getAttrTypes());
+                        attrValues.addAll(forType);
+                        break;
+                    }
+                }
+            }
+            final String typed = typedChars;
+            if ("".equals(typedChars)) {
+                resultSet.addAllItems(attrValues);
+            } else {
+                resultSet.addAllItems(attrValues.stream().filter(c -> c.getCompletionText().startsWith(typed)).collect(Collectors.toList()));
+            }
         }
-        System.out.println("org.nbandroid.netbeans.gradle.v2.layout.completion.LayoutCompletionQuery.makeAttributeValue()");
     }
 
     private void makeElement(AndroidJavaPlatform findPlatform, CompletionContextImpl context, FileObject primaryFile, AndroidProject androidProject, CompletionResultSet resultSet, Document doc, int caretOffset) {

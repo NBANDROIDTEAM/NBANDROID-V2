@@ -70,6 +70,7 @@ import org.nbandroid.netbeans.gradle.ui.BuildCustomizerProvider;
 import static org.nbandroid.netbeans.gradle.v2.AndroidExtensionDef.COMMENT;
 import static org.nbandroid.netbeans.gradle.v2.AndroidExtensionDef.SDK_DIR;
 import org.nbandroid.netbeans.gradle.v2.gradle.GradleAndroidRepositoriesProvider;
+import org.nbandroid.netbeans.gradle.v2.layout.parsers.AndroidResValuesProvider;
 import org.nbandroid.netbeans.gradle.v2.project.AndroidSdkConfigProvider;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
@@ -114,6 +115,7 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
     private AndroidSdk sdk;
     private final FileObject localProperties;
     private final BuildVariant buildCfg;
+    private AndroidResValuesProvider resValuesProvider = null;
 
     public AndroidGradleExtensionV2(Project project, AndroidSdk sdk, FileObject localProperties) {
         this.project = Preconditions.checkNotNull(project);
@@ -140,7 +142,6 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         items.add(new GradlePlatformResolver());
         items.add(new GradleAndroidSources(project, buildCfg));
         items.add(new GradleAndroidManifest(project, buildCfg));
-
         items.add(new GradleSourceForBinaryQuery(buildCfg));
         items.add(new AndroidGradleNodes(project));
         items.add(new ProjectResourceLocator(project));
@@ -239,6 +240,8 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         for (Object item : items) {
             ic.add(item);
         }
+        resValuesProvider = new AndroidResValuesProvider(aPrj, project);
+        ic.add(resValuesProvider);
         for (AndroidModelAware ama : projectAddOnLookup.lookupAll(AndroidModelAware.class)) {
             ama.setAndroidProject(aPrj);
         }
@@ -255,6 +258,10 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         LOG.log(Level.FINE, "removing android support from {0}", project);
         for (Object item : items) {
             ic.remove(item);
+        }
+        if (resValuesProvider != null) {
+            ic.remove(resValuesProvider);
+            resValuesProvider = null;
         }
         levelQuery.setProject(null);
         // unregister from global path

@@ -99,6 +99,11 @@ public class AttrCompletionItem implements CompletionItem {
         return lowerCaseSimpleCompletionText;
     }
 
+    public AndroidStyleableAttr getAttr() {
+        return attr;
+    }
+
+
     public String getClassNameText() {
         return classNameText;
     }
@@ -169,6 +174,7 @@ public class AttrCompletionItem implements CompletionItem {
                 int startPosition = caretPosition - text.length();
                 document.replace(startPosition, text.length(), completionText + "=\"\"", null);
                 Completion.get().hideAll();
+                RankingProvider.inserted(attr.getName().hashCode());
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
