@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -79,6 +80,9 @@ import org.netbeans.gradle.project.NbGradleProject;
 import org.netbeans.gradle.project.api.config.GradleArgumentQuery;
 import org.netbeans.gradle.project.api.entry.GradleProjectExtension2;
 import org.netbeans.gradle.project.api.task.DaemonTaskContext;
+import org.netbeans.gradle.project.properties.NbGradleConfigProvider;
+import org.netbeans.gradle.project.properties.NbGradleConfiguration;
+import org.netbeans.gradle.project.properties.NbGradleSingleProjectConfigProvider;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -326,6 +330,7 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
     }
 
     private final Lookup extensionLookup = Lookups.fixed(new AndroidGradleArgumentQuery());
+
     @Override
     public Lookup getExtensionLookup() {
         return extensionLookup;
@@ -393,6 +398,36 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         @Override
         public List<String> getExtraArgs(DaemonTaskContext context) {
             List<String> tmp = new ArrayList<>();
+            if (!context.isModelLoading()) {
+                Collection<? extends Object> lookupAll = context.getProject().getLookup().lookupAll(Object.class);
+                NbGradleConfigProvider configProvider = context.getProject().getLookup().lookup(NbGradleConfigProvider.class);
+                if (configProvider != null) {
+                    NbGradleConfiguration activeConfiguration = configProvider.getActiveConfiguration();
+                    if (activeConfiguration != null) {
+                        String displayName = activeConfiguration.getDisplayName();
+                        if (displayName != null && !"<Default Profile>".equals(displayName)) {
+                            tmp.add("-Pandroid.profile=" + displayName);
+                        } else {
+                            tmp.add("-Pandroid.profile=default");
+                        }
+                    }
+                } else {
+                    NbGradleSingleProjectConfigProvider singleProjectConfigProvider = context.getProject().getLookup().lookup(NbGradleSingleProjectConfigProvider.class);
+                    if (singleProjectConfigProvider != null) {
+                        NbGradleConfiguration activeConfiguration = singleProjectConfigProvider.getActiveConfiguration();
+                        if (activeConfiguration != null) {
+                            String displayName = activeConfiguration.getDisplayName();
+                            if (displayName != null && !"<Default Profile>".equals(displayName)) {
+                                tmp.add("-Pandroid.profile=" + displayName);
+                            } else {
+                                tmp.add("-Pandroid.profile=default");
+                            }
+
+                        }
+                    }
+                }
+            }
+
             tmp.add("-Pandroid.injected.build.model.only.versioned=3");
             return tmp;
         }
