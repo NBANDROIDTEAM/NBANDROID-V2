@@ -12,6 +12,7 @@ import java.awt.event.KeyEvent;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Objects;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
@@ -37,11 +38,12 @@ import org.openide.util.Lookup;
  */
 public class BasicValuesCompletionItem implements CompletionItem {
 
-    private final AndroidValueType type;
-    private final String name;
-    private final String value;
-    private final String comment;
+    protected final AndroidValueType type;
+    protected final String name;
+    protected final String value;
+    protected final String comment;
     protected String completionText;
+    protected LinkResolver linkResolver;
 
     public static BasicValuesCompletionItem create(AndroidValueType type, String name, String value, String comment) {
         switch (type) {
@@ -71,6 +73,10 @@ public class BasicValuesCompletionItem implements CompletionItem {
         return type;
     }
 
+    public String getName() {
+        return name;
+    }
+
     protected BasicValuesCompletionItem(AndroidValueType type, String name, String value, String comment) {
         this.name = name;
         this.value = value;
@@ -85,6 +91,24 @@ public class BasicValuesCompletionItem implements CompletionItem {
                 break;
             case BOOL:
                 completionText = "@bool/" + name;
+                break;
+            case DIMEN:
+                completionText = "@dimen/" + name;
+                break;
+            case FRACTION:
+                completionText = "@fraction/" + name;
+                break;
+            case LOCALE:
+                completionText = "@locale/" + name;
+                break;
+            case COLOR:
+                completionText = "@color/" + name;
+                break;
+            case FLAG:
+                completionText = name;
+                break;
+            case ENUM:
+                completionText = name;
                 break;
         }
     }
@@ -121,7 +145,11 @@ public class BasicValuesCompletionItem implements CompletionItem {
                 g, defaultFont);
     }
 
-    private ImageIcon getIcon() {
+    protected String getDoc() {
+        return null;
+    }
+
+    protected ImageIcon getIcon() {
         ImageIcon icon = null;
         Collection<? extends StyleableIconProvider> iconProviders = Lookup.getDefault().lookupAll(StyleableIconProvider.class
         );
@@ -195,13 +223,17 @@ public class BasicValuesCompletionItem implements CompletionItem {
 
         @Override
         public String getText() {
-            String doc = "Type: " + "<b>" + type.name().toLowerCase() + "</b><br>"
-                    + "Name: " + "<b>" + name + "</b><br>"
-                    + "Value: " + "<b>" + value + "</b><br><br>";
-            if (comment != null) {
-                doc += comment;
+            if (getDoc() == null) {
+                String doc = "Type: " + "<b>" + type.name().toLowerCase() + "</b><br>"
+                        + "Name: " + "<b>" + name + "</b><br>"
+                        + "Value: " + "<b>" + value + "</b><br><br>";
+                if (comment != null) {
+                    doc += comment;
+                }
+                return doc;
+            } else {
+                return getDoc();
             }
-            return doc;
         }
 
         @Override
@@ -211,6 +243,9 @@ public class BasicValuesCompletionItem implements CompletionItem {
 
         @Override
         public CompletionDocumentation resolveLink(String link) {
+            if (linkResolver != null) {
+                return linkResolver.resolveLink(link);
+            }
             return null;
         }
 
@@ -220,9 +255,39 @@ public class BasicValuesCompletionItem implements CompletionItem {
         }
     }
 
+    public static interface LinkResolver {
+
+        public CompletionDocumentation resolveLink(String link);
+    }
+
     @Override
     public String toString() {
         return completionText; //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 59 * hash + Objects.hashCode(this.completionText);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final BasicValuesCompletionItem other = (BasicValuesCompletionItem) obj;
+        if (!Objects.equals(this.completionText, other.completionText)) {
+            return false;
+        }
+        return true;
     }
 
 }

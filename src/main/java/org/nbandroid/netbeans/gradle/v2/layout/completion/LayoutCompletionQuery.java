@@ -361,7 +361,7 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
                 findAttributes(tmpAttrs, primaryFile, attributeRoot, declaredNamespaces, pathFromRoot);
                 for (AttrCompletionItem tmpAttr : tmpAttrs) {
                     if (attribute.equals(tmpAttr.getCompletionText())) {
-                        List<BasicValuesCompletionItem> forType = valuesProvider.forType(tmpAttr.getAttr().getAttrTypes());
+                        List<BasicValuesCompletionItem> forType = valuesProvider.forType(tmpAttr.getAttr().getAttrTypes(), typedChars, doc, caretOffset);
                         attrValues.addAll(forType);
                         break;
                     }
@@ -371,7 +371,7 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
             if ("".equals(typedChars)) {
                 resultSet.addAllItems(attrValues);
             } else {
-                resultSet.addAllItems(attrValues.stream().filter(c -> c.getCompletionText().startsWith(typed)).collect(Collectors.toList()));
+                resultSet.addAllItems(attrValues.stream().filter(c -> c.getCompletionText().startsWith(typed) || c.getName().startsWith(typed)).collect(Collectors.toList()));
             }
         }
     }

@@ -6,6 +6,7 @@
 package org.nbandroid.netbeans.gradle.v2.layout.parsers;
 
 import com.android.builder.model.AndroidProject;
+import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -27,6 +28,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableAttrType;
 import org.nbandroid.netbeans.gradle.v2.layout.values.completion.AndroidValueType;
+import org.nbandroid.netbeans.gradle.v2.layout.values.completion.BasicColorValuesCompletionItem;
 import org.nbandroid.netbeans.gradle.v2.layout.values.completion.BasicValuesCompletionItem;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileAttributeEvent;
@@ -55,14 +57,50 @@ public class AndroidResValuesProvider implements FileChangeListener {
     private final Map<FileObject, List<BasicValuesCompletionItem>> completions = new ConcurrentHashMap<>();
     private final Map<FileObject, AtomicBoolean> statuses = new ConcurrentHashMap<>();
     private final RequestProcessor RP = new RequestProcessor("RES VALUES PARSER", 1);
+    private final List<BasicColorValuesCompletionItem> colors = new ArrayList<>();
 
     public AndroidResValuesProvider(AndroidProject androidProject, Project nbProject) {
         this.androidProject = androidProject;
         this.nbProject = nbProject;
         init();
+        initBasicColors();
     }
 
-    public List<BasicValuesCompletionItem> forType(EnumSet<AndroidStyleableAttrType> attrTypes) {
+    private void initBasicColors() {
+        colors.add(new BasicColorValuesCompletionItem(Color.BLACK, "BLACK"));
+        colors.add(new BasicColorValuesCompletionItem(Color.BLUE, "BLUE"));
+        colors.add(new BasicColorValuesCompletionItem(Color.CYAN, "CYAN"));
+        colors.add(new BasicColorValuesCompletionItem(Color.DARK_GRAY, "DARK_GRAY"));
+        colors.add(new BasicColorValuesCompletionItem(Color.GRAY, "GRAY"));
+        colors.add(new BasicColorValuesCompletionItem(Color.GREEN, "GREEN"));
+        colors.add(new BasicColorValuesCompletionItem(Color.LIGHT_GRAY, "LIGHT_GRAY"));
+        colors.add(new BasicColorValuesCompletionItem(Color.MAGENTA, "MAGENTA"));
+        colors.add(new BasicColorValuesCompletionItem(Color.ORANGE, "ORANGE"));
+        colors.add(new BasicColorValuesCompletionItem(Color.PINK, "PINK"));
+        colors.add(new BasicColorValuesCompletionItem(Color.RED, "RED"));
+        colors.add(new BasicColorValuesCompletionItem(Color.WHITE, "WHITE"));
+        colors.add(new BasicColorValuesCompletionItem(Color.YELLOW, "YELLOW"));
+
+    }
+
+    private List<BasicColorValuesCompletionItem> getColorsForTypedChars(String typedChars) {
+        List<BasicColorValuesCompletionItem> tmp = new ArrayList<>();
+        if (typedChars.startsWith("#")) {
+            int length = typedChars.length();
+            System.out.println(length);
+            switch (length) {
+                case 9:
+                    tmp.add(new BasicColorValuesCompletionItem(BasicColorValuesCompletionItem.decodeAlfa(typedChars), typedChars));
+                    break;
+                case 7:
+                    tmp.add(new BasicColorValuesCompletionItem(BasicColorValuesCompletionItem.decodeAlfa(typedChars.replace("#", "#FF")), typedChars));
+                    break;
+            }
+        }
+        return tmp;
+    }
+
+    public List<BasicValuesCompletionItem> forType(EnumSet<AndroidStyleableAttrType> attrTypes, String typedChars, javax.swing.text.Document doc, int caretOffset) {
         List<BasicValuesCompletionItem> tmp = new ArrayList<>();
         AndroidValueType type = null;
         if (attrTypes.contains(AndroidStyleableAttrType.String)) {
@@ -71,6 +109,16 @@ public class AndroidResValuesProvider implements FileChangeListener {
             type = AndroidValueType.BOOL;
         } else if (attrTypes.contains(AndroidStyleableAttrType.Integer)) {
             type = AndroidValueType.INTEGER;
+        } else if (attrTypes.contains(AndroidStyleableAttrType.Dimension)) {
+            type = AndroidValueType.DIMEN;
+        } else if (attrTypes.contains(AndroidStyleableAttrType.Fraction)) {
+            type = AndroidValueType.FRACTION;
+        } else if (attrTypes.contains(AndroidStyleableAttrType.Color)) {
+            type = AndroidValueType.COLOR;
+        } else if (attrTypes.contains(AndroidStyleableAttrType.Flag)) {
+            type = AndroidValueType.FLAG;
+        } else if (attrTypes.contains(AndroidStyleableAttrType.Enum)) {
+            type = AndroidValueType.ENUM;
         } else if (attrTypes.contains(AndroidStyleableAttrType.Reference)) {
             Iterator<List<BasicValuesCompletionItem>> iterator = completions.values().iterator();
             while (iterator.hasNext()) {
@@ -84,10 +132,24 @@ public class AndroidResValuesProvider implements FileChangeListener {
                 List<BasicValuesCompletionItem> next = iterator.next();
                 for (BasicValuesCompletionItem completionItem : next) {
                     if (type.equals(completionItem.getType())) {
-                        tmp.add(completionItem);
+                        if (!tmp.contains(completionItem)) {
+                            tmp.add(completionItem);
+                        }
                     }
                 }
             }
+        }
+        if (attrTypes.contains(AndroidStyleableAttrType.Color)) {
+            type = AndroidValueType.COLOR;
+            tmp.addAll(colors);
+            for (BasicColorValuesCompletionItem color : colors) {
+                color.setDocument(doc, caretOffset);
+            }
+            List<BasicColorValuesCompletionItem> colorsForTypedChars = getColorsForTypedChars(typedChars);
+            for (BasicColorValuesCompletionItem color : colorsForTypedChars) {
+                color.setDocument(doc, caretOffset);
+            }
+            tmp.addAll(colorsForTypedChars);
         }
         return tmp;
     }

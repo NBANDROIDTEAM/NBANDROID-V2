@@ -10,6 +10,6 @@ package org.nbandroid.netbeans.gradle.v2.layout.values.completion;
  * @author arsi
  */
 public enum AndroidValueType {
-    STRING, INTEGER, BOOL, COLOR, DIMEN, SYMBOL, ITEM
+    STRING, INTEGER, BOOL, COLOR, DIMEN, SYMBOL, ITEM, FRACTION, LOCALE, FLAG, ENUM,
 
 }
