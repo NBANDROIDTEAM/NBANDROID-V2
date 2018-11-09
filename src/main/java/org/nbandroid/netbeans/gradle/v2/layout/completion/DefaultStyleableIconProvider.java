@@ -21,6 +21,7 @@ package org.nbandroid.netbeans.gradle.v2.layout.completion;
 
 import javax.swing.ImageIcon;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableType;
+import org.nbandroid.netbeans.gradle.v2.layout.values.completion.AndroidValueType;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.openide.util.ImageUtilities;
 import org.openide.util.lookup.ServiceProvider;
@@ -57,6 +58,18 @@ public class DefaultStyleableIconProvider implements StyleableIconProvider {
     private static final String TOOLS_ATTR_ICON_RES = "org/nbandroid/netbeans/gradle/v2/layout/tools_attr.png";
     public static final ImageIcon TOOLS_ATTR_ICON = new ImageIcon(ImageUtilities.loadImage(TOOLS_ATTR_ICON_RES));
 
+    @StaticResource
+    private static final String VALUES_STRING_ICON_RES = "org/nbandroid/netbeans/gradle/v2/layout/icon-text-16.png";
+    public static final ImageIcon VALUES_STRING_ICON = new ImageIcon(ImageUtilities.loadImage(VALUES_STRING_ICON_RES));
+
+    @StaticResource
+    private static final String VALUES_INTEGER_ICON_RES = "org/nbandroid/netbeans/gradle/v2/layout/icons-integers-16.png";
+    public static final ImageIcon VALUES_INTEGER_ICON = new ImageIcon(ImageUtilities.loadImage(VALUES_INTEGER_ICON_RES));
+
+    @StaticResource
+    private static final String VALUES_BOOL_ICON_RES = "org/nbandroid/netbeans/gradle/v2/layout/icons-bools-16.png";
+    public static final ImageIcon VALUES_BOOL_ICON = new ImageIcon(ImageUtilities.loadImage(VALUES_BOOL_ICON_RES));
+
     @Override
     public ImageIcon getIcon(String fullClassName, AndroidStyleableType androidStyleableType) {
         switch (androidStyleableType) {
@@ -87,6 +100,19 @@ public class DefaultStyleableIconProvider implements StyleableIconProvider {
     @Override
     public ImageIcon getToolsAttrIcon() {
         return TOOLS_ATTR_ICON;
+    }
+
+    @Override
+    public ImageIcon getValuesIcon(AndroidValueType type) {
+        switch (type) {
+            case STRING:
+                return VALUES_STRING_ICON;
+            case INTEGER:
+                return VALUES_INTEGER_ICON;
+            case BOOL:
+                return VALUES_BOOL_ICON;
+        }
+        return null;
     }
 
 }

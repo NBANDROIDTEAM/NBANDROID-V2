@@ -7,7 +7,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.awt.Image;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -195,7 +194,7 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
                 Iterator<AndroidArtifactOutput> outputs = next.getMainArtifact().getOutputs().iterator();
                 while (outputs.hasNext()) {
                     AndroidArtifactOutput output = outputs.next();
-                    File outputFile = output.getOutputFile();
+                    //  File outputFile = output.getOutputFile();
                 }
 
             }

@@ -21,6 +21,7 @@ package org.nbandroid.netbeans.gradle.v2.layout.completion;
 
 import javax.swing.ImageIcon;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableType;
+import org.nbandroid.netbeans.gradle.v2.layout.values.completion.AndroidValueType;
 
 /**
  *
@@ -68,4 +69,7 @@ public interface StyleableIconProvider {
      * @return
      */
     public ImageIcon getToolsAttrIcon();
+
+    public ImageIcon getValuesIcon(AndroidValueType type);
+
 }

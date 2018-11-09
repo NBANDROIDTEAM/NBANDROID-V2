@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -70,6 +71,7 @@ import org.nbandroid.netbeans.gradle.ui.BuildCustomizerProvider;
 import static org.nbandroid.netbeans.gradle.v2.AndroidExtensionDef.COMMENT;
 import static org.nbandroid.netbeans.gradle.v2.AndroidExtensionDef.SDK_DIR;
 import org.nbandroid.netbeans.gradle.v2.gradle.GradleAndroidRepositoriesProvider;
+import org.nbandroid.netbeans.gradle.v2.layout.parsers.AndroidResValuesProvider;
 import org.nbandroid.netbeans.gradle.v2.project.AndroidSdkConfigProvider;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
@@ -78,6 +80,9 @@ import org.netbeans.gradle.project.NbGradleProject;
 import org.netbeans.gradle.project.api.config.GradleArgumentQuery;
 import org.netbeans.gradle.project.api.entry.GradleProjectExtension2;
 import org.netbeans.gradle.project.api.task.DaemonTaskContext;
+import org.netbeans.gradle.project.properties.NbGradleConfigProvider;
+import org.netbeans.gradle.project.properties.NbGradleConfiguration;
+import org.netbeans.gradle.project.properties.NbGradleSingleProjectConfigProvider;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -114,6 +119,7 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
     private AndroidSdk sdk;
     private final FileObject localProperties;
     private final BuildVariant buildCfg;
+    private AndroidResValuesProvider resValuesProvider = null;
 
     public AndroidGradleExtensionV2(Project project, AndroidSdk sdk, FileObject localProperties) {
         this.project = Preconditions.checkNotNull(project);
@@ -140,7 +146,6 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         items.add(new GradlePlatformResolver());
         items.add(new GradleAndroidSources(project, buildCfg));
         items.add(new GradleAndroidManifest(project, buildCfg));
-
         items.add(new GradleSourceForBinaryQuery(buildCfg));
         items.add(new AndroidGradleNodes(project));
         items.add(new ProjectResourceLocator(project));
@@ -239,6 +244,8 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         for (Object item : items) {
             ic.add(item);
         }
+        resValuesProvider = new AndroidResValuesProvider(aPrj, project);
+        ic.add(resValuesProvider);
         for (AndroidModelAware ama : projectAddOnLookup.lookupAll(AndroidModelAware.class)) {
             ama.setAndroidProject(aPrj);
         }
@@ -255,6 +262,10 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         LOG.log(Level.FINE, "removing android support from {0}", project);
         for (Object item : items) {
             ic.remove(item);
+        }
+        if (resValuesProvider != null) {
+            ic.remove(resValuesProvider);
+            resValuesProvider = null;
         }
         levelQuery.setProject(null);
         // unregister from global path
@@ -319,6 +330,7 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
     }
 
     private final Lookup extensionLookup = Lookups.fixed(new AndroidGradleArgumentQuery());
+
     @Override
     public Lookup getExtensionLookup() {
         return extensionLookup;
@@ -386,6 +398,36 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         @Override
         public List<String> getExtraArgs(DaemonTaskContext context) {
             List<String> tmp = new ArrayList<>();
+            if (!context.isModelLoading()) {
+                Collection<? extends Object> lookupAll = context.getProject().getLookup().lookupAll(Object.class);
+                NbGradleConfigProvider configProvider = context.getProject().getLookup().lookup(NbGradleConfigProvider.class);
+                if (configProvider != null) {
+                    NbGradleConfiguration activeConfiguration = configProvider.getActiveConfiguration();
+                    if (activeConfiguration != null) {
+                        String displayName = activeConfiguration.getDisplayName();
+                        if (displayName != null && !"<Default Profile>".equals(displayName)) {
+                            tmp.add("-Pandroid.profile=" + displayName);
+                        } else {
+                            tmp.add("-Pandroid.profile=default");
+                        }
+                    }
+                } else {
+                    NbGradleSingleProjectConfigProvider singleProjectConfigProvider = context.getProject().getLookup().lookup(NbGradleSingleProjectConfigProvider.class);
+                    if (singleProjectConfigProvider != null) {
+                        NbGradleConfiguration activeConfiguration = singleProjectConfigProvider.getActiveConfiguration();
+                        if (activeConfiguration != null) {
+                            String displayName = activeConfiguration.getDisplayName();
+                            if (displayName != null && !"<Default Profile>".equals(displayName)) {
+                                tmp.add("-Pandroid.profile=" + displayName);
+                            } else {
+                                tmp.add("-Pandroid.profile=default");
+                            }
+
+                        }
+                    }
+                }
+            }
+
             tmp.add("-Pandroid.injected.build.model.only.versioned=3");
             return tmp;
         }
