@@ -14,7 +14,7 @@
 package org.nbandroid.netbeans.gradle.configs;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
@@ -252,7 +252,7 @@ public final class AndroidConfigProvider implements ProjectConfigurationProvider
 
         @Override
         public String toString() {
-            return Objects.toStringHelper(this).add("name", name).add("launch", launch).toString();
+            return MoreObjects.toStringHelper(this).add("name", name).add("launch", launch).toString();
         }
 
     }

@@ -23,6 +23,16 @@
                     <requiresRestart>true</requiresRestart>
                     <publicPackages>
                     </publicPackages>
+                    <codeNameBase>sk-arsi-netbeans-gradle-android-Gradle-Android-support</codeNameBase>
+                    <nbmResources>
+                        <nbmResource>
+                            <directory>src/main/patches/</directory>
+                            <targetPath>modules/patches/sk-arsi-netbeans-gradle-android-Gradle-Android-support</targetPath>
+                            <includes>
+                                <include>*</include>
+                            </includes>
+                        </nbmResource>
+                    </nbmResources>
                     <moduleDependencies>
                         <dependency>
                             <!--Private Package Reference-->
@@ -336,7 +346,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>15.0</version>
+            <version>23.6-jre</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -704,7 +714,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.11</version>
+            <version>1.18</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -800,7 +810,7 @@
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <version.android>25.3.0</version.android>
+        <version.android>26.2.1 </version.android>
         <version.nb.gradle>1.4.3</version.nb.gradle>
         <android.gradle.model.version>3.0.1</android.gradle.model.version>
         <!--1.4.2-->

@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Path;
 import javax.annotation.Nullable;
 import javax.net.ssl.HttpsURLConnection;
 import org.netbeans.api.progress.ProgressHandle;
@@ -49,10 +50,11 @@ public class NbDownloader implements Downloader {
     @Override
     public InputStream downloadAndStream(URL url, ProgressIndicator indicator)
             throws IOException {
-        File file = downloadFully(url, indicator);
-        if (file == null) {
+        Path path = downloadFully(url, indicator);
+        if (path == null) {
             return null;
         }
+        File file = path.toFile();
         file.deleteOnExit();
         return new FileInputStream(file) {
             @Override
@@ -115,7 +117,7 @@ public class NbDownloader implements Downloader {
 
     @Nullable
     @Override
-    public File downloadFully(URL url,
+    public Path downloadFully(URL url,
             ProgressIndicator indicator) throws IOException {
         // TODO: caching
         String suffix = url.getPath();
@@ -123,7 +125,7 @@ public class NbDownloader implements Downloader {
         File tempFile = File.createTempFile("NbDownloader", suffix);
         tempFile.deleteOnExit();
         downloadFully(url, tempFile, null, indicator);
-        return tempFile;
+        return tempFile.toPath();
     }
 
 }

@@ -15,7 +15,6 @@ package org.nbandroid.netbeans.gradle.api;
 
 import com.android.ide.common.xml.AndroidManifestParser;
 import com.android.ide.common.xml.ManifestData;
-import com.android.io.StreamException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,8 +58,6 @@ public class AndroidProjects {
         try {
             return AndroidManifestParser.parse(manifestIS);
         } catch (ParserConfigurationException ex) {
-            LOG.log(Level.INFO, "AndroidManifest.xml cannot be parsed", ex);
-        } catch (StreamException ex) {
             LOG.log(Level.INFO, "AndroidManifest.xml cannot be parsed", ex);
         } catch (IOException ioe) {
             LOG.log(Level.INFO, "AndroidManifest.xml cannot be parsed", ioe);
