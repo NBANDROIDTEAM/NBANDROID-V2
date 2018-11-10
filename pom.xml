@@ -319,7 +319,7 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-projectapi</artifactId>
-            <version>${version.nb}</version>
+            <version>RELEASE82</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -376,7 +376,7 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-loaders</artifactId>
-            <version>${version.nb}</version>
+            <version>RELEASE82</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -466,7 +466,7 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-filesystems</artifactId>
-            <version>${version.nb}</version>
+            <version>RELEASE82</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -476,17 +476,17 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-util</artifactId>
-            <version>${version.nb}</version>
+            <version>RELEASE82</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-util-lookup</artifactId>
-            <version>${version.nb}</version>
+            <version>RELEASE82</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-util-ui</artifactId>
-            <version>${version.nb}</version>
+            <version>RELEASE82</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -521,12 +521,12 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-awt</artifactId>
-            <version>${version.nb}</version>
+            <version>RELEASE82</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-dialogs</artifactId>
-            <version>${version.nb}</version>
+            <version>RELEASE82</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -586,7 +586,7 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-projectuiapi</artifactId>
-            <version>${version.nb}</version>
+            <version>RELEASE82</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -739,7 +739,7 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-api-templates</artifactId>
-            <version>${version.nb}</version>
+            <version>RELEASE82</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -806,6 +806,12 @@
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-xml-core</artifactId>
             <version>${version.nb}</version>
+        </dependency>
+        <dependency>
+            <groupId>jackson-all</groupId>
+            <artifactId>jackson-all</artifactId>
+            <version>1.9.9</version>
+            <type>jar</type>
         </dependency>
     </dependencies>
     <properties>
