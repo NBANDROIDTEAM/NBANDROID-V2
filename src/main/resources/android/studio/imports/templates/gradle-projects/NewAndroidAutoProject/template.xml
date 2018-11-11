@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<template
+    format="5"
+    revision="2"
+    name="Android Auto Project"
+    minApi="21"
+    description="Creates a new Android Auto project.">
+
+    <category value="Application" />
+    <formfactor value="Car" />
+
+</template>

@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<template
+    format="5"
+    revision="2"
+    name="Messaging service"
+    description="Create a service that sends notifications compatible with Android Auto"
+    minApi="21">
+
+    <category value="Android Auto" />
+    <formfactor value="Car" />
+
+    <parameter
+        id="serviceName"
+        name="Service class name"
+        type="string"
+        constraints="class|unique|nonempty"
+        default="MyMessagingService"
+        help="The name of the service that will handle incoming messages and send corresponding notifications." />
+
+    <parameter
+        id="readReceiverName"
+        name="Read receiver class name"
+        type="string"
+        constraints="class|unique|nonempty"
+        default="MessageReadReceiver"
+        help="The broadcast receiver that will handle Read notifications." />
+
+    <parameter
+        id="replyReceiverName"
+        name="Reply receiver class name"
+        type="string"
+        constraints="class|unique|nonempty"
+        default="MessageReplyReceiver"
+        help="The broadcast receiver that will handle Reply notifications." />
+
+    <parameter
+        id="packageName"
+        name="Package name"
+        type="string"
+        constraints="package"
+        help="The package where the messaging service will be created." />
+
+    <globals file="globals.xml.ftl" />
+    <execute file="recipe.xml.ftl" />
+
+    <thumbs>
+        <thumb>templates-messagingService-Auto.png</thumb>
+    </thumbs>
+
+</template>

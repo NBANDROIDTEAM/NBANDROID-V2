@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<template
+    format="5"
+    revision="2"
+    name="Android Project"
+    description="Creates a new Android project.">
+
+    <category value="Application" />
+
+    <thumbs>
+        <thumb>template_new_project.png</thumb>
+    </thumbs>
+
+    <parameter
+        id="makeIgnore"
+        name="Create .gitignore file"
+        type="boolean"
+        default="true" />
+
+    <globals file="globals.xml.ftl" />
+    <execute file="recipe.xml.ftl" />
+
+</template>

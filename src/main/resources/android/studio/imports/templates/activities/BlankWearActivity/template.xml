@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<template
+    format="5"
+    revision="2"
+    name="Blank Wear Activity"
+    minApi="20"
+    minBuildApi="20"
+    description="Creates a blank activity for Android Wear">
+
+    <category value="Activity" />
+    <formfactor value="Wear" />
+
+    <parameter
+        id="activityClass"
+        name="Activity Name"
+        type="string"
+        constraints="class|unique|nonempty"
+        suggest="${layoutToActivity(layoutName)}"
+        default="MainActivity"
+        help="The name of the activity class to create" />
+
+    <parameter
+        id="layoutName"
+        name="Layout Name"
+        type="string"
+        constraints="layout|unique|nonempty"
+        suggest="${activityToLayout(activityClass)}"
+        default="activity_main"
+        help="The name of the layout to create for the activity" />
+
+    <parameter
+        id="roundLayout"
+        name="Round Layout Name"
+        type="string"
+        constraints="layout|unique|nonempty"
+        suggest="round_${activityToLayout(activityClass)}"
+        default="round"
+        help="The name of the round layout to create for the activity" />
+
+
+    <parameter
+        id="rectLayout"
+        name="Rectangular Layout Name"
+        type="string"
+        constraints="layout|unique|nonempty"
+        suggest="rect_${activityToLayout(activityClass)}"
+        default="rect"
+        help="The name of the rectangular layout to create for the activity" />
+
+
+    <parameter
+        id="isLauncher"
+        name="Launcher Activity"
+        type="boolean"
+        default="true"
+        help="If true, this activity will have a CATEGORY_LAUNCHER intent filter, making it the default launchable activity" />
+
+    <parameter
+        id="packageName"
+        name="Package name"
+        type="string"
+        constraints="package"
+        default="com.mycompany.myapp" />
+
+    <!-- 128x128 thumbnails relative to template.xml -->
+    <thumbs>
+        <!-- default thumbnail is required -->
+        <thumb>templates-WatchViewStub-Wear.png</thumb>
+    </thumbs>
+
+    <globals file="globals.xml.ftl" />
+    <execute file="recipe.xml.ftl" />
+
+</template>

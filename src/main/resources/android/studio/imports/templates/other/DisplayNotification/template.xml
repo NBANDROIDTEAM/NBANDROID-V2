@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<template
+    format="5"
+    revision="2"
+    name="Display Notification"
+    description="Create an Activity to display inside a custom display notification and a BroadcastReceiver to post it"
+    minApi="20">
+
+    <category value="Wear" />
+    <formfactor value="Wear" />
+
+    <parameter
+        id="displayActivityClass"
+        name="Display Activity Class"
+        type="string"
+        constraints="activity|unique|nonempty"
+        default="MyDisplayActivity"
+        help="The name of the Activity that will be displayed for the notification" />
+
+    <parameter
+        id="displayActivityLayout"
+        name="Display Activity Layout Name"
+        type="string"
+        constraints="layout|unique|nonempty"
+        default="activity_display"
+        help="The layout name for the Activity that will be displayed for the notification" />
+
+    <parameter
+        id="receiverClass"
+        name="Receiver Class"
+        type="string"
+        constraints="class|unique|nonempty"
+        default="MyPostNotificationReceiver"
+        help="The name of the BroadcastReceiver that will post the notification" />
+
+    <parameter
+        id="stubActivityClass"
+        name="Launcher Stub Class"
+        type="string"
+        constraints="activity|unique|nonempty"
+        default="MyStubBroadcastActivity"
+        help="The name of the Stub Activity that sends the broadcast for testing purposes" />
+
+    <parameter
+        id="isExported"
+        name="Exported"
+        type="boolean"
+        default="true"
+        help="Whether or not the broadcast receiver can receive messages from sources outside its application" />
+
+    <parameter
+        id="packageName"
+        name="Package name"
+        type="string"
+        constraints="package"/>
+
+    <globals file="globals.xml.ftl" />
+    <execute file="recipe.xml.ftl" />
+
+    <thumbs>
+        <thumb>templates-activityView-Wear.png</thumb>
+    </thumbs>
+
+</template>

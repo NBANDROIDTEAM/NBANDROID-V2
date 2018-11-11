@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+<template
+        format="5"
+        revision="6"
+        name="Basic Activity"
+        minApi="9"
+        minBuildApi="14"
+        requireAppTheme="true"
+        description="Creates a new basic activity with an app bar.">
+
+    <category value="Activity"/>
+    <formfactor value="Mobile"/>
+
+    <parameter
+            id="activityClass"
+            name="Activity Name"
+            type="string"
+            constraints="class|unique|nonempty"
+            suggest="${layoutToActivity(layoutName)}"
+            default="MainActivity"
+            help="The name of the activity class to create"/>
+
+    <parameter
+            id="layoutName"
+            name="Layout Name"
+            type="string"
+            constraints="layout|unique|nonempty"
+            suggest="${activityToLayout(activityClass)}"
+            default="activity_main"
+            help="The name of the layout to create for the activity"/>
+
+    <parameter
+            id="activityTitle"
+            name="Title"
+            type="string"
+            constraints="nonempty"
+            default="MainActivity"
+            suggest="${activityClass}"
+            help="The name of the activity. For launcher activities, the application title."/>
+
+    <parameter
+            id="menuName"
+            name="Menu Resource Name"
+            type="string"
+            constraints="layout|unique|nonempty"
+            suggest="menu_${classToResource(activityClass)}"
+            visibility="isNewProject!false"
+            default="menu_main"
+            help="The name of the resource file to create for the menu items"/>
+
+    <parameter
+            id="isLauncher"
+            name="Launcher Activity"
+            type="boolean"
+            default="false"
+            help="If true, this activity will have a CATEGORY_LAUNCHER intent filter, making it visible in the launcher"/>
+
+    <parameter
+            id="useFragment"
+            name="Use a Fragment"
+            type="boolean"
+            default="false"
+            help="If true, the content will be a fragment"/>
+
+    <parameter
+            id="contentLayoutName"
+            name="Content Layout Name"
+            type="string"
+            constraints="layout|unique"
+            suggest="${activityToLayout(activityClass, 'content')}"
+            default="content_main"
+            visibility="false"
+            help="The name of the App Bar layout to create for the activity"/>
+
+    <parameter
+            id="parentActivityClass"
+            name="Hierarchical Parent"
+            type="string"
+            constraints="activity|exists|empty"
+            default=""
+            help="The hierarchical parent activity, used to provide a default implementation for the 'Up' button"/>
+
+    <parameter
+            id="fragmentLayoutName"
+            name="Fragment Layout Name"
+            type="string"
+            constraints="layout|unique|nonempty"
+            suggest="${activityToLayout(activityClass, 'fragment')}"
+            default="fragment_main"
+            visibility="false"
+            help="The name of the layout to create for the activity's content fragment"/>
+
+    <parameter
+            id="packageName"
+            name="Package name"
+            type="string"
+            constraints="package"
+            default="com.mycompany.myapp"/>
+
+    <!-- 128x128 thumbnails relative to template.xml -->
+    <thumbs>
+        <!-- default thumbnail is required -->
+        <thumb>template_basic_activity.png</thumb>
+        <!-- attributes act as selectors based on chosen parameters -->
+        <thumb useFragment="true">template_basic_activity_fragment.png</thumb>
+    </thumbs>
+
+    <globals file="globals.xml.ftl"/>
+    <execute file="recipe.xml.ftl"/>
+
+</template>

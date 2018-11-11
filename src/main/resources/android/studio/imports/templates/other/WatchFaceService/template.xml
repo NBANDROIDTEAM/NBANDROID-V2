@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<template
+    format="5"
+    revision="3"
+    name="Watch Face"
+    minApi="21"
+    minBuildApi="21"
+    description="Creates a watch face for Android Wear">
+
+    <category value="Wear" />
+    <formfactor value="Wear" />
+
+    <parameter
+        id="serviceClass"
+        name="Service Name"
+        type="string"
+        constraints="class|unique|nonempty"
+        default="MyWatchFace"
+        help="The name of the service class to create" />
+
+    <parameter
+        id="style"
+        name="Style"
+        type="enum"
+        default="analog"
+        help="Watch face style">
+        <option id="analog">Analog</option>
+        <option id="digital">Digital</option>
+    </parameter>
+
+    <parameter
+        id="isInteractive"
+        name="Interactive"
+        type="boolean"
+        default="true"
+        help="Whether or not to include code for interactive touch handling" />
+
+    <parameter
+        id="packageName"
+        name="Package name"
+        type="string"
+        constraints="package"
+        default="com.mycompany.myapp" />
+
+    <!-- 128x128 thumbnails relative to template.xml -->
+    <thumbs>
+        <!-- default thumbnail is required -->
+        <thumb>template_thumbnail.png</thumb>
+        <thumb style="analog">analog_round.png</thumb>
+        <thumb style="digital">digital_square.png</thumb>
+    </thumbs>
+
+    <globals file="globals.xml.ftl" />
+    <execute file="recipe.xml.ftl" />
+
+</template>
