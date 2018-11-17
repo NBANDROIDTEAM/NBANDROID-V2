@@ -60,6 +60,7 @@ import org.nbandroid.netbeans.gradle.v2.apk.sign.keystore.KeystoreSelector;
 import org.netbeans.gradle.project.NbGradleProject;
 import org.netbeans.gradle.project.api.task.CustomCommandActions;
 import org.netbeans.gradle.project.api.task.GradleCommandTemplate;
+import sun.nio.ch.FileChannelImpl;
 
 /**
  *
@@ -214,20 +215,36 @@ public class ApkUtils {
             }
             Field archiveField = ZipFile.class.getDeclaredField("archive");
             archiveField.setAccessible(true);
-            final RandomAccessFile archive = (RandomAccessFile) archiveField.get(zip);
-            Method positionAtCentralDirectory = ZipFile.class.getDeclaredMethod("positionAtCentralDirectory");
-            positionAtCentralDirectory.setAccessible(true);
-            positionAtCentralDirectory.invoke(zip);
-            long centralDirectoryOffset = archive.getFilePointer();
-            archive.seek(centralDirectoryOffset - 24);
-            byte[] buffer = new byte[24];
-            archive.readFully(buffer);
+            byte[] buffer = null;
+            ByteBuffer footer = null;
+            if (archiveField.get(zip) instanceof RandomAccessFile) {
+                final RandomAccessFile archive = (RandomAccessFile) archiveField.get(zip);
+                Method positionAtCentralDirectory = ZipFile.class.getDeclaredMethod("positionAtCentralDirectory");
+                positionAtCentralDirectory.setAccessible(true);
+                positionAtCentralDirectory.invoke(zip);
+                long centralDirectoryOffset = archive.getFilePointer();
+                archive.seek(centralDirectoryOffset - 24);
+                buffer = new byte[24];
+                archive.readFully(buffer);
+                footer = ByteBuffer.wrap(buffer);
+            } else if (archiveField.get(zip) instanceof FileChannelImpl) {
+                FileChannelImpl channelImpl = (FileChannelImpl) archiveField.get(zip);
+                Method positionAtCentralDirectory = ZipFile.class.getDeclaredMethod("positionAtCentralDirectory");
+                positionAtCentralDirectory.setAccessible(true);
+                positionAtCentralDirectory.invoke(zip);
+                long centralDirectoryOffset = channelImpl.position();
+                channelImpl.position(centralDirectoryOffset - 24);
+                footer = ByteBuffer.allocate(24);
+                channelImpl.read(footer);
+            }
             zip.close();
-            ByteBuffer footer = ByteBuffer.wrap(buffer);
-            footer.order(ByteOrder.LITTLE_ENDIAN);
-            if ((footer.getLong(8) == APK_SIG_BLOCK_MAGIC_LO)
-                    && (footer.getLong(16) == APK_SIG_BLOCK_MAGIC_HI)) {
-                v2 = SIGNED_V2;
+
+            if (footer != null) {
+                footer.order(ByteOrder.LITTLE_ENDIAN);
+                if ((footer.getLong(8) == APK_SIG_BLOCK_MAGIC_LO)
+                        && (footer.getLong(16) == APK_SIG_BLOCK_MAGIC_HI)) {
+                    v2 = SIGNED_V2;
+                }
             }
 
         } catch (IOException | NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ex) {
