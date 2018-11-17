@@ -5,33 +5,64 @@
  */
 package org.nbandroid.netbeans.gradle.v2.project.template;
 
+import com.android.sdklib.SdkVersionInfo;
+import java.awt.Component;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.plaf.basic.BasicComboBoxRenderer;
+import org.nbandroid.netbeans.gradle.v2.project.distributions.AndroidDistributionsPanel;
+import org.nbandroid.netbeans.gradle.v2.project.distributions.AndroidDistributionsProvider;
+import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_SDK;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 
-public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel implements DocumentListener {
+public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel implements ItemListener {
 
-    public static final String PROP_PROJECT_NAME = "projectName";
-    public static final String PROP_PROJECT_DIR = "projectDir";
+    public static final String PROP_PHONE_TABLET_ENABLED = "PROP_PHONE_TABLET_ENABLED";
+    public static final String PROP_PHONE_TABLET_PLATFORM = "PROP_PHONE_TABLET_SDK";
+    public static final String PROP_WEAR_ENABLED = "PROP_WEAR_ENABLED";
+    public static final String PROP_WEAR_PLATFORM = "PROP_WEAR_PLATFORM";
+    public static final String PROP_TV_ENABLED = "PROP_TV_ENABLED";
+    public static final String PROP_TV_PLATFORM = "PROP_TV_PLATFORM";
+    public static final String PROP_AUTO_ENABLED = "PROP_TV_ENABLED";
 
-    private AndroidProjectTemplateWizardPanel panel;
+    private AndroidProjectTemplateWizardPanellVisualAndroidSettings panel;
+    private AndroidSdk androidSdk;
 
-    public AndroidProjectTemplatePanelVisualAndroidSettings(AndroidProjectTemplateWizardPanel panel) {
+    public AndroidProjectTemplatePanelVisualAndroidSettings(AndroidProjectTemplateWizardPanellVisualAndroidSettings panel) {
         initComponents();
         this.panel = panel;
         // Register listener on the textFields to make the automatic updates
-//        projectNameTextField.getDocument().addDocumentListener(this);
-//        projectLocationTextField.getDocument().addDocumentListener(this);
-//        domain.getDocument().addDocumentListener(this);
-//        packageName.getDocument().addDocumentListener(this);
+        phoneEnabled.addItemListener(this);
+        wearEnabled.addItemListener(this);
+        tvEnabled.addItemListener(this);
+        autoEnabled.addItemListener(this);
+        phonePlatforms.addItemListener(this);
+        wearPlatforms.addItemListener(this);
+        tvPlatforms.addItemListener(this);
+        helpText.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent me) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(new AndroidDistributionsPanel());
+                DialogDisplayer.getDefault().notify(nd);
+            }
+
+        });
     }
-
-//    public String getProjectName() {
-//        return this.projectNameTextField.getText();
-//    }
-
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -43,64 +74,52 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
 
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        jCheckBox1 = new javax.swing.JCheckBox();
+        phoneEnabled = new javax.swing.JCheckBox();
         jLabel5 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        phonePlatforms = new javax.swing.JComboBox<>();
         jLabel6 = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jComboBox2 = new javax.swing.JComboBox<>();
-        jLabel7 = new javax.swing.JLabel();
-        jCheckBox2 = new javax.swing.JCheckBox();
+        apiHelpText = new javax.swing.JLabel();
+        helpText = new javax.swing.JLabel();
+        wearEnabled = new javax.swing.JCheckBox();
         jLabel8 = new javax.swing.JLabel();
-        jComboBox3 = new javax.swing.JComboBox<>();
-        jCheckBox3 = new javax.swing.JCheckBox();
+        wearPlatforms = new javax.swing.JComboBox<>();
+        tvEnabled = new javax.swing.JCheckBox();
         jLabel9 = new javax.swing.JLabel();
-        jComboBox4 = new javax.swing.JComboBox<>();
-        jCheckBox4 = new javax.swing.JCheckBox();
-        jLabel10 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        tvPlatforms = new javax.swing.JComboBox<>();
+        autoEnabled = new javax.swing.JCheckBox();
 
         jLabel3.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.jLabel3.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.jLabel4.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.jCheckBox1.text")); // NOI18N
+        phoneEnabled.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(phoneEnabled, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.phoneEnabled.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.jLabel5.text")); // NOI18N
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        phonePlatforms.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.jLabel6.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(apiHelpText, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.apiHelpText.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.jLabel2.text")); // NOI18N
+        helpText.setForeground(new java.awt.Color(0, 51, 255));
+        org.openide.awt.Mnemonics.setLocalizedText(helpText, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.helpText.text")); // NOI18N
 
-        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        jLabel7.setForeground(new java.awt.Color(0, 51, 255));
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.jLabel7.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox2, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.jCheckBox2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(wearEnabled, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.wearEnabled.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.jLabel8.text")); // NOI18N
 
-        jComboBox3.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        wearPlatforms.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox3, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.jCheckBox3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(tvEnabled, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.tvEnabled.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel9, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.jLabel9.text")); // NOI18N
 
-        jComboBox4.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        tvPlatforms.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox4, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.jCheckBox4.text")); // NOI18N
-
-        jLabel10.setForeground(new java.awt.Color(255, 0, 0));
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel10, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.jLabel10.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.jButton1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(autoEnabled, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.autoEnabled.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -123,37 +142,28 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
                                         .addComponent(jLabel5)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(phonePlatforms, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                             .addGroup(layout.createSequentialGroup()
                                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(jLabel1)
+                                                    .addComponent(apiHelpText)
                                                     .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                .addGap(0, 0, Short.MAX_VALUE))))
+                                                    .addComponent(helpText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                .addGap(0, 7, Short.MAX_VALUE))))
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(jLabel8)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jComboBox3, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addComponent(wearPlatforms, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(jLabel9)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jComboBox4, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                                        .addComponent(tvPlatforms, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jCheckBox2)
-                                    .addComponent(jCheckBox1)
-                                    .addComponent(jCheckBox3)
-                                    .addComponent(jCheckBox4)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(21, 21, 21)
-                                        .addComponent(jLabel10)))
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel2)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, 401, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, Short.MAX_VALUE)
-                                .addComponent(jButton1)))))
+                                    .addComponent(wearEnabled)
+                                    .addComponent(phoneEnabled)
+                                    .addComponent(tvEnabled)
+                                    .addComponent(autoEnabled))
+                                .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -164,146 +174,154 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel4)
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton1))
-                .addGap(18, 18, 18)
-                .addComponent(jCheckBox1)
+                .addComponent(phoneEnabled)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(phonePlatforms, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel1)
+                .addComponent(apiHelpText)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(helpText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jCheckBox2)
+                .addComponent(wearEnabled)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel8)
-                    .addComponent(jComboBox3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(wearPlatforms, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addComponent(jCheckBox3)
+                .addComponent(tvEnabled)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel9)
-                    .addComponent(jComboBox4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(tvPlatforms, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addComponent(jCheckBox4)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel10)
-                .addContainerGap(23, Short.MAX_VALUE))
+                .addComponent(autoEnabled)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JCheckBox jCheckBox2;
-    private javax.swing.JCheckBox jCheckBox3;
-    private javax.swing.JCheckBox jCheckBox4;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JComboBox<String> jComboBox2;
-    private javax.swing.JComboBox<String> jComboBox3;
-    private javax.swing.JComboBox<String> jComboBox4;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel apiHelpText;
+    private javax.swing.JCheckBox autoEnabled;
+    private javax.swing.JLabel helpText;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JCheckBox phoneEnabled;
+    private javax.swing.JComboBox<String> phonePlatforms;
+    private javax.swing.JCheckBox tvEnabled;
+    private javax.swing.JComboBox<String> tvPlatforms;
+    private javax.swing.JCheckBox wearEnabled;
+    private javax.swing.JComboBox<String> wearPlatforms;
     // End of variables declaration//GEN-END:variables
 
     @Override
     public void addNotify() {
         super.addNotify();
         //same problem as in 31086, initial focus on Cancel button
-//        projectNameTextField.requestFocus();
+        phoneEnabled.requestFocus();
     }
 
     boolean valid(WizardDescriptor wizardDescriptor) {
-        return true;
+        return phoneEnabled.isSelected() || wearEnabled.isSelected() || tvEnabled.isSelected() || autoEnabled.isSelected();
     }
 
     void store(WizardDescriptor d) {
-//        String name = projectNameTextField.getText().trim();
-//        String folder = createdFolderTextField.getText().trim();
-//
-//        d.putProperty(PROP_PROJECT_DIR, new File(folder));
-//        d.putProperty(PROP_PROJECT_NAME, name);
+        d.putProperty(PROP_PHONE_TABLET_ENABLED, phoneEnabled.isSelected());
+        d.putProperty(PROP_WEAR_ENABLED, wearEnabled.isSelected());
+        d.putProperty(PROP_TV_ENABLED, tvEnabled.isSelected());
+        d.putProperty(PROP_AUTO_ENABLED, autoEnabled.isSelected());
+        d.putProperty(PROP_PHONE_TABLET_PLATFORM, phonePlatforms.getSelectedItem());
+        d.putProperty(PROP_WEAR_PLATFORM, wearPlatforms.getSelectedItem());
+        d.putProperty(PROP_TV_PLATFORM, tvPlatforms.getSelectedItem());
+    }
+
+    private void updateDistribution() {
+        AndroidPlatformInfo selectedItem = (AndroidPlatformInfo) phonePlatforms.getSelectedItem();
+        int apiLevel = selectedItem.getAndroidVersion().getApiLevel();
+        apiHelpText.setText(AndroidDistributionsProvider.getApiHelpText(apiLevel, "" + apiLevel));
     }
 
     void read(WizardDescriptor settings) {
-//        File projectLocation = (File) settings.getProperty(PROP_PROJECT_DIR);
-//        if (projectLocation == null || projectLocation.getParentFile() == null || !projectLocation.getParentFile().isDirectory()) {
-//            projectLocation = ProjectChooser.getProjectsFolder();
-//        } else {
-//            projectLocation = projectLocation.getParentFile();
-//        }
-//        this.projectLocationTextField.setText(projectLocation.getAbsolutePath());
-//
-//        String projectName = (String) settings.getProperty(PROP_PROJECT_NAME);
-//        if (projectName == null) {
-//            projectName = "NewAndroidProject";
-//        }
-//        this.projectNameTextField.setText(projectName);
-//        this.projectNameTextField.selectAll();
+        androidSdk = (AndroidSdk) settings.getProperty(PROP_PROJECT_SDK);
+        List<AndroidPlatformInfo> platforms = new ArrayList<>(androidSdk.getPlatforms());
+        platforms.sort(new Comparator<AndroidPlatformInfo>() {
+            @Override
+            public int compare(AndroidPlatformInfo o1, AndroidPlatformInfo o2) {
+                return Integer.compare(o1.getAndroidVersion().getApiLevel(), o2.getAndroidVersion().getApiLevel());
+            }
+        });
+        phonePlatforms.setModel(new DefaultComboBoxModel(platforms.toArray()));
+        phonePlatforms.setRenderer(new ComboBoxRenderer());
+        for (Iterator<AndroidPlatformInfo> iterator = platforms.iterator(); iterator.hasNext();) {
+            AndroidPlatformInfo next = iterator.next();
+            if (next.getAndroidVersion().getApiLevel() < 20) {
+                iterator.remove();
+            }
+        }
+        wearPlatforms.setModel(new DefaultComboBoxModel(platforms.toArray()));
+        wearPlatforms.setRenderer(new ComboBoxRenderer());
+        for (Iterator<AndroidPlatformInfo> iterator = platforms.iterator(); iterator.hasNext();) {
+            AndroidPlatformInfo next = iterator.next();
+            if (next.getAndroidVersion().getApiLevel() < 21) {
+                iterator.remove();
+            }
+        }
+        tvPlatforms.setModel(new DefaultComboBoxModel(platforms.toArray()));
+        tvPlatforms.setRenderer(new ComboBoxRenderer());
+        phonePlatforms.addItemListener(this);
+        updateDistribution();
+        if (settings.getProperty(PROP_PHONE_TABLET_ENABLED) instanceof Boolean) {
+            phoneEnabled.setSelected((boolean) settings.getProperty(PROP_PHONE_TABLET_ENABLED));
+        }
+        if (settings.getProperty(PROP_WEAR_ENABLED) instanceof Boolean) {
+            wearEnabled.setSelected((boolean) settings.getProperty(PROP_WEAR_ENABLED));
+        }
+        if (settings.getProperty(PROP_TV_ENABLED) instanceof Boolean) {
+            tvEnabled.setSelected((boolean) settings.getProperty(PROP_TV_ENABLED));
+        }
+        if (settings.getProperty(PROP_AUTO_ENABLED) instanceof Boolean) {
+            autoEnabled.setSelected((boolean) settings.getProperty(PROP_AUTO_ENABLED));
+        }
+
+        if (settings.getProperty(PROP_PHONE_TABLET_PLATFORM) instanceof AndroidPlatformInfo) {
+            phonePlatforms.setSelectedItem((AndroidPlatformInfo) settings.getProperty(PROP_PHONE_TABLET_PLATFORM));
+        }
+        if (settings.getProperty(PROP_WEAR_PLATFORM) instanceof AndroidPlatformInfo) {
+            wearPlatforms.setSelectedItem((AndroidPlatformInfo) settings.getProperty(PROP_WEAR_PLATFORM));
+        }
+        if (settings.getProperty(PROP_TV_PLATFORM) instanceof AndroidPlatformInfo) {
+            tvPlatforms.setSelectedItem((AndroidPlatformInfo) settings.getProperty(PROP_TV_PLATFORM));
+        }
+
     }
-    
+
+    @Override
+    public void itemStateChanged(ItemEvent e) {
+        updateDistribution();
+        panel.fireChangeEvent();
+    }
+
+    class ComboBoxRenderer extends BasicComboBoxRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            AndroidPlatformInfo info = (AndroidPlatformInfo) value;
+            int apiLevel = info.getAndroidVersion().getApiLevel();
+            label.setText("API " + apiLevel + " : " + SdkVersionInfo.getVersionWithCodename(info.getAndroidVersion()));
+            return label;
+        }
+
+    }
 
     void validate(WizardDescriptor d) throws WizardValidationException {
         // nothing to validate
     }
-
-    // Implementation of DocumentListener --------------------------------------
-    public void changedUpdate(DocumentEvent e) {
-        updateTexts(e);
-//        if (this.projectNameTextField.getDocument() == e.getDocument()) {
-//            firePropertyChange(PROP_PROJECT_NAME, null, this.projectNameTextField.getText());
-//        }
-    }
-
-    public void insertUpdate(DocumentEvent e) {
-        updateTexts(e);
-//        if (this.projectNameTextField.getDocument() == e.getDocument()) {
-//            firePropertyChange(PROP_PROJECT_NAME, null, this.projectNameTextField.getText());
-//        }
-    }
-
-    public void removeUpdate(DocumentEvent e) {
-        updateTexts(e);
-//        if (this.projectNameTextField.getDocument() == e.getDocument()) {
-//            firePropertyChange(PROP_PROJECT_NAME, null, this.projectNameTextField.getText());
-//        }
-    }
-
-    /**
-     * Handles changes in the Project name and project directory,
-     */
-    private void updateTexts(DocumentEvent e) {
-//
-//        Document doc = e.getDocument();
-//
-//        if (doc == projectNameTextField.getDocument() || doc == projectLocationTextField.getDocument()) {
-//            // Change in the project name
-//
-//            String projectName = projectNameTextField.getText();
-//            String projectFolder = projectLocationTextField.getText();
-//
-//            //if (projectFolder.trim().length() == 0 || projectFolder.equals(oldName)) {
-//            createdFolderTextField.setText(projectFolder + File.separatorChar + projectName);
-//            //}
-//
-//        }
-//        panel.fireChangeEvent(); // Notify that the panel changed
-    }
-
 }

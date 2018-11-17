@@ -55,12 +55,13 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
 
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[]{
-            new AndroidProjectTemplateWizardPanel(),};
+            new AndroidProjectTemplateWizardPanellBasicSettings(),
+            new AndroidProjectTemplateWizardPanellVisualAndroidSettings()};
     }
 
     private String[] createSteps() {
         return new String[]{
-            NbBundle.getMessage(AndroidProjectTemplateWizardIterator.class, "LBL_CreateProjectStep")
+            NbBundle.getMessage(AndroidProjectTemplateWizardIterator.class, "LBL_CreateProjectStep"), "Android platform"
         };
     }
 

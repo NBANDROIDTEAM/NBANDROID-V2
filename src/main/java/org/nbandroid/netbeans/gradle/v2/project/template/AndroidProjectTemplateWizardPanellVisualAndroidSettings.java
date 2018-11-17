@@ -13,30 +13,29 @@ import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 /**
  * Panel just asking for basic info.
  */
-public class AndroidProjectTemplateWizardPanel implements WizardDescriptor.Panel,
+public class AndroidProjectTemplateWizardPanellVisualAndroidSettings implements WizardDescriptor.Panel,
         WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
 
     private WizardDescriptor wizardDescriptor;
-    private AndroidProjectTemplatePanelVisualBasicSettings component;
+    private AndroidProjectTemplatePanelVisualAndroidSettings component;
 
-    public AndroidProjectTemplateWizardPanel() {
+    public AndroidProjectTemplateWizardPanellVisualAndroidSettings() {
     }
 
     public Component getComponent() {
         if (component == null) {
-            component = new AndroidProjectTemplatePanelVisualBasicSettings(this);
-            component.setName(NbBundle.getMessage(AndroidProjectTemplateWizardPanel.class, "LBL_CreateProjectStep"));
+            component = new AndroidProjectTemplatePanelVisualAndroidSettings(this);
+            component.setName("Android platform");
         }
         return component;
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(AndroidProjectTemplateWizardPanel.class);
+        return new HelpCtx(AndroidProjectTemplateWizardPanellVisualAndroidSettings.class);
     }
 
     public boolean isValid() {

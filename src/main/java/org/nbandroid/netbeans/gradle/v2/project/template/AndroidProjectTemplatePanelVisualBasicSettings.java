@@ -32,9 +32,9 @@ public class AndroidProjectTemplatePanelVisualBasicSettings extends JPanel imple
     public static final String PROP_PROJECT_DOMAIN = "PROP_PROJECT_DOMAIN";
     public static final String PROP_PROJECT_PACKAGE = "PROP_PROJECT_PACKAGE";
 
-    private AndroidProjectTemplateWizardPanel panel;
+    private AndroidProjectTemplateWizardPanellBasicSettings panel;
 
-    public AndroidProjectTemplatePanelVisualBasicSettings(AndroidProjectTemplateWizardPanel panel) {
+    public AndroidProjectTemplatePanelVisualBasicSettings(AndroidProjectTemplateWizardPanellBasicSettings panel) {
         initComponents();
         this.panel = panel;
 
