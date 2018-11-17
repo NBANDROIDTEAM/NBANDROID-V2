@@ -48,7 +48,7 @@ This plugin depends on Gradle Support plugin. You need to add it to platform fol
 ```xml
     <profiles>
         <profile>
-            <id>your_name-NB_VERSION</id>
+            <id>your_name-NB82</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
@@ -60,27 +60,15 @@ This plugin depends on Gradle Support plugin. You need to add it to platform fol
                         <version>3.13</version>
                         <extensions>true</extensions>
                         <configuration>
-                            <publicPackages>
-                            </publicPackages>
-                            <moduleDependencies>
-                                <dependency>
-                                    <!--Private Package Reference-->
-                                    <id>org.netbeans.modules:org-netbeans-modules-gsf-testrunner</id>
-                                    <type>impl</type>
-                                </dependency>
-                                <dependency>
-                                    <!--Private Package Reference-->
-                                    <id>com.github.kelemen:netbeans-gradle-plugin</id>
-                                    <type>impl</type>
-                                </dependency>
-                            </moduleDependencies>
                             <netbeansInstallation>FULL_PATH_TO_NB_COPY</netbeansInstallation>
+                            <netbeansUserdir>FULL_PATH_TO_CUSTOM_USER_DIR</netbeansUserdir>
                         </configuration>
                     </plugin>
                 </plugins>
             </build>
             <properties>
-                <version.nb>RELEASE81</version.nb>
+                <version.nb>RELEASE82</version.nb>
+                <asm.nb>asm-all-5.0.1</asm.nb>
             </properties>
         </profile>
         ...
