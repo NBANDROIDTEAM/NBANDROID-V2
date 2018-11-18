@@ -2,6 +2,9 @@
     <#if !isNewProject>
     <string name="title_${activityToLayout(activityClass)}">${escapeXmlString(activityClass)}</string>
     </#if>
-    <string name="hello_round">Hello Round World!</string>
-    <string name="hello_square">Hello Square World!</string>
+    <!--
+    This string is used for square devices and overridden by hello_world in
+    values-round/strings.xml for round devices.
+    -->
+    <string name="hello_world">Hello Square World!</string>
 </resources>

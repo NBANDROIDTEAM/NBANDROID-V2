@@ -2,22 +2,43 @@ package ${packageName};
 
 <#if hasAppBar>
 <#if features == 'tabs'>
-import android.support.design.widget.TabLayout;
+import ${getMaterialComponentName('android.support.design.widget.TabLayout', useMaterial2)};
 </#if>
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import ${getMaterialComponentName('android.support.design.widget.FloatingActionButton', useMaterial2)};
+import ${getMaterialComponentName('android.support.design.widget.Snackbar', useMaterial2)};
+import ${getMaterialComponentName('android.support.v7.app.AppCompatActivity', useAndroidX)};
+import ${getMaterialComponentName('android.support.v7.widget.Toolbar', useAndroidX)};
 <#else>  <#-- hasAppBar -->
 import ${superClassFqcn};
+<#if useAndroidX>
+import ${getMaterialComponentName('android.support.v7.app.ActionBar', useAndroidX)};
+import ${getMaterialComponentName('android.support.v4.app.FragmentTransaction', useAndroidX)};
+<#else>
 import android.<#if appCompat>support.v7.</#if>app.ActionBar;
 import android.<#if appCompat>support.v4.</#if>app.FragmentTransaction;
+</#if>
 </#if>   <#-- hasAppBar -->
+<#if useAndroidX>
+import ${getMaterialComponentName('android.support.v4.app.Fragment', useAndroidX)};
+<#else>
 import android.<#if appCompat>support.v4.</#if>app.Fragment;
+</#if>
 <#if hasViewPager>
+<#if useAndroidX>
+import ${getMaterialComponentName('android.support.v4.app.FragmentManager', useAndroidX)};
+<#else>
 import android.<#if appCompat>support.v4.</#if>app.FragmentManager;
+</#if>
+<#if useAndroidX>
+import ${getMaterialComponentName('android.support.v4.app.FragmentPagerAdapter', useAndroidX)};
+<#else>
+<#if useAndroidX>
+import ${getMaterialComponentName('android.support.'v4'.app.FragmentPagerAdapter', useAndroidX)};
+<#else>
 import android.support.${(appCompat)?string('v4','v13')}.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
+</#if>
+</#if>
+import ${getMaterialComponentName('android.support.v4.view.ViewPager', useAndroidX)};
 </#if>
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -32,7 +53,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.content.Context;
 <#if buildApi gte 23>
-import android.support.v7.widget.ThemedSpinnerAdapter;
+import ${getMaterialComponentName('android.support.v7.widget.ThemedSpinnerAdapter', useAndroidX)};
 import android.content.res.Resources.Theme;
 <#else>
 import android.graphics.Color;
@@ -47,12 +68,12 @@ public class ${activityClass} extends ${superClass}<#if !hasAppBar && features =
 
     <#if hasViewPager>
     /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
+     * The {@link ${getMaterialComponentName('android.support.v4.view.PagerAdapter', useAndroidX)}} that will provide
      * fragments for each of the sections. We use a
      * {@link FragmentPagerAdapter} derivative, which will keep every
      * loaded fragment in memory. If this becomes too memory intensive, it
      * may be best to switch to a
-     * {@link android.support.${(appCompat)?string('v4','v13')}.app.FragmentStatePagerAdapter}.
+     * <#if useAndroidX>${getMaterialComponentName('android.support.v4.app.FragmentStatePagerAdapter', useAndroidX)}<#else>{@link android.support.${(appCompat)?string('v4','v13')}.app.FragmentStatePagerAdapter}</#if>.
      */
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
@@ -82,12 +103,14 @@ public class ${activityClass} extends ${superClass}<#if !hasAppBar && features =
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
-
     </#if>
     <#if hasAppBar>
       <#if features == 'tabs'>
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(mViewPager);
+
+         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+
+        mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+        tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager));
       <#elseif features == 'spinner'>
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
@@ -256,6 +279,7 @@ public class ${activityClass} extends ${superClass}<#if !hasAppBar && features =
             // Show 3 total pages.
             return 3;
         }
+        <#if !appCompat>
 
         @Override
         public CharSequence getPageTitle(int position) {
@@ -269,6 +293,7 @@ public class ${activityClass} extends ${superClass}<#if !hasAppBar && features =
             }
             return null;
         }
+        </#if>
     }
     </#if>
 

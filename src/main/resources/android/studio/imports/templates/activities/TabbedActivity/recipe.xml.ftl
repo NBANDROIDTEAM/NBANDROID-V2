@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
+<#import "root://activities/common/kotlin_macros.ftl" as kt>
 <recipe>
+    <@kt.addAllKotlinDependencies />
 
     <#if appCompat && !(hasDependency('com.android.support:appcompat-v7'))>
         <dependency mavenUrl="com.android.support:appcompat-v7:${buildApi}.+"/>
@@ -15,6 +17,10 @@
 
     <#if hasAppBar && !(hasDependency('com.android.support:design'))>
         <dependency mavenUrl="com.android.support:design:${buildApi}.+"/>
+    </#if>
+
+    <#if !(hasDependency('com.android.support.constraint:constraint-layout'))>
+        <dependency mavenUrl="com.android.support.constraint:constraint-layout:+" />
     </#if>
 
     <#include "../common/recipe_manifest.xml.ftl" />
@@ -51,13 +57,20 @@
 
     <!-- Decide which activity code to add -->
     <#if hasViewPager || hasAppBar>
-        <instantiate from="root/src/app_package/TabsAndPagerActivity.java.ftl"
-                       to="${escapeXmlAttribute(srcOut)}/${activityClass}.java" />
+        <!-- kotlin android extensions cannot find views from android.R.layout.simple_list_item_1,
+             so we need to add a new list_item that contains a TextView -->
+        <#if generateKotlin && features == 'spinner'>
+             <copy from="root/res/layout/list_item.xml"
+                     to="${escapeXmlAttribute(resOut)}/layout/list_item.xml" />
+        </#if>
+        <instantiate from="root/src/app_package/TabsAndPagerActivity.${ktOrJavaExt}.ftl"
+                       to="${escapeXmlAttribute(srcOut)}/${activityClass}.${ktOrJavaExt}" />
+        <open file="${escapeXmlAttribute(srcOut)}/${activityClass}.${ktOrJavaExt}" />
     <#else>
-        <instantiate from="root/src/app_package/DropdownActivity.java.ftl"
-                       to="${escapeXmlAttribute(srcOut)}/${activityClass}.java" />
+        <instantiate from="root/src/app_package/DropdownActivity.${ktOrJavaExt}.ftl"
+                       to="${escapeXmlAttribute(srcOut)}/${activityClass}.${ktOrJavaExt}" />
     </#if>
 
-    <open file="${escapeXmlAttribute(srcOut)}/${activityClass}.java" />
+    <open file="${escapeXmlAttribute(srcOut)}/${activityClass}.${ktOrJavaExt}" />
     <open file="${escapeXmlAttribute(resOut)}/layout/${fragmentLayoutName}.xml" />
 </recipe>

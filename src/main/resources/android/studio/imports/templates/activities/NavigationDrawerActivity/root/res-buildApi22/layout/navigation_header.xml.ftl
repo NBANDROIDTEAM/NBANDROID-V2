@@ -14,29 +14,34 @@
     android:theme="@style/ThemeOverlay.AppCompat.Dark"
     android:orientation="vertical"
     android:gravity="bottom">
+<#if !(isLibraryProject!false)>
 
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
-<#if appCompat>
-        app:srcCompat="@android:drawable/sym_def_app_icon"
+<#if appCompat && buildApi gte 25 && targetApi gte 25>
+        app:srcCompat="@mipmap/ic_launcher_round"
+<#elseif appCompat>
+        app:srcCompat="@mipmap/ic_launcher"
 <#else>
-        android:src="@android:drawable/sym_def_app_icon"
+        android:src="@mipmap/ic_launcher"
 </#if>
+        android:contentDescription="@string/nav_header_desc"
         android:id="@+id/imageView" />
+</#if>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
-        android:text="Android Studio"
+        android:text="@string/nav_header_title"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="android.studio@android.com"
+        android:text="@string/nav_header_subtitle"
         android:id="@+id/textView" />
 
 </LinearLayout>

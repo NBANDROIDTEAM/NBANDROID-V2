@@ -1,10 +1,8 @@
 <resources>
-    <#if !isNewProject>
-    <string name="title_${activityToLayout(activityClass)}">${escapeXmlString(activityTitle)}</string>
-    </#if>
-
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
 </resources>

@@ -1,7 +1,6 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" >
-
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="${packageName}">
 
     <uses-feature
         android:name="android.hardware.touchscreen"
@@ -36,7 +35,7 @@
         </activity>
 
         <activity android:name="${packageName}.${detailsActivity}" />
-        <activity android:name="PlaybackOverlayActivity" />
+        <activity android:name="PlaybackActivity" />
         <activity android:name="BrowseErrorActivity" />
 
     </application>

@@ -2,9 +2,15 @@ package ${packageName};
 
 import android.app.Activity;
 <#if appCompat>import ${superClassFqcn};</#if>
+<#if useAndroidX>
+import ${getMaterialComponentName('android.support.v7.app.ActionBar', useAndroidX)};
+import ${getMaterialComponentName('android.support.v4.app.Fragment', useAndroidX)};
+import ${getMaterialComponentName('android.support.v4.app.FragmentManager', useAndroidX)};
+<#else>
 import android.<#if appCompat>support.v7.</#if>app.ActionBar;
 import android.<#if appCompat>support.v4.</#if>app.Fragment;
 import android.<#if appCompat>support.v4.</#if>app.FragmentManager;
+</#if>
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,7 +20,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.support.v4.widget.DrawerLayout;
+import ${getMaterialComponentName('android.support.v4.widget.DrawerLayout', useAndroidX)};
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 <#if applicationPackage??>

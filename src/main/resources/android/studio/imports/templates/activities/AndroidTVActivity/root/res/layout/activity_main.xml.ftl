@@ -5,6 +5,6 @@
     android:name="${packageName}.${mainFragment}"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="${relativePackage!''}.${activityClass}"
+    tools:context="${packageName!''}.${activityClass}"
     tools:deviceIds="tv"
     tools:ignore="MergeRootFrame" />

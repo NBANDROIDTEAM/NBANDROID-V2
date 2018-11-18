@@ -2,11 +2,16 @@ package ${packageName};
 
 <#if appCompat>import ${superClassFqcn};</#if>
 import android.app.Activity;
+<#if useAndroidX>
+import ${getMaterialComponentName('android.support.v7.app.ActionBar', useAndroidX)};
+import ${getMaterialComponentName('android.support.v4.app.Fragment', useAndroidX)};
+<#else>
 import android.<#if appCompat>support.v7.</#if>app.ActionBar;
 import android.<#if appCompat>support.v4.</#if>app.Fragment;
-import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
+</#if>
+import ${getMaterialComponentName('android.support.v4.app.ActionBarDrawerToggle', useAndroidX)};
+import ${getMaterialComponentName('android.support.v4.view.GravityCompat', useAndroidX)};
+import ${getMaterialComponentName('android.support.v4.widget.DrawerLayout', useAndroidX)};
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;

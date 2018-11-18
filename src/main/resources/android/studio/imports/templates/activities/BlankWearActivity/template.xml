@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <template
     format="5"
-    revision="2"
+    revision="5"
     name="Blank Wear Activity"
-    minApi="20"
-    minBuildApi="20"
-    description="Creates a blank activity for Android Wear">
+    minApi="23"
+    minBuildApi="23"
+    description="Creates a blank activity for Wear OS">
 
     <category value="Activity" />
     <formfactor value="Wear" />
@@ -27,26 +27,6 @@
         suggest="${activityToLayout(activityClass)}"
         default="activity_main"
         help="The name of the layout to create for the activity" />
-
-    <parameter
-        id="roundLayout"
-        name="Round Layout Name"
-        type="string"
-        constraints="layout|unique|nonempty"
-        suggest="round_${activityToLayout(activityClass)}"
-        default="round"
-        help="The name of the round layout to create for the activity" />
-
-
-    <parameter
-        id="rectLayout"
-        name="Rectangular Layout Name"
-        type="string"
-        constraints="layout|unique|nonempty"
-        suggest="rect_${activityToLayout(activityClass)}"
-        default="rect"
-        help="The name of the rectangular layout to create for the activity" />
-
 
     <parameter
         id="isLauncher"

@@ -23,13 +23,10 @@
             to="${escapeXmlAttribute(resOut)}/mipmap-xxhdpi" />
 </#if>
 <#if makeIgnore>
-    <copy from="root/module_ignore"
+    <copy from="root://gradle-projects/common/gitignore"
             to="${escapeXmlAttribute(projectOut)}/.gitignore" />
 </#if>
-<#if enableProGuard>
-    <instantiate from="root/proguard-rules.txt.ftl"
-                   to="${escapeXmlAttribute(projectOut)}/proguard-rules.pro" />
-</#if>
+    <#include "root://gradle-projects/common/proguard_recipe.xml.ftl"/>
     <instantiate from="root/res/values/styles.xml"
                    to="${escapeXmlAttribute(resOut)}/values/styles.xml" />
 

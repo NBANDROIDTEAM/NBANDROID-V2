@@ -10,7 +10,7 @@
     <formfactor value="Mobile" />
 
     <thumbs>
-        <thumb>template_new_project.png</thumb>
+        <thumb>mobile-module.png</thumb>
     </thumbs>
 
     <parameter
@@ -26,18 +26,6 @@
         type="string"
         constraints="nonempty"
         default="My Module" />
-
-    <parameter
-        id="baseTheme"
-        name="Base Theme"
-        type="enum"
-        default="holo_light_darkactionbar"
-        help="The base user interface theme for the module">
-        <option id="none">None</option>
-        <option id="holo_dark" minBuildApi="11">Holo Dark</option>
-        <option id="holo_light" minBuildApi="11">Holo Light</option>
-        <option id="holo_light_darkactionbar" minBuildApi="14">Holo Light with Dark Action Bar</option>
-    </parameter>
 
     <parameter
         id="minApi"
@@ -104,10 +92,22 @@
         default="true" />
 
     <parameter
-        id="enableProGuard"
-        name="Enable ProGuard"
+        id="includeCppSupport"
+        name="Enable C++ Support"
         type="boolean"
-        default="true" />
+        default="false" />
+
+    <parameter
+        id="isInstantApp"
+        name="Has Instant App support"
+        type="boolean"
+        default="false" />
+
+    <parameter
+        id="isDynamicFeature"
+        name="Is a Dynamic Feature"
+        type="boolean"
+        default="false" />
 
     <globals file="globals.xml.ftl" />
     <execute file="recipe.xml.ftl" />

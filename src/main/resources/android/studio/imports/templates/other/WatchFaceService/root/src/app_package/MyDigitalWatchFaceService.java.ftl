@@ -1,19 +1,3 @@
-/*
- * Copyright (C) 2014 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package ${packageName};
 
 import android.content.BroadcastReceiver;
@@ -29,8 +13,9 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.wearable.watchface.CanvasWatchFaceService;
-import android.support.wearable.watchface.WatchFaceStyle;
+import ${getMaterialComponentName('android.support.v4.content.ContextCompat', useAndroidX)};
+import ${getMaterialComponentName('android.support.wearable.watchface.CanvasWatchFaceService', useAndroidX)};
+import ${getMaterialComponentName('android.support.wearable.watchface.WatchFaceStyle', useAndroidX)};
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
 <#if isInteractive>import android.widget.Toast;</#if>
@@ -43,14 +28,21 @@ import java.util.concurrent.TimeUnit;
 /**
  * Digital watch face with seconds. In ambient mode, the seconds aren't displayed. On devices with
  * low-bit ambient mode, the text is drawn without anti-aliasing in ambient mode.
+ *
+ * Important Note: Because watch face apps do not have a default Activity in
+ * their project, you will need to set your Configurations to
+ * "Do not launch Activity" for both the Wear and/or Application modules. If you
+ * are unsure how to do this, please review the "Run Starter project" section
+ * in the Google Watch Face Code Lab:
+ * https://codelabs.developers.google.com/codelabs/watchface/index.html#0
  */
 public class ${serviceClass} extends CanvasWatchFaceService {
     private static final Typeface NORMAL_TYPEFACE =
             Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
 
     /**
-     * Update rate in milliseconds for interactive mode. We update once a second since seconds are
-     * displayed in interactive mode.
+     * Update rate in milliseconds for interactive mode. Defaults to one second
+     * because the watch face needs to update seconds in interactive mode.
      */
     private static final long INTERACTIVE_UPDATE_RATE_MS = TimeUnit.SECONDS.toMillis(1);
 
@@ -65,68 +57,68 @@ public class ${serviceClass} extends CanvasWatchFaceService {
     }
 
     private class Engine extends CanvasWatchFaceService.Engine {
-        final Handler mUpdateTimeHandler = new EngineHandler(this);
 
-        final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
+        private Calendar mCalendar;
+
+        private boolean mRegisteredTimeZoneReceiver = false;
+
+        private float mXOffset;
+        private float mYOffset;
+
+        private Paint mBackgroundPaint;
+        private Paint mTextPaint;
+
+        /**
+         * Whether the display supports fewer bits for each color in ambient mode. When true, we
+         * disable anti-aliasing in ambient mode.
+         */
+        private boolean mLowBitAmbient;
+        private boolean mBurnInProtection;
+        private boolean mAmbient;
+
+        private final Handler mUpdateTimeHandler = new EngineHandler(this);
+
+        private final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 mCalendar.setTimeZone(TimeZone.getDefault());
                 invalidate();
             }
         };
-        boolean mRegisteredTimeZoneReceiver = false;
-
-        Paint mBackgroundPaint;
-        Paint mTextPaint;
-
-        boolean mAmbient;
-        Calendar mCalendar;
-
-        float mXOffset;
-        float mYOffset;
-
-        /**
-         * Whether the display supports fewer bits for each color in ambient mode. When true, we
-         * disable anti-aliasing in ambient mode.
-         */
-        boolean mLowBitAmbient;
 
         @Override
         public void onCreate(SurfaceHolder holder) {
             super.onCreate(holder);
 
             setWatchFaceStyle(new WatchFaceStyle.Builder(${serviceClass}.this)
-                    .setCardPeekMode(WatchFaceStyle.PEEK_MODE_VARIABLE)
-                    .setBackgroundVisibility(WatchFaceStyle.BACKGROUND_VISIBILITY_INTERRUPTIVE)
-                    .setShowSystemUiTime(false)
 <#if isInteractive>
                     .setAcceptsTapEvents(true)
 </#if>
                     .build());
+
+            mCalendar = Calendar.getInstance();
+
             Resources resources = ${serviceClass}.this.getResources();
             mYOffset = resources.getDimension(R.dimen.digital_y_offset);
 
+            // Initializes background.
             mBackgroundPaint = new Paint();
-            mBackgroundPaint.setColor(resources.getColor(R.color.background));
+            mBackgroundPaint.setColor(
+                    ContextCompat.getColor(getApplicationContext(), R.color.background));
 
+
+            // Initializes Watch Face.
             mTextPaint = new Paint();
-            mTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
-
-            mCalendar = Calendar.getInstance();
+            mTextPaint.setTypeface(NORMAL_TYPEFACE);
+            mTextPaint.setAntiAlias(true);
+            mTextPaint.setColor(
+                    ContextCompat.getColor(getApplicationContext(), R.color.digital_text));
         }
 
         @Override
         public void onDestroy() {
             mUpdateTimeHandler.removeMessages(MSG_UPDATE_TIME);
             super.onDestroy();
-        }
-
-        private Paint createTextPaint(int textColor) {
-            Paint paint = new Paint();
-            paint.setColor(textColor);
-            paint.setTypeface(NORMAL_TYPEFACE);
-            paint.setAntiAlias(true);
-            return paint;
         }
 
         @Override
@@ -184,6 +176,7 @@ public class ${serviceClass} extends CanvasWatchFaceService {
         public void onPropertiesChanged(Bundle properties) {
             super.onPropertiesChanged(properties);
             mLowBitAmbient = properties.getBoolean(PROPERTY_LOW_BIT_AMBIENT, false);
+            mBurnInProtection = properties.getBoolean(PROPERTY_BURN_IN_PROTECTION, false);
         }
 
         @Override
@@ -195,12 +188,10 @@ public class ${serviceClass} extends CanvasWatchFaceService {
         @Override
         public void onAmbientModeChanged(boolean inAmbientMode) {
             super.onAmbientModeChanged(inAmbientMode);
-            if (mAmbient != inAmbientMode) {
-                mAmbient = inAmbientMode;
-                if (mLowBitAmbient) {
-                    mTextPaint.setAntiAlias(!inAmbientMode);
-                }
-                invalidate();
+
+            mAmbient = inAmbientMode;
+            if (mLowBitAmbient) {
+                mTextPaint.setAntiAlias(!inAmbientMode);
             }
 
             // Whether the timer should be running depends on whether we're visible (as well as

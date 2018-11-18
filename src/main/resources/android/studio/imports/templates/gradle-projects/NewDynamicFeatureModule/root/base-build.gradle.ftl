@@ -1,0 +1,5 @@
+android {
+
+    dynamicFeatures = [":${projectName}"]
+
+}

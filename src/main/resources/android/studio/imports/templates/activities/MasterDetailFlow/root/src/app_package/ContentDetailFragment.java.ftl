@@ -2,10 +2,14 @@ package ${packageName};
 
 <#if hasAppBar>
 import android.app.Activity;
-import android.support.design.widget.CollapsingToolbarLayout;
+import ${getMaterialComponentName('android.support.design.widget.CollapsingToolbarLayout', useMaterial2)};
 </#if>
 import android.os.Bundle;
+<#if useAndroidX>
+import ${getMaterialComponentName('android.support.v4.app.Fragment', useAndroidX)};
+<#else>
 import android.<#if appCompat>support.v4.</#if>app.Fragment;
+</#if>
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;

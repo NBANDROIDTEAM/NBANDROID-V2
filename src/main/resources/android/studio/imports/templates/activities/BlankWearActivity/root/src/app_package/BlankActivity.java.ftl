@@ -1,11 +1,10 @@
 package ${packageName};
 
-import android.app.Activity;
 import android.os.Bundle;
-import android.support.wearable.view.WatchViewStub;
+import ${getMaterialComponentName('android.support.wearable.activity.WearableActivity', useAndroidX)};
 import android.widget.TextView;
 
-public class ${activityClass} extends Activity {
+public class ${activityClass} extends WearableActivity {
 
     private TextView mTextView;
 
@@ -13,12 +12,10 @@ public class ${activityClass} extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.${layoutName});
-        final WatchViewStub stub = (WatchViewStub) findViewById(R.id.watch_view_stub);
-        stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener() {
-            @Override
-            public void onLayoutInflated(WatchViewStub stub) {
-                mTextView = (TextView) stub.findViewById(R.id.text);
-            }
-        });
+
+        mTextView = (TextView) findViewById(R.id.text);
+
+        // Enables Always-on
+        setAmbientEnabled();
     }
 }

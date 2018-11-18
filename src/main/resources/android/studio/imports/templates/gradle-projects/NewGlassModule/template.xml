@@ -12,7 +12,7 @@
     <formfactor value="Glass" />
 
     <thumbs>
-        <thumb>template_new_project.png</thumb>
+        <thumb>glass-module.png</thumb>
     </thumbs>
 
     <parameter
@@ -85,12 +85,6 @@
     <parameter
         id="makeIgnore"
         name="Create .gitignore file"
-        type="boolean"
-        default="true" />
-
-    <parameter
-        id="enableProGuard"
-        name="Enable ProGuard"
         type="boolean"
         default="true" />
 

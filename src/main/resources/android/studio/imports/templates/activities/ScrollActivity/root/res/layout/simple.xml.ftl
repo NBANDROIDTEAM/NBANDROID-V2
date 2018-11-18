@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.NestedScrollView
+<${getMaterialComponentName('android.support.v4.widget.NestedScrollView', useAndroidX)}
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
 <#if hasAppBar && layoutName??>
@@ -9,7 +9,7 @@
 </#if>
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="${relativePackage}.${activityClass}">
+    tools:context="${packageName}.${activityClass}">
 
     <TextView
         android:layout_width="wrap_content"
@@ -17,4 +17,4 @@
         android:layout_margin="@dimen/text_margin"
         android:text="@string/large_text" />
 
-</android.support.v4.widget.NestedScrollView>
+</${getMaterialComponentName('android.support.v4.widget.NestedScrollView', useAndroidX)}>

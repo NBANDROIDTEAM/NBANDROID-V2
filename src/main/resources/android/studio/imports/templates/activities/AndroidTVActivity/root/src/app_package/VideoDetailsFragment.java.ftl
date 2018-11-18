@@ -14,27 +14,29 @@
 
 package ${packageName};
 
+import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
+import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.v17.leanback.app.BackgroundManager;
-import android.support.v17.leanback.app.DetailsFragment;
-import android.support.v17.leanback.widget.Action;
-import android.support.v17.leanback.widget.ArrayObjectAdapter;
-import android.support.v17.leanback.widget.ClassPresenterSelector;
-import android.support.v17.leanback.widget.DetailsOverviewRow;
-import android.support.v17.leanback.widget.DetailsOverviewRowPresenter;
-import android.support.v17.leanback.widget.HeaderItem;
-import android.support.v17.leanback.widget.ImageCardView;
-import android.support.v17.leanback.widget.ListRow;
-import android.support.v17.leanback.widget.ListRowPresenter;
-import android.support.v17.leanback.widget.OnActionClickedListener;
-import android.support.v17.leanback.widget.OnItemViewClickedListener;
-import android.support.v17.leanback.widget.Presenter;
-import android.support.v17.leanback.widget.Row;
-import android.support.v17.leanback.widget.RowPresenter;
-import android.support.v4.app.ActivityOptionsCompat;
-import android.util.DisplayMetrics;
+import ${getMaterialComponentName('android.support.v17.leanback.app.DetailsFragment', useAndroidX)};
+import ${getMaterialComponentName('android.support.v17.leanback.app.DetailsFragmentBackgroundController', useAndroidX)};
+import ${getMaterialComponentName('android.support.v17.leanback.widget.Action', useAndroidX)};
+import ${getMaterialComponentName('android.support.v17.leanback.widget.ArrayObjectAdapter', useAndroidX)};
+import ${getMaterialComponentName('android.support.v17.leanback.widget.ClassPresenterSelector', useAndroidX)};
+import ${getMaterialComponentName('android.support.v17.leanback.widget.DetailsOverviewRow', useAndroidX)};
+import ${getMaterialComponentName('android.support.v17.leanback.widget.FullWidthDetailsOverviewRowPresenter', useAndroidX)};
+import ${getMaterialComponentName('android.support.v17.leanback.widget.FullWidthDetailsOverviewSharedElementHelper', useAndroidX)};
+import ${getMaterialComponentName('android.support.v17.leanback.widget.HeaderItem', useAndroidX)};
+import ${getMaterialComponentName('android.support.v17.leanback.widget.ImageCardView', useAndroidX)};
+import ${getMaterialComponentName('android.support.v17.leanback.widget.ListRow', useAndroidX)};
+import ${getMaterialComponentName('android.support.v17.leanback.widget.ListRowPresenter', useAndroidX)};
+import ${getMaterialComponentName('android.support.v17.leanback.widget.OnActionClickedListener', useAndroidX)};
+import ${getMaterialComponentName('android.support.v17.leanback.widget.OnItemViewClickedListener', useAndroidX)};
+import ${getMaterialComponentName('android.support.v17.leanback.widget.Presenter', useAndroidX)};
+import ${getMaterialComponentName('android.support.v17.leanback.widget.Row', useAndroidX)};
+import ${getMaterialComponentName('android.support.v17.leanback.widget.RowPresenter', useAndroidX)};
+import ${getMaterialComponentName('android.support.v4.app.ActivityOptionsCompat', useAndroidX)};
+import ${getMaterialComponentName('android.support.v4.content.ContextCompat', useAndroidX)};
 import android.util.Log;
 import android.widget.Toast;
 
@@ -67,26 +69,25 @@ public class ${detailsFragment} extends DetailsFragment {
     private ArrayObjectAdapter mAdapter;
     private ClassPresenterSelector mPresenterSelector;
 
-    private BackgroundManager mBackgroundManager;
-    private Drawable mDefaultBackground;
-    private DisplayMetrics mMetrics;
+    private DetailsFragmentBackgroundController mDetailsBackground;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate DetailsFragment");
         super.onCreate(savedInstanceState);
 
-        prepareBackgroundManager();
+        mDetailsBackground = new DetailsFragmentBackgroundController(this);
 
-        mSelectedMovie = (Movie) getActivity().getIntent()
-                .getSerializableExtra(${detailsActivity}.MOVIE);
+        mSelectedMovie =
+                (Movie) getActivity().getIntent() .getSerializableExtra(${detailsActivity}.MOVIE);
         if (mSelectedMovie != null) {
-            setupAdapter();
+            mPresenterSelector = new ClassPresenterSelector();
+            mAdapter = new ArrayObjectAdapter(mPresenterSelector);
             setupDetailsOverviewRow();
             setupDetailsOverviewRowPresenter();
-            setupMovieListRow();
-            setupMovieListRowPresenter();
-            updateBackground(mSelectedMovie.getBackgroundImageUrl());
+            setupRelatedMovieListRow();
+            setAdapter(mAdapter);
+            initializeBackground(mSelectedMovie);
             setOnItemViewClickedListener(new ItemViewClickedListener());
         } else {
             Intent intent = new Intent(getActivity(), MainActivity.class);
@@ -94,47 +95,35 @@ public class ${detailsFragment} extends DetailsFragment {
         }
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
-    }
-
-    private void prepareBackgroundManager() {
-        mBackgroundManager = BackgroundManager.getInstance(getActivity());
-        mBackgroundManager.attach(getActivity().getWindow());
-        mDefaultBackground = getResources().getDrawable(R.drawable.default_background);
-        mMetrics = new DisplayMetrics();
-        getActivity().getWindowManager().getDefaultDisplay().getMetrics(mMetrics);
-    }
-
-    protected void updateBackground(String uri) {
+    private void initializeBackground(Movie data) {
+        mDetailsBackground.enableParallax();
         Glide.with(getActivity())
-                .load(uri)
+                .load(data.getBackgroundImageUrl())
+                .asBitmap()
                 .centerCrop()
-                .error(mDefaultBackground)
-                .into(new SimpleTarget<GlideDrawable>(mMetrics.widthPixels, mMetrics.heightPixels) {
+                .error(R.drawable.default_background)
+                .into(new SimpleTarget<Bitmap>() {
                     @Override
-                    public void onResourceReady(GlideDrawable resource,
-                                                GlideAnimation<? super GlideDrawable> glideAnimation) {
-                        mBackgroundManager.setDrawable(resource);
+                    public void onResourceReady(Bitmap bitmap,
+                                                GlideAnimation<? super Bitmap> glideAnimation) {
+                        mDetailsBackground.setCoverBitmap(bitmap);
+                        mAdapter.notifyArrayItemRangeChanged(0, mAdapter.size());
                     }
                 });
-    }
-
-    private void setupAdapter() {
-        mPresenterSelector = new ClassPresenterSelector();
-        mAdapter = new ArrayObjectAdapter(mPresenterSelector);
-        setAdapter(mAdapter);
     }
 
     private void setupDetailsOverviewRow() {
         Log.d(TAG, "doInBackground: " + mSelectedMovie.toString());
         final DetailsOverviewRow row = new DetailsOverviewRow(mSelectedMovie);
-        row.setImageDrawable(getResources().getDrawable(R.drawable.default_background));
-        int width = Utils.convertDpToPixel(getActivity()
-                .getApplicationContext(), DETAIL_THUMB_WIDTH);
-        int height = Utils.convertDpToPixel(getActivity()
-                .getApplicationContext(), DETAIL_THUMB_HEIGHT);
+        <#if minApiLevel gte 23>
+        row.setImageDrawable(
+                ContextCompat.getDrawable(getContext(), R.drawable.default_background));
+        <#else>
+        row.setImageDrawable(
+                ContextCompat.getDrawable(getActivity(), R.drawable.default_background));
+        </#if>
+        int width = convertDpToPixel(getActivity().getApplicationContext(), DETAIL_THUMB_WIDTH);
+        int height = convertDpToPixel(getActivity().getApplicationContext(), DETAIL_THUMB_HEIGHT);
         Glide.with(getActivity())
                 .load(mSelectedMovie.getCardImageUrl())
                 .centerCrop()
@@ -150,32 +139,53 @@ public class ${detailsFragment} extends DetailsFragment {
                     }
                 });
 
-        row.addAction(new Action(ACTION_WATCH_TRAILER, getResources().getString(
-                R.string.watch_trailer_1), getResources().getString(R.string.watch_trailer_2)));
-        row.addAction(new Action(ACTION_RENT, getResources().getString(R.string.rent_1),
-                getResources().getString(R.string.rent_2)));
-        row.addAction(new Action(ACTION_BUY, getResources().getString(R.string.buy_1),
-                getResources().getString(R.string.buy_2)));
+        ArrayObjectAdapter actionAdapter = new ArrayObjectAdapter();
+
+        actionAdapter.add(
+                new Action(
+                        ACTION_WATCH_TRAILER,
+                        getResources().getString(R.string.watch_trailer_1),
+                        getResources().getString(R.string.watch_trailer_2)));
+        actionAdapter.add(
+                new Action(
+                        ACTION_RENT,
+                        getResources().getString(R.string.rent_1),
+                        getResources().getString(R.string.rent_2)));
+        actionAdapter.add(
+                new Action(
+                        ACTION_BUY,
+                        getResources().getString(R.string.buy_1),
+                        getResources().getString(R.string.buy_2)));
+        row.setActionsAdapter(actionAdapter);
 
         mAdapter.add(row);
     }
 
     private void setupDetailsOverviewRowPresenter() {
-        // Set detail background and style.
-        DetailsOverviewRowPresenter detailsPresenter =
-                new DetailsOverviewRowPresenter(new DetailsDescriptionPresenter());
-        detailsPresenter.setBackgroundColor(getResources().getColor(R.color.selected_background));
-        detailsPresenter.setStyleLarge(true);
+        // Set detail background.
+        FullWidthDetailsOverviewRowPresenter detailsPresenter =
+                new FullWidthDetailsOverviewRowPresenter(new DetailsDescriptionPresenter());
+        <#if minApiLevel gte 23>
+        detailsPresenter.setBackgroundColor(
+                ContextCompat.getColor(getContext(), R.color.selected_background));
+        <#else>
+        detailsPresenter.setBackgroundColor(
+                ContextCompat.getColor(getActivity(), R.color.selected_background));
+        </#if>
 
         // Hook up transition element.
-        detailsPresenter.setSharedElementEnterTransition(getActivity(),
-                ${detailsActivity}.SHARED_ELEMENT_NAME);
+        FullWidthDetailsOverviewSharedElementHelper sharedElementHelper =
+                new FullWidthDetailsOverviewSharedElementHelper();
+        sharedElementHelper.setSharedElementEnterTransition(
+                getActivity(), ${detailsActivity}.SHARED_ELEMENT_NAME);
+        detailsPresenter.setListener(sharedElementHelper);
+        detailsPresenter.setParticipatingEntranceTransition(true);
 
         detailsPresenter.setOnActionClickedListener(new OnActionClickedListener() {
             @Override
             public void onActionClicked(Action action) {
                 if (action.getId() == ACTION_WATCH_TRAILER) {
-                    Intent intent = new Intent(getActivity(), PlaybackOverlayActivity.class);
+                    Intent intent = new Intent(getActivity(), PlaybackActivity.class);
                     intent.putExtra(${detailsActivity}.MOVIE, mSelectedMovie);
                     startActivity(intent);
                 } else {
@@ -186,9 +196,9 @@ public class ${detailsFragment} extends DetailsFragment {
         mPresenterSelector.addClassPresenter(DetailsOverviewRow.class, detailsPresenter);
     }
 
-    private void setupMovieListRow() {
+    private void setupRelatedMovieListRow() {
         String subcategories[] = {getString(R.string.related_movies)};
-        List<Movie> list = MovieList.list;
+        List<Movie> list = MovieList.getList();
 
         Collections.shuffle(list);
         ArrayObjectAdapter listRowAdapter = new ArrayObjectAdapter(new CardPresenter());
@@ -202,30 +212,33 @@ public class ${detailsFragment} extends DetailsFragment {
             HeaderItem header = new HeaderItem(0, subcategories[0], null);
         </#if>
         mAdapter.add(new ListRow(header, listRowAdapter));
+        mPresenterSelector.addClassPresenter(ListRow.class, new ListRowPresenter());
     }
 
-    private void setupMovieListRowPresenter() {
-        mPresenterSelector.addClassPresenter(ListRow.class, new ListRowPresenter());
+    private int convertDpToPixel(Context context, int dp) {
+        float density = context.getResources().getDisplayMetrics().density;
+        return Math.round((float) dp * density);
     }
 
     private final class ItemViewClickedListener implements OnItemViewClickedListener {
         @Override
-        public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item,
-                                  RowPresenter.ViewHolder rowViewHolder, Row row) {
+        public void onItemClicked(
+                Presenter.ViewHolder itemViewHolder,
+                Object item,
+                RowPresenter.ViewHolder rowViewHolder,
+                Row row) {
 
             if (item instanceof Movie) {
-                Movie movie = (Movie) item;
                 Log.d(TAG, "Item: " + item.toString());
                 Intent intent = new Intent(getActivity(), ${detailsActivity}.class);
                 intent.putExtra(getResources().getString(R.string.movie), mSelectedMovie);
-                intent.putExtra(getResources().getString(R.string.should_start), true);
-                startActivity(intent);
 
-
-                Bundle bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
-                        getActivity(),
-                        ((ImageCardView) itemViewHolder.view).getMainImageView(),
-                        ${detailsActivity}.SHARED_ELEMENT_NAME).toBundle();
+                Bundle bundle =
+                        ActivityOptionsCompat.makeSceneTransitionAnimation(
+                            getActivity(),
+                            ((ImageCardView) itemViewHolder.view).getMainImageView(),
+                            ${detailsActivity}.SHARED_ELEMENT_NAME)
+                        .toBundle();
                 getActivity().startActivity(intent, bundle);
             }
         }

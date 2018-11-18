@@ -1,8 +1,10 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<#import "../../common/shared_manifest_macros.ftl" as manifestMacros>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="${packageName}">
 
     <application>
         <activity
-            android:name="${relativePackage}.${CollectionName}Activity"
+            android:name="${packageName}.${CollectionName}Activity"
             <#if isNewProject>
             android:label="@string/app_name"
             <#else>
@@ -10,28 +12,27 @@
             </#if>
             <#if hasAppBar>
             android:theme="@style/${themeNameNoActionBar}"
+            <#elseif !hasApplicationTheme>
+            android:theme="@style/${themeName}"
             </#if>
             <#if buildApi gte 16 && parentActivityClass != "">android:parentActivityName="${parentActivityClass}"</#if>>
             <#if parentActivityClass != "">
             <meta-data android:name="android.support.PARENT_ACTIVITY"
                 android:value="${parentActivityClass}" />
             </#if>
-            <#if isLauncher && !(isLibraryProject!false)>
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-            </#if>
+            <@manifestMacros.commonActivityBody />
         </activity>
 
-        <activity android:name="${relativePackage}.${DetailName}Activity"
+        <activity android:name="${packageName}.${DetailName}Activity"
             android:label="@string/title_${detail_name}"
             <#if hasAppBar>
             android:theme="@style/${themeNameNoActionBar}"
+            <#elseif !hasApplicationTheme>
+            android:theme="@style/${themeName}"
             </#if>
-            <#if buildApi gte 16>android:parentActivityName="${relativePackage}.${CollectionName}Activity"</#if>>
+            <#if buildApi gte 16>android:parentActivityName="${packageName}.${CollectionName}Activity"</#if>>
             <meta-data android:name="android.support.PARENT_ACTIVITY"
-                android:value="${relativePackage}.${CollectionName}Activity" />
+                android:value="${packageName}.${CollectionName}Activity" />
         </activity>
     </application>
 

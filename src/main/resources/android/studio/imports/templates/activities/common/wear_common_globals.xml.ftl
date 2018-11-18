@@ -5,14 +5,14 @@
     <global id="debugResOut" value="${escapeXmlAttribute(projectOut)}/src/debug/res" />
     <global id="releaseResOut" value="${escapeXmlAttribute(projectOut)}/src/release/res" />
     <global id="resOut" value="${resDir}" />
-    <global id="relativePackage" value="<#if relativePackage?has_content>${relativePackage}<#else>${packageName}</#if>" />
 
     <#if Mobileincluded!false>
-        <global id="appManifestOut" value="${topOut}/${MobileprojectName}/${manifestDir}" />
+        <global id="appManifestOut" value="${escapeXmlAttribute(topOut)}/${MobileprojectName}/${manifestDir}" />
     <#else>
         <#assign appManifestDir=getAppManifestDir()!"">
         <#if appManifestDir?length gt 0>
-            <global id="appManifestOut" value="${appManifestDir}" />
+            <global id="appManifestOut" value="${escapeXmlAttribute(appManifestDir)}" />
         </#if>
     </#if>
+    <#include "root://activities/common/kotlin_globals.xml.ftl" />
 </globals>

@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
+<#import "root://activities/common/kotlin_macros.ftl" as kt>
 <recipe>
+    <@kt.addAllKotlinDependencies />
     <dependency mavenUrl="com.android.support:design:${buildApi}.+" />
+    <dependency mavenUrl="com.android.support.constraint:constraint-layout:+" />
 
 <#if minApiLevel lt 21>
     <dependency mavenUrl="com.android.support:support-vector-drawable:${buildApi}.+" />
@@ -14,8 +17,8 @@
     <copy from="root/res/drawable"
             to="${escapeXmlAttribute(resOut)}/drawable" />
 
-    <instantiate from="root/src/app_package/MainActivity.java.ftl"
-                   to="${escapeXmlAttribute(srcOut)}/${activityClass}.java" />
+    <instantiate from="root/src/app_package/MainActivity.${ktOrJavaExt}.ftl"
+                   to="${escapeXmlAttribute(srcOut)}/${activityClass}.${ktOrJavaExt}" />
     <instantiate from="root/res/layout/activity_main.xml.ftl"
                    to="${escapeXmlAttribute(resOut)}/layout/${layoutName}.xml" />
 

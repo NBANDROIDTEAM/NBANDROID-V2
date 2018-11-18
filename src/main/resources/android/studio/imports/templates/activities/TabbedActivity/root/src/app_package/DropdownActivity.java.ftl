@@ -1,8 +1,13 @@
 package ${packageName};
 
 import ${superClassFqcn};
+<#if useAndroidX>
+import ${getMaterialComponentName('android.support.v7.app.ActionBar', useAndroidX)};
+import ${getMaterialComponentName('android.support.v4.app.Fragment', useAndroidX)};
+<#else>
 import android.<#if appCompat>support.v7.</#if>app.ActionBar;
 import android.<#if appCompat>support.v4.</#if>app.Fragment;
+</#if>
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;

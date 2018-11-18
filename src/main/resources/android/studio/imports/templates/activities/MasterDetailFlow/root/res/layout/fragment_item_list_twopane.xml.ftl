@@ -9,7 +9,7 @@
     android:divider="?android:attr/dividerHorizontal"
     android:orientation="horizontal"
     android:showDividers="middle"
-    tools:context="${relativePackage}.${CollectionName}Activity">
+    tools:context="${packageName}.${CollectionName}Activity">
 
     <!--
     This layout is a two-pane layout for the ${objectKindPlural}
@@ -23,7 +23,7 @@
     http://developer.android.com/training/multiscreen/screensizes.html#TaskUseAliasFilters</#if>
     -->
 
-    <android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+    <${getMaterialComponentName('android.support.v7.widget.RecyclerView', useAndroidX)} xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/${collection_name}"
         android:name="${packageName}.${CollectionName}Fragment"
@@ -32,7 +32,7 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         app:layoutManager="LinearLayoutManager"
-        tools:context="${relativePackage}.${CollectionName}Activity"
+        tools:context="${packageName}.${CollectionName}Activity"
         tools:listitem="@layout/${item_list_content_layout}" />
 
     <FrameLayout

@@ -5,10 +5,10 @@ import android.os.Bundle;
 import android.widget.TextView;
 </#if>
 <#if hasAppBar>
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import ${getMaterialComponentName('android.support.design.widget.FloatingActionButton', useMaterial2)};
+import ${getMaterialComponentName('android.support.design.widget.Snackbar', useMaterial2)};
+import ${getMaterialComponentName('android.support.v7.app.AppCompatActivity', useAndroidX)};
+import ${getMaterialComponentName('android.support.v7.widget.Toolbar', useAndroidX)};
 import android.view.View;
 <#else>
 import ${superClassFqcn};

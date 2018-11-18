@@ -14,7 +14,7 @@
 
 package ${packageName};
 
-import android.support.v17.leanback.widget.AbstractDetailsDescriptionPresenter;
+import ${getMaterialComponentName('android.support.v17.leanback.widget.AbstractDetailsDescriptionPresenter', useAndroidX)};
 
 public class DetailsDescriptionPresenter extends AbstractDetailsDescriptionPresenter {
 

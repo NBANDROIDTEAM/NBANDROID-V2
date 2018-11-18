@@ -18,12 +18,9 @@ import android.app.Activity;
 import android.os.Bundle;
 
 /*
- * MainActivity class that loads MainFragment
+ * MainActivity class that loads {@link ${mainFragment}}.
  */
 public class ${activityClass} extends Activity {
-    /**
-     * Called when the activity is first created.
-     */
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

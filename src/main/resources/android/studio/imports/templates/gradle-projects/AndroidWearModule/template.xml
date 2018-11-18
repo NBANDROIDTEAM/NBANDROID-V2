@@ -1,18 +1,18 @@
 <?xml version="1.0"?>
 <template
     format="5"
-    revision="2"
-    name="Android Wear Module"
-    description="Creates a new Android Wear Module."
-    minApi="20"
-    minBuildApi="20">
+    revision="3"
+    name="Wear OS Module"
+    description="Creates a new Wear OS module."
+    minApi="23"
+    minBuildApi="23">
 
     <category value="Application" />
 
     <formfactor value="Wear" />
 
     <thumbs>
-        <thumb>template_new_project.png</thumb>
+        <thumb>wear-module.png</thumb>
     </thumbs>
 
     <parameter
@@ -34,7 +34,7 @@
         name="Minimum API level"
         type="string"
         constraints="apilevel"
-        default="4.4W" />
+        default="6.0" />
 
     <!--
       Usually the same as minApi, but when minApi is a code name this will be the corresponding
@@ -45,14 +45,14 @@
         name="Minimum API level"
         type="string"
         constraints="apilevel"
-        default="20" />
+        default="23" />
 
     <parameter
         id="targetApi"
         name="Target API level"
         type="string"
         constraints="apilevel"
-        default="20" />
+        default="23" />
 
     <!--
       Usually the same as targetApi, but when targeting a preview platform this is the code name instead
@@ -62,14 +62,14 @@
         name="Target API"
         type="string"
         constraints="apilevel"
-        default="4.4W" />
+        default="6.0" />
 
     <parameter
         id="buildApi"
         name="Build API level"
         type="string"
         constraints="apilevel"
-        default="20" />
+        default="23" />
 
     <!--
       Usually the same as buildApi, but when targeting a preview platform this is the code name instead
@@ -79,17 +79,11 @@
         name="Build API level"
         type="string"
         constraints="apilevel"
-        default="4.4W" />
+        default="6.0" />
 
     <parameter
         id="makeIgnore"
         name="Create .gitignore file"
-        type="boolean"
-        default="true" />
-
-    <parameter
-        id="enableProGuard"
-        name="Enable ProGuard"
         type="boolean"
         default="true" />
 

@@ -5,8 +5,8 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 <#if includePermissionCheck>
 import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
+import ${getMaterialComponentName('android.support.annotation.NonNull', useAndroidX)};
+<#if appCompat>import ${getMaterialComponentName('android.support.design.widget.Snackbar', useMaterial2)};</#if>
 </#if>
 import ${superClassFqcn};
 import android.app.LoaderManager.LoaderCallbacks;
@@ -85,7 +85,7 @@ public class ${activityClass} extends ${superClass} implements LoaderCallbacks<C
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == R.id.login || id == EditorInfo.IME_NULL) {
+                if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
                     attemptLogin();
                     return true;
                 }
@@ -134,6 +134,7 @@ public class ${activityClass} extends ${superClass} implements LoaderCallbacks<C
             return true;
         }
         if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
+<#if appCompat>
             Snackbar.make(mEmailView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
                     .setAction(android.R.string.ok, new View.OnClickListener() {
                         @Override
@@ -142,6 +143,11 @@ public class ${activityClass} extends ${superClass} implements LoaderCallbacks<C
                             requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
                         }
                     });
+<#else>
+            // TODO: alert the user with a Snackbar/AlertDialog giving them the permission rationale
+            // To use the Snackbar from the design support library, ensure that the activity extends
+            // AppCompatActivity and uses the Theme.AppCompat theme.
+</#if>
         } else {
             requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
         }

@@ -1,19 +1,3 @@
-/*
- * Copyright (C) 2014 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package ${packageName};
 
 import android.content.BroadcastReceiver;
@@ -31,10 +15,10 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.graphics.Palette;
-import android.support.wearable.watchface.CanvasWatchFaceService;
-import android.support.wearable.watchface.WatchFaceService;
-import android.support.wearable.watchface.WatchFaceStyle;
+import ${getMaterialComponentName('android.support.v7.graphics.Palette', useAndroidX)};
+import ${getMaterialComponentName('android.support.wearable.watchface.CanvasWatchFaceService', useAndroidX)};
+import ${getMaterialComponentName('android.support.wearable.watchface.WatchFaceService', useAndroidX)};
+import ${getMaterialComponentName('android.support.wearable.watchface.WatchFaceStyle', useAndroidX)};
 import android.view.SurfaceHolder;
 <#if isInteractive>import android.widget.Toast;</#if>
 
@@ -47,11 +31,18 @@ import java.util.concurrent.TimeUnit;
  * Analog watch face with a ticking second hand. In ambient mode, the second hand isn't
  * shown. On devices with low-bit ambient mode, the hands are drawn without anti-aliasing in ambient
  * mode. The watch face is drawn with less contrast in mute mode.
+ *
+ * Important Note: Because watch face apps do not have a default Activity in
+ * their project, you will need to set your Configurations to
+ * "Do not launch Activity" for both the Wear and/or Application modules. If you
+ * are unsure how to do this, please review the "Run Starter project" section
+ * in the Google Watch Face Code Lab:
+ * https://codelabs.developers.google.com/codelabs/watchface/index.html#0
  */
 public class ${serviceClass} extends CanvasWatchFaceService {
 
     /*
-     * Update rate in milliseconds for interactive mode. We update once a second to advance the
+     * Updates rate in milliseconds for interactive mode. We update once a second to advance the
      * second hand.
      */
     private static final long INTERACTIVE_UPDATE_RATE_MS = TimeUnit.SECONDS.toMillis(1);
@@ -104,8 +95,6 @@ public class ${serviceClass} extends CanvasWatchFaceService {
         private boolean mLowBitAmbient;
         private boolean mBurnInProtection;
 
-        private final Rect mPeekCardBounds = new Rect();
-
         private final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -122,18 +111,37 @@ public class ${serviceClass} extends CanvasWatchFaceService {
             super.onCreate(holder);
 
             setWatchFaceStyle(new WatchFaceStyle.Builder(${serviceClass}.this)
-                    .setCardPeekMode(WatchFaceStyle.PEEK_MODE_SHORT)
-                    .setBackgroundVisibility(WatchFaceStyle.BACKGROUND_VISIBILITY_INTERRUPTIVE)
-                    .setShowSystemUiTime(false)
 <#if isInteractive>
                     .setAcceptsTapEvents(true)
 </#if>
                     .build());
 
+            mCalendar = Calendar.getInstance();
+
+            initializeBackground();
+            initializeWatchFace();
+        }
+
+        private void initializeBackground() {
             mBackgroundPaint = new Paint();
             mBackgroundPaint.setColor(Color.BLACK);
             mBackgroundBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.bg);
 
+            /* Extracts colors from background image to improve watchface style. */
+            Palette.from(mBackgroundBitmap).generate(new Palette.PaletteAsyncListener() {
+                @Override
+                public void onGenerated(Palette palette) {
+                    if (palette != null) {
+                        mWatchHandHighlightColor = palette.getVibrantColor(Color.RED);
+                        mWatchHandColor = palette.getLightVibrantColor(Color.WHITE);
+                        mWatchHandShadowColor = palette.getDarkMutedColor(Color.BLACK);
+                        updateWatchHandStyle();
+                    }
+                }
+            });
+        }
+
+        private void initializeWatchFace() {
             /* Set defaults for colors */
             mWatchHandColor = Color.WHITE;
             mWatchHandHighlightColor = Color.RED;
@@ -166,21 +174,6 @@ public class ${serviceClass} extends CanvasWatchFaceService {
             mTickAndCirclePaint.setAntiAlias(true);
             mTickAndCirclePaint.setStyle(Paint.Style.STROKE);
             mTickAndCirclePaint.setShadowLayer(SHADOW_RADIUS, 0, 0, mWatchHandShadowColor);
-
-            /* Extract colors from background image to improve watchface style. */
-            Palette.from(mBackgroundBitmap).generate(new Palette.PaletteAsyncListener() {
-                @Override
-                public void onGenerated(Palette palette) {
-                    if (palette != null) {
-                        mWatchHandHighlightColor = palette.getVibrantColor(Color.RED);
-                        mWatchHandColor = palette.getLightVibrantColor(Color.WHITE);
-                        mWatchHandShadowColor = palette.getDarkMutedColor(Color.BLACK);
-                        updateWatchHandStyle();
-                    }
-                }
-            });
-
-            mCalendar = Calendar.getInstance();
         }
 
         @Override
@@ -347,6 +340,12 @@ public class ${serviceClass} extends CanvasWatchFaceService {
             long now = System.currentTimeMillis();
             mCalendar.setTimeInMillis(now);
 
+            drawBackground(canvas);
+            drawWatchFace(canvas);
+        }
+
+        private void drawBackground(Canvas canvas) {
+
             if (mAmbient && (mLowBitAmbient || mBurnInProtection)) {
                 canvas.drawColor(Color.BLACK);
             } else if (mAmbient) {
@@ -354,6 +353,9 @@ public class ${serviceClass} extends CanvasWatchFaceService {
             } else {
                 canvas.drawBitmap(mBackgroundBitmap, 0, 0, mBackgroundPaint);
             }
+        }
+
+        private void drawWatchFace(Canvas canvas) {
 
             /*
              * Draw ticks. Usually you will want to bake this directly into the photo, but in
@@ -428,11 +430,6 @@ public class ${serviceClass} extends CanvasWatchFaceService {
 
             /* Restore the canvas' original orientation. */
             canvas.restore();
-
-            /* Draw rectangle behind peek card in ambient mode to improve readability. */
-            if (mAmbient) {
-                canvas.drawRect(mPeekCardBounds, mBackgroundPaint);
-            }
         }
 
         @Override
@@ -450,12 +447,6 @@ public class ${serviceClass} extends CanvasWatchFaceService {
 
             /* Check and trigger whether or not timer should be running (only in active mode). */
             updateTimer();
-        }
-
-        @Override
-        public void onPeekCardPositionUpdate(Rect rect) {
-            super.onPeekCardPositionUpdate(rect);
-            mPeekCardBounds.set(rect);
         }
 
         private void registerReceiver() {

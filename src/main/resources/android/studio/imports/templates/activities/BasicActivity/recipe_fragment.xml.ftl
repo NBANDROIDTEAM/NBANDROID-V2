@@ -9,6 +9,6 @@
     <instantiate from="root/res/layout/fragment_simple.xml.ftl"
                    to="${escapeXmlAttribute(resOut)}/layout/${fragmentLayoutName}.xml" />
 
-    <instantiate from="root/src/app_package/SimpleActivityFragment.ftl"
-                   to="${escapeXmlAttribute(srcOut)}/${fragmentClass}.java" />
+    <instantiate from="root/src/app_package/SimpleActivityFragment.${ktOrJavaExt}.ftl"
+                   to="${escapeXmlAttribute(srcOut)}/${fragmentClass}.${ktOrJavaExt}" />
 </recipe>

@@ -1,11 +1,11 @@
 <!-- A DrawerLayout is intended to be used as the top-level content view using match_parent for both width and height to consume the full space available. -->
-<android.support.v4.widget.DrawerLayout
+<${getMaterialComponentName('android.support.v4.widget.DrawerLayout', useAndroidX)}
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="${relativePackage}.${activityClass}">
+    tools:context="${packageName}.${activityClass}">
 
     <!-- As the main content view, the view below consumes the entire
          space available using match_parent in both dimensions. -->
@@ -23,4 +23,4 @@
         android:name="${packageName}.NavigationDrawerFragment"
         tools:layout="@layout/${navigationDrawerLayout}" />
 
-</android.support.v4.widget.DrawerLayout>
+</${getMaterialComponentName('android.support.v4.widget.DrawerLayout', useAndroidX)}>

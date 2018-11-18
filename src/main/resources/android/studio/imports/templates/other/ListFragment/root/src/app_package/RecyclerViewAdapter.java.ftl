@@ -1,6 +1,6 @@
 package ${packageName};
 
-import android.support.v7.widget.RecyclerView;
+import ${getMaterialComponentName('android.support.v7.widget.RecyclerView', useAndroidX)};
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,7 +65,7 @@ public class ${adapterClassName} extends RecyclerView.Adapter<${adapterClassName
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            mIdView = (TextView) view.findViewById(R.id.id);
+            mIdView = (TextView) view.findViewById(R.id.item_number);
             mContentView = (TextView) view.findViewById(R.id.content);
         }
 

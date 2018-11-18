@@ -23,11 +23,11 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationCompat.CarExtender;
-import android.support.v4.app.NotificationCompat.CarExtender.UnreadConversation;
-import android.support.v4.app.NotificationManagerCompat;
-import android.support.v4.app.RemoteInput;
+import ${getMaterialComponentName('android.support.v4.app.NotificationCompat', useAndroidX)};
+import ${getMaterialComponentName('android.support.v4.app.NotificationCompat.CarExtender', useAndroidX)};
+import ${getMaterialComponentName('android.support.v4.app.NotificationCompat.CarExtender.UnreadConversation', useAndroidX)};
+import ${getMaterialComponentName('android.support.v4.app.NotificationManagerCompat', useAndroidX)};
+import ${getMaterialComponentName('android.support.v4.app.RemoteInput', useAndroidX)};
 
 public class ${serviceName} extends Service {
     private static final String TAG = ${serviceName}.class.getSimpleName();

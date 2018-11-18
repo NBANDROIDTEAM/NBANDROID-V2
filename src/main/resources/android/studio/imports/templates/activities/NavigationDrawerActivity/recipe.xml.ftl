@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
+<#import "root://activities/common/kotlin_macros.ftl" as kt>
 <recipe>
-
+    <@kt.addAllKotlinDependencies />
     <#if !(hasDependency('com.android.support:support-v4'))>
         <dependency mavenUrl="com.android.support:support-v4:${buildApi}.+"/>
     </#if>
@@ -41,10 +42,10 @@
         <#include "../common/recipe_app_bar.xml.ftl" />
     <#else>
         <#include "../common/recipe_no_actionbar.xml.ftl" />
-        <#if buildApi gte 21>
-            <instantiate from="root/res-buildApi22/values-v21/no_actionbar_styles_v21.xml.ftl"
-                           to="${escapeXmlAttribute(resOut)}/values-v21/styles.xml" />
-        </#if>
+    </#if>
+    <#if buildApi gte 21>
+        <instantiate from="root/res-buildApi22/values-v21/no_actionbar_styles_v21.xml.ftl"
+                        to="${escapeXmlAttribute(resOut)}/values-v21/styles.xml" />
     </#if>
 
     <instantiate from="root/res-buildApi22/menu/drawer.xml.ftl"
@@ -55,10 +56,12 @@
     <instantiate from="root/res-buildApi22/layout/navigation_header.xml.ftl"
                    to="${escapeXmlAttribute(resOut)}/layout/${navHeaderLayoutName}.xml" />
 
-    <instantiate from="root/src-buildApi22/app_package/DrawerActivity.java.ftl"
-                   to="${escapeXmlAttribute(srcOut)}/${activityClass}.java" />
 
-    <open file="${escapeXmlAttribute(srcOut)}/${activityClass}.java" />
+    <instantiate from="root/src-buildApi22/app_package/DrawerActivity.${ktOrJavaExt}.ftl"
+                   to="${escapeXmlAttribute(srcOut)}/${activityClass}.${ktOrJavaExt}" />
+
+    <open file="${escapeXmlAttribute(srcOut)}/${activityClass}.${ktOrJavaExt}" />
+
     <open file="${escapeXmlAttribute(resOut)}/layout/${contentLayoutName}.xml" />
 <#else>
     <!-- TODO: switch on Holo Dark v. Holo Light -->

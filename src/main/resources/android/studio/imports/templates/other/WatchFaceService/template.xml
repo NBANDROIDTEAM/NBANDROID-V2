@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <template
     format="5"
-    revision="3"
+    revision="6"
     name="Watch Face"
-    minApi="21"
-    minBuildApi="21"
-    description="Creates a watch face for Android Wear">
+    minApi="23"
+    minBuildApi="25"
+    description="Creates a watch face for Wear OS">
 
     <category value="Wear" />
     <formfactor value="Wear" />

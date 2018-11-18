@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" >
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="${packageName}">
 
     <uses-feature android:name="android.hardware.type.watch" />
 
     <application>
+
+	<meta-data android:name="com.google.android.wearable.standalone" android:value="true"/>
+
         <service
-            android:name="${relativePackage}.${serviceClass}"
+            android:name="${packageName}.${serviceClass}"
 <#if style == "analog">
             android:label="@string/my_analog_name"
 <#elseif style == "digital">

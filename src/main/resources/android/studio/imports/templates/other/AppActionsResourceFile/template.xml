@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<template
+    format="5"
+    revision="1"
+    name="App Actions XML File"
+    description="Creates an App Actions XML file. Note: Do not create more than one per app."
+    >
+
+    <category value="XML" />
+
+    <parameter
+        id="fileName"
+        name="Actions File Name"
+        type="string"
+        constraints="unique|nonempty"
+        default="actions"
+        help="Name of the App Actions XML file." />
+
+    <execute file="recipe.xml.ftl" />
+
+</template>

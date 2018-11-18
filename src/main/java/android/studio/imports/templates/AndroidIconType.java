@@ -16,52 +16,53 @@
 package android.studio.imports.templates;
 
 /**
- * Categories of Android icon purposes - each type has its own rules for generating a final look
- * and feel.
+ * Categories of Android icon purposes - each type has its own rules for
+ * generating a final look and feel.
  */
 public enum AndroidIconType {
-  /**
-   * Launcher icon to be shown in the application list
-   */
-  LAUNCHER("Launcher Icons", "ic_launcher"),
-
-  /**
-   * Icons shown in the action bar
-   */
-  ACTIONBAR("Action Bar and Tab Icons", "ic_action_%s"),
-
-  /**
-   * Icons shown in a notification message
-   */
-  NOTIFICATION("Notification Icons", "ic_stat_%s");
+    /**
+     * Launcher icon to be shown in the application list.
+     */
+    LAUNCHER("Launcher Icons (Adaptive and Legacy)", "ic_launcher"),
+    /**
+     * Launcher icon to be shown in the application list.
+     */
+    LAUNCHER_LEGACY("Launcher Icons (Legacy only)", "ic_launcher"),
+    /**
+     * Icons shown in the action bar
+     */
+    ACTIONBAR("Action Bar and Tab Icons", "ic_action_%s"),
+    /**
+     * Icons shown in a notification message
+     */
+    NOTIFICATION("Notification Icons", "ic_stat_%s");
 
     private final String myDisplayName;
-
-  /**
-   * Default asset name format, for use in generating a name for the final asset.
-   */
+    /**
+     * Default asset name format, for use in generating a name for the final
+     * asset.
+     */
     private final String myDefaultNameFormat;
 
     AndroidIconType(String displayName, String defaultNameFormat) {
-    myDisplayName = displayName;
-    myDefaultNameFormat = defaultNameFormat;
-  }
+        myDisplayName = displayName;
+        myDefaultNameFormat = defaultNameFormat;
+    }
 
     public String getDisplayName() {
-    return myDisplayName;
-  }
+        return myDisplayName;
+    }
 
-  /**
-   * Convert a value like 'name' to the icon appropriate version, e.g. 'icon_stat_name' for
-   * notification icons.
-   */
+    /**
+     * Converts a value like 'name' to the icon appropriate version, e.g.
+     * 'icon_stat_name' for notification icons.
+     */
     public String toOutputName(String baseName) {
-    return String.format(myDefaultNameFormat, baseName);
-  }
+        return String.format(myDefaultNameFormat, baseName);
+    }
 
-  @Override
-  public String toString() {
-    return getDisplayName();
-  }
+    @Override
+    public String toString() {
+        return getDisplayName();
+    }
 }
-

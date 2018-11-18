@@ -2,15 +2,15 @@ package ${packageName};
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.design.widget.BottomSheetDialogFragment;
-import android.support.v4.app.Fragment;
+import ${getMaterialComponentName('android.support.annotation.Nullable', useAndroidX)};
+import ${getMaterialComponentName('android.support.design.widget.BottomSheetDialog', useMaterial2)}Fragment;
+import ${getMaterialComponentName('android.support.v4.app.Fragment', useAndroidX)};
 <#if columnCount == "1">
-import android.support.v7.widget.LinearLayoutManager;
+import ${getMaterialComponentName('android.support.v7.widget.LinearLayoutManager', useAndroidX)};
 <#else>
-import android.support.v7.widget.GridLayoutManager;
+import ${getMaterialComponentName('android.support.v7.widget.GridLayoutManager', useAndroidX)};
 </#if>
-import android.support.v7.widget.RecyclerView;
+import ${getMaterialComponentName('android.support.v7.widget.RecyclerView', useAndroidX)};
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;

@@ -3,15 +3,15 @@ package ${packageName};
 import android.content.Intent;
 import android.os.Bundle;
 <#if hasAppBar>
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.widget.Toolbar;
+import ${getMaterialComponentName('android.support.design.widget.FloatingActionButton', useMaterial2)};
+import ${getMaterialComponentName('android.support.design.widget.Snackbar', useMaterial2)};
+import ${getMaterialComponentName('android.support.v7.widget.Toolbar', useAndroidX)};
 import android.view.View;
 </#if>
 import ${superClassFqcn};
 import ${actionBarClassFqcn};
 <#if minApiLevel lt 16>
-import android.support.v4.app.NavUtils;
+import ${getMaterialComponentName('android.support.v4.app.NavUtils', useAndroidX)};
 </#if>
 import android.view.MenuItem;
 <#if applicationPackage??>
@@ -20,7 +20,7 @@ import ${applicationPackage}.R;
 
 /**
  * An activity representing a single ${objectKind} detail screen. This
- * activity is only used narrow width devices. On tablet-size devices,
+ * activity is only used on narrow width devices. On tablet-size devices,
  * item details are presented side-by-side with a list of items
  * in a {@link ${CollectionName}Activity}.
  */

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<${getMaterialComponentName('android.support.constraint.ConstraintLayout', useAndroidX)}
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -9,7 +9,7 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/${appBarLayoutName}"
 </#if>
-    tools:context="${relativePackage}.${activityClass}">
+    tools:context="${packageName}.${activityClass}">
 
 <#if isNewProject!false>
     <TextView
@@ -25,4 +25,4 @@
         app:layout_constraintTop_toTopOf="parent" />
 
 </#if>
-</android.support.constraint.ConstraintLayout>
+</${getMaterialComponentName('android.support.constraint.ConstraintLayout', useAndroidX)}>

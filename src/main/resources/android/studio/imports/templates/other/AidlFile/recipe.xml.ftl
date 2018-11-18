@@ -2,6 +2,6 @@
 <recipe>
 
   <instantiate from="root/src/app_package/interface.aidl.ftl"
-                 to="${escapeXmlAttribute(aidlOut)}/${slashedPackageName(packageName)}/${escapeXmlAttribute(interfaceName)}.aidl" />
-  <open file="${escapeXmlAttribute(aidlOut)}/${slashedPackageName(packageName)}/${escapeXmlAttribute(interfaceName)}.aidl" />
+                 to="${escapeXmlAttribute(aidlOut)}/${escapeXmlAttribute(interfaceName)}.aidl" />
+  <open file="${escapeXmlAttribute(aidlOut)}/${escapeXmlAttribute(interfaceName)}.aidl" />
 </recipe>

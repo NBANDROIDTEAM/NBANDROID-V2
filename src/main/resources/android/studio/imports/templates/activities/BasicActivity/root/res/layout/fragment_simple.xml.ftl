@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<${getMaterialComponentName('android.support.constraint.ConstraintLayout', useAndroidX)}
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -8,7 +8,7 @@
 <#if hasAppBar && appBarLayoutName??>
     tools:showIn="@layout/${appBarLayoutName}"
 </#if>
-    tools:context="${relativePackage}.${fragmentClass}">
+    tools:context="${packageName}.${fragmentClass}">
 
 <#if isNewProject!false>
     <TextView
@@ -22,6 +22,6 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-</#if>
 
-</android.support.constraint.ConstraintLayout>
+</#if>
+</${getMaterialComponentName('android.support.constraint.ConstraintLayout', useAndroidX)}>

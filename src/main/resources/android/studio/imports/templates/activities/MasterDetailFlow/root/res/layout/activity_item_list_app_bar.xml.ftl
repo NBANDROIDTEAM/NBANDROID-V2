@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<${getMaterialComponentName('android.support.design.widget.CoordinatorLayout', useAndroidX)} xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="${relativePackage!''}.${CollectionName}Activity">
+    tools:context="${packageName!''}.${CollectionName}Activity">
 
-    <android.support.design.widget.AppBarLayout
+    <${getMaterialComponentName('android.support.design.widget.AppBarLayout', useMaterial2)}
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/${themeNameAppBarOverlay}">
 
-        <android.support.v7.widget.Toolbar
+        <${getMaterialComponentName('android.support.v7.widget.Toolbar', useAndroidX)}
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:popupTheme="@style/${themeNamePopupOverlay}" />
 
-    </android.support.design.widget.AppBarLayout>
+    </${getMaterialComponentName('android.support.design.widget.AppBarLayout', useMaterial2)}>
 
     <FrameLayout
         android:id="@+id/frameLayout"
@@ -30,7 +30,7 @@
         <include layout="@layout/${item_list_layout}" />
     </FrameLayout>
 
-    <android.support.design.widget.FloatingActionButton
+    <${getMaterialComponentName('android.support.design.widget.FloatingActionButton', useMaterial2)}
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -39,4 +39,4 @@
         app:srcCompat="@android:drawable/ic_dialog_email" />
 
 
-</android.support.design.widget.CoordinatorLayout>
+</${getMaterialComponentName('android.support.design.widget.CoordinatorLayout', useAndroidX)}>

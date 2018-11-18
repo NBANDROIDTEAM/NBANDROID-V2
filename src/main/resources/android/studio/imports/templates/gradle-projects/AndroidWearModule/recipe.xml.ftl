@@ -6,6 +6,9 @@
 
     <dependency mavenUrl="com.google.android.support:wearable:+" />
     <dependency mavenUrl="com.google.android.gms:play-services-wearable:+" />
+    <dependency mavenUrl="com.android.support:percent:+" />
+    <dependency mavenUrl="com.android.support:support-v4:+" />
+    <dependency mavenUrl="com.android.support:recyclerview-v7:+" />
 
     <mkdir at="${escapeXmlAttribute(projectOut)}/libs" />
 
@@ -17,13 +20,10 @@
                    to="${escapeXmlAttribute(manifestOut)}/AndroidManifest.xml" />
 
 <#if makeIgnore>
-    <copy from="root/module_ignore"
+    <copy from="root://gradle-projects/common/gitignore"
             to="${escapeXmlAttribute(projectOut)}/.gitignore" />
 </#if>
-<#if enableProGuard>
-    <instantiate from="root/proguard-rules.txt.ftl"
-                   to="${escapeXmlAttribute(projectOut)}/proguard-rules.pro" />
-</#if>
+    <#include "root://gradle-projects/common/proguard_recipe.xml.ftl"/>
     <mkdir  at="${escapeXmlAttribute(resOut)}/drawable" />
     <copy from="root/res/mipmap-hdpi"
             to="${escapeXmlAttribute(resOut)}/mipmap-hdpi" />

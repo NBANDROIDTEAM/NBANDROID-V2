@@ -28,9 +28,9 @@ import android.widget.ProgressBar;
  * BrowseErrorActivity shows how to use ErrorFragment
  */
 public class BrowseErrorActivity extends Activity {
-    private static int TIMER_DELAY = 3000;
-    private static int SPINNER_WIDTH = 100;
-    private static int SPINNER_HEIGHT = 100;
+    private static final int TIMER_DELAY = 3000;
+    private static final int SPINNER_WIDTH = 100;
+    private static final int SPINNER_HEIGHT = 100;
 
     private ErrorFragment mErrorFragment;
     private SpinnerFragment mSpinnerFragment;
@@ -48,25 +48,34 @@ public class BrowseErrorActivity extends Activity {
 
     private void testError() {
         mErrorFragment = new ErrorFragment();
-        getFragmentManager().beginTransaction().add(R.id.main_browse_fragment, mErrorFragment).commit();
+        getFragmentManager()
+                .beginTransaction()
+                .add(R.id.main_browse_fragment, mErrorFragment)
+                .commit();
 
         mSpinnerFragment = new SpinnerFragment();
-        getFragmentManager().beginTransaction().add(R.id.main_browse_fragment, mSpinnerFragment).commit();
+        getFragmentManager()
+                .beginTransaction()
+                .add(R.id.main_browse_fragment, mSpinnerFragment)
+                .commit();
 
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                getFragmentManager().beginTransaction().remove(mSpinnerFragment).commit();
+                getFragmentManager()
+                        .beginTransaction()
+                        .remove(mSpinnerFragment)
+                        .commit();
                 mErrorFragment.setErrorContent();
             }
         }, TIMER_DELAY);
     }
 
-    static public class SpinnerFragment extends Fragment {
+    public static class SpinnerFragment extends Fragment {
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
+        public View onCreateView(
+                LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             ProgressBar progressBar = new ProgressBar(container.getContext());
             if (container instanceof FrameLayout) {
                 FrameLayout.LayoutParams layoutParams =

@@ -1,8 +1,4 @@
 <resources>
-    <#if !isNewProject>
-    <string name="title_${simpleName}">${escapeXmlString(activityTitle)}</string>
-    </#if>
-
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password (optional)</string>

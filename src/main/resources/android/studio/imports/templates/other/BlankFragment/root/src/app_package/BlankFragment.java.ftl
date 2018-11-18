@@ -3,7 +3,7 @@ package ${packageName};
 <#if includeCallbacks>import android.content.Context;</#if>
 <#if includeCallbacks>import android.net.Uri;</#if>
 import android.os.Bundle;
-import android${SupportPackage}.app.Fragment;
+import ${getMaterialComponentName('android${SupportPackage}.app.Fragment', useAndroidX)};
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;

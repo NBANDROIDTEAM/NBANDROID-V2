@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <recipe>
-    <dependency mavenUrl="com.android.support:leanback-v17:${targetApi}.+" />
+    <dependency mavenUrl="com.android.support:leanback-v17:${buildApi}.+" />
     <mkdir at="${escapeXmlAttribute(srcOut)}" />
 
     <mkdir at="${escapeXmlAttribute(projectOut)}/libs" />
@@ -24,20 +24,14 @@
             to="${escapeXmlAttribute(resOut)}/mipmap-xxhdpi" />
 </#if>
 <#if makeIgnore>
-    <copy from="root/module_ignore"
+    <copy from="root://gradle-projects/common/gitignore"
             to="${escapeXmlAttribute(projectOut)}/.gitignore" />
 </#if>
-<#if enableProGuard>
-    <instantiate from="root/proguard-rules.txt.ftl"
-                   to="${escapeXmlAttribute(projectOut)}/proguard-rules.pro" />
-</#if>
+    <#include "root://gradle-projects/common/proguard_recipe.xml.ftl"/>
     <instantiate from="root/res/values/styles.xml"
                    to="${escapeXmlAttribute(resOut)}/values/styles.xml" />
 
     <instantiate from="root/res/values/strings.xml.ftl"
                    to="${escapeXmlAttribute(resOut)}/values/strings.xml" />
-
-    <instantiate from="root/test/app_package/ApplicationTest.java.ftl"
-                   to="${escapeXmlAttribute(testOut)}/ApplicationTest.java" />
 
 </recipe>

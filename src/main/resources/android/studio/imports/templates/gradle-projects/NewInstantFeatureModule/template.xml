@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<template
+    format="5"
+    revision="5"
+    name="Instant App Feature Module"
+    description="Creates a new Android Instant App Feature module.">
+
+    <category value="Application" />
+
+    <thumbs>
+        <thumb>feature-module.png</thumb>
+    </thumbs>
+    
+    <parameter
+        id="minApi"
+        name="Minimum API level"
+        type="string"
+        constraints="apilevel"
+        default="8" />
+</template>

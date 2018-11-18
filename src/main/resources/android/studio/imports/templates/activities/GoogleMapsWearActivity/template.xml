@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <template
     format="5"
-    revision="2"
+    revision="5"
     name="Google Maps Wear Activity"
-    minApi="20"
-    minBuildApi="20"
-    description="Creates an new activity with a Google Map for Android Wear">
+    minApi="23"
+    minBuildApi="25"
+    description="Creates an new activity with a Google Map for Wear OS">
 
     <category value="Google" />
     <formfactor value="Wear" />

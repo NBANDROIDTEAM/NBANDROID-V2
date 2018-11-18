@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="${packageName}">
 
     <application android:allowBackup="true"
@@ -6,7 +7,7 @@
         android:icon="@mipmap/ic_launcher"<#else>
         android:icon="@drawable/${assetName}"</#if>
         <#if buildApi gte 17>android:supportsRtl="true"</#if>
-        android:theme="@style/Theme.Leanback">
+        android:theme="@style/AppTheme">
 
     </application>
 

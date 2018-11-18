@@ -1,8 +1,5 @@
 <resources>
-<#if !isNewProject>
-    <string name="title_${activityToLayout(activityClass)}">${escapeXmlString(activityTitle)}</string>
-</#if>
-    <string name="large_text">
+<string name="large_text">
 "Material is the metaphor.\n\n"
 
 "A material metaphor is the unifying theory of a rationalized space and a system of motion."

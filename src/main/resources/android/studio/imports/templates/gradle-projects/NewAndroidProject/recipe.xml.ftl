@@ -17,8 +17,8 @@
     <copy from="../../gradle/wrapper"
         to="${escapeXmlAttribute(topOut)}/" />
 
-<#if sdkDir??>
-  <instantiate from="root/local.properties.ftl"
-           to="${escapeXmlAttribute(topOut)}/local.properties" />
+<#if hasSdkDir>
+    <instantiate from="root/local.properties.ftl"
+                   to="${escapeXmlAttribute(topOut)}/local.properties" />
 </#if>
 </recipe>

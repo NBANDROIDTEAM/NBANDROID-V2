@@ -1,38 +1,15 @@
-<#if !(perModuleRepositories??) || perModuleRepositories>
-buildscript {
-    repositories {
-        jcenter()
-<#if mavenUrl != "mavenCentral">
-        maven {
-            url '${mavenUrl}'
-        }
-</#if>
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:${gradlePluginVersion}'
-    }
-}
-</#if>
+<#import "root://activities/common/kotlin_macros.ftl" as kt>
+<#import "root://gradle-projects/common/proguard_macros.ftl" as proguard>
 <#if isLibraryProject?? && isLibraryProject>
 apply plugin: 'com.android.library'
 <#else>
 apply plugin: 'com.android.application'
 </#if>
-
-<#if !(perModuleRepositories??) || perModuleRepositories>
-repositories {
-    jcenter()
-<#if mavenUrl != "mavenCentral">
-    maven {
-        url '${mavenUrl}'
-    }
-</#if>
-}
-</#if>
+<@kt.addKotlinPlugins />
 
 android {
     compileSdkVersion <#if buildApiString?matches("^\\d+$")>${buildApiString}<#else>'${buildApiString}'</#if>
-    buildToolsVersion "${buildToolsVersion}"
+    <#if compareVersionsIgnoringQualifiers(gradlePluginVersion, '3.0.0') lt 0>buildToolsVersion "${buildToolsVersion}"</#if>
 
     defaultConfig {
         applicationId "${packageName}"
@@ -48,16 +25,10 @@ android {
         targetCompatibility JavaVersion.VERSION_${javaVersion?replace('.','_','i')}
     }
 </#if>
-<#if enableProGuard>
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-</#if>
+<@proguard.proguardConfig />
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    ${getConfigurationName("compile")} fileTree(dir: 'libs', include: ['*.jar'])
+    <@kt.addKotlinDependencies />
 }

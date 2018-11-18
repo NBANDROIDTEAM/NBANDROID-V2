@@ -5,7 +5,6 @@
     name="Navigation Drawer Activity"
     minApi="9"
     minBuildApi="14"
-    requireAppTheme="true"
     description="Creates a new Activity with a Navigation Drawer.">
 
     <category value="Activity" />
@@ -118,6 +117,46 @@
         default="content_main"
         visibility="false"
         help="The name of the content layout to create for the activity" />
+
+    <parameter
+        id="includeInstantAppUrl"
+        name="Associate a URL with this Activity"
+        type="boolean"
+        default="false"
+        visibility="isInstantApp!false"
+        help="If true, this activity will be associated with URL, improving discovery of your Instant App" />
+
+    <parameter
+        id="instantAppActivityHost"
+        name="Instant App URL Host"
+        type="string"
+        suggest="${companyDomain}"
+        default="instantapp.example.com"
+        visibility="isInstantApp!false"
+        enabled="includeInstantAppUrl"
+        help="The domain to use in the Instant App route for this activity"/>
+
+    <parameter
+        id="instantAppActivityRouteType"
+        name="Instant App URL Route Type"
+        type="enum"
+        default="pathPattern"
+        visibility="isInstantApp!false"
+        enabled="includeInstantAppUrl"
+        help="The type of route to use in the Instant App route for this activity" >
+        <option id="path">Path</option>
+        <option id="pathPrefix">Path Prefix</option>
+        <option id="pathPattern">Path Pattern</option>
+    </parameter>
+
+    <parameter
+        id="instantAppActivityRoute"
+        name="Instant App URL Route"
+        type="string"
+        default="/.*"
+        visibility="isInstantApp!false"
+        enabled="includeInstantAppUrl"
+        help="The route to use in the Instant App route for this activity"/>
 
 
     <!-- 128x128 thumbnails relative to template.xml -->

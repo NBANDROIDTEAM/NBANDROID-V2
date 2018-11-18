@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<template
+    format="5"
+    revision="1"
+    name="Import Gradle Project"
+    description="Import an existing Gradle project as a module">
+
+    <category value="Application" />
+
+    <thumbs>
+        <thumb>gradle-module.png</thumb>
+    </thumbs>
+</template>

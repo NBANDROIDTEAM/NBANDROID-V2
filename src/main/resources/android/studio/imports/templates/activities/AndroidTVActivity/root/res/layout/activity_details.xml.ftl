@@ -5,5 +5,5 @@
     android:name="${packageName}.${detailsFragment}"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="${relativePackage!''}.${detailsActivity}"
+    tools:context="${packageName!''}.${detailsActivity}"
     tools:deviceIds="tv" />

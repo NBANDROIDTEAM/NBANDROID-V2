@@ -15,8 +15,9 @@
 package ${packageName};
 
 import android.graphics.drawable.Drawable;
-import android.support.v17.leanback.widget.ImageCardView;
-import android.support.v17.leanback.widget.Presenter;
+import ${getMaterialComponentName('android.support.v17.leanback.widget.ImageCardView', useAndroidX)};
+import ${getMaterialComponentName('android.support.v17.leanback.widget.Presenter', useAndroidX)};
+import ${getMaterialComponentName('android.support.v4.content.ContextCompat', useAndroidX)};
 import android.util.Log;
 import android.view.ViewGroup;
 
@@ -39,17 +40,25 @@ public class CardPresenter extends Presenter {
     public ViewHolder onCreateViewHolder(ViewGroup parent) {
         Log.d(TAG, "onCreateViewHolder");
 
-        sDefaultBackgroundColor = parent.getResources().getColor(R.color.default_background);
-        sSelectedBackgroundColor = parent.getResources().getColor(R.color.selected_background);
-        mDefaultCardImage = parent.getResources().getDrawable(R.drawable.movie);
+        sDefaultBackgroundColor =
+                ContextCompat.getColor(parent.getContext(), R.color.default_background);
+        sSelectedBackgroundColor =
+                ContextCompat.getColor(parent.getContext(), R.color.selected_background);
+        /*
+         * This template uses a default image in res/drawable, but the general case for Android TV
+         * will require your resources in xhdpi. For more information, see
+         * https://developer.android.com/training/tv/start/layouts.html#density-resources
+         */
+        mDefaultCardImage = ContextCompat.getDrawable(parent.getContext(), R.drawable.movie);
 
-        ImageCardView cardView = new ImageCardView(parent.getContext()) {
-            @Override
-            public void setSelected(boolean selected) {
-                updateCardBackgroundColor(this, selected);
-                super.setSelected(selected);
-            }
-        };
+        ImageCardView cardView =
+                new ImageCardView(parent.getContext()) {
+                    @Override
+                    public void setSelected(boolean selected) {
+                        updateCardBackgroundColor(this, selected);
+                        super.setSelected(selected);
+                    }
+                };
 
         cardView.setFocusable(true);
         cardView.setFocusableInTouchMode(true);

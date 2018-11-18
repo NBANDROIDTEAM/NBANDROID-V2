@@ -1,9 +1,10 @@
 package ${packageName};
 
-import android.media.browse.MediaBrowser.MediaItem;
-import android.media.session.MediaSession;
 import android.os.Bundle;
-import android.service.media.MediaBrowserService;
+import ${getMaterialComponentName('android.support.annotation.NonNull', useAndroidX)};
+import ${getMaterialComponentName('android.support.v4.media.MediaBrowserCompat.MediaItem', useAndroidX)};
+import ${getMaterialComponentName('android.support.v4.media.MediaBrowserServiceCompat', useAndroidX)};
+import ${getMaterialComponentName('android.support.v4.media.session.MediaSessionCompat', useAndroidX)};
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,23 +22,22 @@ import java.util.List;
  *
  * <ul>
  *
- * <li> Extend {@link android.service.media.MediaBrowserService}, implementing the media browsing
- *      related methods {@link android.service.media.MediaBrowserService#onGetRoot} and
- *      {@link android.service.media.MediaBrowserService#onLoadChildren};
- * <li> In onCreate, start a new {@link android.media.session.MediaSession} and notify its parent
- *      with the session's token {@link android.service.media.MediaBrowserService#setSessionToken};
+ * <li> Extend {@link MediaBrowserServiceCompat}, implementing the media browsing
+ *      related methods {@link MediaBrowserServiceCompat#onGetRoot} and
+ *      {@link MediaBrowserServiceCompat#onLoadChildren};
+ * <li> In onCreate, start a new {@link MediaSessionCompat} and notify its parent
+ *      with the session's token {@link MediaBrowserServiceCompat#setSessionToken};
  *
- * <li> Set a callback on the
- *      {@link android.media.session.MediaSession#setCallback(android.media.session.MediaSession.Callback)}.
+ * <li> Set a callback on the {@link MediaSessionCompat#setCallback(MediaSessionCompat.Callback)}.
  *      The callback will receive all the user's actions, like play, pause, etc;
  *
  * <li> Handle all the actual music playing using any method your app prefers (for example,
  *      {@link android.media.MediaPlayer})
  *
  * <li> Update playbackState, "now playing" metadata and queue, using MediaSession proper methods
- *      {@link android.media.session.MediaSession#setPlaybackState(android.media.session.PlaybackState)}
- *      {@link android.media.session.MediaSession#setMetadata(android.media.MediaMetadata)} and
- *      {@link android.media.session.MediaSession#setQueue(java.util.List)})
+ *      {@link MediaSessionCompat#setPlaybackState(${getMaterialComponentName('android.support.v4.media.session.PlaybackStateCompat', useAndroidX)})}
+ *      {@link MediaSessionCompat#setMetadata(${getMaterialComponentName('android.support.v4.media.MediaMetadataCompat', useAndroidX)})} and
+ *      {@link MediaSessionCompat#setQueue(java.util.List)})
  *
  * <li> Declare and export the service in AndroidManifest with an intent receiver for the action
  *      android.media.browse.MediaBrowserService
@@ -60,23 +60,21 @@ import java.util.List;
  *          &lt;/automotiveApp&gt;
  *
  * </ul>
-
- * @see <a href="README.md">README.md</a> for more details.
  *
  */
-public class ${mediaBrowserServiceName} extends MediaBrowserService {
+public class ${mediaBrowserServiceName} extends MediaBrowserServiceCompat {
 
-    private MediaSession mSession;
+    private MediaSessionCompat mSession;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        mSession = new MediaSession(this, "${mediaBrowserServiceName}");
+        mSession = new MediaSessionCompat(this, "${mediaBrowserServiceName}");
         setSessionToken(mSession.getSessionToken());
         mSession.setCallback(new MediaSessionCallback());
-        mSession.setFlags(MediaSession.FLAG_HANDLES_MEDIA_BUTTONS |
-                MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS);
+        mSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
+                MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
     }
 
     @Override
@@ -85,16 +83,19 @@ public class ${mediaBrowserServiceName} extends MediaBrowserService {
     }
 
     @Override
-    public BrowserRoot onGetRoot(String clientPackageName, int clientUid, Bundle rootHints) {
+    public BrowserRoot onGetRoot(@NonNull String clientPackageName,
+                                 int clientUid,
+                                 Bundle rootHints) {
         return new BrowserRoot("root", null);
     }
 
     @Override
-    public void onLoadChildren(final String parentMediaId, final Result<List<MediaItem>> result) {
+    public void onLoadChildren(@NonNull final String parentMediaId,
+                               @NonNull final Result<List<MediaItem>> result) {
         result.sendResult(new ArrayList<MediaItem>());
     }
 
-    private final class MediaSessionCallback extends MediaSession.Callback {
+    private final class MediaSessionCallback extends MediaSessionCompat.Callback {
         @Override
         public void onPlay() {
         }

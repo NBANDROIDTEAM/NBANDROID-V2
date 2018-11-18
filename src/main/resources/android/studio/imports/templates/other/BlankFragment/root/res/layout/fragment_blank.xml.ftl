@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="${relativePackage}.${className}">
+    tools:context="${packageName}.${className}">
 
     <!-- TODO: Update blank fragment layout -->
     <TextView

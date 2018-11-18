@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.DrawerLayout
+<${getMaterialComponentName('android.support.v4.widget.DrawerLayout', useAndroidX)}
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -20,7 +20,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <android.support.v7.widget.Toolbar
+        <${getMaterialComponentName('android.support.v7.widget.Toolbar', useAndroidX)}
             android:id="@+id/toolbar"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
@@ -36,7 +36,7 @@
     </LinearLayout>
 </#if>
 
-    <android.support.design.widget.NavigationView
+    <${getMaterialComponentName('android.support.design.widget.NavigationView', useMaterial2)}
         android:id="@+id/nav_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
@@ -45,4 +45,4 @@
         app:headerLayout="@layout/${navHeaderLayoutName}"
         app:menu="@menu/${drawerMenu}" />
 
-</android.support.v4.widget.DrawerLayout>
+</${getMaterialComponentName('android.support.v4.widget.DrawerLayout', useAndroidX)}>

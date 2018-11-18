@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
+<#import "root://activities/common/kotlin_macros.ftl" as kt>
 <recipe>
+    <@kt.addAllKotlinDependencies />
     <dependency mavenUrl="com.google.android.gms:play-services-maps:+" />
     <dependency mavenUrl="com.android.support:appcompat-v7:${targetApi}.+" />
 
@@ -9,20 +11,30 @@
     <instantiate from="root/res/layout/activity_map.xml.ftl"
                    to="${escapeXmlAttribute(resOut)}/layout/${layoutName}.xml" />
 
-    <merge from="root/res/values/strings.xml.ftl"
-             to="${escapeXmlAttribute(resOut)}/values/strings.xml" />
+    <#if isInstantApp || isDynamicFeature>
+        <#assign finalResOut="${escapeXmlAttribute(baseFeatureResOut)}">
+        <#assign finalDebugResOut="${escapeXmlAttribute(baseFeatureOut)}/src/debug/res">
+        <#assign finalReleaseResOut="${escapeXmlAttribute(baseFeatureOut)}/src/release/res">
+    <#else>
+        <#assign finalResOut="${escapeXmlAttribute(resOut)}">
+        <#assign finalDebugResOut="${escapeXmlAttribute(projectOut)}/src/debug/res">
+        <#assign finalReleaseResOut="${escapeXmlAttribute(projectOut)}/src/release/res">
+    </#if>
 
-    <instantiate from="root/src/app_package/MapActivity.java.ftl"
-                   to="${escapeXmlAttribute(srcOut)}/${activityClass}.java" />
+    <merge from="root/res/values/strings.xml.ftl"
+             to="${finalResOut}/values/strings.xml" />
+
+    <instantiate from="root/src/app_package/MapActivity.${ktOrJavaExt}.ftl"
+                   to="${escapeXmlAttribute(srcOut)}/${activityClass}.${ktOrJavaExt}" />
 
     <merge from="root/debugRes/values/google_maps_api.xml.ftl"
-             to="${escapeXmlAttribute(debugResOut)}/values/google_maps_api.xml" />
+             to="${finalDebugResOut}/values/google_maps_api.xml" />
 
     <merge from="root/releaseRes/values/google_maps_api.xml.ftl"
-             to="${escapeXmlAttribute(releaseResOut)}/values/google_maps_api.xml" />
+             to="${finalReleaseResOut}/values/google_maps_api.xml" />
 
-    <open file="${escapeXmlAttribute(srcOut)}/${activityClass}.java" />
+    <open file="${escapeXmlAttribute(srcOut)}/${activityClass}.${ktOrJavaExt}" />
 
     <!-- Display the API key instructions. -->
-    <open file="${escapeXmlAttribute(debugResOut)}/values/google_maps_api.xml" />
+    <open file="${finalDebugResOut}/values/google_maps_api.xml" />
 </recipe>

@@ -7,24 +7,19 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import android.app.Activity;
 import android.os.Bundle;
-import android.support.wearable.view.DismissOverlayView;
+import ${getMaterialComponentName('android.support.wear.widget.SwipeDismissFrameLayout', useAndroidX)};
+import ${getMaterialComponentName('android.support.wearable.activity.WearableActivity', useAndroidX)};
+import android.view.Gravity;
 import android.view.View;
 import android.view.WindowInsets;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
-public class ${activityClass} extends Activity implements OnMapReadyCallback,
-        GoogleMap.OnMapLongClickListener {
-
-    /**
-     * Overlay that shows a short help text when first launched. It also provides an option to
-     * exit the app.
-     */
-    private DismissOverlayView mDismissOverlay;
+public class ${activityClass} extends WearableActivity implements OnMapReadyCallback {
 
     /**
-     * The map. It is initialized when the map has been fully loaded and is ready to be used.
+     * Map is initialized when it's fully loaded and ready to be used.
      *
      * @see #onMapReady(com.google.android.gms.maps.GoogleMap)
      */
@@ -33,40 +28,49 @@ public class ${activityClass} extends Activity implements OnMapReadyCallback,
     public void onCreate(Bundle savedState) {
         super.onCreate(savedState);
 
-        // Set the layout. It only contains a MapFragment and a DismissOverlay.
+        // Enables always on.
+        setAmbientEnabled();
+
         setContentView(R.layout.${layoutName});
 
-        // Retrieve the containers for the root of the layout and the map. Margins will need to be
-        // set on them to account for the system window insets.
-        final FrameLayout topFrameLayout = (FrameLayout) findViewById(R.id.root_container);
+        final SwipeDismissFrameLayout swipeDismissRootFrameLayout =
+                (SwipeDismissFrameLayout) findViewById(R.id.swipe_dismiss_root_container);
         final FrameLayout mapFrameLayout = (FrameLayout) findViewById(R.id.map_container);
 
-        // Set the system view insets on the containers when they become available.
-        topFrameLayout.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
+        // Enables the Swipe-To-Dismiss Gesture via the root layout (SwipeDismissFrameLayout).
+        // Swipe-To-Dismiss is a standard pattern in Wear for closing an app and needs to be
+        // manually enabled for any Google Maps Activity. For more information, review our docs:
+        // https://developer.android.com/training/wearables/ui/exit.html
+        swipeDismissRootFrameLayout.addCallback(new SwipeDismissFrameLayout.Callback() {
             @Override
-            public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
-                // Call through to super implementation and apply insets
-                insets = topFrameLayout.onApplyWindowInsets(insets);
-
-                FrameLayout.LayoutParams params =
-                        (FrameLayout.LayoutParams) mapFrameLayout.getLayoutParams();
-
-                // Add Wearable insets to FrameLayout container holding map as margins
-                params.setMargins(
-                        insets.getSystemWindowInsetLeft(),
-                        insets.getSystemWindowInsetTop(),
-                        insets.getSystemWindowInsetRight(),
-                        insets.getSystemWindowInsetBottom());
-                mapFrameLayout.setLayoutParams(params);
-
-                return insets;
+            public void onDismissed(SwipeDismissFrameLayout layout) {
+                // Hides view before exit to avoid stutter.
+                layout.setVisibility(View.GONE);
+                finish();
             }
         });
 
-        // Obtain the DismissOverlayView and display the introductory help text.
-        mDismissOverlay = (DismissOverlayView) findViewById(R.id.dismiss_overlay);
-        mDismissOverlay.setIntroText(R.string.intro_text);
-        mDismissOverlay.showIntroIfNecessary();
+        // Adjusts margins to account for the system window insets when they become available.
+        swipeDismissRootFrameLayout.setOnApplyWindowInsetsListener(
+                new View.OnApplyWindowInsetsListener() {
+                    @Override
+                    public WindowInsets onApplyWindowInsets(View view, WindowInsets insets) {
+                        insets = swipeDismissRootFrameLayout.onApplyWindowInsets(insets);
+
+                        FrameLayout.LayoutParams params =
+                                (FrameLayout.LayoutParams) mapFrameLayout.getLayoutParams();
+
+                        // Sets Wearable insets to FrameLayout container holding map as margins
+                        params.setMargins(
+                                insets.getSystemWindowInsetLeft(),
+                                insets.getSystemWindowInsetTop(),
+                                insets.getSystemWindowInsetRight(),
+                                insets.getSystemWindowInsetBottom());
+                        mapFrameLayout.setLayoutParams(params);
+
+                        return insets;
+                    }
+                });
 
         // Obtain the MapFragment and set the async listener to be notified when the map is ready.
         MapFragment mapFragment =
@@ -80,18 +84,15 @@ public class ${activityClass} extends Activity implements OnMapReadyCallback,
         // Map is ready to be used.
         mMap = googleMap;
 
-        // Set the long click listener as a way to exit the map.
-        mMap.setOnMapLongClickListener(this);
+        // Inform user how to close app (Swipe-To-Close).
+        int duration = Toast.LENGTH_LONG;
+        Toast toast = Toast.makeText(getApplicationContext(), R.string.intro_text, duration);
+        toast.setGravity(Gravity.CENTER, 0, 0);
+        toast.show();
 
-        // Add a marker in Sydney, Australia and move the camera.
+        // Adds a marker in Sydney, Australia and moves the camera.
         LatLng sydney = new LatLng(-34, 151);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-    }
-
-    @Override
-    public void onMapLongClick(LatLng latLng) {
-        // Display the dismiss overlay with a button to exit this activity.
-        mDismissOverlay.show();
     }
 }

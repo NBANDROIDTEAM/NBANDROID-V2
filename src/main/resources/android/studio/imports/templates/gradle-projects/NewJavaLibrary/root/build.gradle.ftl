@@ -1,7 +1,7 @@
-apply plugin: 'java'
+apply plugin: 'java-library'
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    ${getConfigurationName("compile")} fileTree(dir: 'libs', include: ['*.jar'])
 }
 
 <#if javaVersion??>

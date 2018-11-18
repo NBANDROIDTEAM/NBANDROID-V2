@@ -1,15 +1,16 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="${packageName}">
 
     <application>
 
 <#if configurable>
         <activity
-            android:name="${relativePackage}.${settingsClassName}" />
+            android:name="${packageName}.${settingsClassName}" />
 </#if>
 
         <!-- This service is only used on devices with API v17+ -->
         <service
-            android:name="${relativePackage}.${className}"
+            android:name="${packageName}.${className}"
             android:exported="true" >
             <intent-filter>
                 <action android:name="android.service.dreams.DreamService" />

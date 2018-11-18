@@ -1,35 +1,9 @@
-<#if !(perModuleRepositories??) || perModuleRepositories>
-buildscript {
-    repositories {
-        jcenter()
-<#if mavenUrl != "mavenCentral">
-        maven {
-            url '${mavenUrl}'
-        }
-</#if>
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:${gradlePluginVersion}'
-    }
-}
-</#if>
+<#import "root://gradle-projects/common/proguard_macros.ftl" as proguard>
 <#if isLibraryProject?? && isLibraryProject>
 apply plugin: 'com.android.library'
 <#else>
 apply plugin: 'com.android.application'
 </#if>
-
-repositories {
-        jcenter()
-<#if mavenUrl != "mavenCentral">
-        maven {
-            url '${mavenUrl}'
-        }
-</#if>
-    flatDir {
-        dirs 'prebuilt-libs'
-    }
-}
 
 android {
     compileSdkVersion <#if buildApiString?matches("^\\d+$")>${buildApiString}<#else>'${buildApiString}'</#if>
@@ -49,16 +23,11 @@ android {
         targetCompatibility JavaVersion.VERSION_${javaVersion?replace('.','_','i')}
     }
 </#if>
-<#if enableProGuard>
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-</#if>
+
+<@proguard.proguardConfig />
+
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    ${getConfigurationName("compile")} fileTree(dir: 'libs', include: ['*.jar'])
 }
