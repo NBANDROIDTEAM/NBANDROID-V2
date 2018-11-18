@@ -1,10 +1,10 @@
 [![Build Status](https://travis-ci.org/NBANDROIDTEAM/NBANDROID-V2.svg?branch=master)](https://travis-ci.org/NBANDROIDTEAM/NBANDROID-V2)
 
 # NBANDROID-V2
-Netbeans Android support plugin
+NetBeans Android support plugin
 
-This project aims to stabilize and update the discontinued Netbeans IDE plugin NBANDROID.
-The current version supports Netbeans 8.1 and 8.2
+This project aims to stabilize and update the discontinued NetBeans IDE plugin NBANDROID.
+The current version supports NetBeans 8.1 and 8.2
 
 **Many thanks to Radim Kubacki, the creator of the first NBANDROID!**</br>
 
@@ -12,9 +12,9 @@ The current version supports Netbeans 8.1 and 8.2
 The compiled version of the last commit is here:<br>
 **Please update your Gradle Support plugin to 1.4.3**
 
-Netbeans 8.1 http://server.arsi.sk/nbandroid81/
+NetBeans 8.1 http://server.arsi.sk/nbandroid81/
 
-Netbeans 8.2 http://server.arsi.sk/nbandroid82/
+NetBeans 8.2 http://server.arsi.sk/nbandroid82/
 ### What Works:
 * Code Assistance
 * Build
@@ -35,11 +35,11 @@ Netbeans 8.2 http://server.arsi.sk/nbandroid82/
 * and many other things
 
 
-# How to run/debug this plugin from Netbeans
+# How to run/debug this plugin from NetBeans
 This plugin depends on Gradle Support plugin. You need to add it to platform folder.
 
-* Install Gradle Support plugin to Netbeans
-* Make copy of Netbeans directory
+* Install Gradle Support plugin to NetBeans
+* Make copy of NetBeans directory
 * Copy .netbeans/NB_Version/modules/org-netbeans-gradle-project.jar to NB_COPY/extide/modules/
 * Copy .netbeans/NB_Version/modules/ext folder to NB_COPY/extide/modules/
 * Copy .netbeans/NB_Version/update_tracking/org-netbeans-modules-options-java.xml to NB_COPY/extide/update_tracking/
