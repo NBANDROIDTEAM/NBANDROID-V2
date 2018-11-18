@@ -298,6 +298,11 @@
             <name>google</name>
             <url>https://maven.google.com</url>
         </repository>
+        <repository>
+            <id>gradle</id>
+            <name>gradle-releases</name>
+            <url>https://repo.gradle.org/gradle/libs-releases-local</url>
+        </repository>
     </repositories>
     <dependencies>
         <dependency>
