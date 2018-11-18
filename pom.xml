@@ -283,11 +283,6 @@
             <url>http://bits.netbeans.org/nexus/content/groups/netbeans/</url>
         </repository>
         <repository>
-            <id>maven.eevol.lu</id>
-            <name>maven.eevol.lu</name>
-            <url>http://maven.eevol.lu/nexus/content/repositories/central-bintray</url>
-        </repository>
-        <repository>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
@@ -302,6 +297,11 @@
             <id>google-android-android-tools</id>
             <name>google</name>
             <url>https://maven.google.com</url>
+        </repository>
+        <repository>
+            <id>gradle</id>
+            <name>gradle-releases</name>
+            <url>https://repo.gradle.org/gradle/libs-releases-local</url>
         </repository>
     </repositories>
     <dependencies>
