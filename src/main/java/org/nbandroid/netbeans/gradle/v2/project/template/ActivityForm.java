@@ -27,14 +27,14 @@ import org.openide.util.Exceptions;
 public class ActivityForm extends javax.swing.JPanel implements MouseListener, FocusListener, AndroidActivityTemplateProvider {
 
     private final Template template;
-    private final AndroidProjectTemplatePanelMobileActivityAndroidSettings androidSettings;
+    private final AndroidActivityTemplateHandler androidSettings;
     /**
      * Creates new form ActivityForm
      */
     Border borderOn = BorderFactory.createLineBorder(Color.blue, 1);
     Border borderOff = BorderFactory.createLineBorder(Color.lightGray, 1);
 
-    public ActivityForm(Template template, AndroidProjectTemplatePanelMobileActivityAndroidSettings androidSettings) {
+    public ActivityForm(Template template, AndroidActivityTemplateHandler androidSettings) {
         initComponents();
         this.androidSettings = androidSettings;
         this.template = template;

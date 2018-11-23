@@ -27,9 +27,9 @@ public class NoActivityForm extends javax.swing.JPanel implements MouseListener,
      */
     Border borderOn = BorderFactory.createLineBorder(Color.blue, 1);
     Border borderOff = BorderFactory.createLineBorder(Color.lightGray, 1);
-    private final AndroidProjectTemplatePanelMobileActivityAndroidSettings androidSettings;
+    private final AndroidActivityTemplateHandler androidSettings;
 
-    public NoActivityForm(AndroidProjectTemplatePanelMobileActivityAndroidSettings androidSettings) {
+    public NoActivityForm(AndroidActivityTemplateHandler androidSettings) {
         initComponents();
         this.androidSettings = androidSettings;
         addMouseListener(this);

@@ -13,21 +13,21 @@ import java.awt.event.ItemListener;
 import java.util.List;
 import javax.swing.JPanel;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings.PROP_MAX_BUILD_LEVEL;
-import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_PLATFORM;
+import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_PLATFORM;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_SDK;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 
-public class AndroidProjectTemplatePanelMobileActivityAndroidSettings extends JPanel implements ItemListener, AndroidActivityTemplateHandler {
+public class AndroidProjectTemplatePanelWearActivityAndroidSettings extends JPanel implements ItemListener, AndroidActivityTemplateHandler {
 
-    private AndroidProjectTemplateWizardPanelMobileActivityAndroidSettings panel;
-    public static final String PROP_MOBILE_TEMPLATE = "PROP_MOBILE_TEMPLATE";
+    private AndroidProjectTemplateWizardPanelWearActivityAndroidSettings panel;
+    public static final String PROP_WEAR_TEMPLATE = "PROP_WEAR_TEMPLATE";
     private AndroidSdk androidSdk;
     private Template currentTemplate;
 
-    public AndroidProjectTemplatePanelMobileActivityAndroidSettings(AndroidProjectTemplateWizardPanelMobileActivityAndroidSettings panel) {
+    public AndroidProjectTemplatePanelWearActivityAndroidSettings(AndroidProjectTemplateWizardPanelWearActivityAndroidSettings panel) {
         initComponents();
         this.panel = panel;
     }
@@ -45,7 +45,7 @@ public class AndroidProjectTemplatePanelMobileActivityAndroidSettings extends JP
         activitysPanel = new javax.swing.JPanel();
 
         jLabel3.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelMobileActivityAndroidSettings.class, "AndroidProjectTemplatePanelMobileActivityAndroidSettings.jLabel3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelWearActivityAndroidSettings.class, "AndroidProjectTemplatePanelWearActivityAndroidSettings.jLabel3.text")); // NOI18N
 
         activitysPanel.setBackground(new java.awt.Color(255, 255, 255));
         activitysPanel.setLayout(new java.awt.GridLayout(0, 3));
@@ -58,7 +58,7 @@ public class AndroidProjectTemplatePanelMobileActivityAndroidSettings extends JP
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel3)
-                .addContainerGap(503, Short.MAX_VALUE))
+                .addContainerGap(520, Short.MAX_VALUE))
             .addComponent(jScrollPane1)
         );
         layout.setVerticalGroup(
@@ -88,18 +88,18 @@ public class AndroidProjectTemplatePanelMobileActivityAndroidSettings extends JP
     }
 
     void store(WizardDescriptor d) {
-        d.putProperty(PROP_MOBILE_TEMPLATE, currentTemplate);
+        d.putProperty(PROP_WEAR_TEMPLATE, currentTemplate);
     }
 
     void read(WizardDescriptor settings) {
         activitysPanel.removeAll();
         androidSdk = (AndroidSdk) settings.getProperty(PROP_PROJECT_SDK);
-         currentTemplate = (Template) settings.getProperty(PROP_MOBILE_TEMPLATE);
-        if (settings.getProperty(PROP_PHONE_TABLET_PLATFORM) instanceof AndroidPlatformInfo) {
-            AndroidPlatformInfo platformInfo = (AndroidPlatformInfo) settings.getProperty(PROP_PHONE_TABLET_PLATFORM);
+        currentTemplate = (Template) settings.getProperty(PROP_WEAR_TEMPLATE);
+        if (settings.getProperty(PROP_WEAR_PLATFORM) instanceof AndroidPlatformInfo) {
+            AndroidPlatformInfo platformInfo = (AndroidPlatformInfo) settings.getProperty(PROP_WEAR_PLATFORM);
             int minApiLevel = platformInfo.getAndroidVersion().getFeatureLevel();
             int buildApiLevel = (int) settings.getProperty(PROP_MAX_BUILD_LEVEL);
-            List<Template> templates = TemplateManager.findActivityTemplates("Mobile", minApiLevel, buildApiLevel);
+            List<Template> templates = TemplateManager.findActivityTemplates("Wear", minApiLevel, buildApiLevel);
             activitysPanel.add(new NoActivityForm(this));
             for (Template template : templates) {
                 activitysPanel.add(new ActivityForm(template,this));
