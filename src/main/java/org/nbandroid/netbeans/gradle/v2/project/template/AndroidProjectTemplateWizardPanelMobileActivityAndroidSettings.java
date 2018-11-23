@@ -17,25 +17,25 @@ import org.openide.util.HelpCtx;
 /**
  * Panel just asking for basic info.
  */
-public class AndroidProjectTemplateWizardPanellVisualAndroidSettings implements WizardDescriptor.Panel,
-        WizardDescriptor.ValidatingPanel {
+public class AndroidProjectTemplateWizardPanelMobileActivityAndroidSettings implements WizardDescriptor.Panel,
+        WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
 
     private WizardDescriptor wizardDescriptor;
-    private AndroidProjectTemplatePanelVisualAndroidSettings component;
+    private AndroidProjectTemplatePanelMobileActivityAndroidSettings component;
 
-    public AndroidProjectTemplateWizardPanellVisualAndroidSettings() {
+    public AndroidProjectTemplateWizardPanelMobileActivityAndroidSettings() {
     }
 
     public Component getComponent() {
         if (component == null) {
-            component = new AndroidProjectTemplatePanelVisualAndroidSettings(this);
+            component = new AndroidProjectTemplatePanelMobileActivityAndroidSettings(this);
             component.setName("Android platform");
         }
         return component;
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(AndroidProjectTemplateWizardPanellVisualAndroidSettings.class);
+        return new HelpCtx(AndroidProjectTemplatePanelMobileActivityAndroidSettings.class);
     }
 
     public boolean isValid() {

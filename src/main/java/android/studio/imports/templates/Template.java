@@ -15,6 +15,12 @@
  */
 package android.studio.imports.templates;
 
+import java.io.FileNotFoundException;
+import java.util.Objects;
+import org.nbandroid.netbeans.gradle.core.sdk.ManifestParser;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+
 /**
  * Handler which manages instantiating FreeMarker templates, copying resources
  * and merging into existing files
@@ -77,5 +83,53 @@ public class Template {
 
     private static final int MAX_WARNINGS = 10;
     private static final String GOOGLE_GLASS_PATH_19 = "/addon-google_gdk-google-19/";
+    private final FileObject fileObject;
+    private TemplateMetadata metadata;
+
+    public Template(FileObject fileObject) {
+        this.fileObject = fileObject;
+    }
+
+    public FileObject getFileObject() {
+        return fileObject;
+    }
+
+
+    public TemplateMetadata getMetadata() {
+        if (metadata == null) {
+            try {
+                metadata = new TemplateMetadata(ManifestParser.parseStream(fileObject.getInputStream()));
+            } catch (FileNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        return metadata;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 37 * hash + Objects.hashCode(this.fileObject);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Template other = (Template) obj;
+        if (!Objects.equals(this.fileObject, other.fileObject)) {
+            return false;
+        }
+        return true;
+    }
 
 }

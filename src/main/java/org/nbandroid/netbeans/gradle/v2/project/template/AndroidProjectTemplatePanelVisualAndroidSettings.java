@@ -39,7 +39,7 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
     public static final String PROP_TV_ENABLED = "PROP_TV_ENABLED";
     public static final String PROP_TV_PLATFORM = "PROP_TV_PLATFORM";
     public static final String PROP_AUTO_ENABLED = "PROP_TV_ENABLED";
-
+    public static final String PROP_MAX_BUILD_LEVEL = "PROP_MAX_BUILD_LEVEL";
     private AndroidProjectTemplateWizardPanellVisualAndroidSettings panel;
     private AndroidSdk androidSdk;
 
@@ -229,7 +229,16 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
     }
 
     boolean valid(WizardDescriptor wizardDescriptor) {
-        return phoneEnabled.isSelected() || wearEnabled.isSelected() || tvEnabled.isSelected() || autoEnabled.isSelected();
+
+        boolean status = phoneEnabled.isSelected() || wearEnabled.isSelected() || tvEnabled.isSelected() || autoEnabled.isSelected();
+        if (!status) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage",
+                    "You must select at least one option.");
+        }else{
+            wizardDescriptor.putProperty("WizardPanel_errorMessage",
+                    null);
+        }
+        return status;
     }
 
     void store(WizardDescriptor d) {
@@ -257,14 +266,19 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
                 return Integer.compare(o1.getAndroidVersion().getApiLevel(), o2.getAndroidVersion().getApiLevel());
             }
         });
+        int maxBuildLevel = 0;
         phonePlatforms.setModel(new DefaultComboBoxModel(platforms.toArray()));
         phonePlatforms.setRenderer(new ComboBoxRenderer());
         for (Iterator<AndroidPlatformInfo> iterator = platforms.iterator(); iterator.hasNext();) {
             AndroidPlatformInfo next = iterator.next();
+            if (next.getAndroidVersion().getFeatureLevel() > maxBuildLevel) {
+                maxBuildLevel = next.getAndroidVersion().getFeatureLevel();
+            }
             if (next.getAndroidVersion().getApiLevel() < 20) {
                 iterator.remove();
             }
         }
+        settings.putProperty(PROP_MAX_BUILD_LEVEL, maxBuildLevel);
         wearPlatforms.setModel(new DefaultComboBoxModel(platforms.toArray()));
         wearPlatforms.setRenderer(new ComboBoxRenderer());
         for (Iterator<AndroidPlatformInfo> iterator = platforms.iterator(); iterator.hasNext();) {
