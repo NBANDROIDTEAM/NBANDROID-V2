@@ -7,6 +7,7 @@ package org.nbandroid.netbeans.gradle.v2.project.template.freemarker;
 
 import android.studio.imports.templates.TemplateMetadata;
 import com.google.common.collect.LinkedHashMultimap;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
@@ -143,6 +144,29 @@ public class TemplateUtils {
         }
 
         return name;
+    }
+
+    /**
+     * Strips the given suffix from the given file, provided that the file name
+     * ends with the suffix.
+     *
+     * @param file the file to strip from
+     * @param suffix the suffix to strip out
+     * @return the file without the suffix at the end
+     */
+    public static File stripSuffix(@NotNull File file, @NotNull String suffix) {
+        if (file.getName().endsWith(suffix)) {
+            String name = file.getName();
+            name = name.substring(0, name.length() - suffix.length());
+            File parent = file.getParentFile();
+            if (parent != null) {
+                return new File(parent, name);
+            } else {
+                return new File(name);
+            }
+        }
+
+        return file;
     }
 
     public static Map<String, Object> createParameterMap(@NotNull Map<String, Object> args) {

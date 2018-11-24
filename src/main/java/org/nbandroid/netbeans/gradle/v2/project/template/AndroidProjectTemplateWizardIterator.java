@@ -5,6 +5,10 @@
  */
 package org.nbandroid.netbeans.gradle.v2.project.template;
 
+import android.studio.imports.templates.Template;
+import android.studio.imports.templates.TemplateManager;
+import android.studio.imports.templates.recipe.Recipe;
+import android.studio.imports.templates.recipe.TemplateProcessingException;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -14,23 +18,26 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import javax.xml.bind.JAXBException;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelMobileActivityAndroidSettings.PROP_MOBILE_CONFIG;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PLATFORM_CONFIG_DONE;
-import org.netbeans.api.project.ProjectManager;
+import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_SDK;
+import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.ProjectTemplateLoader;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -106,28 +113,44 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
 
     public Set/*<FileObject>*/ instantiate(/*ProgressHandle handle*/) throws IOException {
         Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
-        File dirF = FileUtil.normalizeFile((File) wiz.getProperty("projdir"));
+        File dirF = new File("/jetty/TEST");
         dirF.mkdirs();
-
-        FileObject template = Templates.getTemplate(wiz);
         FileObject dir = FileUtil.toFileObject(dirF);
-        unZipFile(template.getInputStream(), dir);
-
-        // Always open top dir as a project:
         resultSet.add(dir);
-        // Look for nested projects to open as well:
-        Enumeration<? extends FileObject> e = dir.getFolders(true);
-        while (e.hasMoreElements()) {
-            FileObject subfolder = e.nextElement();
-            if (ProjectManager.getDefault().isProject(subfolder)) {
-                resultSet.add(subfolder);
+        Template projectTemplate = TemplateManager.findProjectTemplate("Android Project");
+        if (projectTemplate != null) {
+            String execute = projectTemplate.getMetadata().getExecute();
+            FileObject rootFolder = TemplateManager.getRootFolder();
+            ProjectTemplateLoader loader = new ProjectTemplateLoader(rootFolder);
+            String path = projectTemplate.getFileObject().getParent().getPath();
+            path = TemplateManager.getJarPath(path);
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("hasSdkDir", true);
+            AndroidSdk androidSdk = (AndroidSdk) wiz.getProperty(PROP_PROJECT_SDK);
+            parameters.put("sdkDir", androidSdk.getSdkPath());
+            parameters.put("makeIgnore", true);
+            parameters.put("topOut", dirF.getPath());
+            parameters.put("includeKotlinSupport", false);
+            parameters.put("isLowMemory", false);
+            parameters.put("addAndroidXSupport", false);
+            parameters.put("gradlePluginVersion", "2.3.2");
+            parameters.put("generateKotlin", false);
+            String process = loader.process(path + "/" + execute, parameters);
+            try {
+                Recipe recipe = Recipe.parse(new StringReader(process));
+                recipe.execute(loader.setupRecipeExecutor(path, parameters));
+                System.out.println("org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplateWizardIterator.instantiate()");
+
+            } catch (JAXBException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (TemplateProcessingException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
-
-        File parent = dirF.getParentFile();
-        if (parent != null && parent.exists()) {
-            ProjectChooser.setProjectsFolder(parent);
-        }
+//        File parent = dirF.getParentFile();
+//        if (parent != null && parent.exists()) {
+//            ProjectChooser.setProjectsFolder(parent);
+//        }
 
         return resultSet;
     }

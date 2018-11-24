@@ -185,6 +185,21 @@ public class TemplateMetadata {
         return getAttrNonEmpty(Template.ATTR_DESCRIPTION);
     }
 
+    public String getExecute() {
+        NodeList node = myDocument.getElementsByTagName(Template.TAG_EXECUTE);
+        if (node.getLength() == 0) {
+            return null;
+        }
+        for (int i = 0, n = node.getLength(); i < n; i++) {
+            Element thumb = (Element) node.item(i);
+            NamedNodeMap attributes = thumb.getAttributes();
+            Node namedItem = attributes.getNamedItem("file");
+            return namedItem.getTextContent();
+        }
+
+        return null;
+    }
+
     public int getMinSdk() {
         return getInteger(ATTR_MIN_API, 1);
     }

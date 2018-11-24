@@ -40,6 +40,17 @@ public class TemplateManager {
         return tmp;
     }
 
+    public static FileObject getRootFolder() {
+        URL location = TemplateManager.class.getProtectionDomain().getCodeSource().getLocation();
+        FileObject fo = URLMapper.findFileObject(location);
+        FileObject archiveFile = FileUtil.getArchiveRoot(fo);
+        return archiveFile.getFileObject("/android/studio/imports/templates/");
+    }
+
+    public static String getJarPath(String path) {
+        return path.replace("android/studio/imports/templates/", "");
+    }
+
     public static List<Template> findActivityTemplates(String formFactor, int minApiLevel, int buildApiLevel) {
         List<Template> tmp = new ArrayList<>();
         List<Template> templates = findTemplates("activities");
@@ -57,6 +68,16 @@ public class TemplateManager {
             }
         });
         return tmp;
+    }
+
+    public static Template findProjectTemplate(String name) {
+        List<Template> templates = findTemplates("gradle-projects");
+        for (Template template : templates) {
+            if (name.equals(template.getMetadata().getTitle())) {
+                return template;
+            }
+        }
+        return null;
     }
 
 }
