@@ -92,6 +92,7 @@ public class AndroidProjectTemplatePanelWearActivityAndroidSettings extends JPan
     }
 
     void read(WizardDescriptor settings) {
+        settings.putProperty("WizardPanel_contentSelectedIndex", (int) 1);
         activitysPanel.removeAll();
         androidSdk = (AndroidSdk) settings.getProperty(PROP_PROJECT_SDK);
         currentTemplate = (Template) settings.getProperty(PROP_WEAR_TEMPLATE);

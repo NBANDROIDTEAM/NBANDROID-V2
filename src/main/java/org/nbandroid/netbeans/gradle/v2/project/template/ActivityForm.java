@@ -7,6 +7,7 @@ package org.nbandroid.netbeans.gradle.v2.project.template;
 
 import android.studio.imports.templates.Template;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -114,6 +115,7 @@ public class ActivityForm extends javax.swing.JPanel implements MouseListener, F
         title.setBackground(Color.blue);
         title.setForeground(Color.white);
         androidSettings.setCurrentTemplate(template);
+        unselectOthers();
     }
 
     @Override
@@ -134,7 +136,7 @@ public class ActivityForm extends javax.swing.JPanel implements MouseListener, F
 
     @Override
     public void focusGained(FocusEvent fe) {
-       
+
     }
 
     @Override
@@ -147,10 +149,6 @@ public class ActivityForm extends javax.swing.JPanel implements MouseListener, F
         return new Dimension(280, 290); //To change body of generated methods, choose Tools | Templates.
     }
 
-
-
-
-
     @Override
     public void focusLost(FocusEvent fe) {
         setBorder(null);
@@ -160,8 +158,20 @@ public class ActivityForm extends javax.swing.JPanel implements MouseListener, F
 
     @Override
     public void select(Template template) {
-        if(Objects.equals(template, this.template)){
+        if (Objects.equals(template, this.template)) {
             mouseClicked(null);
+            requestFocusInWindow(true);
+            unselectOthers();
+        }
+
+    }
+
+    public void unselectOthers() {
+        Component[] components = getParent().getComponents();
+        for (Component component : components) {
+            if ((component instanceof FocusListener) && !Objects.equals(component, this)) {
+                ((FocusListener) component).focusLost(new FocusEvent(this, FocusEvent.FOCUS_GAINED));
+            }
         }
     }
 }

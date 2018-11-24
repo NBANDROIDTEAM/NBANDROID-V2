@@ -24,11 +24,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
- * Parameter represents an external input to a template. It consists of an ID used to refer to it within the template,
- * human-readable information to be displayed in the UI, and type and validation specifications that can be used in the UI to assist in
- * data entry.
+ * Parameter represents an external input to a template. It consists of an ID
+ * used to refer to it within the template, human-readable information to be
+ * displayed in the UI, and type and validation specifications that can be used
+ * in the UI to assist in data entry.
  */
 public final class Parameter {
 
@@ -131,7 +134,8 @@ public final class Parameter {
          */
         STRING,
         /**
-         *          */
+         *
+         */
         URI_AUTHORITY;
 
         public static Constraint get(@NotNull String name) {
@@ -179,6 +183,16 @@ public final class Parameter {
      */
     @Nullable
     public final String initial;
+
+    public String value;
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
 
     /**
      * A template expression using other template parameters for producing a
@@ -260,8 +274,34 @@ public final class Parameter {
         return !types.isEmpty();
     }
 
+    public boolean isSugested(Parameter p) {
+        return suggest.contains(p.id);
+    }
+
     @Override
     public String toString() {
         return "(parameter id: " + id + ")";
     }
+
+    public List<Element> getOptions() {
+        return getChildren(element);
+    }
+
+    public static List<Element> getChildren(@NotNull Element element) {
+        // Convenience to avoid lots of ugly DOM access casting
+        NodeList children = element.getChildNodes();
+        // An iterator would have been more natural (to directly drive the child list
+        // iteration) but iterators can't be used in enhanced for loops...
+        List<Element> result = new ArrayList<Element>(children.getLength());
+        for (int i = 0, n = children.getLength(); i < n; i++) {
+            Node node = children.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                Element child = (Element) node;
+                result.add(child);
+            }
+        }
+
+        return result;
+    }
+
 }

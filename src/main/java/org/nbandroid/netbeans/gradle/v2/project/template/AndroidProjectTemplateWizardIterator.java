@@ -58,6 +58,7 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
             new AndroidProjectTemplateWizardPanellBasicSettings(),
             new AndroidProjectTemplateWizardPanellVisualAndroidSettings(),
             new AndroidProjectTemplateWizardPanelMobileActivityAndroidSettings(),
+            new AndroidProjectTemplateWizardPanelConfigureActivityAndroidSettings(),
             new AndroidProjectTemplateWizardPanelWearActivityAndroidSettings(),
             new AndroidProjectTemplateWizardPanelTvActivityAndroidSettings()};
     }
@@ -65,7 +66,7 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
     private String[] createSteps() {
         return new String[]{
             NbBundle.getMessage(AndroidProjectTemplateWizardIterator.class, "LBL_CreateProjectStep"), "Android platform",
-            "Mobile Activity", "Wear Activity", "TV Activity"
+            "Mobile Activity", "Configure Mobile Activity", "Wear Activity", "TV Activity"
         };
     }
 

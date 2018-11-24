@@ -818,6 +818,11 @@
             <version>1.9.9</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.netbeans.external</groupId>
+            <artifactId>freemarker-2.3.19</artifactId>
+            <version>${version.nb}</version>
+        </dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
