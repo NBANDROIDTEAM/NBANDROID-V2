@@ -26,6 +26,7 @@ public class AndroidProjectTemplatePanelWearActivityAndroidSettings extends JPan
     public static final String PROP_WEAR_TEMPLATE = "PROP_WEAR_TEMPLATE";
     private AndroidSdk androidSdk;
     private Template currentTemplate;
+    public static final String PROP_WEAR_CONFIG = "PROP_WEAR_CONFIG";
 
     public AndroidProjectTemplatePanelWearActivityAndroidSettings(AndroidProjectTemplateWizardPanelWearActivityAndroidSettings panel) {
         initComponents();
@@ -118,6 +119,7 @@ public class AndroidProjectTemplatePanelWearActivityAndroidSettings extends JPan
     @Override
     public void setCurrentTemplate(Template currentTemplate) {
         this.currentTemplate = currentTemplate;
+        panel.fireChangeEvent();
     }
 
 
@@ -128,5 +130,9 @@ public class AndroidProjectTemplatePanelWearActivityAndroidSettings extends JPan
 
     void validate(WizardDescriptor d) throws WizardValidationException {
         // nothing to validate
+    }
+
+    Template getCurrentTemplate() {
+        return currentTemplate;
     }
 }

@@ -46,10 +46,28 @@ public class AndroidProjectTemplatePanelConfigureActivityAndroidSettings extends
     private Template currentTemplate;
     private String packageName;
     private String domain;
+    public static final String PROP_MOBILE_ACTIVITY_PARAMETERS = "PROP_MOBILE_ACTIVITY_PARAMETERS";
+    public static final String PROP_WEAR_ACTIVITY_PARAMETERS = "PROP_WEAR_ACTIVITY_PARAMETERS";
+    public static final String PROP_TV_ACTIVITY_PARAMETERS = "PROP_TV_ACTIVITY_PARAMETERS";
+    private final String templateType;
+    private final String activityType;
 
-    public AndroidProjectTemplatePanelConfigureActivityAndroidSettings(AndroidProjectTemplateWizardPanelConfigureActivityAndroidSettings panel) {
+    public AndroidProjectTemplatePanelConfigureActivityAndroidSettings(AndroidProjectTemplateWizardPanelConfigureActivityAndroidSettings panel, String templateType, String activityType) {
         initComponents();
         this.panel = panel;
+        this.templateType = templateType;
+        this.activityType = activityType;
+        switch (activityType) {
+            case PROP_MOBILE_ACTIVITY_PARAMETERS:
+                label.setText("Configure mobile activity");
+                break;
+            case PROP_WEAR_ACTIVITY_PARAMETERS:
+                label.setText("Configure wear activity");
+                break;
+            case PROP_TV_ACTIVITY_PARAMETERS:
+                label.setText("Configure tv activity");
+                break;
+        }
     }
 
     /**
@@ -60,12 +78,12 @@ public class AndroidProjectTemplatePanelConfigureActivityAndroidSettings extends
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel3 = new javax.swing.JLabel();
+        label = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         parametersPanel = new javax.swing.JPanel();
 
-        jLabel3.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelConfigureActivityAndroidSettings.class, "AndroidProjectTemplatePanelConfigureActivityAndroidSettings.jLabel3.text")); // NOI18N
+        label.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelConfigureActivityAndroidSettings.class, "AndroidProjectTemplatePanelConfigureActivityAndroidSettings.label.text")); // NOI18N
 
         parametersPanel.setLayout(new java.awt.GridLayout(0, 1));
         jScrollPane1.setViewportView(parametersPanel);
@@ -76,7 +94,7 @@ public class AndroidProjectTemplatePanelConfigureActivityAndroidSettings extends
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel3)
+                .addComponent(label)
                 .addContainerGap(503, Short.MAX_VALUE))
             .addComponent(jScrollPane1)
         );
@@ -84,15 +102,15 @@ public class AndroidProjectTemplatePanelConfigureActivityAndroidSettings extends
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel3)
+                .addComponent(label)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel label;
     private javax.swing.JPanel parametersPanel;
     // End of variables declaration//GEN-END:variables
 
@@ -107,12 +125,20 @@ public class AndroidProjectTemplatePanelConfigureActivityAndroidSettings extends
     }
 
     void store(WizardDescriptor d) {
+        Map<Parameter, Object> userValues = new HashMap<>();
+        Component[] components = parametersPanel.getComponents();
+        for (Component component : components) {
+            if (component instanceof ParameterValueProvider) {
+                userValues.put(((ParameterValueProvider) component).getParameter(), ((ParameterValueProvider) component).getValue());
+            }
+        }
+        d.putProperty(activityType, userValues);
     }
 
     void read(WizardDescriptor settings) {
         parametersPanel.removeAll();
         androidSdk = (AndroidSdk) settings.getProperty(PROP_PROJECT_SDK);
-        currentTemplate = (Template) settings.getProperty(AndroidProjectTemplatePanelMobileActivityAndroidSettings.PROP_MOBILE_TEMPLATE);
+        currentTemplate = (Template) settings.getProperty(templateType);
         Collection<Parameter> parameters = currentTemplate.getMetadata().getParameters();
         packageName = (String) settings.getProperty(AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_PACKAGE);
         domain = (String) settings.getProperty(AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_DOMAIN);

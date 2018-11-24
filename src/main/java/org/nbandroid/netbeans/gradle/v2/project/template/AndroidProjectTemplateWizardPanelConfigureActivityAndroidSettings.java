@@ -10,6 +10,9 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelConfigureActivityAndroidSettings.PROP_MOBILE_ACTIVITY_PARAMETERS;
+import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelConfigureActivityAndroidSettings.PROP_TV_ACTIVITY_PARAMETERS;
+import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelConfigureActivityAndroidSettings.PROP_WEAR_ACTIVITY_PARAMETERS;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
@@ -18,17 +21,21 @@ import org.openide.util.HelpCtx;
  * Panel just asking for basic info.
  */
 public class AndroidProjectTemplateWizardPanelConfigureActivityAndroidSettings implements WizardDescriptor.Panel,
-        WizardDescriptor.ValidatingPanel {
+        WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
 
     private WizardDescriptor wizardDescriptor;
     private AndroidProjectTemplatePanelConfigureActivityAndroidSettings component;
+    private final String templateType;
+    private final String activityType;
 
-    public AndroidProjectTemplateWizardPanelConfigureActivityAndroidSettings() {
+    public AndroidProjectTemplateWizardPanelConfigureActivityAndroidSettings(String templateType, String activityType) {
+        this.templateType = templateType;
+        this.activityType = activityType;
     }
 
     public Component getComponent() {
         if (component == null) {
-            component = new AndroidProjectTemplatePanelConfigureActivityAndroidSettings(this);
+            component = new AndroidProjectTemplatePanelConfigureActivityAndroidSettings(this, templateType, activityType);
             component.setName("Android platform");
         }
         return component;
@@ -79,6 +86,24 @@ public class AndroidProjectTemplateWizardPanelConfigureActivityAndroidSettings i
     }
 
     public boolean isFinishPanel() {
+        Boolean wear = (Boolean) wizardDescriptor.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_ENABLED);
+        Boolean tv = (Boolean) wizardDescriptor.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_ENABLED);
+        switch (activityType) {
+            case PROP_MOBILE_ACTIVITY_PARAMETERS:
+                if ((wear == null && tv == null) || (!wear && !tv)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            case PROP_WEAR_ACTIVITY_PARAMETERS:
+                if ((tv == null) || (!tv)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            case PROP_TV_ACTIVITY_PARAMETERS:
+                return true;
+        }
         return true;
     }
 

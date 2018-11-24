@@ -38,8 +38,9 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
     public static final String PROP_WEAR_PLATFORM = "PROP_WEAR_PLATFORM";
     public static final String PROP_TV_ENABLED = "PROP_TV_ENABLED";
     public static final String PROP_TV_PLATFORM = "PROP_TV_PLATFORM";
-    public static final String PROP_AUTO_ENABLED = "PROP_TV_ENABLED";
+    public static final String PROP_AUTO_ENABLED = "PROP_AUTO_ENABLED";
     public static final String PROP_MAX_BUILD_LEVEL = "PROP_MAX_BUILD_LEVEL";
+    public static final String PROP_PLATFORM_CONFIG_DONE = "PROP_PLATFORM_CONFIG_DONE";
     private AndroidProjectTemplateWizardPanellVisualAndroidSettings panel;
     private AndroidSdk androidSdk;
 
@@ -249,6 +250,7 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
         d.putProperty(PROP_PHONE_TABLET_PLATFORM, phonePlatforms.getSelectedItem());
         d.putProperty(PROP_WEAR_PLATFORM, wearPlatforms.getSelectedItem());
         d.putProperty(PROP_TV_PLATFORM, tvPlatforms.getSelectedItem());
+        d.putProperty(PROP_PLATFORM_CONFIG_DONE, new Boolean[]{phoneEnabled.isSelected(),wearEnabled.isSelected(),tvEnabled.isSelected()});
     }
 
     private void updateDistribution() {

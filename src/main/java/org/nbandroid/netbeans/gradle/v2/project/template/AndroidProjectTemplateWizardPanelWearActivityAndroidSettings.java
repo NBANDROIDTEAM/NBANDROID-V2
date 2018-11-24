@@ -5,11 +5,13 @@
  */
 package org.nbandroid.netbeans.gradle.v2.project.template;
 
+import android.studio.imports.templates.Template;
 import java.awt.Component;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelWearActivityAndroidSettings.PROP_WEAR_CONFIG;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
@@ -18,7 +20,7 @@ import org.openide.util.HelpCtx;
  * Panel just asking for basic info.
  */
 public class AndroidProjectTemplateWizardPanelWearActivityAndroidSettings implements WizardDescriptor.Panel,
-        WizardDescriptor.ValidatingPanel {
+        WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
 
     private WizardDescriptor wizardDescriptor;
     private AndroidProjectTemplatePanelWearActivityAndroidSettings component;
@@ -58,6 +60,7 @@ public class AndroidProjectTemplateWizardPanelWearActivityAndroidSettings implem
     }
 
     protected final void fireChangeEvent() {
+        wizardDescriptor.putProperty(PROP_WEAR_CONFIG, component.getCurrentTemplate() != null);
         Set<ChangeListener> ls;
         synchronized (listeners) {
             ls = new HashSet<ChangeListener>(listeners);
@@ -79,7 +82,12 @@ public class AndroidProjectTemplateWizardPanelWearActivityAndroidSettings implem
     }
 
     public boolean isFinishPanel() {
-        return true;
+        Template currentTemplate = component.getCurrentTemplate();
+        Boolean tv = (Boolean) wizardDescriptor.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_ENABLED);
+        if (currentTemplate == null && !tv) {
+            return true;
+        }
+        return false;
     }
 
     public void validate() throws WizardValidationException {

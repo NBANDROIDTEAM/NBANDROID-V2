@@ -5,11 +5,13 @@
  */
 package org.nbandroid.netbeans.gradle.v2.project.template;
 
+import android.studio.imports.templates.Template;
 import java.awt.Component;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelMobileActivityAndroidSettings.PROP_MOBILE_CONFIG;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
@@ -18,7 +20,7 @@ import org.openide.util.HelpCtx;
  * Panel just asking for basic info.
  */
 public class AndroidProjectTemplateWizardPanelMobileActivityAndroidSettings implements WizardDescriptor.Panel,
-        WizardDescriptor.ValidatingPanel {
+        WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
 
     private WizardDescriptor wizardDescriptor;
     private AndroidProjectTemplatePanelMobileActivityAndroidSettings component;
@@ -58,6 +60,7 @@ public class AndroidProjectTemplateWizardPanelMobileActivityAndroidSettings impl
     }
 
     protected final void fireChangeEvent() {
+        wizardDescriptor.putProperty(PROP_MOBILE_CONFIG, component.getCurrentTemplate() != null);
         Set<ChangeListener> ls;
         synchronized (listeners) {
             ls = new HashSet<ChangeListener>(listeners);
@@ -79,7 +82,13 @@ public class AndroidProjectTemplateWizardPanelMobileActivityAndroidSettings impl
     }
 
     public boolean isFinishPanel() {
-        return true;
+        Template currentTemplate = component.getCurrentTemplate();
+        Boolean wear = (Boolean) wizardDescriptor.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_ENABLED);
+        Boolean tv = (Boolean) wizardDescriptor.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_ENABLED);
+        if (currentTemplate == null && !wear && !tv) {
+            return true;
+        }
+        return false;
     }
 
     public void validate() throws WizardValidationException {

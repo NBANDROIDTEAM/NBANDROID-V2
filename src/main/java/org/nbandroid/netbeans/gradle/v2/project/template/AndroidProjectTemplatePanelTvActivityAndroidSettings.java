@@ -26,6 +26,7 @@ public class AndroidProjectTemplatePanelTvActivityAndroidSettings extends JPanel
     public static final String PROP_TV_TEMPLATE = "PROP_TV_TEMPLATE";
     private AndroidSdk androidSdk;
     private Template currentTemplate;
+    public static final String PROP_TV_CONFIG = "PROP_TV_CONFIG";
 
     public AndroidProjectTemplatePanelTvActivityAndroidSettings(AndroidProjectTemplateWizardPanelTvActivityAndroidSettings panel) {
         initComponents();
@@ -117,6 +118,7 @@ public class AndroidProjectTemplatePanelTvActivityAndroidSettings extends JPanel
     @Override
     public void setCurrentTemplate(Template currentTemplate) {
         this.currentTemplate = currentTemplate;
+        panel.fireChangeEvent();
     }
 
 
@@ -127,5 +129,9 @@ public class AndroidProjectTemplatePanelTvActivityAndroidSettings extends JPanel
 
     void validate(WizardDescriptor d) throws WizardValidationException {
         // nothing to validate
+    }
+
+    Template getCurrentTemplate() {
+        return currentTemplate;
     }
 }
