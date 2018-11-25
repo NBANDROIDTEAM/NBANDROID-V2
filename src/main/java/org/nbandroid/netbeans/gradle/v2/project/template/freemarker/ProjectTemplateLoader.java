@@ -116,6 +116,7 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
 
     @Override
     public void copy(File from, File to) {
+        System.out.println("Copy: " + from.getPath() + " " + to.getPath());
         FileObject fileObject = root.getFileObject(templatePath + from.getPath());
         if (fileObject != null) {
             if (fileObject.isData()) {
@@ -162,6 +163,7 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
     @Override
     public void mkDir(File at) {
         at.mkdirs();
+        System.out.println("mkDir: " + at.getPath());
     }
 
     @Override
@@ -171,17 +173,14 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
 
     @Override
     public void addFilesToOpen(File file) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public void applyPlugin(String plugin) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public void addClasspath(String mavenUrl) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override

@@ -29,8 +29,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.*;
 
-/** An ADT template along with metadata */
+/**
+ * An ADT template along with metadata
+ */
 public class TemplateMetadata {
+
     public static final String ATTR_PARENT_ACTIVITY_CLASS = "parentActivityClass";
     public static final String ATTR_IS_LAUNCHER = "isLauncher";
     public static final String ATTR_IS_LIBRARY_MODULE = "isLibraryProject";
@@ -187,6 +190,21 @@ public class TemplateMetadata {
 
     public String getExecute() {
         NodeList node = myDocument.getElementsByTagName(Template.TAG_EXECUTE);
+        if (node.getLength() == 0) {
+            return null;
+        }
+        for (int i = 0, n = node.getLength(); i < n; i++) {
+            Element thumb = (Element) node.item(i);
+            NamedNodeMap attributes = thumb.getAttributes();
+            Node namedItem = attributes.getNamedItem("file");
+            return namedItem.getTextContent();
+        }
+
+        return null;
+    }
+
+    public String getGlobals() {
+        NodeList node = myDocument.getElementsByTagName(Template.TAG_GLOBALS);
         if (node.getLength() == 0) {
             return null;
         }
@@ -378,4 +396,25 @@ public class TemplateMetadata {
     public Collection<Parameter> getRelatedParams(Parameter param) {
         return myRelatedParameters.get(param);
     }
+
+    public void configureParameters(Map<String, Object> parameters) {
+        for (Map.Entry<String, Parameter> entry : myParameterMap.entrySet()) {
+            Parameter parameter = entry.getValue();
+            switch (parameter.type) {
+                case STRING:
+                case ENUM:
+                case SEPARATOR:
+                    parameters.put(parameter.id, parameter.initial);
+                    break;
+                case BOOLEAN:
+                    parameters.put(parameter.id, Boolean.valueOf(parameter.initial));
+                    break;
+                default:
+                    throw new AssertionError(parameter.type.name());
+
+            }
+
+        }
+    }
+
 }

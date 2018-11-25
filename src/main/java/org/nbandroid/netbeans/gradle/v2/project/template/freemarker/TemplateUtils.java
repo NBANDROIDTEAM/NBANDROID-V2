@@ -15,12 +15,14 @@ import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.F
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmCamelCaseToUnderscoreMethod;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmClassNameToResourceMethod;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmCompareVersionsIgnoringQualifiers;
+import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmEscapeKotlinIdentifiers;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmEscapePropertyValueMethod;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmEscapeXmlAttributeMethod;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmEscapeXmlStringMethod;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmExtractLettersMethod;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmGetConfigurationNameMethod;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmGetMaterialComponentName;
+import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmIsAndroidxEnabled;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmLayoutToActivityMethod;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmSlashedPackageNameMethod;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmTruncateStringMethod;
@@ -192,6 +194,9 @@ public class TemplateUtils {
         paramMap.put("compareVersionsIgnoringQualifiers", new FmCompareVersionsIgnoringQualifiers());
         paramMap.put("getConfigurationName", new FmGetConfigurationNameMethod(paramMap));
         paramMap.put("getMaterialComponentName", new FmGetMaterialComponentName());
+        paramMap.put("compareVersions", new FmCompareVersionsIgnoringQualifiers());
+        paramMap.put("escapeKotlinIdentifiers", new FmEscapeKotlinIdentifiers());
+        paramMap.put("isAndroidxEnabled", new FmIsAndroidxEnabled());
 
         // Dependencies multimap. Doesn't store duplicates, preserves insertion order.
         paramMap.put(TemplateMetadata.ATTR_DEPENDENCIES_MULTIMAP, LinkedHashMultimap.create());

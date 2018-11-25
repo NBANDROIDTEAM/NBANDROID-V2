@@ -27,6 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -34,11 +35,11 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import javax.xml.bind.JAXBException;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelMobileActivityAndroidSettings.PROP_MOBILE_CONFIG;
-import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings.PROP_MAX_BUILD_LEVEL;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PLATFORM_CONFIG_DONE;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_SDK;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.ProjectTemplateLoader;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
+import org.nbandroid.netbeans.gradle.v2.project.template.parameters.Globals;
+import org.nbandroid.netbeans.gradle.v2.project.template.parameters.TemplateValueInjector;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.WizardDescriptor;
@@ -123,17 +124,8 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
         Template projectTemplate = TemplateManager.findProjectTemplate("Android Project");
         AndroidSdk androidSdk = (AndroidSdk) wiz.getProperty(PROP_PROJECT_SDK);
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("hasSdkDir", true);
-        parameters.put("sdkDir", androidSdk.getSdkPath());
-        parameters.put("makeIgnore", true);
-        parameters.put("topOut", dirF.getPath());
-        parameters.put("includeKotlinSupport", false);
-        parameters.put("isLowMemory", false);
-        parameters.put("addAndroidXSupport", false);
-        parameters.put("gradlePluginVersion", "3.0.0");
-        parameters.put("generateKotlin", false);
-        parameters.put("packageName", wiz.getProperty(AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_PACKAGE));
-
+        TemplateValueInjector.setupNewModule(parameters, wiz);
+        TemplateValueInjector.setupModuleRoots(parameters, wiz, "");
         //basic project structure
         if (projectTemplate != null) {
             processTemplate(projectTemplate, parameters);
@@ -142,44 +134,19 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
         //android mobile
         boolean androidMobile = (boolean) wiz.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_ENABLED);
         if (androidMobile) {
-            AndroidPlatformInfo platformInfo = (AndroidPlatformInfo) wiz.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_PLATFORM);
-            parameters.put("minApi", String.valueOf(platformInfo.getAndroidVersion().getFeatureLevel()));
-            parameters.put("minApiLevel", platformInfo.getAndroidVersion().getFeatureLevel());
-            parameters.put("targetApi", platformInfo.getAndroidVersion().getFeatureLevel());
-            parameters.put("targetApiString", String.valueOf(platformInfo.getAndroidVersion().getFeatureLevel()));
-            int maxBuildLevel = (int) wiz.getProperty(PROP_MAX_BUILD_LEVEL);
-            parameters.put("buildApi", maxBuildLevel);
-            parameters.put("buildApiString", String.valueOf(maxBuildLevel));
-            parameters.put("copyIcons", true);
-            parameters.put("makeIgnore", true);
-            parameters.put("includeCppSupport", false);
-            parameters.put("isInstantApp", false);
-            parameters.put("isDynamicFeature", false);
-            parameters.put("isLibraryProject", true);
-            parameters.put("isApplicationProject", true);
-            parameters.put("isInstantAppProject", false);
-            parameters.put("hasInstantAppWrapper", false);
-            parameters.put("hasMonolithicAppWrapper", false);
-            parameters.put("isBaseFeature", true);
-            parameters.put("ktOrJavaExt", "java");
-            parameters.put("projectOut", dirF.getPath() + File.separator + "app");
-            parameters.put("manifestOut", dirF.getPath() + File.separator + "app" + File.separator + "src" + File.separator + "main");
-            parameters.put("srcOut", dirF.getPath() + File.separator + "app" + File.separator + "src" + File.separator + "main" + File.separator + "java");
-            parameters.put("resOut", dirF.getPath() + File.separator + "app" + File.separator + "src" + File.separator + "main" + File.separator + "res");
-            parameters.put("baseFeatureResOut", dirF.getPath() + File.separator + "app" + File.separator + "src" + File.separator + "main" + File.separator + "res");
-            parameters.put("testOut", dirF.getPath() + File.separator + "app" + File.separator + "src" + File.separator + "test");
-            parameters.put("unitTestsSupported", false);
-            parameters.put("improvedTestDeps", false);
-            parameters.put("createActivity", true);
-            parameters.put("buildToolsVersion", maxBuildLevel + ".0.0");
-            parameters.put("postprocessingSupported", false);
-            parameters.put("appTitle", "Test");
             Template mobileTemplate = TemplateManager.findProjectTemplate("Android Module");
             if (mobileTemplate != null) {
+                mobileTemplate.getMetadata().configureParameters(parameters);
+                TemplateValueInjector.setupNewModule(parameters, wiz);
+                TemplateValueInjector.setupModuleRoots(parameters, wiz, "app");
+                parameters.put("unitTestsSupported", false);
+//                parameters.put("copyIcons", true);
+//                parameters.put("includeCppSupport", false);
+//                parameters.put("isDynamicFeature", false);
+
                 processTemplate(mobileTemplate, parameters);
             }
         }
-
 
         Template mobileTemplate = (Template) wiz.getProperty(AndroidProjectTemplatePanelMobileActivityAndroidSettings.PROP_MOBILE_TEMPLATE);
         Map<Parameter, Object> userValues = (Map<Parameter, Object>) wiz.getProperty(AndroidProjectTemplatePanelConfigureActivityAndroidSettings.PROP_MOBILE_ACTIVITY_PARAMETERS);
@@ -200,12 +167,36 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
     }
 
     public void processTemplate(Template projectTemplate, Map<String, Object> parameters) {
-        String execute = projectTemplate.getMetadata().getExecute();
+        String executeFileName = projectTemplate.getMetadata().getExecute();
+        String globalsFileName = projectTemplate.getMetadata().getGlobals();
         FileObject rootFolder = TemplateManager.getRootFolder();
         ProjectTemplateLoader loader = new ProjectTemplateLoader(rootFolder);
         String path = projectTemplate.getFileObject().getParent().getPath();
         path = TemplateManager.getJarPath(path);
-        String process = loader.process(path + "/" + execute, parameters);
+        String globalsParsed = loader.process(path + "/" + globalsFileName, parameters);
+        if (globalsParsed != null) {
+            Scanner scanner = new Scanner(globalsParsed);
+            StringBuilder builder = new StringBuilder();
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                if (!line.contains("<?xml") && !line.contains("<globals") && !line.contains("</globals")) {
+                    builder.append(line).append("\n");
+                }
+            }
+            builder.insert(0, "<globals>\n");
+            builder.insert(0, "<?xml version=\"1.0\"?>\n");
+            builder.append("</globals>");
+            scanner.close();
+            globalsParsed = builder.toString();
+        }
+        try {
+            Globals globals = Globals.parse(new StringReader(globalsParsed));
+            globals.addParameters(parameters);
+
+        } catch (JAXBException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        String process = loader.process(path + "/" + executeFileName, parameters);
         try {
             Recipe recipe = Recipe.parse(new StringReader(process));
             recipe.execute(loader.setupRecipeExecutor(path, parameters));
