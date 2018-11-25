@@ -16,8 +16,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmGetConfigurationNameMethod;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -30,6 +34,8 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
 
     private Configuration myFreemarker;
     private final FileObject root;
+    private final List<String> pushedFolders = new ArrayList<>();
+    private final Map<String, String> dependencyList = new HashMap<>();
 
     public ProjectTemplateLoader(FileObject root) {
         myFreemarker = new FreemarkerConfiguration();
@@ -51,7 +57,32 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
 
     @Override
     public Object findTemplateSource(String path) throws IOException {
-        return root.getFileObject(path);
+        path = path.replace("root://", "");
+        FileObject fileObject = root.getFileObject(path);
+        if (fileObject == null) {
+            if (pushedFolders.isEmpty()) {
+                throw new IOException("Template source " + path + " not found!");
+            } else {
+                File f = new File(path);
+                String name = f.getName();
+                for (String pushedFolder : pushedFolders) {
+                    if (!pushedFolder.endsWith("/") || !pushedFolder.endsWith("\\")) {
+                        name = pushedFolder + File.separator + name;
+                    } else {
+                        name = pushedFolder + name;
+                    }
+                    name = name.replace("root://", "");
+                    fileObject = root.getFileObject(name);
+                    if (fileObject != null) {
+                        break;
+                    }
+                }
+                if (fileObject == null) {
+                    throw new IOException("Template source " + path + " not found!");
+                }
+            }
+        }
+        return fileObject;
     }
 
     @Override
@@ -89,6 +120,7 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
         if (fileObject != null) {
             if (fileObject.isData()) {
                 try {
+                    to.getParentFile().mkdirs();
                     FileObject fo = FileUtil.toFileObject(to.getParentFile());
                     if (fo != null) {
                         fileObject.copy(fo, to.getName(), "");
@@ -117,6 +149,9 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
     @Override
     public void instantiate(File from, File to) throws TemplateProcessingException {
         String process = process(templatePath + "/" + from.getPath(), parameters);
+        if (process == null) {
+            System.out.println("org.nbandroid.netbeans.gradle.v2.project.template.freemarker.ProjectTemplateLoader.instantiate()");
+        }
         try {
             FileUtils.writeToFile(to, process);
         } catch (IOException ex) {
@@ -131,7 +166,7 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
 
     @Override
     public void merge(File from, File to) throws TemplateProcessingException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        System.out.println("org.nbandroid.netbeans.gradle.v2.project.template.freemarker.ProjectTemplateLoader.merge()");
     }
 
     @Override
@@ -151,7 +186,9 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
 
     @Override
     public void addDependency(String configuration, String mavenUrl) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        // Translate from "configuration" to "implementation" based on the parameter map context
+        configuration = FmGetConfigurationNameMethod.convertConfiguration(parameters, configuration);
+        dependencyList.put(configuration, mavenUrl);
     }
 
     @Override
@@ -160,17 +197,19 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
 
     @Override
     public void pushFolder(String folder) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        pushedFolders.add(0, folder);
     }
 
     @Override
     public void popFolder() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (!pushedFolders.isEmpty()) {
+            pushedFolders.remove(0);
+        }
     }
 
     @Override
     public void append(File from, File to) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        System.out.println("org.nbandroid.netbeans.gradle.v2.project.template.freemarker.ProjectTemplateLoader.append()");
     }
 
 }

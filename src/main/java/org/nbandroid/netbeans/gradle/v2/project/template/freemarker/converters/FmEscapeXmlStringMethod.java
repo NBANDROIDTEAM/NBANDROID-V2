@@ -32,7 +32,11 @@ public class FmEscapeXmlStringMethod implements TemplateMethodModelEx {
         if (args.size() != 1) {
             throw new TemplateModelException("Wrong arguments");
         }
-        String string = ((TemplateScalarModel)args.get(0)).getAsString();
-        return new SimpleScalar(ValueXmlHelper.escapeResourceString(string));
+        try {
+            String string = ((TemplateScalarModel) args.get(0)).getAsString();
+            return new SimpleScalar(ValueXmlHelper.escapeResourceString(string));
+        } catch (Exception exception) {
+            throw new TemplateModelException("Wrong arguments");
+        }
     }
 }

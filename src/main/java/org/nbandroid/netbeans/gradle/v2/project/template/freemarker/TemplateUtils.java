@@ -14,10 +14,13 @@ import org.jetbrains.annotations.NotNull;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmActivityToLayoutMethod;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmCamelCaseToUnderscoreMethod;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmClassNameToResourceMethod;
+import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmCompareVersionsIgnoringQualifiers;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmEscapePropertyValueMethod;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmEscapeXmlAttributeMethod;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmEscapeXmlStringMethod;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmExtractLettersMethod;
+import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmGetConfigurationNameMethod;
+import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmGetMaterialComponentName;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmLayoutToActivityMethod;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmSlashedPackageNameMethod;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmTruncateStringMethod;
@@ -186,6 +189,9 @@ public class TemplateUtils {
         paramMap.put("slashedPackageName", new FmSlashedPackageNameMethod());
         paramMap.put("truncate", new FmTruncateStringMethod());
         paramMap.put("underscoreToCamelCase", new FmUnderscoreToCamelCaseMethod());
+        paramMap.put("compareVersionsIgnoringQualifiers", new FmCompareVersionsIgnoringQualifiers());
+        paramMap.put("getConfigurationName", new FmGetConfigurationNameMethod(paramMap));
+        paramMap.put("getMaterialComponentName", new FmGetMaterialComponentName());
 
         // Dependencies multimap. Doesn't store duplicates, preserves insertion order.
         paramMap.put(TemplateMetadata.ATTR_DEPENDENCIES_MULTIMAP, LinkedHashMultimap.create());

@@ -20,16 +20,21 @@ import freemarker.template.*;
 import java.util.List;
 
 /**
- * Method invoked by FreeMarker to escape a string such that it can be used
- * as an XML attribute (escaping ', ", & and <).
+ * Method invoked by FreeMarker to escape a string such that it can be used as
+ * an XML attribute (escaping ', ", & and <).
  */
 public class FmEscapeXmlAttributeMethod implements TemplateMethodModelEx {
-  @Override
-  public TemplateModel exec(List args) throws TemplateModelException {
-    if (args.size() != 1) {
-      throw new TemplateModelException("Wrong arguments");
+
+    @Override
+    public TemplateModel exec(List args) throws TemplateModelException {
+        if (args.size() != 1) {
+            throw new TemplateModelException("Wrong arguments");
+        }
+        try {
+            String string = ((TemplateScalarModel) args.get(0)).getAsString();
+            return new SimpleScalar(XmlUtils.toXmlAttributeValue(string));
+        } catch (Exception exception) {
+            throw new TemplateModelException("Wrong arguments");
+        }
     }
-    String string = ((TemplateScalarModel)args.get(0)).getAsString();
-    return new SimpleScalar(XmlUtils.toXmlAttributeValue(string));
-  }
 }

@@ -42,7 +42,7 @@ android {
     <#if hasTests>
         testInstrumentationRunner "${getMaterialComponentName('android.support.test.runner.AndroidJUnitRunner', useAndroidX)}"
     </#if>
-
+    
     <#if canHaveCpp && (includeCppSupport!false)>
         externalNativeBuild {
             cmake {
