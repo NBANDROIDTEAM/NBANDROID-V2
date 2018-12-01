@@ -21,7 +21,10 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.nbandroid.netbeans.gradle.v2.gradle.build.parser.AndroidGradleDependencyUpdater;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmGetConfigurationNameMethod;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -208,6 +211,13 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
 
     @Override
     public void updateAndSync() {
+        if (!dependencyList.isEmpty()) {
+            boolean insertDependencies = AndroidGradleDependencyUpdater.insertDependencies(lastGradle, dependencyList);
+            if (!insertDependencies) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message("Unable to insert dependencies to build.gradle", NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(nd);
+            }
+        }
     }
 
     @Override

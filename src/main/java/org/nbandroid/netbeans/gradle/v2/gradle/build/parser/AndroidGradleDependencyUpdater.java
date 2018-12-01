@@ -21,7 +21,6 @@ package org.nbandroid.netbeans.gradle.v2.gradle.build.parser;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -82,54 +81,51 @@ public class AndroidGradleDependencyUpdater {
                         }
                     }
                 }
-                try {
-                    //create the document out of netbeans,there is a problem with gradle subsystem if opened from EditorCookie
-                    EditorKit editorKit = CloneableEditorSupport.getEditorKit("text/x-gradle");
-                    Document document = editorKit.createDefaultDocument();
-                    editorKit.read(new FileInputStream(file), document, 0);
-                    List<LineOffsetRecord> removeLines = new ArrayList<>();
-                    if (!toRemove.isEmpty()) {
-                        for (AndroidGradleDependency toRemoveDep : toRemove) {
-                            int firstLine = toRemoveDep.getFirstLine();
-                            int startOfLine = getStartOfLine(document, firstLine);
-                            int lastLine = toRemoveDep.getLastLine();
-                            int startOfLastLine = getStartOfLine(document, lastLine);
-                            startOfLastLine += toRemoveDep.getLastColumn();
-                            removeLines.add(new LineOffsetRecord(startOfLine, startOfLastLine - startOfLine));
-                        }
+                //create the document out of netbeans,there is a problem with gradle subsystem if opened from EditorCookie
+                EditorKit editorKit = CloneableEditorSupport.getEditorKit("text/x-gradle");
+                Document document = editorKit.createDefaultDocument();
+                editorKit.read(new FileInputStream(file), document, 0);
+                List<LineOffsetRecord> removeLines = new ArrayList<>();
+                if (!toRemove.isEmpty()) {
+                    for (AndroidGradleDependency toRemoveDep : toRemove) {
+                        int firstLine = toRemoveDep.getFirstLine();
+                        int startOfLine = getStartOfLine(document, firstLine);
+                        int lastLine = toRemoveDep.getLastLine();
+                        int startOfLastLine = getStartOfLine(document, lastLine);
+                        startOfLastLine += toRemoveDep.getLastColumn();
+                        removeLines.add(new LineOffsetRecord(startOfLine, startOfLastLine - startOfLine));
                     }
-                    //sort to descending order
-                    Collections.sort(removeLines, new Comparator<LineOffsetRecord>() {
-                        @Override
-                        public int compare(LineOffsetRecord t, LineOffsetRecord t1) {
-                            return Integer.compare(t1.line, t.line);
-                        }
-                    });
-                    int lastLine = androidDependencies.getLastLine();
-                    AndroidGradleDependency lastDependency = androidDependenciesList.get(androidDependenciesList.size() - 1);
-                    int tabColumn = lastDependency.getFirstColumn() - 1;
-                    String spaces = "";
-                    for (int i = 0; i < tabColumn; i++) {
-                        spaces += " ";
-                    }
-                    for (Map.Entry<String, List<String>> entry : dependencies.entrySet()) {
-                        String key = entry.getKey();
-                        List<String> value = entry.getValue();
-                        for (String mavenUrl : value) {
-                            int position = getStartOfLine(document, lastLine);
-                            document.insertString(position, spaces + key + " '" + mavenUrl + "'" + System.lineSeparator(), null);
-                        }
-                    }
-                    for (LineOffsetRecord removeLine : removeLines) {
-                        document.remove(removeLine.line, removeLine.offset);
-                    }
-                    editorKit.write(new FileOutputStream(file), document, 0, document.getLength());
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
+                //sort to descending order
+                Collections.sort(removeLines, new Comparator<LineOffsetRecord>() {
+                    @Override
+                    public int compare(LineOffsetRecord t, LineOffsetRecord t1) {
+                        return Integer.compare(t1.line, t.line);
+                    }
+                });
+                int lastLine = androidDependencies.getLastLine();
+                AndroidGradleDependency lastDependency = androidDependenciesList.get(androidDependenciesList.size() - 1);
+                int tabColumn = lastDependency.getFirstColumn() - 1;
+                String spaces = "";
+                for (int i = 0; i < tabColumn; i++) {
+                    spaces += " ";
+                }
+                for (Map.Entry<String, List<String>> entry : dependencies.entrySet()) {
+                    String key = entry.getKey();
+                    List<String> value = entry.getValue();
+                    for (String mavenUrl : value) {
+                        int position = getStartOfLine(document, lastLine);
+                        document.insertString(position, spaces + key + " '" + mavenUrl + "'" + System.lineSeparator(), null);
+                    }
+                }
+                for (LineOffsetRecord removeLine : removeLines) {
+                    document.remove(removeLine.line, removeLine.offset);
+                }
+                editorKit.write(new FileOutputStream(file), document, 0, document.getLength());
+                return true;
             }
 
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
         return false;
