@@ -29,6 +29,8 @@ import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import org.atteo.xmlcombiner.XmlCombiner;
+import org.nbandroid.netbeans.gradle.v2.gradle.build.parser.AndroidGradleDependencies;
+import org.nbandroid.netbeans.gradle.v2.gradle.build.parser.AndroidGradleDependenciesVisitor;
 import org.nbandroid.netbeans.gradle.v2.gradle.build.parser.AndroidGradleDependencyUpdater;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmGetConfigurationNameMethod;
 import org.openide.DialogDisplayer;
@@ -48,6 +50,7 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
     private final FileObject root;
     private final List<String> pushedFolders = new ArrayList<>();
     private final Map<String, List<String>> dependencyList = new HashMap<>();
+    public static final String PROJECT_TEMPLATE_LOADER = "PROJECT_TEMPLATE_LOADER";
 
     private ProjectTemplateLoader(FileObject root) {
         myFreemarker = new FreemarkerConfiguration();
@@ -119,6 +122,7 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
     public static ProjectTemplateLoader setupRecipeExecutor(String buildGradleLocation, FileObject root, String path, Map<String, Object> parameters) {
         ProjectTemplateLoader loader = new ProjectTemplateLoader(root);
         loader.parameters = parameters;
+        parameters.put(PROJECT_TEMPLATE_LOADER, loader);
         loader.templatePath = path;
         if (!loader.templatePath.endsWith("/")) {
             loader.templatePath += "/";
@@ -287,6 +291,16 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
                 DialogDisplayer.getDefault().notifyLater(nd);
             }
         }
+    }
+
+    public AndroidGradleDependencies getDependencies() {
+        try {
+            AndroidGradleDependenciesVisitor visitor = AndroidGradleDependenciesVisitor.parse(buildGradleLocation);
+            return visitor.getDependencies();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 
     @Override

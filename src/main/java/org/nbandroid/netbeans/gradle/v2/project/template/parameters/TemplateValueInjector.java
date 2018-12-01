@@ -49,14 +49,14 @@ public class TemplateValueInjector {
         parameters.put(ATTR_GRADLE_PLUGIN_VERSION, SdkConstants.GRADLE_PLUGIN_LATEST_VERSION);
         parameters.put(ATTR_GRADLE_VERSION, SdkConstants.GRADLE_LATEST_VERSION);
         parameters.put(ATTR_IS_INSTANT_APP, false);
-        parameters.put(ATTR_JAVA_VERSION, "8");
+        parameters.put(ATTR_JAVA_VERSION, "1.7");
         parameters.put(ATTR_KOTLIN_VERSION, "1.0.0");
         parameters.put(ATTR_IS_LOW_MEMORY, false);
         parameters.put(ATTR_IS_GRADLE, true);
         parameters.put(ATTR_MAKE_IGNORE, true);
         parameters.put("target.files", new HashSet<>());
         parameters.put("files.to.open", new ArrayList<>());
-        parameters.put(ATTR_CREATE_ACTIVITY, false);
+        parameters.put(ATTR_CREATE_ACTIVITY, true);
 
     }
 

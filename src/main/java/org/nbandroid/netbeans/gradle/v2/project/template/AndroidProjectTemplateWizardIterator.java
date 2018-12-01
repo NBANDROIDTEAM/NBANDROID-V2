@@ -36,11 +36,9 @@ import javax.swing.event.ChangeListener;
 import javax.xml.bind.JAXBException;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelMobileActivityAndroidSettings.PROP_MOBILE_CONFIG;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PLATFORM_CONFIG_DONE;
-import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_SDK;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.ProjectTemplateLoader;
 import org.nbandroid.netbeans.gradle.v2.project.template.parameters.Globals;
 import org.nbandroid.netbeans.gradle.v2.project.template.parameters.TemplateValueInjector;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -117,12 +115,10 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
 
     public Set/*<FileObject>*/ instantiate(/*ProgressHandle handle*/) throws IOException {
         Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
-        File dirF = new File("/jetty/TEST");
-        dirF.mkdirs();
-        FileObject dir = FileUtil.toFileObject(dirF);
-        // resultSet.add(dir);
+        File projectRoot = (File) wiz.getProperty(AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_DIR);
+        FileObject dir = FileUtil.toFileObject(projectRoot);
+        resultSet.add(dir);
         Template projectTemplate = TemplateManager.findProjectTemplate("Android Project");
-        AndroidSdk androidSdk = (AndroidSdk) wiz.getProperty(PROP_PROJECT_SDK);
         Map<String, Object> parameters = new HashMap<>();
         TemplateValueInjector.setupNewModule(parameters, wiz);
         TemplateValueInjector.setupModuleRoots(parameters, wiz, "");
@@ -164,8 +160,8 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
 //        if (parent != null && parent.exists()) {
 //            ProjectChooser.setProjectsFolder(parent);
 //        }
-        throw new IndexOutOfBoundsException();
-//        return resultSet;
+      //  throw new IndexOutOfBoundsException();
+        return resultSet;
     }
 
     public void processTemplate(Template projectTemplate, Map<String, Object> parameters) {
