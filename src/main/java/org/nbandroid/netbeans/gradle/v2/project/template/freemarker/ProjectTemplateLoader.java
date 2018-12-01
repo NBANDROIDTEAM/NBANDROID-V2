@@ -35,7 +35,7 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
     private Configuration myFreemarker;
     private final FileObject root;
     private final List<String> pushedFolders = new ArrayList<>();
-    private final Map<String, String> dependencyList = new HashMap<>();
+    private final Map<String, List<String>> dependencyList = new HashMap<>();
 
     public ProjectTemplateLoader(FileObject root) {
         myFreemarker = new FreemarkerConfiguration();
@@ -195,9 +195,12 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
         try {
             // Translate from "configuration" to "implementation" based on the parameter map context
             configuration = FmGetConfigurationNameMethod.convertConfiguration(parameters, configuration);
-            dependencyList.put(configuration, mavenUrl);
-
-            System.out.println("org.nbandroid.netbeans.gradle.v2.project.template.freemarker.ProjectTemplateLoader.addDependency()");
+            List<String> tmp = dependencyList.get(configuration);
+            if (tmp == null) {
+                tmp = new ArrayList<>();
+                dependencyList.put(configuration, tmp);
+            }
+            tmp.add(mavenUrl);
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }

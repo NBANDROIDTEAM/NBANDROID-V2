@@ -66,6 +66,23 @@ public class AndroidGradleDependency {
         return variables;
     }
 
+    public int getFirstLine() {
+        return firstLine;
+    }
+
+    public int getFirstColumn() {
+        return firstColumn;
+    }
+
+    public int getLastLine() {
+        return lastLine;
+    }
+
+    public int getLastColumn() {
+        return lastColumn;
+    }
+
+
     public static class AndroidDependencyExclude {
 
         private final String group;
