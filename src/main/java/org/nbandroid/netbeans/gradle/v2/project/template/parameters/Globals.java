@@ -55,6 +55,9 @@ public class Globals {
                         inMap.put(instruction.id, instruction.value);
                         break;
                 }
+            } else if (!inMap.containsKey(instruction.id)) {
+                //no type insert as string
+                inMap.put(instruction.id, instruction.value);
             }
         }
     }

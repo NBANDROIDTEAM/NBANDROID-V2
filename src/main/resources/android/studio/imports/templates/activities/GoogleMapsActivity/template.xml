@@ -20,7 +20,7 @@
         default="MapsActivity"
         help="The name of the activity class to create" />
 
-    <parameter
+        <parameter
         id="layoutName"
         name="Layout Name"
         type="string"
@@ -36,6 +36,14 @@
         constraints="nonempty"
         default="Map"
         help="The name of the activity." />
+    
+    <parameter
+        id="debugKeystoreSha1"
+        name="Goolge Maps API Key"
+        type="string"
+        constraints="nonempty"
+        default=""
+        help="Goolge Maps API Key Sha1." />
 
     <parameter
         id="isLauncher"

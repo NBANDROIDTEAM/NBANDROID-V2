@@ -11,16 +11,24 @@ import com.android.utils.FileUtils;
 import freemarker.cache.TemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import org.atteo.xmlcombiner.XmlCombiner;
 import org.nbandroid.netbeans.gradle.v2.gradle.build.parser.AndroidGradleDependencyUpdater;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmGetConfigurationNameMethod;
 import org.openide.DialogDisplayer;
@@ -28,6 +36,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -40,7 +49,7 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
     private final List<String> pushedFolders = new ArrayList<>();
     private final Map<String, List<String>> dependencyList = new HashMap<>();
 
-    public ProjectTemplateLoader(FileObject root) {
+    private ProjectTemplateLoader(FileObject root) {
         myFreemarker = new FreemarkerConfiguration();
         myFreemarker.setTemplateLoader(this);
         this.root = root;
@@ -66,8 +75,7 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
             if (pushedFolders.isEmpty()) {
                 throw new IOException("Template source " + path + " not found!");
             } else {
-                File f = new File(path);
-                String name = f.getName();
+                String name = path.replace(templatePath, "");
                 for (String pushedFolder : pushedFolders) {
                     if (!pushedFolder.endsWith("/") || !pushedFolder.endsWith("\\")) {
                         name = pushedFolder + File.separator + name;
@@ -108,13 +116,17 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
     private String templatePath;
     private Map<String, Object> parameters;
 
-    public RecipeExecutor setupRecipeExecutor(String path, Map<String, Object> parameters) {
-        this.parameters = parameters;
-        templatePath = path;
-        if (!templatePath.endsWith("/")) {
-            templatePath += "/";
+    public static ProjectTemplateLoader setupRecipeExecutor(String buildGradleLocation, FileObject root, String path, Map<String, Object> parameters) {
+        ProjectTemplateLoader loader = new ProjectTemplateLoader(root);
+        loader.parameters = parameters;
+        loader.templatePath = path;
+        if (!loader.templatePath.endsWith("/")) {
+            loader.templatePath += "/";
         }
-        return this;
+        if (buildGradleLocation != null) {
+            loader.buildGradleLocation = new File(buildGradleLocation);
+        }
+        return loader;
     }
 
     @Override
@@ -150,21 +162,23 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
         }
     }
 
-    private File lastGradle = null;
+    private File buildGradleLocation = null;
 
     @Override
     public void instantiate(File from, File to) throws TemplateProcessingException {
-        if ("build.gradle".equals(to.getName())) {
-            lastGradle = to;
+        if ("build.gradle".equals(to.getName()) && buildGradleLocation == null) {
+            buildGradleLocation = to;
         }
-        String process = process(templatePath + "/" + from.getPath(), parameters);
+        String process = process(templatePath + from.getPath(), parameters);
         if (process == null) {
-            System.out.println("org.nbandroid.netbeans.gradle.v2.project.template.freemarker.ProjectTemplateLoader.instantiate()");
-        }
-        try {
-            FileUtils.writeToFile(to, process);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            NotifyDescriptor nd = new NotifyDescriptor.Message("Unable to instantiate template " + from.getPath(), NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(nd);
+        } else {
+            try {
+                FileUtils.writeToFile(to, process);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 
@@ -174,9 +188,62 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
         System.out.println("mkDir: " + at.getPath());
     }
 
+    /**
+     * Merges the given source file into the given destination file (or it just
+     * copies it over if the destination file does not exist).
+     * <p/>
+     * Only XML and Gradle files are currently supported.
+     */
     @Override
     public void merge(File from, File to) throws TemplateProcessingException {
-        System.out.println("org.nbandroid.netbeans.gradle.v2.project.template.freemarker.ProjectTemplateLoader.merge()");
+        //     if (from.getName().endsWith(".ftl")) {
+            String process = process(templatePath + from.getPath(), parameters);
+            if (process == null) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message("Unable to instantiate template " + from.getPath(), NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(nd);
+            } else if (to.exists() && to.length() > 0) {
+                if (to.getName().endsWith(".gradle")) {
+                    mergeGradle(process, to);
+                } else if (to.getName().endsWith(".xml")) {
+                    mergeXml(process, to);
+                }
+            } else {
+                createFile(process, to);
+            }
+//        } else {
+//            throw new UnsupportedOperationException("Not supported yet.");
+//        }
+
+    }
+
+    private void mergeGradle(String process, File to) {
+        try {
+            Files.write(to.toPath(), process.getBytes(), StandardOpenOption.APPEND);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void mergeXml(String process, File to) {
+        try {
+            XmlCombiner combiner = new XmlCombiner();
+            byte[] bytes = process.getBytes();
+            combiner.combine(new ByteArrayInputStream(bytes));
+            combiner.combine(new FileInputStream(to));
+            combiner.buildDocument(new FileOutputStream(to));
+        } catch (ParserConfigurationException | SAXException | IOException | TransformerException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+    }
+
+    private void createFile(String process, File to) {
+        try {
+            to.getParentFile().mkdirs();
+            Files.write(to.toPath(), process.getBytes(), StandardOpenOption.CREATE);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     @Override
@@ -203,7 +270,9 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
                 tmp = new ArrayList<>();
                 dependencyList.put(configuration, tmp);
             }
-            tmp.add(mavenUrl);
+            if (!tmp.contains(mavenUrl)) {
+                tmp.add(mavenUrl);
+            }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -212,7 +281,7 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
     @Override
     public void updateAndSync() {
         if (!dependencyList.isEmpty()) {
-            boolean insertDependencies = AndroidGradleDependencyUpdater.insertDependencies(lastGradle, dependencyList);
+            boolean insertDependencies = AndroidGradleDependencyUpdater.insertDependencies(buildGradleLocation, dependencyList);
             if (!insertDependencies) {
                 NotifyDescriptor nd = new NotifyDescriptor.Message("Unable to insert dependencies to build.gradle", NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notifyLater(nd);

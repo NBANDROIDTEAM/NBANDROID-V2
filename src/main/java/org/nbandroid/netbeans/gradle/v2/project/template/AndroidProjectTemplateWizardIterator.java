@@ -151,12 +151,13 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
         Template mobileTemplate = (Template) wiz.getProperty(AndroidProjectTemplatePanelMobileActivityAndroidSettings.PROP_MOBILE_TEMPLATE);
         Map<Parameter, Object> userValues = (Map<Parameter, Object>) wiz.getProperty(AndroidProjectTemplatePanelConfigureActivityAndroidSettings.PROP_MOBILE_ACTIVITY_PARAMETERS);
         if (mobileTemplate != null && userValues != null) {
+            mobileTemplate.getMetadata().configureParameters(parameters);
             for (Map.Entry<Parameter, Object> entry : userValues.entrySet()) {
                 Parameter parameter = entry.getKey();
                 Object value = entry.getValue();
                 parameters.put(parameter.id, value);
             }
-            processTemplate(projectTemplate, parameters);
+            processTemplate(mobileTemplate, parameters);
         }
 
 //        File parent = dirF.getParentFile();
@@ -171,9 +172,10 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
         String executeFileName = projectTemplate.getMetadata().getExecute();
         String globalsFileName = projectTemplate.getMetadata().getGlobals();
         FileObject rootFolder = TemplateManager.getRootFolder();
-        ProjectTemplateLoader loader = new ProjectTemplateLoader(rootFolder);
         String path = projectTemplate.getFileObject().getParent().getPath();
         path = TemplateManager.getJarPath(path);
+        String builGradle = (String) parameters.get("projectOut") + File.separator + "build.gradle";
+        ProjectTemplateLoader loader = ProjectTemplateLoader.setupRecipeExecutor(builGradle, rootFolder, path, parameters);
         String globalsParsed = loader.process(path + "/" + globalsFileName, parameters);
         if (globalsParsed != null) {
             Scanner scanner = new Scanner(globalsParsed);
@@ -200,7 +202,7 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
         String process = loader.process(path + "/" + executeFileName, parameters);
         try {
             Recipe recipe = Recipe.parse(new StringReader(process));
-            recipe.execute(loader.setupRecipeExecutor(path, parameters));
+            recipe.execute(loader);
 
         } catch (JAXBException ex) {
             Exceptions.printStackTrace(ex);
