@@ -163,7 +163,8 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
 //        if (parent != null && parent.exists()) {
 //            ProjectChooser.setProjectsFolder(parent);
 //        }
-        return resultSet;
+        throw new IndexOutOfBoundsException();
+//        return resultSet;
     }
 
     public void processTemplate(Template projectTemplate, Map<String, Object> parameters) {

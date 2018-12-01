@@ -71,8 +71,8 @@ public class TemplateValueInjector {
         parameters.put(ATTR_PROJECT_OUT, moduleRoot.getAbsolutePath());
 
         File srcDir = new File(moduleRoot.getPath() + File.separator + "src" + File.separator + "main" + File.separator + "java");
-        parameters.put(ATTR_SRC_DIR, getRelativePath(moduleRoot, srcDir));
-        parameters.put(ATTR_SRC_OUT, srcDir.getAbsolutePath());
+        parameters.put(ATTR_SRC_DIR, getRelativePath(moduleRoot, srcDir) + File.separator + packageName.replace(".", File.separator));
+        parameters.put(ATTR_SRC_OUT, srcDir.getAbsolutePath() + File.separator + packageName.replace(".", File.separator));
 
         File testDir = new File(moduleRoot.getPath() + File.separator + "src" + File.separator + "main" + File.separator + "test");
         parameters.put(ATTR_TEST_DIR, getRelativePath(moduleRoot, testDir));

@@ -147,8 +147,13 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
         }
     }
 
+    private File lastGradle = null;
+
     @Override
     public void instantiate(File from, File to) throws TemplateProcessingException {
+        if ("build.gradle".equals(to.getName())) {
+            lastGradle = to;
+        }
         String process = process(templatePath + "/" + from.getPath(), parameters);
         if (process == null) {
             System.out.println("org.nbandroid.netbeans.gradle.v2.project.template.freemarker.ProjectTemplateLoader.instantiate()");
@@ -177,17 +182,25 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
 
     @Override
     public void applyPlugin(String plugin) {
+        System.out.println("org.nbandroid.netbeans.gradle.v2.project.template.freemarker.ProjectTemplateLoader.applyPlugin()");
     }
 
     @Override
     public void addClasspath(String mavenUrl) {
+        System.out.println("org.nbandroid.netbeans.gradle.v2.project.template.freemarker.ProjectTemplateLoader.addClasspath()");
     }
 
     @Override
     public void addDependency(String configuration, String mavenUrl) {
-        // Translate from "configuration" to "implementation" based on the parameter map context
-        configuration = FmGetConfigurationNameMethod.convertConfiguration(parameters, configuration);
-        dependencyList.put(configuration, mavenUrl);
+        try {
+            // Translate from "configuration" to "implementation" based on the parameter map context
+            configuration = FmGetConfigurationNameMethod.convertConfiguration(parameters, configuration);
+            dependencyList.put(configuration, mavenUrl);
+
+            System.out.println("org.nbandroid.netbeans.gradle.v2.project.template.freemarker.ProjectTemplateLoader.addDependency()");
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     @Override
