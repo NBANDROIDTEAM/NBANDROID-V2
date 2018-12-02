@@ -8,6 +8,7 @@ package org.nbandroid.netbeans.gradle.v2.project.template;
 import android.studio.imports.templates.Parameter;
 import android.studio.imports.templates.Template;
 import android.studio.imports.templates.TemplateManager;
+import android.studio.imports.templates.TemplateMetadata;
 import android.studio.imports.templates.recipe.Recipe;
 import android.studio.imports.templates.recipe.TemplateProcessingException;
 import java.awt.Component;
@@ -113,8 +114,9 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
         return tmp;
     }
 
+    @Override
     public Set/*<FileObject>*/ instantiate(/*ProgressHandle handle*/) throws IOException {
-        Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
+        Set<FileObject> resultSet = new LinkedHashSet<>();
         File projectRoot = (File) wiz.getProperty(AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_DIR);
         FileObject dir = FileUtil.toFileObject(projectRoot);
         resultSet.add(dir);
@@ -124,7 +126,10 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
         TemplateValueInjector.setupModuleRoots(parameters, wiz, "");
         //basic project structure
         if (projectTemplate != null) {
-            processTemplate(projectTemplate, parameters);
+            List<FileObject> toOpen = processTemplate(projectTemplate, parameters);
+            if (toOpen != null) {
+                resultSet.addAll(toOpen);
+            }
         }
 
         //android mobile
@@ -136,14 +141,18 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
                 TemplateValueInjector.setupNewModule(parameters, wiz);
                 TemplateValueInjector.setupModuleRoots(parameters, wiz, "app");
                 parameters.put("unitTestsSupported", false);
-//                parameters.put("copyIcons", true);
-//                parameters.put("includeCppSupport", false);
-//                parameters.put("isDynamicFeature", false);
-
-                processTemplate(mobileTemplate, parameters);
+                List<FileObject> toOpen = processTemplate(mobileTemplate, parameters);
+                if (toOpen != null) {
+                    resultSet.addAll(toOpen);
+                }
+                String moduleRoot = (String) parameters.get(TemplateMetadata.ATTR_PROJECT_OUT);
+                FileObject fo = FileUtil.toFileObject(new File(moduleRoot));
+                if (fo != null) {
+                    resultSet.add(fo);
+                }
             }
         }
-
+        // Mobile activity
         Template mobileTemplate = (Template) wiz.getProperty(AndroidProjectTemplatePanelMobileActivityAndroidSettings.PROP_MOBILE_TEMPLATE);
         Map<Parameter, Object> userValues = (Map<Parameter, Object>) wiz.getProperty(AndroidProjectTemplatePanelConfigureActivityAndroidSettings.PROP_MOBILE_ACTIVITY_PARAMETERS);
         if (mobileTemplate != null && userValues != null) {
@@ -156,18 +165,15 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
                 parameters.put(parameter.id, value);
             }
 
-            processTemplate(mobileTemplate, parameters);
+            List<FileObject> toOpen = processTemplate(mobileTemplate, parameters);
+            if (toOpen != null) {
+                resultSet.addAll(toOpen);
+            }
         }
-
-//        File parent = dirF.getParentFile();
-//        if (parent != null && parent.exists()) {
-//            ProjectChooser.setProjectsFolder(parent);
-//        }
-      //  throw new IndexOutOfBoundsException();
         return resultSet;
     }
 
-    public void processTemplate(Template projectTemplate, Map<String, Object> parameters) {
+    public List<FileObject> processTemplate(Template projectTemplate, Map<String, Object> parameters) {
         String executeFileName = projectTemplate.getMetadata().getExecute();
         String globalsFileName = projectTemplate.getMetadata().getGlobals();
         FileObject rootFolder = TemplateManager.getRootFolder();
@@ -202,12 +208,13 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
         try {
             Recipe recipe = Recipe.parse(new StringReader(process));
             recipe.execute(loader);
-
+            return loader.getToOpen();
         } catch (JAXBException ex) {
             Exceptions.printStackTrace(ex);
         } catch (TemplateProcessingException ex) {
             Exceptions.printStackTrace(ex);
         }
+        return null;
     }
 
     public void initialize(WizardDescriptor wiz) {

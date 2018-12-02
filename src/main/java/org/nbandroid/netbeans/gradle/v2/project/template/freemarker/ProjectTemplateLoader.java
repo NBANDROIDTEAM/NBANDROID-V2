@@ -56,12 +56,18 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
     private final List<String> pushedFolders = new ArrayList<>();
     private final Map<String, List<String>> dependencyList = new HashMap<>();
     public static final String PROJECT_TEMPLATE_LOADER = "PROJECT_TEMPLATE_LOADER";
+    private final List<FileObject> toOpen = new ArrayList<>();
 
     private ProjectTemplateLoader(FileObject root) {
         myFreemarker = new FreemarkerConfiguration();
         myFreemarker.setTemplateLoader(this);
         this.root = root;
     }
+
+    public List<FileObject> getToOpen() {
+        return toOpen;
+    }
+
 
     public String process(String name, Map<String, Object> parameters) {
         try {
@@ -140,7 +146,6 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
 
     @Override
     public void copy(File from, File to) {
-        System.out.println("Copy: " + from.getPath() + " " + to.getPath());
         FileObject fileObject = root.getFileObject(templatePath + from.getPath());
         if (fileObject != null) {
             if (fileObject.isData()) {
@@ -194,7 +199,6 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
     @Override
     public void mkDir(File at) {
         at.mkdirs();
-        System.out.println("mkDir: " + at.getPath());
     }
 
     /**
@@ -277,16 +281,18 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
 
     @Override
     public void addFilesToOpen(File file) {
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo != null) {
+            toOpen.add(fo);
+        }
     }
 
     @Override
     public void applyPlugin(String plugin) {
-        System.out.println("org.nbandroid.netbeans.gradle.v2.project.template.freemarker.ProjectTemplateLoader.applyPlugin()");
     }
 
     @Override
     public void addClasspath(String mavenUrl) {
-        System.out.println("org.nbandroid.netbeans.gradle.v2.project.template.freemarker.ProjectTemplateLoader.addClasspath()");
     }
 
     @Override
@@ -342,7 +348,6 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
 
     @Override
     public void append(File from, File to) {
-        System.out.println("org.nbandroid.netbeans.gradle.v2.project.template.freemarker.ProjectTemplateLoader.append()");
     }
 
 }
