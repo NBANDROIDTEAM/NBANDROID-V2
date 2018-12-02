@@ -148,11 +148,14 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
         Map<Parameter, Object> userValues = (Map<Parameter, Object>) wiz.getProperty(AndroidProjectTemplatePanelConfigureActivityAndroidSettings.PROP_MOBILE_ACTIVITY_PARAMETERS);
         if (mobileTemplate != null && userValues != null) {
             mobileTemplate.getMetadata().configureParameters(parameters);
+            TemplateValueInjector.setupNewModule(parameters, wiz);
+            TemplateValueInjector.setupModuleRoots(parameters, wiz, "app");
             for (Map.Entry<Parameter, Object> entry : userValues.entrySet()) {
                 Parameter parameter = entry.getKey();
                 Object value = entry.getValue();
                 parameters.put(parameter.id, value);
             }
+
             processTemplate(mobileTemplate, parameters);
         }
 

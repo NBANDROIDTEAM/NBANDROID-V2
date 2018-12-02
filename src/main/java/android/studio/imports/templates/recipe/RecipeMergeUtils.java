@@ -16,9 +16,7 @@
 
 package android.studio.imports.templates.recipe;
 
-import static com.android.SdkConstants.*;
 import com.android.manifmerger.*;
-import com.android.resources.ResourceFolderType;
 import com.android.utils.StdLogger;
 import com.android.utils.XmlUtils;
 import com.google.common.base.Charsets;
@@ -76,14 +74,9 @@ public class RecipeMergeUtils {
      * targetFile, or null if the file has already been/doesn't need to be
      * updated.
      */
-    @NotNull
     public static String mergeXml(File moduleRoot, String sourceXml, String targetXml, File targetFile) {
-        boolean ok = false;
-        String fileName = targetFile.getName();
         String contents = null;
-        String errors = null;
-        if (fileName.equals(FN_ANDROID_MANIFEST_XML)) {
-            Document currentDocument = XmlUtils.parseDocumentSilently(targetXml, true);
+        Document currentDocument = XmlUtils.parseDocumentSilently(targetXml, true);
             assert currentDocument != null : targetXml + " failed to parse";
             Document fragment = XmlUtils.parseDocumentSilently(sourceXml, true);
             assert fragment != null : sourceXml + " failed to parse";
@@ -92,52 +85,8 @@ public class RecipeMergeUtils {
                 contents = report.getMergedDocument(MergingReport.MergedManifestKind.MERGED);
             } else {
                 contents = null;
-                if (report != null) {
-                    // report.getReportString() isn't useful, it just says to look at the logs
-                    StringBuilder sb = new StringBuilder();
-                    for (MergingReport.Record record : report.getLoggingRecords()) {
-                        MergingReport.Record.Severity severity = record.getSeverity();
-                        if (severity != MergingReport.Record.Severity.ERROR) {
-                            // Some of the warnings are misleading -- e.g. "missing package declaration";
-                            // that's deliberate. Users only have to deal with errors to get the
-                            // manifest merge to succeed.
-                            continue;
-                        }
-                        sb.append("* ");
-                        sb.append(record.getMessage());
-                        sb.append("\n\n");
-                    }
-
-                    errors = sb.toString();
-                    // Error messages may refer to our internal temp name for the target manifest file
-                    //noinspection DynamicRegexReplaceableByCompiledPattern // Infrequent
-                    errors = errors.replace("AndroidManifest.xml", "current AndroidManifest.xml");
-                    //noinspection DynamicRegexReplaceableByCompiledPattern // Infrequent
-                    errors = errors.replace("nevercreated.xml", "template AndroidManifest.xml");
-                    errors = errors.trim();
-                }
-            }
-
-            ok = contents != null;
-        } else {
-            // Merge plain XML files
-            String parentFolderName = targetFile.getParentFile().getName();
-            ResourceFolderType folderType = ResourceFolderType.getFolderType(parentFolderName);
-            // mergeResourceFile handles the file updates itself, so no content is returned in this case.
-            //contents = mergeResourceFile(context, targetXml, sourceXml, fileName, folderType);
-            // ok = contents != null;
         }
 
-        // Finally write out the merged file
-        if (!ok) {
-            // Just insert into file along with comment, using the "standard" conflict
-            // syntax that many tools and editors recognize.
-
-            //  contents = wrapWithMergeConflict(targetXml, sourceXml);
-            // Report the conflict as a warning:
-//      context.getWarnings().add(String.format("Merge conflict for: %1$s\nThis file must be fixed by hand. The errors " +
-//                                              "encountered during the merge are:\n\n%2$s", targetFile.getName(), errors));
-        }
         return contents;
     }
 

@@ -6,7 +6,9 @@
 package org.nbandroid.netbeans.gradle.v2.project.template.freemarker;
 
 import android.studio.imports.templates.recipe.RecipeExecutor;
+import android.studio.imports.templates.recipe.RecipeMergeUtils;
 import android.studio.imports.templates.recipe.TemplateProcessingException;
+import com.android.SdkConstants;
 import com.android.utils.FileUtils;
 import freemarker.cache.TemplateLoader;
 import freemarker.template.Configuration;
@@ -28,7 +30,9 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
+import org.atteo.xmlcombiner.CombineChildren;
 import org.atteo.xmlcombiner.XmlCombiner;
+import org.gradle.impldep.org.apache.commons.io.IOUtils;
 import org.nbandroid.netbeans.gradle.v2.gradle.build.parser.AndroidGradleDependencies;
 import org.nbandroid.netbeans.gradle.v2.gradle.build.parser.AndroidGradleDependenciesVisitor;
 import org.nbandroid.netbeans.gradle.v2.gradle.build.parser.AndroidGradleDependencyUpdater;
@@ -38,6 +42,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 /**
@@ -201,19 +206,19 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
     @Override
     public void merge(File from, File to) throws TemplateProcessingException {
         //     if (from.getName().endsWith(".ftl")) {
-            String process = process(templatePath + from.getPath(), parameters);
-            if (process == null) {
-                NotifyDescriptor nd = new NotifyDescriptor.Message("Unable to instantiate template " + from.getPath(), NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notifyLater(nd);
-            } else if (to.exists() && to.length() > 0) {
-                if (to.getName().endsWith(".gradle")) {
-                    mergeGradle(process, to);
-                } else if (to.getName().endsWith(".xml")) {
-                    mergeXml(process, to);
-                }
-            } else {
-                createFile(process, to);
+        String process = process(templatePath + from.getPath(), parameters);
+        if (process == null) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message("Unable to instantiate template " + from.getPath(), NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(nd);
+        } else if (to.exists() && to.length() > 0) {
+            if (to.getName().endsWith(".gradle")) {
+                mergeGradle(process, to);
+            } else if (to.getName().endsWith(".xml")) {
+                mergeXml(process, to);
             }
+        } else {
+            createFile(process, to);
+        }
 //        } else {
 //            throw new UnsupportedOperationException("Not supported yet.");
 //        }
@@ -229,14 +234,34 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
     }
 
     private void mergeXml(String process, File to) {
-        try {
-            XmlCombiner combiner = new XmlCombiner();
-            byte[] bytes = process.getBytes();
-            combiner.combine(new ByteArrayInputStream(bytes));
-            combiner.combine(new FileInputStream(to));
-            combiner.buildDocument(new FileOutputStream(to));
-        } catch (ParserConfigurationException | SAXException | IOException | TransformerException ex) {
-            Exceptions.printStackTrace(ex);
+        if (SdkConstants.FN_ANDROID_MANIFEST_XML.equals(to.getName())) {
+            String projectLocation = (String) parameters.get("projectLocation");
+            try {
+                String mergeXml = RecipeMergeUtils.mergeXml(new File(projectLocation), IOUtils.toString(new FileInputStream(to)), process, to);
+                Files.write(to.toPath(), mergeXml.getBytes(), StandardOpenOption.CREATE);
+            } catch (IOException ex) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message("Unable to merge into " + SdkConstants.FN_ANDROID_MANIFEST_XML, NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(nd);
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            try {
+                XmlCombiner combiner = new XmlCombiner();
+                combiner.setFilter(new XmlCombiner.MergeFilter() {
+                    @Override
+                    public CombineChildren query(Element element) {
+                        return CombineChildren.APPEND;
+                    }
+                });
+                byte[] bytes = process.getBytes();
+                combiner.combine(new ByteArrayInputStream(bytes));
+                combiner.combine(new FileInputStream(to));
+                combiner.buildDocument(new FileOutputStream(to));
+            } catch (ParserConfigurationException | SAXException | IOException | TransformerException ex) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message("Unable to merge into " + to.getName(), NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(nd);
+                Exceptions.printStackTrace(ex);
+            }
         }
 
     }
