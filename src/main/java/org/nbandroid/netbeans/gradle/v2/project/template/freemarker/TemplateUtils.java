@@ -20,6 +20,7 @@ import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.F
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmEscapeXmlAttributeMethod;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmEscapeXmlStringMethod;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmExtractLettersMethod;
+import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmGetAppManifestDirMethod;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmGetApplicationThemeMethod;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmGetConfigurationNameMethod;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmGetMaterialComponentName;
@@ -201,6 +202,7 @@ public class TemplateUtils {
         paramMap.put("isAndroidxEnabled", new FmIsAndroidxEnabled());
         paramMap.put("getApplicationTheme", new FmGetApplicationThemeMethod(paramMap));
         paramMap.put("hasDependency", new FmHasDependencyMethod(paramMap));
+        paramMap.put("getAppManifestDir", new FmGetAppManifestDirMethod(paramMap));
 
         // Dependencies multimap. Doesn't store duplicates, preserves insertion order.
         paramMap.put(TemplateMetadata.ATTR_DEPENDENCIES_MULTIMAP, LinkedHashMultimap.create());

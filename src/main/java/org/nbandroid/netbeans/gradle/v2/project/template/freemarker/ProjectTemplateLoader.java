@@ -159,6 +159,7 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
                     Exceptions.printStackTrace(ex);
                 }
             } else {
+                to.mkdirs();
                 Enumeration<? extends FileObject> children = fileObject.getChildren(false);
                 FileObject fo = FileUtil.toFileObject(to);
                 if (fo != null) {

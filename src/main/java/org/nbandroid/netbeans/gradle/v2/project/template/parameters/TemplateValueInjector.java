@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Stack;
-import org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings.PROP_MAX_BUILD_LEVEL;
 import org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_SDK;
@@ -27,11 +26,11 @@ import org.openide.WizardDescriptor;
  */
 public class TemplateValueInjector {
 
-    public static void setupNewModule(Map<String, Object> parameters, WizardDescriptor wiz) {
+    public static void setupNewModule(Map<String, Object> parameters, WizardDescriptor wiz, String platformPropertyName) {
         AndroidSdk androidSdk = (AndroidSdk) wiz.getProperty(PROP_PROJECT_SDK);
         parameters.put(ATTR_SDK_DIR, androidSdk.getSdkPath());
         int maxBuildLevel = (int) wiz.getProperty(PROP_MAX_BUILD_LEVEL);
-        AndroidPlatformInfo platformInfo = (AndroidPlatformInfo) wiz.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_PLATFORM);
+        AndroidPlatformInfo platformInfo = (AndroidPlatformInfo) wiz.getProperty(platformPropertyName);
         int revision = platformInfo.getAndroidTarget().getRevision();
         Revision revisionBuildTool = platformInfo.getAndroidTarget().getBuildToolInfo().getRevision();
         parameters.put(ATTR_IS_NEW_PROJECT, true); // Android Modules are called Gradle Projects

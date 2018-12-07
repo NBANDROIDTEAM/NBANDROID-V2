@@ -9,6 +9,10 @@ import android.studio.imports.templates.Parameter;
 import android.studio.imports.templates.Template;
 import android.studio.imports.templates.TemplateManager;
 import android.studio.imports.templates.TemplateMetadata;
+import static android.studio.imports.templates.TemplateMetadata.ATTR_BUILD_API;
+import static android.studio.imports.templates.TemplateMetadata.ATTR_BUILD_API_STRING;
+import static android.studio.imports.templates.TemplateMetadata.ATTR_TARGET_API;
+import static android.studio.imports.templates.TemplateMetadata.ATTR_TARGET_API_STRING;
 import android.studio.imports.templates.recipe.Recipe;
 import android.studio.imports.templates.recipe.TemplateProcessingException;
 import java.awt.Component;
@@ -58,6 +62,7 @@ import org.xml.sax.InputSource;
 @Messages("AndroidProjectTemplate_displayName=Android Project")
 public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*Progress*/InstantiatingIterator, PropertyChangeListener {
 
+    public static final String MOBILE = "mobile";
     private int index;
     private List<WizardDescriptor.Panel> panels;
     private WizardDescriptor wiz;
@@ -122,7 +127,7 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
         resultSet.add(dir);
         Template projectTemplate = TemplateManager.findProjectTemplate("Android Project");
         Map<String, Object> parameters = new HashMap<>();
-        TemplateValueInjector.setupNewModule(parameters, wiz);
+        TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_PLATFORM);
         TemplateValueInjector.setupModuleRoots(parameters, wiz, "");
         //basic project structure
         if (projectTemplate != null) {
@@ -138,8 +143,8 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
             Template mobileTemplate = TemplateManager.findProjectTemplate("Android Module");
             if (mobileTemplate != null) {
                 mobileTemplate.getMetadata().configureParameters(parameters);
-                TemplateValueInjector.setupNewModule(parameters, wiz);
-                TemplateValueInjector.setupModuleRoots(parameters, wiz, "app");
+                TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_PLATFORM);
+                TemplateValueInjector.setupModuleRoots(parameters, wiz, MOBILE);
                 parameters.put("unitTestsSupported", false);
                 List<FileObject> toOpen = processTemplate(mobileTemplate, parameters);
                 if (toOpen != null) {
@@ -157,8 +162,8 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
         Map<Parameter, Object> userValues = (Map<Parameter, Object>) wiz.getProperty(AndroidProjectTemplatePanelConfigureActivityAndroidSettings.PROP_MOBILE_ACTIVITY_PARAMETERS);
         if (mobileTemplate != null && userValues != null) {
             mobileTemplate.getMetadata().configureParameters(parameters);
-            TemplateValueInjector.setupNewModule(parameters, wiz);
-            TemplateValueInjector.setupModuleRoots(parameters, wiz, "app");
+            TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_PLATFORM);
+            TemplateValueInjector.setupModuleRoots(parameters, wiz, MOBILE);
             for (Map.Entry<Parameter, Object> entry : userValues.entrySet()) {
                 Parameter parameter = entry.getKey();
                 Object value = entry.getValue();
@@ -170,8 +175,55 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
                 resultSet.addAll(toOpen);
             }
         }
+        //android wear
+        boolean androidWear = (boolean) wiz.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_ENABLED);
+        if (androidWear) {
+            Template wearTemplate = TemplateManager.findProjectTemplate("Wear OS Module");
+            if (wearTemplate != null) {
+                wearTemplate.getMetadata().configureParameters(parameters);
+                TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_PLATFORM);
+                parameters.put(ATTR_BUILD_API, 28);
+                parameters.put(ATTR_BUILD_API_STRING, String.valueOf(28));
+                parameters.put(ATTR_TARGET_API, 28);
+                parameters.put(ATTR_TARGET_API_STRING, 28);
+                TemplateValueInjector.setupModuleRoots(parameters, wiz, WEAR);
+                parameters.put("unitTestsSupported", false);
+                parameters.put(TemplateMetadata.ATTR_CREATE_ACTIVITY, wiz.getProperty(AndroidProjectTemplatePanelWearActivityAndroidSettings.PROP_WEAR_TEMPLATE) != null);
+                List<FileObject> toOpen = processTemplate(wearTemplate, parameters);
+                if (toOpen != null) {
+                    resultSet.addAll(toOpen);
+                }
+                String moduleRoot = (String) parameters.get(TemplateMetadata.ATTR_PROJECT_OUT);
+                FileObject fo = FileUtil.toFileObject(new File(moduleRoot));
+                if (fo != null) {
+                    resultSet.add(fo);
+                }
+            }
+        }
+
+        // Wear activity
+        Template wearTemplate = (Template) wiz.getProperty(AndroidProjectTemplatePanelWearActivityAndroidSettings.PROP_WEAR_TEMPLATE);
+        userValues = (Map<Parameter, Object>) wiz.getProperty(AndroidProjectTemplatePanelConfigureActivityAndroidSettings.PROP_WEAR_ACTIVITY_PARAMETERS);
+        if (wearTemplate != null && userValues != null) {
+            wearTemplate.getMetadata().configureParameters(parameters);
+            TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_PLATFORM);
+            TemplateValueInjector.setupModuleRoots(parameters, wiz, WEAR);
+            for (Map.Entry<Parameter, Object> entry : userValues.entrySet()) {
+                Parameter parameter = entry.getKey();
+                Object value = entry.getValue();
+                parameters.put(parameter.id, value);
+            }
+
+            List<FileObject> toOpen = processTemplate(wearTemplate, parameters);
+            if (toOpen != null) {
+                resultSet.addAll(toOpen);
+            }
+        }
+
+        //    throw new IndexOutOfBoundsException("test");
         return resultSet;
     }
+    public static final String WEAR = "wear";
 
     public List<FileObject> processTemplate(Template projectTemplate, Map<String, Object> parameters) {
         String executeFileName = projectTemplate.getMetadata().getExecute();
@@ -204,6 +256,7 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
         } catch (JAXBException ex) {
             Exceptions.printStackTrace(ex);
         }
+
         String process = loader.process(path + "/" + executeFileName, parameters);
         try {
             Recipe recipe = Recipe.parse(new StringReader(process));

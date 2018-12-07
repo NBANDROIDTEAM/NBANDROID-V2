@@ -40,6 +40,14 @@
         type="string"
         constraints="package"
         default="com.mycompany.myapp" />
+    
+    <parameter
+        id="debugKeystoreSha1"
+        name="Goolge Maps API Key"
+        type="string"
+        constraints="nonempty"
+        default=""
+        help="Goolge Maps API Key Sha1." />
 
     <!-- 128x128 thumbnails relative to template.xml -->
     <thumbs>
