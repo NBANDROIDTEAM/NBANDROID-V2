@@ -30,19 +30,18 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-import org.atteo.xmlcombiner.CombineChildren;
-import org.atteo.xmlcombiner.XmlCombiner;
 import org.gradle.impldep.org.apache.commons.io.IOUtils;
 import org.nbandroid.netbeans.gradle.v2.gradle.build.parser.AndroidGradleDependencies;
 import org.nbandroid.netbeans.gradle.v2.gradle.build.parser.AndroidGradleDependenciesVisitor;
 import org.nbandroid.netbeans.gradle.v2.gradle.build.parser.AndroidGradleDependencyUpdater;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters.FmGetConfigurationNameMethod;
+import org.nbandroid.netbeans.gradle.v2.layout.parsers.AndroidResValuesMerge;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.w3c.dom.Element;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
@@ -67,7 +66,6 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
     public List<FileObject> getToOpen() {
         return toOpen;
     }
-
 
     public String process(String name, Map<String, Object> parameters) {
         try {
@@ -251,17 +249,9 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
             }
         } else {
             try {
-                XmlCombiner combiner = new XmlCombiner();
-                combiner.setFilter(new XmlCombiner.MergeFilter() {
-                    @Override
-                    public CombineChildren query(Element element) {
-                        return CombineChildren.APPEND;
-                    }
-                });
                 byte[] bytes = process.getBytes();
-                combiner.combine(new ByteArrayInputStream(bytes));
-                combiner.combine(new FileInputStream(to));
-                combiner.buildDocument(new FileOutputStream(to));
+                Document document = AndroidResValuesMerge.merge(new FileInputStream(to), new ByteArrayInputStream(bytes));
+                AndroidResValuesMerge.save(document, new FileOutputStream(to));
             } catch (ParserConfigurationException | SAXException | IOException | TransformerException ex) {
                 NotifyDescriptor nd = new NotifyDescriptor.Message("Unable to merge into " + to.getName(), NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notifyLater(nd);

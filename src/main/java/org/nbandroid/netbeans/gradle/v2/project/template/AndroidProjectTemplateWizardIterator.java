@@ -84,6 +84,7 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
     private final String text_wear_config = "Configure Wear Activity";
     private final String text_tv = "TV Activity";
     private final String text_tv_config = "Configure TV Activity";
+    public static final String TV = "tv";
     private List<String> steps;
 
     public AndroidProjectTemplateWizardIterator() {
@@ -220,9 +221,51 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
             }
         }
 
-        //    throw new IndexOutOfBoundsException("test");
+        //android TV
+        boolean androidTV = (boolean) wiz.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_ENABLED);
+        if (androidTV) {
+            Template tvTemplate = TemplateManager.findProjectTemplate("Android TV Module");
+            if (tvTemplate != null) {
+                tvTemplate.getMetadata().configureParameters(parameters);
+                TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_PLATFORM);
+                TemplateValueInjector.setupModuleRoots(parameters, wiz, TV);
+                parameters.put("unitTestsSupported", false);
+                parameters.put(TemplateMetadata.ATTR_CREATE_ACTIVITY, wiz.getProperty(AndroidProjectTemplatePanelTvActivityAndroidSettings.PROP_TV_TEMPLATE) != null);
+                List<FileObject> toOpen = processTemplate(tvTemplate, parameters);
+                if (toOpen != null) {
+                    resultSet.addAll(toOpen);
+                }
+                String moduleRoot = (String) parameters.get(TemplateMetadata.ATTR_PROJECT_OUT);
+                FileObject fo = FileUtil.toFileObject(new File(moduleRoot));
+                if (fo != null) {
+                    resultSet.add(fo);
+                }
+            }
+        }
+
+        // TV activity
+        Template tvActTemplate = (Template) wiz.getProperty(AndroidProjectTemplatePanelTvActivityAndroidSettings.PROP_TV_TEMPLATE);
+        userValues = (Map<Parameter, Object>) wiz.getProperty(AndroidProjectTemplatePanelConfigureActivityAndroidSettings.PROP_TV_ACTIVITY_PARAMETERS);
+        if (tvActTemplate != null && userValues != null) {
+            tvActTemplate.getMetadata().configureParameters(parameters);
+            TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_PLATFORM);
+            TemplateValueInjector.setupModuleRoots(parameters, wiz, TV);
+            for (Map.Entry<Parameter, Object> entry : userValues.entrySet()) {
+                Parameter parameter = entry.getKey();
+                Object value = entry.getValue();
+                parameters.put(parameter.id, value);
+            }
+
+            List<FileObject> toOpen = processTemplate(tvActTemplate, parameters);
+            if (toOpen != null) {
+                resultSet.addAll(toOpen);
+            }
+        }
+
+        //  throw new IndexOutOfBoundsException("test");
         return resultSet;
     }
+
     public static final String WEAR = "wear";
 
     public List<FileObject> processTemplate(Template projectTemplate, Map<String, Object> parameters) {
