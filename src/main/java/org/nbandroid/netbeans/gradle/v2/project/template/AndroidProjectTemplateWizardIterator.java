@@ -40,7 +40,10 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import javax.xml.bind.JAXBException;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelMobileActivityAndroidSettings.PROP_MOBILE_CONFIG;
+import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_FOLDER;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PLATFORM_CONFIG_DONE;
+import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_FOLDER;
+import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_FOLDER;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.ProjectTemplateLoader;
 import org.nbandroid.netbeans.gradle.v2.project.template.parameters.Globals;
 import org.nbandroid.netbeans.gradle.v2.project.template.parameters.TemplateValueInjector;
@@ -62,7 +65,6 @@ import org.xml.sax.InputSource;
 @Messages("AndroidProjectTemplate_displayName=Android Project")
 public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*Progress*/InstantiatingIterator, PropertyChangeListener {
 
-    public static final String MOBILE = "mobile";
     private int index;
     private List<WizardDescriptor.Panel> panels;
     private WizardDescriptor wiz;
@@ -84,7 +86,6 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
     private final String text_wear_config = "Configure Wear Activity";
     private final String text_tv = "TV Activity";
     private final String text_tv_config = "Configure TV Activity";
-    public static final String TV = "tv";
     private List<String> steps;
 
     public AndroidProjectTemplateWizardIterator() {
@@ -137,6 +138,9 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
                 resultSet.addAll(toOpen);
             }
         }
+        String mobileFolder = (String) wiz.getProperty(PROP_PHONE_TABLET_FOLDER);
+        String wearFolder = (String) wiz.getProperty(PROP_WEAR_FOLDER);
+        String tvFolder = (String) wiz.getProperty(PROP_TV_FOLDER);
 
         //android mobile
         boolean androidMobile = (boolean) wiz.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_ENABLED);
@@ -145,7 +149,7 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
             if (mobileTemplate != null) {
                 mobileTemplate.getMetadata().configureParameters(parameters);
                 TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_PLATFORM);
-                TemplateValueInjector.setupModuleRoots(parameters, wiz, MOBILE);
+                TemplateValueInjector.setupModuleRoots(parameters, wiz, mobileFolder);
                 parameters.put("unitTestsSupported", false);
                 List<FileObject> toOpen = processTemplate(mobileTemplate, parameters);
                 if (toOpen != null) {
@@ -164,7 +168,7 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
         if (mobileTemplate != null && userValues != null) {
             mobileTemplate.getMetadata().configureParameters(parameters);
             TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_PLATFORM);
-            TemplateValueInjector.setupModuleRoots(parameters, wiz, MOBILE);
+            TemplateValueInjector.setupModuleRoots(parameters, wiz, mobileFolder);
             for (Map.Entry<Parameter, Object> entry : userValues.entrySet()) {
                 Parameter parameter = entry.getKey();
                 Object value = entry.getValue();
@@ -187,7 +191,7 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
                 parameters.put(ATTR_BUILD_API_STRING, String.valueOf(28));
                 parameters.put(ATTR_TARGET_API, 28);
                 parameters.put(ATTR_TARGET_API_STRING, 28);
-                TemplateValueInjector.setupModuleRoots(parameters, wiz, WEAR);
+                TemplateValueInjector.setupModuleRoots(parameters, wiz, wearFolder);
                 parameters.put("unitTestsSupported", false);
                 parameters.put(TemplateMetadata.ATTR_CREATE_ACTIVITY, wiz.getProperty(AndroidProjectTemplatePanelWearActivityAndroidSettings.PROP_WEAR_TEMPLATE) != null);
                 List<FileObject> toOpen = processTemplate(wearTemplate, parameters);
@@ -208,7 +212,7 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
         if (wearTemplate != null && userValues != null) {
             wearTemplate.getMetadata().configureParameters(parameters);
             TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_PLATFORM);
-            TemplateValueInjector.setupModuleRoots(parameters, wiz, WEAR);
+            TemplateValueInjector.setupModuleRoots(parameters, wiz, wearFolder);
             for (Map.Entry<Parameter, Object> entry : userValues.entrySet()) {
                 Parameter parameter = entry.getKey();
                 Object value = entry.getValue();
@@ -221,14 +225,14 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
             }
         }
 
-        //android TV
+        //android tvFolder
         boolean androidTV = (boolean) wiz.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_ENABLED);
         if (androidTV) {
             Template tvTemplate = TemplateManager.findProjectTemplate("Android TV Module");
             if (tvTemplate != null) {
                 tvTemplate.getMetadata().configureParameters(parameters);
                 TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_PLATFORM);
-                TemplateValueInjector.setupModuleRoots(parameters, wiz, TV);
+                TemplateValueInjector.setupModuleRoots(parameters, wiz, tvFolder);
                 parameters.put("unitTestsSupported", false);
                 parameters.put(TemplateMetadata.ATTR_CREATE_ACTIVITY, wiz.getProperty(AndroidProjectTemplatePanelTvActivityAndroidSettings.PROP_TV_TEMPLATE) != null);
                 List<FileObject> toOpen = processTemplate(tvTemplate, parameters);
@@ -243,13 +247,13 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
             }
         }
 
-        // TV activity
+        // tvFolder activity
         Template tvActTemplate = (Template) wiz.getProperty(AndroidProjectTemplatePanelTvActivityAndroidSettings.PROP_TV_TEMPLATE);
         userValues = (Map<Parameter, Object>) wiz.getProperty(AndroidProjectTemplatePanelConfigureActivityAndroidSettings.PROP_TV_ACTIVITY_PARAMETERS);
         if (tvActTemplate != null && userValues != null) {
             tvActTemplate.getMetadata().configureParameters(parameters);
             TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_PLATFORM);
-            TemplateValueInjector.setupModuleRoots(parameters, wiz, TV);
+            TemplateValueInjector.setupModuleRoots(parameters, wiz, tvFolder);
             for (Map.Entry<Parameter, Object> entry : userValues.entrySet()) {
                 Parameter parameter = entry.getKey();
                 Object value = entry.getValue();
@@ -265,8 +269,6 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
         //  throw new IndexOutOfBoundsException("test");
         return resultSet;
     }
-
-    public static final String WEAR = "wear";
 
     public List<FileObject> processTemplate(Template projectTemplate, Map<String, Object> parameters) {
         String executeFileName = projectTemplate.getMetadata().getExecute();

@@ -305,6 +305,7 @@ public class AndroidProjectTemplatePanelVisualBasicSettings extends JPanel imple
         d.putProperty(PROP_PROJECT_PACKAGE, packageName.getText());
         d.putProperty(PROP_PROJECT_SDK, sdkList.getSelectedItem());
 
+
     }
 
     void read(WizardDescriptor settings) {

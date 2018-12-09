@@ -11,6 +11,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -19,9 +21,12 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import org.nbandroid.netbeans.gradle.v2.project.distributions.AndroidDistributionsPanel;
 import org.nbandroid.netbeans.gradle.v2.project.distributions.AndroidDistributionsProvider;
+import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_DIR;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_SDK;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
@@ -30,14 +35,17 @@ import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 
-public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel implements ItemListener {
+public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel implements ItemListener, DocumentListener {
 
     public static final String PROP_PHONE_TABLET_ENABLED = "PROP_PHONE_TABLET_ENABLED";
     public static final String PROP_PHONE_TABLET_PLATFORM = "PROP_PHONE_TABLET_SDK";
+    public static final String PROP_PHONE_TABLET_FOLDER = "PROP_PHONE_TABLET_FOLDER";
     public static final String PROP_WEAR_ENABLED = "PROP_WEAR_ENABLED";
     public static final String PROP_WEAR_PLATFORM = "PROP_WEAR_PLATFORM";
+    public static final String PROP_WEAR_FOLDER = "PROP_WEAR_FOLDER";
     public static final String PROP_TV_ENABLED = "PROP_TV_ENABLED";
     public static final String PROP_TV_PLATFORM = "PROP_TV_PLATFORM";
+    public static final String PROP_TV_FOLDER = "PROP_TV_FOLDER";
     public static final String PROP_AUTO_ENABLED = "PROP_AUTO_ENABLED";
     public static final String PROP_MAX_BUILD_LEVEL = "PROP_MAX_BUILD_LEVEL";
     public static final String PROP_PLATFORM_CONFIG_DONE = "PROP_PLATFORM_CONFIG_DONE";
@@ -51,7 +59,6 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
         phoneEnabled.addItemListener(this);
         wearEnabled.addItemListener(this);
         tvEnabled.addItemListener(this);
-        autoEnabled.addItemListener(this);
         phonePlatforms.addItemListener(this);
         wearPlatforms.addItemListener(this);
         tvPlatforms.addItemListener(this);
@@ -63,6 +70,9 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
             }
 
         });
+        mobileFolder.getDocument().addDocumentListener(this);
+        wearFolder.getDocument().addDocumentListener(this);
+        tvFolder.getDocument().addDocumentListener(this);
     }
 
     /**
@@ -87,7 +97,12 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
         tvEnabled = new javax.swing.JCheckBox();
         jLabel9 = new javax.swing.JLabel();
         tvPlatforms = new javax.swing.JComboBox<>();
-        autoEnabled = new javax.swing.JCheckBox();
+        jLabel1 = new javax.swing.JLabel();
+        mobileFolder = new javax.swing.JTextField();
+        wearFolder = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        tvFolder = new javax.swing.JTextField();
+        jLabel7 = new javax.swing.JLabel();
 
         jLabel3.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.jLabel3.text")); // NOI18N
@@ -120,7 +135,17 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
 
         tvPlatforms.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        org.openide.awt.Mnemonics.setLocalizedText(autoEnabled, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.autoEnabled.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.jLabel1.text")); // NOI18N
+
+        mobileFolder.setText(org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.mobileFolder.text")); // NOI18N
+
+        wearFolder.setText(org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.wearFolder.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.jLabel2.text")); // NOI18N
+
+        tvFolder.setText(org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.tvFolder.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(AndroidProjectTemplatePanelVisualAndroidSettings.class, "AndroidProjectTemplatePanelVisualAndroidSettings.jLabel7.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -134,13 +159,15 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
                             .addComponent(jLabel3)
                             .addComponent(jLabel4)))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(74, 74, 74)
+                        .addGap(30, 30, 30)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(21, 21, 21)
+                                .addGap(5, 5, 5)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel5)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(jLabel5)
+                                            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING))
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                             .addComponent(phonePlatforms, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -149,21 +176,29 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
                                                     .addComponent(apiHelpText)
                                                     .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                     .addComponent(helpText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                .addGap(0, 7, Short.MAX_VALUE))))
+                                                .addGap(0, 0, Short.MAX_VALUE))
+                                            .addComponent(mobileFolder)))
                                     .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel8)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(jLabel8)
+                                            .addComponent(jLabel2))
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(wearPlatforms, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(wearFolder)
+                                            .addComponent(wearPlatforms, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                                     .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel9)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(jLabel9)
+                                            .addComponent(jLabel7))
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(tvPlatforms, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(tvFolder)
+                                            .addComponent(tvPlatforms, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(wearEnabled)
                                     .addComponent(phoneEnabled)
                                     .addComponent(tvEnabled)
-                                    .addComponent(autoEnabled))
+                                    .addComponent(wearEnabled))
                                 .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
@@ -177,7 +212,7 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
                 .addGap(18, 18, 18)
                 .addComponent(phoneEnabled)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(jLabel5)
                     .addComponent(phonePlatforms, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -186,39 +221,54 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
                 .addComponent(apiHelpText)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(helpText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(jLabel1)
+                    .addComponent(mobileFolder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(wearEnabled)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(jLabel8)
                     .addComponent(wearPlatforms, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(wearFolder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2))
                 .addGap(18, 18, 18)
                 .addComponent(tvEnabled)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(jLabel9)
                     .addComponent(tvPlatforms, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addComponent(autoEnabled)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tvFolder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel7))
+                .addContainerGap(24, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel apiHelpText;
-    private javax.swing.JCheckBox autoEnabled;
     private javax.swing.JLabel helpText;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JTextField mobileFolder;
     private javax.swing.JCheckBox phoneEnabled;
     private javax.swing.JComboBox<String> phonePlatforms;
     private javax.swing.JCheckBox tvEnabled;
+    private javax.swing.JTextField tvFolder;
     private javax.swing.JComboBox<String> tvPlatforms;
     private javax.swing.JCheckBox wearEnabled;
+    private javax.swing.JTextField wearFolder;
     private javax.swing.JComboBox<String> wearPlatforms;
     // End of variables declaration//GEN-END:variables
 
@@ -230,14 +280,26 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
     }
 
     boolean valid(WizardDescriptor wizardDescriptor) {
-
-        boolean status = phoneEnabled.isSelected() || wearEnabled.isSelected() || tvEnabled.isSelected() || autoEnabled.isSelected();
+        wizardDescriptor.putProperty("WizardPanel_errorMessage", null);
+        boolean status = phoneEnabled.isSelected() || wearEnabled.isSelected() || tvEnabled.isSelected();
         if (!status) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage",
                     "You must select at least one option.");
-        }else{
+        }
+        if (!isFilenameValid(mobileFolder.getText()) && phoneEnabled.isSelected()) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage",
-                    null);
+                    "Mobile folder name is not valid!");
+            status = false;
+        }
+        if (!isFilenameValid(wearFolder.getText()) && wearEnabled.isSelected()) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage",
+                    "Wear folder name is not valid!");
+            status = false;
+        }
+        if (!isFilenameValid(tvFolder.getText()) && tvEnabled.isSelected()) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage",
+                    "TV folder name is not valid!");
+            status = false;
         }
         return status;
     }
@@ -246,11 +308,13 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
         d.putProperty(PROP_PHONE_TABLET_ENABLED, phoneEnabled.isSelected());
         d.putProperty(PROP_WEAR_ENABLED, wearEnabled.isSelected());
         d.putProperty(PROP_TV_ENABLED, tvEnabled.isSelected());
-        d.putProperty(PROP_AUTO_ENABLED, autoEnabled.isSelected());
         d.putProperty(PROP_PHONE_TABLET_PLATFORM, phonePlatforms.getSelectedItem());
         d.putProperty(PROP_WEAR_PLATFORM, wearPlatforms.getSelectedItem());
         d.putProperty(PROP_TV_PLATFORM, tvPlatforms.getSelectedItem());
-        d.putProperty(PROP_PLATFORM_CONFIG_DONE, new Boolean[]{phoneEnabled.isSelected(),wearEnabled.isSelected(),tvEnabled.isSelected()});
+        d.putProperty(PROP_PLATFORM_CONFIG_DONE, new Boolean[]{phoneEnabled.isSelected(), wearEnabled.isSelected(), tvEnabled.isSelected()});
+        d.putProperty(PROP_PHONE_TABLET_FOLDER, mobileFolder.getText().trim());
+        d.putProperty(PROP_WEAR_FOLDER, wearFolder.getText().trim());
+        d.putProperty(PROP_TV_FOLDER, tvFolder.getText().trim());
     }
 
     private void updateDistribution() {
@@ -302,9 +366,6 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
         if (settings.getProperty(PROP_TV_ENABLED) instanceof Boolean) {
             tvEnabled.setSelected((boolean) settings.getProperty(PROP_TV_ENABLED));
         }
-        if (settings.getProperty(PROP_AUTO_ENABLED) instanceof Boolean) {
-            autoEnabled.setSelected((boolean) settings.getProperty(PROP_AUTO_ENABLED));
-        }
 
         if (settings.getProperty(PROP_PHONE_TABLET_PLATFORM) instanceof AndroidPlatformInfo) {
             phonePlatforms.setSelectedItem((AndroidPlatformInfo) settings.getProperty(PROP_PHONE_TABLET_PLATFORM));
@@ -315,6 +376,31 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
         if (settings.getProperty(PROP_TV_PLATFORM) instanceof AndroidPlatformInfo) {
             tvPlatforms.setSelectedItem((AndroidPlatformInfo) settings.getProperty(PROP_TV_PLATFORM));
         }
+        Object folder_mobile = settings.getProperty(PROP_PHONE_TABLET_FOLDER);
+        File projectLocation = (File) settings.getProperty(PROP_PROJECT_DIR);
+        if (folder_mobile instanceof String) {
+            mobileFolder.setText((String) folder_mobile);
+        } else {
+            if (projectLocation != null) {
+                mobileFolder.setText(projectLocation.getName() + "_mobile");
+            }
+        }
+        Object folder_wear = settings.getProperty(PROP_WEAR_FOLDER);
+        if (folder_wear instanceof String) {
+            wearFolder.setText((String) folder_wear);
+        } else {
+            if (projectLocation != null) {
+                wearFolder.setText(projectLocation.getName() + "_wear");
+            }
+        }
+        Object folder_tv = settings.getProperty(PROP_TV_FOLDER);
+        if (folder_tv instanceof String) {
+            tvFolder.setText((String) folder_tv);
+        } else {
+            if (projectLocation != null) {
+                tvFolder.setText(projectLocation.getName() + "_tv");
+            }
+        }
 
     }
 
@@ -322,6 +408,34 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
     public void itemStateChanged(ItemEvent e) {
         updateDistribution();
         panel.fireChangeEvent();
+    }
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        updateTexts(e);
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        updateTexts(e);
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        updateTexts(e);
+    }
+
+    private void updateTexts(DocumentEvent e) {
+        panel.fireChangeEvent(); // Notify that the panel changed
+        if (this.mobileFolder.getDocument() == e.getDocument()) {
+            firePropertyChange(PROP_PHONE_TABLET_FOLDER, null, this.mobileFolder.getText());
+        }
+        if (this.wearFolder.getDocument() == e.getDocument()) {
+            firePropertyChange(PROP_WEAR_FOLDER, null, this.wearFolder.getText());
+        }
+        if (this.tvFolder.getDocument() == e.getDocument()) {
+            firePropertyChange(PROP_TV_FOLDER, null, this.tvFolder.getText());
+        }
     }
 
     class ComboBoxRenderer extends BasicComboBoxRenderer {
@@ -339,5 +453,19 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
 
     void validate(WizardDescriptor d) throws WizardValidationException {
         // nothing to validate
+    }
+
+    public static boolean isFilenameValid(String file) {
+        if(file.contains("\\")||file.contains(".")||file.contains("<")||file.contains(">")||file.contains(":")
+                ||file.contains("\"")||file.contains("/")||file.contains("|")
+                || file.contains("?") || file.contains("*") || file.contains(" ")) {
+            return false;
+        }
+        File f = new File(file);
+        try {
+            return f.getCanonicalFile().getName().equals(file);
+        } catch (IOException e) {
+            return false;
+        }
     }
 }
