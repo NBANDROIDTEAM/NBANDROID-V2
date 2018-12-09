@@ -812,12 +812,12 @@
             <artifactId>org-netbeans-modules-xml-core</artifactId>
             <version>${version.nb}</version>
         </dependency>
-        <dependency>
+        <!--        <dependency>
             <groupId>jackson-all</groupId>
             <artifactId>jackson-all</artifactId>
             <version>1.9.9</version>
             <type>jar</type>
-        </dependency>
+        </dependency>-->
         <!--        <dependency>
             <groupId>org.netbeans.external</groupId>
             <artifactId>freemarker-2.3.19</artifactId>
@@ -827,6 +827,12 @@
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
             <version>2.3.28</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+            <version>1.9.11</version>
+            <type>jar</type>
         </dependency>
     </dependencies>
     <properties>
