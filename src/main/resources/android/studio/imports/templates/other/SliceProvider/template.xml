@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<template
+    format="5"
+    revision="1"
+    name="Slice Provider"
+    minBuildApi="28"
+    requireAndroidX="true"
+    description="Creates a new SliceProvider component and adds it to your Android manifest.">
+
+    <parameter
+        id="className"
+        name="Class Name"
+        type="string"
+        constraints="class|unique|nonempty"
+        default="MySliceProvider" />
+
+    <parameter
+        id="authorities"
+        name="URI Authorities"
+        type="string"
+        constraints="nonempty|uri_authority"
+        suggest="${packageName}"
+        default=""
+        help="A semicolon separated list of one or more URI authorities that identify data under the purview of the SliceProvider." />
+
+    <parameter
+        id="hostUrl"
+        name="Host URL"
+        type="string"
+        constraints="nonempty"
+        suggest="${companyDomain}"
+        default=""
+        help="An HTTP URL that will expose the SliceProvider." />
+
+    <parameter
+        id="pathPrefix"
+        name="URI Authorities"
+        type="string"
+        constraints="nonempty"
+        default="/"
+        help="A partial path in the URL that is matched to the SliceProvider." />
+
+    <globals file="globals.xml.ftl" />
+    <execute file="recipe.xml.ftl" />
+
+</template>

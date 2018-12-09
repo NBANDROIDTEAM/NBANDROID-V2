@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<template
+    format="5"
+    revision="2"
+    name="Media service"
+    description="Create a MediaBrowserService and adds the required metadata for Android Auto"
+    minApi="21">
+
+    <category value="Android Auto" />
+    <formfactor value="Car" />
+
+    <parameter
+        id="mediaBrowserServiceName"
+        name="Class name"
+        type="string"
+        constraints="class|unique|nonempty"
+        default="MyMusicService"
+        help="The name of the service that will extend MediaBrowserService and contain the logic to browse and playback media" />
+
+    <parameter
+        id="packageName"
+        name="Package name"
+        type="string"
+        constraints="package"
+        help="The package where the media service will be created" />
+
+    <parameter
+        id="useCustomTheme"
+        name="Use a custom theme for Android Auto colors?"
+        type="boolean"
+        constraints="package"
+        help="Android Auto apps can define a different set of colors that will be used exclusively when running on Android Auto" />
+
+    <parameter
+        id="customThemeName"
+        name="Android Auto custom theme name"
+        type="String"
+        default="CarTheme"
+        visibility="useCustomTheme"
+        constraints="nonempty"/>
+
+    <globals file="globals.xml.ftl" />
+    <execute file="recipe.xml.ftl" />
+
+    <thumbs>
+        <thumb>templates-mediaService-Auto.png</thumb>
+    </thumbs>
+
+</template>

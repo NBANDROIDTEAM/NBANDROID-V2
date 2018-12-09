@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<template
+    format="5"
+    revision="1"
+    name="Dynamic Feature"
+    description="Creates a new Android module that can be delivered conditionally">
+
+    <category value="Application" />
+
+    <thumbs>
+        <thumb>dynamic-feature-module.png</thumb>
+    </thumbs>
+
+    <parameter
+        id="projectName"
+        name="Module name"
+        type="string"
+        constraints="nonempty|module|unique"
+        default="dynamic-feature"/>
+
+    <parameter
+        id="makeIgnore"
+        name="Create .gitignore file"
+        type="boolean"
+        default="true" />
+
+    <globals file="globals.xml.ftl" />
+    <execute file="recipe.xml.ftl" />
+
+</template>

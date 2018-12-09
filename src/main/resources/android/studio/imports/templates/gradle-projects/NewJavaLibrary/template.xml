@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<template
+    format="5"
+    revision="5"
+    name="Java Library"
+    description="Creates a new Java library.">
+
+    <category value="Application" />
+
+    <thumbs>
+        <thumb>template_new_project.png</thumb>
+    </thumbs>
+
+    <parameter
+        id="projectName"
+        name="Library name"
+        type="string"
+        constraints="nonempty|module|unique"
+        default="lib"/>
+
+    <parameter
+        id="packageName"
+        name="Java package name"
+        type="string"
+        constraints="nonempty|package"
+        default="com.example"/>
+
+    <parameter
+        id="className"
+        name="Java class name"
+        type="string"
+        constraints="nonempty|class"
+        default="MyClass"/>
+
+    <parameter
+        id="makeIgnore"
+        name="Create .gitignore file"
+        type="boolean"
+        default="true" />
+
+    <globals file="globals.xml.ftl" />
+    <execute file="recipe.xml.ftl" />
+
+</template>

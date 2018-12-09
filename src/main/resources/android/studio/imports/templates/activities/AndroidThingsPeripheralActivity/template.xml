@@ -1,0 +1,178 @@
+<?xml version="1.0"?>
+<template
+    format="5"
+    revision="5"
+    name="Android Things Peripheral Activity"
+    minApi="24"
+    minBuildApi="24"
+    description="Creates a new activity for Android Things with peripherals">
+
+    <category value="Activity" />
+    <formfactor value="Things" />
+
+    <parameter
+        id="activityClass"
+        name="Activity Name"
+        type="string"
+        constraints="class|unique|nonempty"
+        default="MainActivity"
+        help="The name of the activity class to create" />
+
+    <parameter
+        id="isLauncher"
+        name="Default Android launcher flag"
+        visibility="false"
+        type="boolean"
+        default="true"/>
+
+    <parameter
+        id="isThingsLauncher"
+        name="Launch activity automatically on boot"
+        type="boolean"
+        default="false"
+        help="This is the home activity, that is the first activity that is displayed when the device boots." />
+
+    <parameter
+            id="peripheralType"
+            name="Show available peripherals"
+            type="enum"
+            default="peripheralInputs"
+            help="Select peripherals to integrate" >
+        <option id="peripheralInputs">Inputs</option>
+        <option id="peripheralDisplays">Displays</option>
+        <option id="peripheralSensors">Sensors</option>
+        <option id="peripheralActuators">Actuators</option>
+        <option id="peripheralOthers">Others</option>
+    </parameter>
+
+    <parameter
+            id="integrateButton"
+            name="Button"
+            type="boolean"
+            default="false"
+            visibility="peripheralType == 'peripheralInputs'"
+            help="If true, dependencies and corresponding code to support buttons will be generated." />
+
+    <parameter
+            id="integrateCapacitiveTouchButton"
+            name="Capacitive touch buttons (cap12xx)"
+            type="boolean"
+            default="false"
+            visibility="peripheralType == 'peripheralInputs'"
+            help="If true, dependencies and corresponding code to support capacitive touch buttons will be generated." />
+
+    <parameter
+            id="integrateOledDisplay"
+            name="OLED display (ssd1306)"
+            type="boolean"
+            default="false"
+            visibility="peripheralType == 'peripheralDisplays'"
+            help="If true, dependencies and corresponding code to support an OLED display will be generated." />
+
+    <parameter
+            id="integrateAlphanumericDisplay"
+            name="Alphanumeric segment display (ht16k33)"
+            type="boolean"
+            default="false"
+            visibility="peripheralType == 'peripheralDisplays'"
+            help="If true, dependencies and corresponding code to support an alphanumeric display will be generated." />
+
+    <parameter
+            id="integrateNumericDisplay"
+            name="Numeric segment display (tm11637)"
+            type="boolean"
+            default="false"
+            visibility="peripheralType == 'peripheralDisplays'"
+            help="If true, dependencies and corresponding code to support a numeric display will be generated." />
+
+    <parameter
+            id="integrateLEDStrip"
+            name="LED strip (apa102)"
+            type="boolean"
+            default="false"
+            visibility="peripheralType == 'peripheralDisplays'"
+            help="If true, dependencies and corresponding code to support an LED strip will be generated." />
+
+    <parameter
+            id="integrateAccelerometer"
+            name="Accelerometer (mma7660fc)"
+            type="boolean"
+            default="false"
+            visibility="peripheralType == 'peripheralSensors'"
+            help="If true, dependencies and corresponding code to support an accelerometer will be generated." />
+
+    <parameter
+            id="accelerometerServiceClass"
+            name="Accelerometer Service Name"
+            type="string"
+            constraints="class|unique|nonempty"
+            default="AccelerometerService"
+            visibility="integrateAccelerometer &amp;&amp; peripheralType == 'peripheralSensors'"
+            help="The name of the service class to create for the accelerometer" />
+
+    <parameter
+            id="integrateGps"
+            name="GPS"
+            type="boolean"
+            default="false"
+            visibility="peripheralType == 'peripheralSensors'"
+            help="If true, dependencies and corresponding code to support a GPS will be generated." />
+
+    <parameter
+            id="gpsServiceClass"
+            name="GPS Service Name"
+            type="string"
+            constraints="class|unique|nonempty"
+            default="GpsService"
+            visibility="integrateGps &amp;&amp; peripheralType == 'peripheralSensors'"
+            help="The name of the service class for the GPS" />
+
+    <parameter
+            id="integrateTemperaturePressureSensor"
+            name="Temperature and pressure sensor (bmx280)"
+            type="boolean"
+            default="false"
+            visibility="peripheralType == 'peripheralSensors'"
+            help="If true, dependencies and corresponding code to support a temperature and pressure sensor will be generated." />
+
+    <parameter
+            id="temperaturePressureServiceClass"
+            name="Temperature and pressure Service Name"
+            type="string"
+            constraints="class|unique|nonempty"
+            default="TemperaturePressureService"
+            visibility="integrateTemperaturePressureSensor &amp;&amp; peripheralType == 'peripheralSensors'"
+            help="The name of the service class for the temperature and pressure sensor" />
+
+    <parameter
+            id="integrateServo"
+            name="PWM servo"
+            type="boolean"
+            default="false"
+            visibility="peripheralType == 'peripheralActuators'"
+            help="If true, dependencies and corresponding code to support a servo will be generated." />
+    <parameter
+            id="integrateSpeakerBuzzer"
+            name="PWM speaker/buzzer"
+            type="boolean"
+            default="false"
+            visibility="peripheralType == 'peripheralOthers'"
+            help="If true, dependencies and corresponding code to support a speaker/buzzer will be generated." />
+
+    <parameter
+        id="packageName"
+        name="Package name"
+        type="string"
+        constraints="package"
+        default="com.mycompany.myapp" />
+
+    <!-- 128x128 thumbnails relative to template.xml -->
+    <thumbs>
+        <!-- default thumbnail is required -->
+        <thumb>thumbnail.png</thumb>
+    </thumbs>
+
+    <globals file="globals.xml.ftl" />
+    <execute file="recipe.xml.ftl" />
+
+</template>

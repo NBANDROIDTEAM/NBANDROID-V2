@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<template
+    format="5"
+    revision="1"
+    name="Import Eclipse ADT Project"
+    description="Import an existing Eclipse ADT project as a module">
+
+    <category value="Application" />
+
+    <thumbs>
+        <thumb>eclipse-module.png</thumb>
+    </thumbs>
+</template>

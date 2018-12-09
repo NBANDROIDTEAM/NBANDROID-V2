@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+<template
+    format="5"
+    revision="3"
+    name="Fragment (List)"
+    description="Creates a new empty fragment containing a list that can be rendered as a grid. Compatible back to API level 4."
+    minApi="7"
+    minBuildApi="8">
+
+    <category value="Fragment" />
+
+    <dependency name="android-support-v4" revision="8" />
+
+    <parameter
+        id="packageName"
+        name="Package name"
+        type="string"
+        constraints="package"
+        default="com.mycompany.myapp" />
+
+    <parameter
+        id="objectKind"
+        name="Object Kind"
+        type="string"
+        constraints="nonempty"
+        default="Item"
+        help="Other examples are 'Person', 'Book', etc." />
+
+    <parameter
+        id="className"
+        type="string"
+        constraints="nonempty|class|unique"
+        default="ItemFragment"
+        suggest="${extractLetters(objectKind)}Fragment"
+        name="Fragment class name" />
+
+    <parameter
+        id="includeFactory"
+        name="Include fragment factory methods?"
+        type="boolean"
+        default="true"
+        help="Generate static fragment factory methods for easy instantiation" />
+
+    <parameter
+        id="columnCount"
+        name="Column Count"
+        type="enum"
+        default="1"
+        help="The number of columns in the grid" >
+        <option id="1">1 (List)</option>
+        <option id="2">2 (Grid)</option>
+        <option id="3">3</option>
+        <option id="4">4</option>
+    </parameter>
+
+    <parameter
+        id="fragment_layout"
+        type="string"
+        constraints="layout|nonempty|unique"
+        default="fragment_item"
+        suggest="fragment_${extractLetters(objectKind?lower_case)}"
+        name="Object content layout file name" />
+
+    <parameter
+        id="fragment_layout_list"
+        type="string"
+        constraints="layout|nonempty|unique"
+        default="fragment_item_list"
+        suggest="fragment_${extractLetters(objectKind?lower_case)}_list"
+        name="List layout file name" />
+
+    <parameter
+        id="adapterClassName"
+        type="string"
+        constraints="nonempty|class|unique"
+        default="MyItemRecyclerViewAdapter"
+        suggest="My${extractLetters(objectKind)}RecyclerViewAdapter"
+        name="Adapter class name"
+        visible="false"/>
+
+    <!-- 128x128 thumbnails relative to template.xml -->
+    <thumbs>
+        <!-- default thumbnail is required -->
+        <thumb>templates_list_fragment.png</thumb>
+    </thumbs>
+
+
+    <globals file="globals.xml.ftl" />
+    <execute file="recipe.xml.ftl" />
+
+</template>

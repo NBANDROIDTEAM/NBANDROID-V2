@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<template
+    format="5"
+    revision="1"
+    name="Modal Bottom Sheet"
+    description="Creates a new modal bottom sheet fragment containing a list that can be rendered as a grid. Compatible back to API level 9."
+    minApi="9"
+    minBuildApi="9">
+
+    <category value="Fragment" />
+
+    <dependency name="android-support-v4" revision="10" />
+
+    <parameter
+        id="packageName"
+        name="Package name"
+        type="string"
+        constraints="package"
+        default="com.mycompany.myapp" />
+
+    <parameter
+        id="objectKind"
+        name="Object Kind"
+        type="string"
+        constraints="nonempty"
+        default="Item"
+        help="Other examples are 'Person', 'Book', etc." />
+
+    <parameter
+        id="className"
+        type="string"
+        constraints="nonempty|class|unique"
+        default="ItemListDialogFragment"
+        suggest="${extractLetters(objectKind)}ListDialogFragment"
+        name="Fragment class name" />
+
+    <parameter
+        id="columnCount"
+        name="Column Count"
+        type="enum"
+        default="1"
+        help="The number of columns in the grid" >
+        <option id="1">1 (List)</option>
+        <option id="2">2 (Grid)</option>
+        <option id="3">3</option>
+        <option id="4">4</option>
+    </parameter>
+
+    <parameter
+        id="itemLayout"
+        type="string"
+        constraints="layout|nonempty|unique"
+        default="fragment_item_list_dialog_item"
+        suggest="fragment_${extractLetters(objectKind?lower_case)}_list_dialog_item"
+        name="Object content layout file name" />
+
+    <parameter
+        id="listLayout"
+        type="string"
+        constraints="layout|nonempty|unique"
+        default="fragment_item_list_dialog"
+        suggest="fragment_${extractLetters(objectKind?lower_case)}_list_dialog"
+        name="List layout file name" />
+
+    <globals file="globals.xml.ftl" />
+    <execute file="recipe.xml.ftl" />
+
+</template>

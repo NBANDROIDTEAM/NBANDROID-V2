@@ -136,7 +136,7 @@ public class ManifestParser {
         return defaultApplicationData();
     }
 
-    private static @Nullable
+    public static @Nullable
     Document parseStream(InputStream is) {
         if (is != null) {
             try {

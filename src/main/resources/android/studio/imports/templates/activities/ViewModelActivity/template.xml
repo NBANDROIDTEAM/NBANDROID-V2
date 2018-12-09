@@ -1,0 +1,129 @@
+<?xml version="1.0"?>
+<template
+    format="5"
+    revision="1"
+    name="Fragment + ViewModel"
+    minApi="14"
+    minBuildApi="14"
+    description="Creates a new activity and a fragment with view model">
+
+    <category value="Activity" />
+    <formfactor value="Mobile" />
+
+    <parameter
+        id="activityClass"
+        name="Activity Name"
+        type="string"
+        constraints="class|unique|nonempty"
+        default="MainActivity"
+        help="The name of the activity class to create" />
+
+    <parameter
+        id="activityLayout"
+        name="Activity Layout Name"
+        type="string"
+        constraints="layout|unique|nonempty"
+        suggest="${classToResource(activityClass)}_activity"
+        default="main_activity"
+        help="The name of the layout to create for the activity" />
+
+    <parameter
+        id="fragmentClass"
+        name="Fragment Name"
+        type="string"
+        constraints="class|unique|nonempty"
+        suggest="${underscoreToCamelCase(classToResource(activityClass))}Fragment"
+        default="MainFragment"
+        help="The name of the fragment class to create" />
+
+    <parameter
+        id="fragmentLayout"
+        name="Fragment Layout Name"
+        type="string"
+        constraints="layout|unique|nonempty"
+        suggest="${classToResource(fragmentClass)}_fragment"
+        default="main_fragment"
+        help="The name of the layout to create for the fragment" />
+
+    <parameter
+        id="viewModelClass"
+        name="ViewModel Name"
+        type="string"
+        constraints="class|unique|nonempty"
+        suggest="${underscoreToCamelCase(classToResource(fragmentClass))}ViewModel"
+        default="MainViewModel"
+        help="The name of the view model class to create" />
+
+    <parameter
+        id="isLauncher"
+        name="Launcher Activity"
+        type="boolean"
+        default="false"
+        help="If true, this activity will have a CATEGORY_LAUNCHER intent filter, making it visible in the launcher" />
+
+    <parameter
+        id="packageName"
+        name="Package name"
+        type="string"
+        constraints="package"
+        default="com.mycompany.myapp" />
+
+    <parameter
+        id="fragmentPackage"
+        name="Fragment package path"
+        type="string"
+        constraints="package"
+        suggest="ui.${classToResource(fragmentClass)?replace('_', '')}"
+        default="ui.main"
+        help="The package path for the fragment and the view model" />
+
+    <parameter
+        id="includeInstantAppUrl"
+        name="Associate a URL with this Activity"
+        type="boolean"
+        default="false"
+        visibility="isInstantApp!false"
+        help="If true, this activity will be associated with URL, improving discovery of your Instant App" />
+
+    <parameter
+        id="instantAppActivityHost"
+        name="Instant App URL Host"
+        type="string"
+        suggest="${companyDomain}"
+        default="instantapp.example.com"
+        visibility="isInstantApp!false"
+        enabled="includeInstantAppUrl"
+        help="The domain to use in the Instant App route for this activity"/>
+
+    <parameter
+        id="instantAppActivityRouteType"
+        name="Instant App URL Route Type"
+        type="enum"
+        default="pathPattern"
+        visibility="isInstantApp!false"
+        enabled="includeInstantAppUrl"
+        help="The type of route to use in the Instant App route for this activity" >
+        <option id="path">Path</option>
+        <option id="pathPrefix">Path Prefix</option>
+        <option id="pathPattern">Path Pattern</option>
+    </parameter>
+
+    <parameter
+        id="instantAppActivityRoute"
+        name="Instant App URL Route"
+        type="string"
+        default="/.*"
+        visibility="isInstantApp!false"
+        enabled="includeInstantAppUrl"
+        help="The route to use in the Instant App route for this activity"/>
+
+    <!-- 128x128 thumbnails relative to template.xml -->
+    <thumbs>
+        <!-- default thumbnail is required -->
+        <thumb>template_blank_activity.png</thumb>
+    </thumbs>
+
+    <globals file="globals.xml.ftl" />
+    <execute file="recipe.xml.ftl" />
+
+</template>
