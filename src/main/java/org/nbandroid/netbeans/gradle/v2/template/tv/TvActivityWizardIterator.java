@@ -18,6 +18,7 @@
  */
 package org.nbandroid.netbeans.gradle.v2.template.tv;
 
+import org.nbandroid.netbeans.gradle.v2.template.ProjectWizardSummaryPanel;
 import android.studio.imports.templates.Parameter;
 import android.studio.imports.templates.Template;
 import android.studio.imports.templates.TemplateManager;
@@ -312,7 +313,7 @@ public final class TvActivityWizardIterator implements WizardDescriptor.Instanti
 
     private List<WizardDescriptor.Panel<WizardDescriptor>> createPanels() {
         List<WizardDescriptor.Panel<WizardDescriptor>> tmp = new ArrayList<>();
-        tmp.add(new ActivityWizardSummaryPanel(ActivityWizardSummaryPanel.Type.TV));
+        tmp.add(new ProjectWizardSummaryPanel(ProjectWizardSummaryPanel.Type.TV));
         tmp.add(panel_tv);
         tmp.add(panel_tv_config);
         return tmp;

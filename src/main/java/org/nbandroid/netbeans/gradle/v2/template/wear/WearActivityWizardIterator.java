@@ -18,6 +18,7 @@
  */
 package org.nbandroid.netbeans.gradle.v2.template.wear;
 
+import org.nbandroid.netbeans.gradle.v2.template.ProjectWizardSummaryPanel;
 import android.studio.imports.templates.Parameter;
 import android.studio.imports.templates.Template;
 import android.studio.imports.templates.TemplateManager;
@@ -312,7 +313,7 @@ public final class WearActivityWizardIterator implements WizardDescriptor.Instan
 
     private List<WizardDescriptor.Panel<WizardDescriptor>> createPanels() {
         List<WizardDescriptor.Panel<WizardDescriptor>> tmp = new ArrayList<>();
-        tmp.add(new ActivityWizardSummaryPanel(ActivityWizardSummaryPanel.Type.WEAR));
+        tmp.add(new ProjectWizardSummaryPanel(ProjectWizardSummaryPanel.Type.WEAR));
         tmp.add(panel_wear);
         tmp.add(panel_wear_config);
         return tmp;

@@ -18,6 +18,7 @@
  */
 package org.nbandroid.netbeans.gradle.v2.template.mobile;
 
+import org.nbandroid.netbeans.gradle.v2.template.ProjectWizardSummaryPanel;
 import android.studio.imports.templates.Parameter;
 import android.studio.imports.templates.Template;
 import android.studio.imports.templates.TemplateManager;
@@ -314,7 +315,7 @@ public final class MobileActivityWizardIterator implements WizardDescriptor.Inst
 
     private List<WizardDescriptor.Panel<WizardDescriptor>> createPanels() {
         List<WizardDescriptor.Panel<WizardDescriptor>> tmp = new ArrayList<>();
-        tmp.add(new ActivityWizardSummaryPanel(ActivityWizardSummaryPanel.Type.MOBILE));
+        tmp.add(new ProjectWizardSummaryPanel(ProjectWizardSummaryPanel.Type.MOBILE));
         tmp.add(panel_mobile);
         tmp.add(panel_mobile_config);
         return tmp;

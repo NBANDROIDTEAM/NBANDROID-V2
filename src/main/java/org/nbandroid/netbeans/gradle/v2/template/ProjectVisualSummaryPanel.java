@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.template.mobile;
+package org.nbandroid.netbeans.gradle.v2.template;
 
 import com.android.builder.model.ApiVersion;
 import com.android.builder.model.Variant;
@@ -25,25 +25,27 @@ import java.io.File;
 import javax.swing.JPanel;
 import org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings.PROP_MAX_BUILD_LEVEL;
+import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_FOLDER;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_PLATFORM;
 import org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_SDK;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
+import org.nbandroid.netbeans.gradle.v2.template.mobile.MobileActivityWizardIterator;
 import static org.nbandroid.netbeans.gradle.v2.template.mobile.MobileActivityWizardIterator.BUILD_TOOL_VERSION;
 import static org.nbandroid.netbeans.gradle.v2.template.mobile.MobileActivityWizardIterator.ERROR_NO_ANDROID;
 import static org.nbandroid.netbeans.gradle.v2.template.mobile.MobileActivityWizardIterator.MANIFEST_ROOT_FOLDER;
 import org.openide.WizardDescriptor;
 
-public final class ActivityVisualSummaryPanel extends JPanel {
+public final class ProjectVisualSummaryPanel extends JPanel {
 
-    private final ActivityWizardSummaryPanel controler;
-    private final ActivityWizardSummaryPanel.Type type;
+    private final ProjectWizardSummaryPanel controler;
+    private final ProjectWizardSummaryPanel.Type type;
 
     /**
      * Creates new form MobileActivityVisualPanel1
      */
-    public ActivityVisualSummaryPanel(ActivityWizardSummaryPanel controler, ActivityWizardSummaryPanel.Type type) {
+    public ProjectVisualSummaryPanel(ProjectWizardSummaryPanel controler, ProjectWizardSummaryPanel.Type type) {
         initComponents();
         this.controler = controler;
         this.type = type;
@@ -63,7 +65,7 @@ public final class ActivityVisualSummaryPanel extends JPanel {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        projectFolder = new javax.swing.JLabel();
+        rootProjectPath = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         packageName = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -78,46 +80,53 @@ public final class ActivityVisualSummaryPanel extends JPanel {
         minSdkVersion = new javax.swing.JLabel();
         targetSdkVersion = new javax.swing.JLabel();
         buildToolVersion = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        projectFolder = new javax.swing.JLabel();
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ProjectVisualSummaryPanel.class, "ProjectVisualSummaryPanel.jLabel1.text")); // NOI18N
 
-        projectFolder.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(projectFolder, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.projectFolder.text")); // NOI18N
+        rootProjectPath.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(rootProjectPath, org.openide.util.NbBundle.getMessage(ProjectVisualSummaryPanel.class, "ProjectVisualSummaryPanel.rootProjectPath.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ProjectVisualSummaryPanel.class, "ProjectVisualSummaryPanel.jLabel2.text")); // NOI18N
 
         packageName.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(packageName, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.packageName.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(packageName, org.openide.util.NbBundle.getMessage(ProjectVisualSummaryPanel.class, "ProjectVisualSummaryPanel.packageName.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.jLabel3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ProjectVisualSummaryPanel.class, "ProjectVisualSummaryPanel.jLabel3.text")); // NOI18N
 
         androidSdk.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(androidSdk, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.androidSdk.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(androidSdk, org.openide.util.NbBundle.getMessage(ProjectVisualSummaryPanel.class, "ProjectVisualSummaryPanel.androidSdk.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.jLabel4.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(ProjectVisualSummaryPanel.class, "ProjectVisualSummaryPanel.jLabel4.text")); // NOI18N
 
         manifestFolder.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(manifestFolder, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.manifestFolder.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(manifestFolder, org.openide.util.NbBundle.getMessage(ProjectVisualSummaryPanel.class, "ProjectVisualSummaryPanel.manifestFolder.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.jLabel5.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(ProjectVisualSummaryPanel.class, "ProjectVisualSummaryPanel.jLabel5.text")); // NOI18N
 
         platform.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(platform, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.platform.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(platform, org.openide.util.NbBundle.getMessage(ProjectVisualSummaryPanel.class, "ProjectVisualSummaryPanel.platform.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.jLabel6.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(ProjectVisualSummaryPanel.class, "ProjectVisualSummaryPanel.jLabel6.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.jLabel7.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(ProjectVisualSummaryPanel.class, "ProjectVisualSummaryPanel.jLabel7.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.jLabel8.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(ProjectVisualSummaryPanel.class, "ProjectVisualSummaryPanel.jLabel8.text")); // NOI18N
 
         minSdkVersion.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(minSdkVersion, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.minSdkVersion.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(minSdkVersion, org.openide.util.NbBundle.getMessage(ProjectVisualSummaryPanel.class, "ProjectVisualSummaryPanel.minSdkVersion.text")); // NOI18N
 
         targetSdkVersion.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(targetSdkVersion, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.targetSdkVersion.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(targetSdkVersion, org.openide.util.NbBundle.getMessage(ProjectVisualSummaryPanel.class, "ProjectVisualSummaryPanel.targetSdkVersion.text")); // NOI18N
 
         buildToolVersion.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(buildToolVersion, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.buildToolVersion.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buildToolVersion, org.openide.util.NbBundle.getMessage(ProjectVisualSummaryPanel.class, "ProjectVisualSummaryPanel.buildToolVersion.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel9, org.openide.util.NbBundle.getMessage(ProjectVisualSummaryPanel.class, "ProjectVisualSummaryPanel.jLabel9.text")); // NOI18N
+
+        projectFolder.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectFolder, org.openide.util.NbBundle.getMessage(ProjectVisualSummaryPanel.class, "ProjectVisualSummaryPanel.projectFolder.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -126,6 +135,7 @@ public final class ActivityVisualSummaryPanel extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel9)
                     .addComponent(jLabel8)
                     .addComponent(jLabel7)
                     .addComponent(jLabel6)
@@ -136,15 +146,16 @@ public final class ActivityVisualSummaryPanel extends JPanel {
                     .addComponent(jLabel1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(projectFolder)
+                    .addComponent(rootProjectPath)
                     .addComponent(packageName)
                     .addComponent(androidSdk)
                     .addComponent(manifestFolder)
                     .addComponent(platform)
                     .addComponent(minSdkVersion)
                     .addComponent(targetSdkVersion)
-                    .addComponent(buildToolVersion))
-                .addContainerGap(368, Short.MAX_VALUE))
+                    .addComponent(buildToolVersion)
+                    .addComponent(projectFolder))
+                .addContainerGap(349, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -152,8 +163,12 @@ public final class ActivityVisualSummaryPanel extends JPanel {
                 .addGap(22, 22, 22)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(projectFolder))
+                    .addComponent(rootProjectPath))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel9)
+                    .addComponent(projectFolder))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(packageName))
@@ -161,7 +176,7 @@ public final class ActivityVisualSummaryPanel extends JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
                     .addComponent(manifestFolder))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(androidSdk))
@@ -181,7 +196,7 @@ public final class ActivityVisualSummaryPanel extends JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel8)
                     .addComponent(buildToolVersion))
-                .addContainerGap(116, Short.MAX_VALUE))
+                .addContainerGap(77, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -196,11 +211,13 @@ public final class ActivityVisualSummaryPanel extends JPanel {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JLabel manifestFolder;
     private javax.swing.JLabel minSdkVersion;
     private javax.swing.JLabel packageName;
     private javax.swing.JLabel platform;
     private javax.swing.JLabel projectFolder;
+    private javax.swing.JLabel rootProjectPath;
     private javax.swing.JLabel targetSdkVersion;
     // End of variables declaration//GEN-END:variables
 
@@ -253,13 +270,31 @@ public final class ActivityVisualSummaryPanel extends JPanel {
                     "Android Build variant was not found.");
             return false;
         }
+        switch (type) {
+            case MOBILE:
+                property = wizardDescriptor.getProperty(PROP_PHONE_TABLET_FOLDER);
+                break;
+            case WEAR:
+                property = wizardDescriptor.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_FOLDER);
+                break;
+            case TV:
+                property = wizardDescriptor.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_FOLDER);
+                break;
+            default:
+                throw new AssertionError(type.name());
+        }
+        if (!(property instanceof String) || ((String) property).isEmpty()) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage",
+                    "Unsupported project structure.");
+            return false;
+        }
         return true;
     }
 
     void read(WizardDescriptor wizardDescriptor) {
         Object property = wizardDescriptor.getProperty(AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_DIR);
         if (property instanceof File) {
-            projectFolder.setText(((File) property).getAbsolutePath());
+            rootProjectPath.setText(((File) property).getAbsolutePath());
         }
         property = wizardDescriptor.getProperty(AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_PACKAGE);
         if (property instanceof String) {
@@ -290,6 +325,22 @@ public final class ActivityVisualSummaryPanel extends JPanel {
         if (property instanceof AndroidPlatformInfo) {
             platform.setText(SdkVersionInfo.getCodeName(((AndroidPlatformInfo) property).getAndroidVersion().getApiLevel()) + " " + SdkVersionInfo.getVersionString(((AndroidPlatformInfo) property).getAndroidVersion().getApiLevel()));
             platform.setToolTipText(((AndroidPlatformInfo) property).getAndroidVersion().getApiString());
+        }
+        switch (type) {
+            case MOBILE:
+                property = wizardDescriptor.getProperty(PROP_PHONE_TABLET_FOLDER);
+                break;
+            case WEAR:
+                property = wizardDescriptor.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_FOLDER);
+                break;
+            case TV:
+                property = wizardDescriptor.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_FOLDER);
+                break;
+            default:
+                throw new AssertionError(type.name());
+        }
+        if (property instanceof String) {
+            projectFolder.setText((String) property);
         }
         property = wizardDescriptor.getProperty(MobileActivityWizardIterator.BUILD_VARIANT);
         if (property instanceof Variant) {
