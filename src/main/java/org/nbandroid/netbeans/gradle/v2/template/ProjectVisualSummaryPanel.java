@@ -31,6 +31,8 @@ import org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplateP
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_SDK;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
+import static org.nbandroid.netbeans.gradle.v2.template.files.FileWizardIterator.PROP_PLATFORM;
+import static org.nbandroid.netbeans.gradle.v2.template.files.FileWizardIterator.PROP_SUB_PROJECT_FOLDER;
 import org.nbandroid.netbeans.gradle.v2.template.mobile.MobileActivityWizardIterator;
 import static org.nbandroid.netbeans.gradle.v2.template.mobile.MobileActivityWizardIterator.BUILD_TOOL_VERSION;
 import static org.nbandroid.netbeans.gradle.v2.template.mobile.MobileActivityWizardIterator.ERROR_NO_ANDROID;
@@ -256,6 +258,10 @@ public final class ProjectVisualSummaryPanel extends JPanel {
             case TV:
                 property = wizardDescriptor.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_PLATFORM);
                 break;
+            case FILE:
+                property = wizardDescriptor.getProperty(PROP_PLATFORM);
+
+                break;
             default:
                 throw new AssertionError(type.name());
         }
@@ -279,6 +285,10 @@ public final class ProjectVisualSummaryPanel extends JPanel {
                 break;
             case TV:
                 property = wizardDescriptor.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_FOLDER);
+                break;
+            case FILE:
+                property = wizardDescriptor.getProperty(PROP_SUB_PROJECT_FOLDER);
+
                 break;
             default:
                 throw new AssertionError(type.name());
@@ -319,6 +329,10 @@ public final class ProjectVisualSummaryPanel extends JPanel {
             case TV:
                 property = wizardDescriptor.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_PLATFORM);
                 break;
+            case FILE:
+                property = wizardDescriptor.getProperty(PROP_PLATFORM);
+
+                break;
             default:
                 throw new AssertionError(type.name());
         }
@@ -335,6 +349,10 @@ public final class ProjectVisualSummaryPanel extends JPanel {
                 break;
             case TV:
                 property = wizardDescriptor.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_FOLDER);
+                break;
+            case FILE:
+                property = wizardDescriptor.getProperty(PROP_SUB_PROJECT_FOLDER);
+
                 break;
             default:
                 throw new AssertionError(type.name());
@@ -367,6 +385,8 @@ public final class ProjectVisualSummaryPanel extends JPanel {
                     wizardDescriptor.putProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_ENABLED, false);
                     wizardDescriptor.putProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_ENABLED, false);
                     wizardDescriptor.putProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_ENABLED, true);
+                    break;
+                case FILE:
                     break;
                 default:
                     throw new AssertionError(type.name());

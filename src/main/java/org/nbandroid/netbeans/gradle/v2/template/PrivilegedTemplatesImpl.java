@@ -30,12 +30,14 @@ public class PrivilegedTemplatesImpl implements PrivilegedTemplates, Recommended
     private static final String[] PRIVILEGED_NAMES_1 = new String[]{"Templates/Classes/Class.java", // NOI18N
         "Templates/Classes/Package", // NOI18N
         "Templates/Classes/Interface.java", // NOI18N
+        "Templates/Android/BroadcastReceiver.java",// NOI18N
         "Templates/Android/MobileTemplate.java",// NOI18N
         "Templates/Android/WearTemplate.java",// NOI18N
         "Templates/Android/TvTemplate.java",// NOI18N
 };
 
     private static final String[] APPLICATION_TYPES = new String[]{"java-classes", // NOI18N
+        "android-files", // NOI18N
         "android-activity", // NOI18N
         "XML", // NOI18N
 };
