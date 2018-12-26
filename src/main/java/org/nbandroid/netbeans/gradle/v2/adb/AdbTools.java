@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
-import org.gradle.impldep.org.apache.commons.lang.StringUtils;
+import org.gradle.internal.impldep.org.apache.commons.lang.StringUtils;
 import org.openide.util.Exceptions;
 
 /**

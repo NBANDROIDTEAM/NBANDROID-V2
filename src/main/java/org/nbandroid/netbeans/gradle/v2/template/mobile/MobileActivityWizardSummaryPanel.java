@@ -1,0 +1,96 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.nbandroid.netbeans.gradle.v2.template.mobile;
+
+import java.util.HashSet;
+import java.util.Set;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
+import org.openide.util.HelpCtx;
+
+public class MobileActivityWizardSummaryPanel implements WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel {
+
+    /**
+     * The visual component that displays this panel. If you need to access the
+     * component from this class, just use getComponent().
+     */
+    private MobileActivityVisualSummaryPanel component;
+    private WizardDescriptor wizardDescriptor;
+
+    // Get the visual component for the panel. In this template, the component
+    // is kept separate. This can be more efficient: if the wizard is created
+    // but never displayed, or not all panels are displayed, it is better to
+    // create only those which really need to be visible.
+    @Override
+    public MobileActivityVisualSummaryPanel getComponent() {
+        if (component == null) {
+            component = new MobileActivityVisualSummaryPanel(this);
+        }
+        return component;
+    }
+
+    @Override
+    public HelpCtx getHelp() {
+        // Show no Help button for this panel:
+        return HelpCtx.DEFAULT_HELP;
+        // If you have context help:
+        // return new HelpCtx("help.key.here");
+    }
+
+    @Override
+    public boolean isValid() {
+        getComponent();
+        return component.valid(wizardDescriptor);
+    }
+
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+
+    @Override
+    public void addChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.add(l);
+        }
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
+    }
+
+    protected final void fireChangeEvent() {
+        Set<ChangeListener> ls;
+        synchronized (listeners) {
+            ls = new HashSet<>(listeners);
+        }
+        ChangeEvent ev = new ChangeEvent(this);
+        for (ChangeListener l : ls) {
+            l.stateChanged(ev);
+        }
+    }
+
+    @Override
+    public void validate() throws WizardValidationException {
+        getComponent();
+        component.validate(wizardDescriptor);
+    }
+
+    @Override
+    public void readSettings(Object data) {
+        wizardDescriptor = (WizardDescriptor) data;
+        component.read(wizardDescriptor);
+    }
+
+    @Override
+    public void storeSettings(Object data) {
+        wizardDescriptor = (WizardDescriptor) data;
+        component.store(wizardDescriptor);
+    }
+
+}

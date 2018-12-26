@@ -40,6 +40,12 @@ public class AndroidProjectTemplateWizardPanelConfigureActivityAndroidSettings i
     private AndroidProjectTemplatePanelConfigureActivityAndroidSettings component;
     private final String templateType;
     private final String activityType;
+    private boolean newProject = true;
+
+    public AndroidProjectTemplateWizardPanelConfigureActivityAndroidSettings(String templateType, String activityType, boolean newProject) {
+        this(templateType, activityType);
+        this.newProject = newProject;
+    }
 
     public AndroidProjectTemplateWizardPanelConfigureActivityAndroidSettings(String templateType, String activityType) {
         this.templateType = templateType;
@@ -48,7 +54,7 @@ public class AndroidProjectTemplateWizardPanelConfigureActivityAndroidSettings i
 
     public Component getComponent() {
         if (component == null) {
-            component = new AndroidProjectTemplatePanelConfigureActivityAndroidSettings(this, templateType, activityType);
+            component = new AndroidProjectTemplatePanelConfigureActivityAndroidSettings(this, templateType, activityType, newProject);
             component.setName("Android platform");
         }
         return component;

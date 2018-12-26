@@ -28,7 +28,7 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.CodeVisitorSupport;
 import org.codehaus.groovy.ast.builder.AstBuilder;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.gradle.impldep.org.apache.commons.io.IOUtils;
+import org.gradle.internal.impldep.org.apache.commons.io.IOUtils;
 
 /**
  *

@@ -36,7 +36,7 @@ import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
-import org.gradle.impldep.org.apache.commons.io.IOUtils;
+import org.gradle.internal.impldep.org.apache.commons.io.IOUtils;
 
 /**
  *

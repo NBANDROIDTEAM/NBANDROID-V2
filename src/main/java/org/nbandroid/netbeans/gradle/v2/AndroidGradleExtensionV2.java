@@ -75,6 +75,7 @@ import org.nbandroid.netbeans.gradle.v2.layout.parsers.AndroidResValuesProvider;
 import org.nbandroid.netbeans.gradle.v2.project.AndroidSdkConfigProvider;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
+import org.nbandroid.netbeans.gradle.v2.template.PrivilegedTemplatesImpl;
 import org.netbeans.api.project.Project;
 import org.netbeans.gradle.project.NbGradleProject;
 import org.netbeans.gradle.project.api.config.GradleArgumentQuery;
@@ -154,6 +155,7 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         items.add(new BuildCustomizerProvider());
         items.add(new AndroidTestsProvider());
         items.add(new GradleDebugInfo(project));
+        items.add(new PrivilegedTemplatesImpl());
         items.add(new ProjectRefResolver(project));
         items.add(Launches.createLauncher());
         items.add(new TestOutputConsumerLookupProvider().createAdditionalLookup(

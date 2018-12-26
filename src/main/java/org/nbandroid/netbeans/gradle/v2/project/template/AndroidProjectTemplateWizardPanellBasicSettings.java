@@ -48,6 +48,7 @@ public class AndroidProjectTemplateWizardPanellBasicSettings implements WizardDe
         return component;
     }
 
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(AndroidProjectTemplateWizardPanellBasicSettings.class);
     }
@@ -59,12 +60,14 @@ public class AndroidProjectTemplateWizardPanellBasicSettings implements WizardDe
 
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
 
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
 
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -74,7 +77,7 @@ public class AndroidProjectTemplateWizardPanellBasicSettings implements WizardDe
     protected final void fireChangeEvent() {
         Set<ChangeListener> ls;
         synchronized (listeners) {
-            ls = new HashSet<ChangeListener>(listeners);
+            ls = new HashSet<>(listeners);
         }
         ChangeEvent ev = new ChangeEvent(this);
         for (ChangeListener l : ls) {
@@ -82,11 +85,13 @@ public class AndroidProjectTemplateWizardPanellBasicSettings implements WizardDe
         }
     }
 
+    @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         component.read(wizardDescriptor);
     }
 
+    @Override
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
@@ -96,6 +101,7 @@ public class AndroidProjectTemplateWizardPanellBasicSettings implements WizardDe
         return true;
     }
 
+    @Override
     public void validate() throws WizardValidationException {
         getComponent();
         component.validate(wizardDescriptor);

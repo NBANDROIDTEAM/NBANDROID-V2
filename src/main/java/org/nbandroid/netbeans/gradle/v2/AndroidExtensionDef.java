@@ -34,6 +34,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import org.gradle.tooling.model.gradle.GradleBuild;
+import org.nbandroid.netbeans.gradle.api.AndroidProjects;
 import org.nbandroid.netbeans.gradle.v2.gradle.FindAndroidVisitor;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkImpl;
@@ -140,7 +141,7 @@ public class AndroidExtensionDef implements GradleProjectExtensionDef<Serializab
             } catch (Exception exception) {
             }
             if (localProperties == null) {
-                Project rootProject = findRootProject(project.getProjectDirectory(), project);
+                Project rootProject = AndroidProjects.findRootProject(project.getProjectDirectory(), project);
                 localProperties = rootProject.getProjectDirectory().createData(LOCAL_PROPERTIES);
             }
         }
@@ -277,15 +278,6 @@ public class AndroidExtensionDef implements GradleProjectExtensionDef<Serializab
             } else {
                 return null;
             }
-        }
-    }
-
-    private Project findRootProject(FileObject root, Project current) {
-        Project owner = FileOwnerQuery.getOwner(root.getParent());
-        if ((owner instanceof NbGradleProject) && !owner.equals(current)) {
-            return findRootProject(root.getParent(), owner);
-        } else {
-            return current;
         }
     }
 
