@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.template.mobile;
+package org.nbandroid.netbeans.gradle.v2.template;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -26,24 +26,25 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 
-public class ActivityWizardSummaryPanel implements WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel {
+public class ProjectWizardSummaryPanel implements WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel {
 
     public static enum Type {
         MOBILE,
         WEAR,
-        TV
+        TV,
+        FILE
     }
 
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private ActivityVisualSummaryPanel component;
+    private ProjectVisualSummaryPanel component;
     private WizardDescriptor wizardDescriptor;
 
     private final Type type;
 
-    public ActivityWizardSummaryPanel(Type type) {
+    public ProjectWizardSummaryPanel(Type type) {
         this.type = type;
     }
 
@@ -53,9 +54,9 @@ public class ActivityWizardSummaryPanel implements WizardDescriptor.Panel, Wizar
     // but never displayed, or not all panels are displayed, it is better to
     // create only those which really need to be visible.
     @Override
-    public ActivityVisualSummaryPanel getComponent() {
+    public ProjectVisualSummaryPanel getComponent() {
         if (component == null) {
-            component = new ActivityVisualSummaryPanel(this, type);
+            component = new ProjectVisualSummaryPanel(this, type);
         }
         return component;
     }

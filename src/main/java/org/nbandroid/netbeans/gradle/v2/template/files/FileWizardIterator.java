@@ -16,9 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.template.wear;
+package org.nbandroid.netbeans.gradle.v2.template.files;
 
-import org.nbandroid.netbeans.gradle.v2.template.ProjectWizardSummaryPanel;
 import android.studio.imports.templates.Parameter;
 import android.studio.imports.templates.Template;
 import android.studio.imports.templates.TemplateManager;
@@ -46,25 +45,20 @@ import org.nbandroid.netbeans.gradle.api.AndroidConstants;
 import org.nbandroid.netbeans.gradle.api.AndroidProjects;
 import org.nbandroid.netbeans.gradle.config.BuildVariant;
 import org.nbandroid.netbeans.gradle.query.GradleAndroidSources;
-import org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelConfigureActivityAndroidSettings;
-import org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings;
 import org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_PACKAGE;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_SDK;
-import org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelWearActivityAndroidSettings;
-import org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplateWizardIterator;
-import org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplateWizardPanelConfigureActivityAndroidSettings;
-import org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplateWizardPanelWearActivityAndroidSettings;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.ProjectTemplateLoader;
 import org.nbandroid.netbeans.gradle.v2.project.template.parameters.Globals;
 import org.nbandroid.netbeans.gradle.v2.project.template.parameters.TemplateValueInjector;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
-import org.nbandroid.netbeans.gradle.v2.template.mobile.*;
+import org.nbandroid.netbeans.gradle.v2.template.ProjectWizardSummaryPanel;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.api.templates.TemplateRegistrations;
 import org.netbeans.gradle.project.NbGradleProject;
 import org.netbeans.modules.project.ui.NewFileWizard;
 import org.openide.WizardDescriptor;
@@ -75,20 +69,77 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 
 // TODO define position attribute
-@TemplateRegistration(category = {"android-activity"}, id = "WearTemplate.java", position = 50, folder = "Android", displayName = "#WearActivityWizardIterator_displayName", description = "wearActivity.html", iconBase = "org/netbeans/modules/android/project/ui/resources/wear.png")
-@Messages("WearActivityWizardIterator_displayName=Wear Activity")
-public final class WearActivityWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
+@TemplateRegistrations({
+    @TemplateRegistration(category = {"android-files"}, id = "BroadcastReceiver.java", position = 11, folder = "Android", displayName = "#FileWizardIterator_displayName", description = "BroadcastReceiver.html", iconBase = "org/nbandroid/netbeans/gradle/v2/template/files/android-file.png"),
+    @TemplateRegistration(category = {"android-files"}, id = "ContentProvider.java", position = 12, folder = "Android", displayName = "#FileWizardIterator_displayName1", description = "ContentProvider.html", iconBase = "org/nbandroid/netbeans/gradle/v2/template/files/android-file.png"),
+    @TemplateRegistration(category = {"android-files"}, id = "IntentService.java", position = 13, folder = "Android", displayName = "#FileWizardIterator_displayName2", description = "IntentService.html", iconBase = "org/nbandroid/netbeans/gradle/v2/template/files/android-file.png"),
+    @TemplateRegistration(category = {"android-files"}, id = "Service.java", position = 14, folder = "Android", displayName = "#FileWizardIterator_displayName3", description = "Service.html", iconBase = "org/nbandroid/netbeans/gradle/v2/template/files/android-file.png"),
+    @TemplateRegistration(category = {"android-files"}, id = "SliceProvider.java", position = 15, folder = "Android", displayName = "#FileWizardIterator_displayName4", description = "SliceProvider.html", iconBase = "org/nbandroid/netbeans/gradle/v2/template/files/android-file.png"),})
+@Messages({"FileWizardIterator_displayName=Broadcast Receiver",
+    "FileWizardIterator_displayName1=Content Provider",
+    "FileWizardIterator_displayName2=Service (IntentService)",
+    "FileWizardIterator_displayName3=Service",
+    "FileWizardIterator_displayName4=Slice Provider"})
+public final class FileWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
+
+    public static enum Type {
+        UNKNOWN("UNKNOWN"),
+        CONTENT_PROVIDER("Content Provider"),
+        INTENT_SERVICE("Service (IntentService)"),
+        SERVICE("Service"),
+        SLICE_PROVIDER("Slice Provider"),
+        BROADCAST_RECEIVER("Broadcast Receiver");
+
+        private final String displayName;
+        private final Template template;
+
+        private Type(String displayName) {
+            this.displayName = displayName;
+            List<Template> templates = TemplateManager.findTemplates("other");
+            Template tmp = null;
+            for (Template templ : templates) {
+                if (displayName.equals(templ.getMetadata().getTitle())) {
+                    tmp = templ;
+                }
+            }
+            this.template = tmp;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public Template getTemplate() {
+            return template;
+        }
+
+        @Override
+        public String toString() {
+            return displayName; //To change body of generated methods, choose Tools | Templates.
+        }
+
+        public static Type find(String displayName) {
+            for (Type value : Type.values()) {
+                if (displayName.equals(value.displayName)) {
+                    return value;
+                }
+            }
+            return UNKNOWN;
+        }
+
+    }
 
     private int index;
+    private Type type = Type.UNKNOWN;
 
+    public static final String PROP_SUB_PROJECT_FOLDER = "PROP_SUB_PROJECT_FOLDER";
+    public static final String PROP_PLATFORM = "PROP_PLATFORM";
     private WizardDescriptor wizard;
     private List<WizardDescriptor.Panel<WizardDescriptor>> panels;
     public static final String MANIFEST_ROOT_FOLDER = "MANIFEST_ROOT_FOLDER";
     public static final String BUILD_VARIANT = "BUILD_VARIANT";
     public static final String BUILD_TOOL_VERSION = "BUILD_TOOL_VERSION";
     public static final String ERROR_NO_ANDROID = "ERROR_NO_ANDROID";
-    private final WizardDescriptor.Panel panel_wear = new AndroidProjectTemplateWizardPanelWearActivityAndroidSettings();
-    private final WizardDescriptor.Panel panel_wear_config = new AndroidProjectTemplateWizardPanelConfigureActivityAndroidSettings(AndroidProjectTemplatePanelWearActivityAndroidSettings.PROP_WEAR_TEMPLATE, AndroidProjectTemplatePanelConfigureActivityAndroidSettings.PROP_WEAR_ACTIVITY_PARAMETERS);
     private List<String> steps;
 
     @Override
@@ -96,12 +147,12 @@ public final class WearActivityWizardIterator implements WizardDescriptor.Instan
         Set<FileObject> resultSet = new LinkedHashSet<>();
         Map<String, Object> parameters = new HashMap<>();
         parameters.put(BUILD_VARIANT, wizard.getProperty(BUILD_VARIANT));
-        String mobileFolder = (String) wizard.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_FOLDER);
-        Template mobileTemplate = (Template) wizard.getProperty(AndroidProjectTemplatePanelWearActivityAndroidSettings.PROP_WEAR_TEMPLATE);
-        Map<Parameter, Object> userValues = (Map<Parameter, Object>) wizard.getProperty(AndroidProjectTemplatePanelConfigureActivityAndroidSettings.PROP_WEAR_ACTIVITY_PARAMETERS);
+        String mobileFolder = (String) wizard.getProperty(PROP_SUB_PROJECT_FOLDER);
+        Template mobileTemplate = type.getTemplate();
+        Map<Parameter, Object> userValues = (Map<Parameter, Object>) wizard.getProperty(ConfigureFileVisualAndroidSettings.PROP_FILE_PARAMETERS);
         if (mobileTemplate != null && userValues != null) {
             mobileTemplate.getMetadata().configureParameters(parameters);
-            TemplateValueInjector.setupNewModule(parameters, wizard, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_PLATFORM, false);
+            TemplateValueInjector.setupNewModule(parameters, wizard, PROP_PLATFORM, false);
             TemplateValueInjector.setupModuleRoots(parameters, wizard, mobileFolder);
             for (Map.Entry<Parameter, Object> entry : userValues.entrySet()) {
                 Parameter parameter = entry.getKey();
@@ -166,6 +217,8 @@ public final class WearActivityWizardIterator implements WizardDescriptor.Instan
     @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
+        String displayName = (String) wizard.getProperty("NewFileWizard_Title");
+        type = Type.find(displayName);
         index = 0;
         panels = createPanels();
         // Make sure list of steps is accurate.
@@ -217,15 +270,14 @@ public final class WearActivityWizardIterator implements WizardDescriptor.Instan
                 if (projectPlatform != null) {
                     AndroidSdk sdk = projectPlatform.getSdk();
                     wizard.putProperty(PROP_PROJECT_SDK, sdk);
-                    wizard.putProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_PLATFORM, projectPlatform);
-                    wizard.putProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_ENABLED, true);
+                    wizard.putProperty(PROP_PLATFORM, projectPlatform);
                 }
                 Project rootProject = AndroidProjects.findRootProject(project.getProjectDirectory(), project);
                 if (rootProject != null) {
                     wizard.putProperty(AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_DIR, FileUtil.toFile(rootProject.getProjectDirectory()));
                     String folderName = project.getProjectDirectory().getPath().replace(rootProject.getProjectDirectory().getPath(), "").substring(1);
                     if (!folderName.contains("/") && !folderName.contains("\\")) {
-                        wizard.putProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_FOLDER, folderName);
+                        wizard.putProperty(PROP_SUB_PROJECT_FOLDER, folderName);
                     }
                 }
                 AndroidProject aPrj = project.getLookup().lookup(AndroidProject.class);
@@ -306,16 +358,14 @@ public final class WearActivityWizardIterator implements WizardDescriptor.Instan
         List<String> tmp = new ArrayList<>();
         tmp.add("Choose File Type");
         tmp.add("Android project summary");
-        tmp.add(AndroidProjectTemplateWizardIterator.TEXT_WEAR);
-        tmp.add(AndroidProjectTemplateWizardIterator.TEXT_WEAR_CONFIG);
+        tmp.add(type.getDisplayName() + " settings");
         return tmp;
     }
 
     private List<WizardDescriptor.Panel<WizardDescriptor>> createPanels() {
         List<WizardDescriptor.Panel<WizardDescriptor>> tmp = new ArrayList<>();
-        tmp.add(new ProjectWizardSummaryPanel(ProjectWizardSummaryPanel.Type.WEAR));
-        tmp.add(panel_wear);
-        tmp.add(panel_wear_config);
+        tmp.add(new ProjectWizardSummaryPanel(ProjectWizardSummaryPanel.Type.FILE));
+        tmp.add(new ConfigureFileWizardAndroidSettings(type));
         return tmp;
     }
 
