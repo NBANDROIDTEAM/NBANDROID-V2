@@ -1,7 +1,20 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.nbandroid.netbeans.gradle.v2.template.mobile;
 
@@ -18,7 +31,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -84,6 +96,7 @@ public final class MobileActivityWizardIterator implements WizardDescriptor.Inst
     public Set<?> instantiate() throws IOException {
         Set<FileObject> resultSet = new LinkedHashSet<>();
         Map<String, Object> parameters = new HashMap<>();
+        parameters.put(BUILD_VARIANT, wizard.getProperty(BUILD_VARIANT));
         String mobileFolder = (String) wizard.getProperty(PROP_PHONE_TABLET_FOLDER);
         Template mobileTemplate = (Template) wizard.getProperty(AndroidProjectTemplatePanelMobileActivityAndroidSettings.PROP_MOBILE_TEMPLATE);
         Map<Parameter, Object> userValues = (Map<Parameter, Object>) wizard.getProperty(AndroidProjectTemplatePanelConfigureActivityAndroidSettings.PROP_MOBILE_ACTIVITY_PARAMETERS);
@@ -103,7 +116,7 @@ public final class MobileActivityWizardIterator implements WizardDescriptor.Inst
             }
         }
 
-        return Collections.emptySet();
+        return resultSet;
     }
 
     public List<FileObject> processTemplate(Template projectTemplate, Map<String, Object> parameters) {
