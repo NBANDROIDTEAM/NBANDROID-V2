@@ -64,6 +64,13 @@ public class AndroidProjectTemplatePanelConfigureActivityAndroidSettings extends
     public static final String PROP_TV_ACTIVITY_PARAMETERS = "PROP_TV_ACTIVITY_PARAMETERS";
     private final String templateType;
     private final String activityType;
+    private boolean newProject = true;
+
+    public AndroidProjectTemplatePanelConfigureActivityAndroidSettings(AndroidProjectTemplateWizardPanelConfigureActivityAndroidSettings panel, String templateType, String activityType, boolean newProject) {
+        this(panel, templateType, activityType);
+        this.newProject = newProject;
+
+    }
 
     public AndroidProjectTemplatePanelConfigureActivityAndroidSettings(AndroidProjectTemplateWizardPanelConfigureActivityAndroidSettings panel, String templateType, String activityType) {
         initComponents();
@@ -192,13 +199,23 @@ public class AndroidProjectTemplatePanelConfigureActivityAndroidSettings extends
      * hide.
      */
     private boolean isParameterVisible(Parameter parameter) {
-        boolean status = (!ATTR_PACKAGE_NAME.equals(parameter.id)
-                && !ATTR_IS_LAUNCHER.equals(parameter.id)
-                && !ATTR_PARENT_ACTIVITY_CLASS.equals(parameter.id));
-        if (parameter.visibility != null && ("isInstantApp!false".equals(parameter.visibility) || "isNewProject!false".equals(parameter.visibility) || "false".equals(parameter.visibility))) {
-            return false;
+        if (newProject) {
+            boolean status = (!ATTR_PACKAGE_NAME.equals(parameter.id)
+                    && !ATTR_IS_LAUNCHER.equals(parameter.id)
+                    && !ATTR_PARENT_ACTIVITY_CLASS.equals(parameter.id));
+            if (parameter.visibility != null && ("isInstantApp!false".equals(parameter.visibility) || "isNewProject!false".equals(parameter.visibility) || "false".equals(parameter.visibility))) {
+                return false;
+            }
+            return status;
+        } else {
+            boolean status = (!ATTR_PACKAGE_NAME.equals(parameter.id)
+                    && !ATTR_IS_LAUNCHER.equals(parameter.id)
+                    && !ATTR_PARENT_ACTIVITY_CLASS.equals(parameter.id));
+            if (parameter.visibility != null && ("isInstantApp!false".equals(parameter.visibility) || "!isNewProject".equals(parameter.visibility) || "false".equals(parameter.visibility))) {
+                return false;
+            }
+            return status;
         }
-        return status;
     }
 
     private final StringEvaluator myEvaluator = new StringEvaluator();
@@ -210,6 +227,7 @@ public class AndroidProjectTemplatePanelConfigureActivityAndroidSettings extends
         Map<String, Object> additionalValues = Maps.newHashMap();
         additionalValues.put(TemplateMetadata.ATTR_PACKAGE_NAME, packageName);
         additionalValues.put(TemplateMetadata.ATTR_COMPANY_DOMAIN, domain);
+        additionalValues.put("generateLayout", true);
         additionalValues.put("includeInstantAppUrl", false);
 
         Map<String, Object> allValues = Maps.newHashMap(additionalValues);

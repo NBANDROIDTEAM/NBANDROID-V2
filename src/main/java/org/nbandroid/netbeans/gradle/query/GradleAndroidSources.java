@@ -80,6 +80,8 @@ public class GradleAndroidSources implements Sources, AndroidModelAware {
             return new SourceGroup[]{GenericSources.group(project, project.getProjectDirectory(), info.getName(), info.getDisplayName(), null, null)};
         } else if (type.equals(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
             return groupSrcMainJava();
+        } else if (type.equals(AndroidConstants.ANDROID_MANIFEST_XML)) {
+            return groupManifest();
         } else if (type.equals(AndroidConstants.SOURCES_TYPE_INSTRUMENT_TEST_JAVA)) {
             return groupSrcInstrumentTestJava();
         } else if (type.equals(AndroidConstants.SOURCES_TYPE_GENERATED_JAVA)) {
@@ -274,8 +276,19 @@ public class GradleAndroidSources implements Sources, AndroidModelAware {
         return grps.toArray(new SourceGroup[grps.size()]);
     }
 
+    private SourceGroup[] groupManifest() {
+        List<SourceGroup> grps = new ArrayList<>();
+        File manifestFile = aProject.getDefaultConfig().getSourceProvider().getManifestFile();
+        if (manifestFile != null) {
+            File rootFolder = manifestFile.getParentFile();
+            FileObject rootFo = FileUtil.toFileObject(rootFolder);
+            grps.add(GenericSources.group(project, rootFo, AndroidConstants.ANDROID_MANIFEST_XML, AndroidConstants.ANDROID_MANIFEST_XML, null, null));
+        }
+        return grps.toArray(new SourceGroup[grps.size()]);
+    }
+
     private SourceGroup[] groupSrcMainRes() {
-        List<SourceGroup> grps = new ArrayList<SourceGroup>();
+        List<SourceGroup> grps = new ArrayList<>();
         FileObject prjDir = project.getProjectDirectory();
         if (aProject != null) {
             for (File srcDir : aProject.getDefaultConfig().getSourceProvider().getResDirectories()) {

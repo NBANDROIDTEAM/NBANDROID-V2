@@ -58,7 +58,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.gradle.impldep.com.google.common.collect.ImmutableList;
+import org.gradle.internal.impldep.com.google.common.collect.ImmutableList;
 import org.nbandroid.netbeans.gradle.core.sdk.NbDownloader;
 import org.nbandroid.netbeans.gradle.core.sdk.NbOutputWindowProgressIndicator;
 import org.nbandroid.netbeans.gradle.core.sdk.SdkLogProvider;

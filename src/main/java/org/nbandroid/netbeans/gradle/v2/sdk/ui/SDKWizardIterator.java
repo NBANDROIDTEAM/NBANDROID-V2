@@ -35,7 +35,7 @@ import org.openide.util.NbBundle.Messages;
 /**
  * @author ArSi
  */
-@TemplateRegistration(folder = "Android", displayName = "#SDKWizardIterator_displayName", iconBase = "org/nbandroid/netbeans/gradle/v2/sdk/ui/sdk_manager.png", description = "sDK.html")
+@TemplateRegistration(position = 999999, folder = "Android", displayName = "#SDKWizardIterator_displayName", iconBase = "org/nbandroid/netbeans/gradle/v2/sdk/ui/sdk_manager.png", description = "sDK.html")
 @Messages("SDKWizardIterator_displayName=Android SDK Installer")
 public final class SDKWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor>, ChangeListener {
 

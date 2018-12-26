@@ -93,12 +93,12 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
 
     private final String text_project = NbBundle.getMessage(AndroidProjectTemplateWizardIterator.class, "LBL_CreateProjectStep");
     private final String text_sdk = "Android platform";
-    private final String text_mobile = "Mobile Activity";
-    private final String text_mobile_config = "Configure Mobile Activity";
-    private final String text_wear = "Wear Activity";
-    private final String text_wear_config = "Configure Wear Activity";
-    private final String text_tv = "TV Activity";
-    private final String text_tv_config = "Configure TV Activity";
+    public static final String TEXT_MOBILE = "Mobile Activity";
+    public static final String TEXT_MOBILE_CONFIG = "Configure Mobile Activity";
+    public static final String TEXT_WEAR = "Wear Activity";
+    public static final String TEXT_WEAR_CONFIG = "Configure Wear Activity";
+    public static final String TEXT_TV = "TV Activity";
+    public static final String TEXT_TV_CONFIG = "Configure TV Activity";
     private List<String> steps;
 
     public AndroidProjectTemplateWizardIterator() {
@@ -125,12 +125,12 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
         List<String> tmp = new ArrayList<>();
         tmp.add(text_project);
         tmp.add(text_sdk);
-        tmp.add(text_mobile);
-        tmp.add(text_mobile_config);
-        tmp.add(text_wear);
-        tmp.add(text_wear_config);
-        tmp.add(text_tv);
-        tmp.add(text_tv_config);
+        tmp.add(TEXT_MOBILE);
+        tmp.add(TEXT_MOBILE_CONFIG);
+        tmp.add(TEXT_WEAR);
+        tmp.add(TEXT_WEAR_CONFIG);
+        tmp.add(TEXT_TV);
+        tmp.add(TEXT_TV_CONFIG);
         return tmp;
     }
 
@@ -142,7 +142,7 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
         resultSet.add(dir);
         Template projectTemplate = TemplateManager.findProjectTemplate("Android Project");
         Map<String, Object> parameters = new HashMap<>();
-        TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_PLATFORM);
+        TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_PLATFORM, true);
         TemplateValueInjector.setupModuleRoots(parameters, wiz, "");
         //basic project structure
         if (projectTemplate != null) {
@@ -161,7 +161,7 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
             Template mobileTemplate = TemplateManager.findProjectTemplate("Android Module");
             if (mobileTemplate != null) {
                 mobileTemplate.getMetadata().configureParameters(parameters);
-                TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_PLATFORM);
+                TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_PLATFORM, true);
                 TemplateValueInjector.setupModuleRoots(parameters, wiz, mobileFolder);
                 parameters.put("unitTestsSupported", false);
                 List<FileObject> toOpen = processTemplate(mobileTemplate, parameters);
@@ -180,7 +180,7 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
         Map<Parameter, Object> userValues = (Map<Parameter, Object>) wiz.getProperty(AndroidProjectTemplatePanelConfigureActivityAndroidSettings.PROP_MOBILE_ACTIVITY_PARAMETERS);
         if (mobileTemplate != null && userValues != null) {
             mobileTemplate.getMetadata().configureParameters(parameters);
-            TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_PLATFORM);
+            TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_PLATFORM, true);
             TemplateValueInjector.setupModuleRoots(parameters, wiz, mobileFolder);
             for (Map.Entry<Parameter, Object> entry : userValues.entrySet()) {
                 Parameter parameter = entry.getKey();
@@ -199,7 +199,7 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
             Template wearTemplate = TemplateManager.findProjectTemplate("Wear OS Module");
             if (wearTemplate != null) {
                 wearTemplate.getMetadata().configureParameters(parameters);
-                TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_PLATFORM);
+                TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_PLATFORM, true);
                 parameters.put(ATTR_BUILD_API, 28);
                 parameters.put(ATTR_BUILD_API_STRING, String.valueOf(28));
                 parameters.put(ATTR_TARGET_API, 28);
@@ -224,7 +224,7 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
         userValues = (Map<Parameter, Object>) wiz.getProperty(AndroidProjectTemplatePanelConfigureActivityAndroidSettings.PROP_WEAR_ACTIVITY_PARAMETERS);
         if (wearTemplate != null && userValues != null) {
             wearTemplate.getMetadata().configureParameters(parameters);
-            TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_PLATFORM);
+            TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_PLATFORM, true);
             TemplateValueInjector.setupModuleRoots(parameters, wiz, wearFolder);
             for (Map.Entry<Parameter, Object> entry : userValues.entrySet()) {
                 Parameter parameter = entry.getKey();
@@ -244,7 +244,7 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
             Template tvTemplate = TemplateManager.findProjectTemplate("Android TV Module");
             if (tvTemplate != null) {
                 tvTemplate.getMetadata().configureParameters(parameters);
-                TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_PLATFORM);
+                TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_PLATFORM, true);
                 TemplateValueInjector.setupModuleRoots(parameters, wiz, tvFolder);
                 parameters.put("unitTestsSupported", false);
                 parameters.put(TemplateMetadata.ATTR_CREATE_ACTIVITY, wiz.getProperty(AndroidProjectTemplatePanelTvActivityAndroidSettings.PROP_TV_TEMPLATE) != null);
@@ -265,7 +265,7 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
         userValues = (Map<Parameter, Object>) wiz.getProperty(AndroidProjectTemplatePanelConfigureActivityAndroidSettings.PROP_TV_ACTIVITY_PARAMETERS);
         if (tvActTemplate != null && userValues != null) {
             tvActTemplate.getMetadata().configureParameters(parameters);
-            TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_PLATFORM);
+            TemplateValueInjector.setupNewModule(parameters, wiz, AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_PLATFORM, true);
             TemplateValueInjector.setupModuleRoots(parameters, wiz, tvFolder);
             for (Map.Entry<Parameter, Object> entry : userValues.entrySet()) {
                 Parameter parameter = entry.getKey();
@@ -472,10 +472,10 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
                     panels.remove(panel_tv);
                     panels.remove(panel_tv_config);
                     steps = createSteps();
-                    steps.remove(text_wear);
-                    steps.remove(text_wear_config);
-                    steps.remove(text_tv);
-                    steps.remove(text_tv_config);
+                    steps.remove(TEXT_WEAR);
+                    steps.remove(TEXT_WEAR_CONFIG);
+                    steps.remove(TEXT_TV);
+                    steps.remove(TEXT_TV_CONFIG);
                     wiz.putProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray(new String[steps.size()]));
                 } else if (!mobile && wear && !tv) {
                     panels = createPanels();
@@ -484,10 +484,10 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
                     panels.remove(panel_tv);
                     panels.remove(panel_tv_config);
                     steps = createSteps();
-                    steps.remove(text_mobile);
-                    steps.remove(text_mobile_config);
-                    steps.remove(text_tv);
-                    steps.remove(text_tv_config);
+                    steps.remove(TEXT_MOBILE);
+                    steps.remove(TEXT_MOBILE_CONFIG);
+                    steps.remove(TEXT_TV);
+                    steps.remove(TEXT_TV_CONFIG);
                     wiz.putProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray(new String[steps.size()]));
                 } else if (!mobile && !wear && tv) {
                     panels = createPanels();
@@ -496,34 +496,34 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
                     panels.remove(panel_wear);
                     panels.remove(panel_wear_config);
                     steps = createSteps();
-                    steps.remove(text_mobile);
-                    steps.remove(text_mobile_config);
-                    steps.remove(text_wear);
-                    steps.remove(text_wear_config);
+                    steps.remove(TEXT_MOBILE);
+                    steps.remove(TEXT_MOBILE_CONFIG);
+                    steps.remove(TEXT_WEAR);
+                    steps.remove(TEXT_WEAR_CONFIG);
                     wiz.putProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray(new String[steps.size()]));
                 } else if (mobile && wear && !tv) {
                     panels = createPanels();
                     panels.remove(panel_tv);
                     panels.remove(panel_tv_config);
                     steps = createSteps();
-                    steps.remove(text_tv);
-                    steps.remove(text_tv_config);
+                    steps.remove(TEXT_TV);
+                    steps.remove(TEXT_TV_CONFIG);
                     wiz.putProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray(new String[steps.size()]));
                 } else if (mobile && !wear && tv) {
                     panels = createPanels();
                     panels.remove(panel_wear);
                     panels.remove(panel_wear_config);
                     steps = createSteps();
-                    steps.remove(text_wear);
-                    steps.remove(text_wear_config);
+                    steps.remove(TEXT_WEAR);
+                    steps.remove(TEXT_WEAR_CONFIG);
                     wiz.putProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray(new String[steps.size()]));
                 } else if (!mobile && wear && tv) {
                     panels = createPanels();
                     panels.remove(panel_mobile);
                     panels.remove(panel_mobile_config);
                     steps = createSteps();
-                    steps.remove(text_mobile);
-                    steps.remove(text_mobile_config);
+                    steps.remove(TEXT_MOBILE);
+                    steps.remove(TEXT_MOBILE_CONFIG);
                     wiz.putProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray(new String[steps.size()]));
                 } else {
                     panels = createPanels();
@@ -536,13 +536,13 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
             if (value instanceof Boolean) {
                 if (((boolean) value) == false) {
                     panels.remove(panel_mobile_config);
-                    steps.remove(text_mobile_config);
+                    steps.remove(TEXT_MOBILE_CONFIG);
                     wiz.putProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray(new String[steps.size()]));
                 } else {
                     if (!panels.contains(panel_mobile_config)) {
                         int indexOf = panels.indexOf(panel_mobile);
                         panels.add(indexOf + 1, panel_mobile_config);
-                        steps.add(indexOf + 1, text_mobile_config);
+                        steps.add(indexOf + 1, TEXT_MOBILE_CONFIG);
                     }
                     wiz.putProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray(new String[steps.size()]));
                 }
@@ -552,13 +552,13 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
             if (value instanceof Boolean) {
                 if (((boolean) value) == false) {
                     panels.remove(panel_wear_config);
-                    steps.remove(text_wear_config);
+                    steps.remove(TEXT_WEAR_CONFIG);
                     wiz.putProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray(new String[steps.size()]));
                 } else {
                     if (!panels.contains(panel_wear_config)) {
                         int indexOf = panels.indexOf(panel_wear);
                         panels.add(indexOf + 1, panel_wear_config);
-                        steps.add(indexOf + 1, text_wear_config);
+                        steps.add(indexOf + 1, TEXT_WEAR_CONFIG);
                     }
                     wiz.putProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray(new String[steps.size()]));
                 }
@@ -568,13 +568,13 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
             if (value instanceof Boolean) {
                 if (((boolean) value) == false) {
                     panels.remove(panel_tv_config);
-                    steps.remove(text_tv_config);
+                    steps.remove(TEXT_TV_CONFIG);
                     wiz.putProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray(new String[steps.size()]));
                 } else {
                     if (!panels.contains(panel_tv_config)) {
                         int indexOf = panels.indexOf(panel_tv);
                         panels.add(indexOf + 1, panel_tv_config);
-                        steps.add(indexOf + 1, text_tv_config);
+                        steps.add(indexOf + 1, TEXT_TV_CONFIG);
                     }
                     wiz.putProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray(new String[steps.size()]));
                 }

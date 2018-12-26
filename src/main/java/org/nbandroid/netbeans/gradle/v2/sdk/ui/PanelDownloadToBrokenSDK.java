@@ -5,6 +5,7 @@
  */
 package org.nbandroid.netbeans.gradle.v2.sdk.ui;
 
+import com.android.utils.FileUtils;
 import com.sun.javafx.PlatformUtil;
 import java.io.File;
 import java.io.IOException;
@@ -15,7 +16,6 @@ import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.gradle.impldep.org.apache.commons.io.FileUtils;
 import org.nbandroid.netbeans.gradle.v2.maven.MavenDownloader;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import static org.nbandroid.netbeans.gradle.v2.sdk.ui.SDKVisualPanelInstall.SDK_INSTALLED;
@@ -288,7 +288,7 @@ public class PanelDownloadToBrokenSDK extends javax.swing.JPanel {
 
                 if (f.list().length > 0) {
                     try {
-                        FileUtils.deleteDirectory(new File(destDir));
+                        FileUtils.deleteDirectoryContents(new File(destDir));
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }

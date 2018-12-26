@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-import org.gradle.impldep.org.apache.commons.io.IOUtils;
+import org.gradle.internal.impldep.org.apache.commons.io.IOUtils;
 import org.nbandroid.netbeans.gradle.v2.gradle.build.parser.AndroidGradleDependencies;
 import org.nbandroid.netbeans.gradle.v2.gradle.build.parser.AndroidGradleDependenciesVisitor;
 import org.nbandroid.netbeans.gradle.v2.gradle.build.parser.AndroidGradleDependencyUpdater;

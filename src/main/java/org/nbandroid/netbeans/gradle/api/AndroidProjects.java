@@ -24,7 +24,9 @@ import javax.annotation.Nullable;
 import javax.xml.parsers.ParserConfigurationException;
 import org.nbandroid.netbeans.gradle.spi.AndroidPlatformResolver;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.gradle.project.NbGradleProject;
 import org.openide.filesystems.FileObject;
 import org.xml.sax.SAXException;
 
@@ -97,5 +99,14 @@ public class AndroidProjects {
 
     public static ReferenceResolver noReferenceResolver() {
         return new NullRefResolver();
+    }
+
+    public static final Project findRootProject(FileObject root, Project current) {
+        Project owner = FileOwnerQuery.getOwner(root.getParent());
+        if ((owner instanceof NbGradleProject) && !owner.equals(current)) {
+            return findRootProject(root.getParent(), owner);
+        } else {
+            return current;
+        }
     }
 }

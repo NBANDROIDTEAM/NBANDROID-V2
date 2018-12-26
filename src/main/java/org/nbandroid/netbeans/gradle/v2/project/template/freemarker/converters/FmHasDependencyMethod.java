@@ -18,16 +18,23 @@
  */
 package org.nbandroid.netbeans.gradle.v2.project.template.freemarker.converters;
 
+import com.android.builder.model.AndroidArtifact;
+import com.android.builder.model.AndroidLibrary;
+import com.android.builder.model.Dependencies;
+import com.android.builder.model.JavaArtifact;
+import com.android.builder.model.Variant;
 import freemarker.template.SimpleScalar;
 import freemarker.template.TemplateBooleanModel;
 import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModelException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.nbandroid.netbeans.gradle.v2.gradle.build.parser.AndroidGradleDependencies;
 import org.nbandroid.netbeans.gradle.v2.gradle.build.parser.AndroidGradleDependency;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.ProjectTemplateLoader;
 import static org.nbandroid.netbeans.gradle.v2.project.template.freemarker.ProjectTemplateLoader.PROJECT_TEMPLATE_LOADER;
+import static org.nbandroid.netbeans.gradle.v2.template.mobile.MobileActivityWizardIterator.BUILD_VARIANT;
 
 /**
  *
@@ -70,6 +77,35 @@ public class FmHasDependencyMethod implements TemplateMethodModelEx {
                                 return TemplateBooleanModel.TRUE;
                             }
                         }
+                    }
+                }
+            }
+        }
+        Variant variant = (Variant) paramMap.get(BUILD_VARIANT);
+        if (variant instanceof Variant) {
+            Collection<AndroidArtifact> androidArtifacts = variant.getExtraAndroidArtifacts();
+            Collection<JavaArtifact> javaArtifacts = variant.getExtraJavaArtifacts();
+            for (AndroidArtifact next : androidArtifacts) {
+                Dependencies dependencies = next.getDependencies();
+                Collection<AndroidLibrary> libraries = dependencies.getLibraries();
+                for (AndroidLibrary lib : libraries) {
+                    String artifactId = lib.getResolvedCoordinates().getArtifactId();
+                    String groupId = lib.getResolvedCoordinates().getGroupId();
+                    String mavenUrl = groupId + ":" + artifactId;
+                    if (artifact.equalsIgnoreCase(mavenUrl)) {
+                        return TemplateBooleanModel.TRUE;
+                    }
+                }
+            }
+            for (JavaArtifact next : javaArtifacts) {
+                Dependencies dependencies = next.getDependencies();
+                Collection<AndroidLibrary> libraries = dependencies.getLibraries();
+                for (AndroidLibrary lib : libraries) {
+                    String artifactId = lib.getResolvedCoordinates().getArtifactId();
+                    String groupId = lib.getResolvedCoordinates().getGroupId();
+                    String mavenUrl = groupId + ":" + artifactId;
+                    if (artifact.equalsIgnoreCase(mavenUrl)) {
+                        return TemplateBooleanModel.TRUE;
                     }
                 }
             }

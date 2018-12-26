@@ -18,6 +18,7 @@
  */
 package org.nbandroid.netbeans.gradle.v2.maven;
 
+import com.android.utils.FileUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -36,8 +37,7 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.swing.JProgressBar;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.gradle.impldep.org.apache.commons.io.FileUtils;
-import org.gradle.impldep.org.apache.commons.io.IOUtils;
+import org.gradle.internal.impldep.org.apache.commons.io.IOUtils;
 import org.nbandroid.netbeans.gradle.v2.gradle.GradleAndroidRepositoriesProvider;
 import org.nbandroid.netbeans.gradle.v2.gradle.Repository;
 import org.netbeans.api.progress.ProgressHandle;

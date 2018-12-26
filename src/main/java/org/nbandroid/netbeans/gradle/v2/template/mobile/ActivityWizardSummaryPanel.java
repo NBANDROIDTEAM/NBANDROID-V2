@@ -16,9 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.project.template;
+package org.nbandroid.netbeans.gradle.v2.template.mobile;
 
-import java.awt.Component;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
@@ -26,49 +25,66 @@ import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
-/**
- * Panel just asking for basic info.
- */
-public class AndroidProjectTemplateWizardPanellBasicSettings implements WizardDescriptor.Panel,
-        WizardDescriptor.ValidatingPanel {
+public class ActivityWizardSummaryPanel implements WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel {
 
-    private WizardDescriptor wizardDescriptor;
-    private AndroidProjectTemplatePanelVisualBasicSettings component;
-
-    public AndroidProjectTemplateWizardPanellBasicSettings() {
+    public static enum Type {
+        MOBILE,
+        WEAR,
+        TV
     }
 
-    public Component getComponent() {
+    /**
+     * The visual component that displays this panel. If you need to access the
+     * component from this class, just use getComponent().
+     */
+    private ActivityVisualSummaryPanel component;
+    private WizardDescriptor wizardDescriptor;
+
+    private final Type type;
+
+    public ActivityWizardSummaryPanel(Type type) {
+        this.type = type;
+    }
+
+
+    // Get the visual component for the panel. In this template, the component
+    // is kept separate. This can be more efficient: if the wizard is created
+    // but never displayed, or not all panels are displayed, it is better to
+    // create only those which really need to be visible.
+    @Override
+    public ActivityVisualSummaryPanel getComponent() {
         if (component == null) {
-            component = new AndroidProjectTemplatePanelVisualBasicSettings(this);
-            component.setName(NbBundle.getMessage(AndroidProjectTemplateWizardPanellBasicSettings.class, "LBL_CreateProjectStep"));
+            component = new ActivityVisualSummaryPanel(this, type);
         }
         return component;
     }
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(AndroidProjectTemplateWizardPanellBasicSettings.class);
+        // Show no Help button for this panel:
+        return HelpCtx.DEFAULT_HELP;
+        // If you have context help:
+        // return new HelpCtx("help.key.here");
     }
 
+    @Override
     public boolean isValid() {
         getComponent();
         return component.valid(wizardDescriptor);
     }
 
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
     @Override
-    public final void addChangeListener(ChangeListener l) {
+    public void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
 
     @Override
-    public final void removeChangeListener(ChangeListener l) {
+    public void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
@@ -86,25 +102,21 @@ public class AndroidProjectTemplateWizardPanellBasicSettings implements WizardDe
     }
 
     @Override
-    public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor) settings;
+    public void validate() throws WizardValidationException {
+        getComponent();
+        component.validate(wizardDescriptor);
+    }
+
+    @Override
+    public void readSettings(Object data) {
+        wizardDescriptor = (WizardDescriptor) data;
         component.read(wizardDescriptor);
     }
 
     @Override
-    public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
-        component.store(d);
-    }
-
-    public boolean isFinishPanel() {
-        return true;
-    }
-
-    @Override
-    public void validate() throws WizardValidationException {
-        getComponent();
-        component.validate(wizardDescriptor);
+    public void storeSettings(Object data) {
+        wizardDescriptor = (WizardDescriptor) data;
+        component.store(wizardDescriptor);
     }
 
 }

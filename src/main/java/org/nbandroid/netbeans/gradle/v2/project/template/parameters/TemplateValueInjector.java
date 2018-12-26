@@ -39,14 +39,14 @@ import org.openide.WizardDescriptor;
  */
 public class TemplateValueInjector {
 
-    public static void setupNewModule(Map<String, Object> parameters, WizardDescriptor wiz, String platformPropertyName) {
+    public static void setupNewModule(Map<String, Object> parameters, WizardDescriptor wiz, String platformPropertyName, boolean newProject) {
         AndroidSdk androidSdk = (AndroidSdk) wiz.getProperty(PROP_PROJECT_SDK);
         parameters.put(ATTR_SDK_DIR, androidSdk.getSdkPath());
         int maxBuildLevel = (int) wiz.getProperty(PROP_MAX_BUILD_LEVEL);
         AndroidPlatformInfo platformInfo = (AndroidPlatformInfo) wiz.getProperty(platformPropertyName);
         int revision = platformInfo.getAndroidTarget().getRevision();
         Revision revisionBuildTool = platformInfo.getAndroidTarget().getBuildToolInfo().getRevision();
-        parameters.put(ATTR_IS_NEW_PROJECT, true); // Android Modules are called Gradle Projects
+        parameters.put(ATTR_IS_NEW_PROJECT, newProject); // Android Modules are called Gradle Projects
         parameters.put(ATTR_THEME_EXISTS, true); // New modules always have a theme (unless its a library, but it will have no activity)
 
         parameters.put(ATTR_MIN_API_LEVEL, platformInfo.getAndroidVersion().getApiLevel());
