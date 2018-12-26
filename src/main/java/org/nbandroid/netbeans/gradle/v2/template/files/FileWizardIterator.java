@@ -70,12 +70,24 @@ import org.openide.util.NbBundle.Messages;
 
 // TODO define position attribute
 @TemplateRegistrations({
-    @TemplateRegistration(category = {"android-files"}, id = "BroadcastReceiver.java", position = 11, folder = "Android", displayName = "#FileWizardIterator_displayName", description = "BroadcastReceiver.html", iconBase = "org/nbandroid/netbeans/gradle/v2/template/files/android-file.png"),})
-@Messages("FileWizardIterator_displayName=Broadcast Receiver")
+    @TemplateRegistration(category = {"android-files"}, id = "BroadcastReceiver.java", position = 11, folder = "Android", displayName = "#FileWizardIterator_displayName", description = "BroadcastReceiver.html", iconBase = "org/nbandroid/netbeans/gradle/v2/template/files/android-file.png"),
+    @TemplateRegistration(category = {"android-files"}, id = "ContentProvider.java", position = 12, folder = "Android", displayName = "#FileWizardIterator_displayName1", description = "ContentProvider.html", iconBase = "org/nbandroid/netbeans/gradle/v2/template/files/android-file.png"),
+    @TemplateRegistration(category = {"android-files"}, id = "IntentService.java", position = 13, folder = "Android", displayName = "#FileWizardIterator_displayName2", description = "IntentService.html", iconBase = "org/nbandroid/netbeans/gradle/v2/template/files/android-file.png"),
+    @TemplateRegistration(category = {"android-files"}, id = "Service.java", position = 14, folder = "Android", displayName = "#FileWizardIterator_displayName3", description = "Service.html", iconBase = "org/nbandroid/netbeans/gradle/v2/template/files/android-file.png"),
+    @TemplateRegistration(category = {"android-files"}, id = "SliceProvider.java", position = 15, folder = "Android", displayName = "#FileWizardIterator_displayName4", description = "SliceProvider.html", iconBase = "org/nbandroid/netbeans/gradle/v2/template/files/android-file.png"),})
+@Messages({"FileWizardIterator_displayName=Broadcast Receiver",
+    "FileWizardIterator_displayName1=Content Provider",
+    "FileWizardIterator_displayName2=Service (IntentService)",
+    "FileWizardIterator_displayName3=Service",
+    "FileWizardIterator_displayName4=Slice Provider"})
 public final class FileWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
 
     public static enum Type {
         UNKNOWN("UNKNOWN"),
+        CONTENT_PROVIDER("Content Provider"),
+        INTENT_SERVICE("Service (IntentService)"),
+        SERVICE("Service"),
+        SLICE_PROVIDER("Slice Provider"),
         BROADCAST_RECEIVER("Broadcast Receiver");
 
         private final String displayName;
@@ -100,7 +112,6 @@ public final class FileWizardIterator implements WizardDescriptor.InstantiatingI
         public Template getTemplate() {
             return template;
         }
-
 
         @Override
         public String toString() {
