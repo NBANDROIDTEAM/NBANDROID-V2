@@ -10,7 +10,7 @@ The current version supports NetBeans 8.1 and 8.2
 
 ## SNAPSHOT
 The compiled version of the last commit is here:<br>
-**Please update your Gradle Support plugin to 1.4.3**
+**Please update your Gradle Support plugin to 1.4.4**
 
 NetBeans 8.1 http://server.arsi.sk/nbandroid81/
 
