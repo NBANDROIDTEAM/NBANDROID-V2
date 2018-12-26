@@ -35,16 +35,18 @@ import static org.nbandroid.netbeans.gradle.v2.template.mobile.MobileActivityWiz
 import static org.nbandroid.netbeans.gradle.v2.template.mobile.MobileActivityWizardIterator.MANIFEST_ROOT_FOLDER;
 import org.openide.WizardDescriptor;
 
-public final class MobileActivityVisualSummaryPanel extends JPanel {
+public final class ActivityVisualSummaryPanel extends JPanel {
 
-    private final MobileActivityWizardSummaryPanel controler;
+    private final ActivityWizardSummaryPanel controler;
+    private final ActivityWizardSummaryPanel.Type type;
 
     /**
      * Creates new form MobileActivityVisualPanel1
      */
-    public MobileActivityVisualSummaryPanel(MobileActivityWizardSummaryPanel controler) {
+    public ActivityVisualSummaryPanel(ActivityWizardSummaryPanel controler, ActivityWizardSummaryPanel.Type type) {
         initComponents();
         this.controler = controler;
+        this.type = type;
     }
 
     @Override
@@ -77,45 +79,45 @@ public final class MobileActivityVisualSummaryPanel extends JPanel {
         targetSdkVersion = new javax.swing.JLabel();
         buildToolVersion = new javax.swing.JLabel();
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MobileActivityVisualSummaryPanel.class, "MobileActivityVisualSummaryPanel.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.jLabel1.text")); // NOI18N
 
         projectFolder.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(projectFolder, org.openide.util.NbBundle.getMessage(MobileActivityVisualSummaryPanel.class, "MobileActivityVisualSummaryPanel.projectFolder.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectFolder, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.projectFolder.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(MobileActivityVisualSummaryPanel.class, "MobileActivityVisualSummaryPanel.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.jLabel2.text")); // NOI18N
 
         packageName.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(packageName, org.openide.util.NbBundle.getMessage(MobileActivityVisualSummaryPanel.class, "MobileActivityVisualSummaryPanel.packageName.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(packageName, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.packageName.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(MobileActivityVisualSummaryPanel.class, "MobileActivityVisualSummaryPanel.jLabel3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.jLabel3.text")); // NOI18N
 
         androidSdk.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(androidSdk, org.openide.util.NbBundle.getMessage(MobileActivityVisualSummaryPanel.class, "MobileActivityVisualSummaryPanel.androidSdk.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(androidSdk, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.androidSdk.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(MobileActivityVisualSummaryPanel.class, "MobileActivityVisualSummaryPanel.jLabel4.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.jLabel4.text")); // NOI18N
 
         manifestFolder.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(manifestFolder, org.openide.util.NbBundle.getMessage(MobileActivityVisualSummaryPanel.class, "MobileActivityVisualSummaryPanel.manifestFolder.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(manifestFolder, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.manifestFolder.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(MobileActivityVisualSummaryPanel.class, "MobileActivityVisualSummaryPanel.jLabel5.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.jLabel5.text")); // NOI18N
 
         platform.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(platform, org.openide.util.NbBundle.getMessage(MobileActivityVisualSummaryPanel.class, "MobileActivityVisualSummaryPanel.platform.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(platform, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.platform.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(MobileActivityVisualSummaryPanel.class, "MobileActivityVisualSummaryPanel.jLabel6.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.jLabel6.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(MobileActivityVisualSummaryPanel.class, "MobileActivityVisualSummaryPanel.jLabel7.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.jLabel7.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(MobileActivityVisualSummaryPanel.class, "MobileActivityVisualSummaryPanel.jLabel8.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.jLabel8.text")); // NOI18N
 
         minSdkVersion.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(minSdkVersion, org.openide.util.NbBundle.getMessage(MobileActivityVisualSummaryPanel.class, "MobileActivityVisualSummaryPanel.minSdkVersion.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(minSdkVersion, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.minSdkVersion.text")); // NOI18N
 
         targetSdkVersion.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(targetSdkVersion, org.openide.util.NbBundle.getMessage(MobileActivityVisualSummaryPanel.class, "MobileActivityVisualSummaryPanel.targetSdkVersion.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(targetSdkVersion, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.targetSdkVersion.text")); // NOI18N
 
         buildToolVersion.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(buildToolVersion, org.openide.util.NbBundle.getMessage(MobileActivityVisualSummaryPanel.class, "MobileActivityVisualSummaryPanel.buildToolVersion.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buildToolVersion, org.openide.util.NbBundle.getMessage(ActivityVisualSummaryPanel.class, "ActivityVisualSummaryPanel.buildToolVersion.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -227,7 +229,19 @@ public final class MobileActivityVisualSummaryPanel extends JPanel {
                     "Android SDK was not found.");
             return false;
         }
-        property = wizardDescriptor.getProperty(PROP_PHONE_TABLET_PLATFORM);
+        switch (type) {
+            case MOBILE:
+                property = wizardDescriptor.getProperty(PROP_PHONE_TABLET_PLATFORM);
+                break;
+            case WEAR:
+                property = wizardDescriptor.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_PLATFORM);
+                break;
+            case TV:
+                property = wizardDescriptor.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_PLATFORM);
+                break;
+            default:
+                throw new AssertionError(type.name());
+        }
         if (!(property instanceof AndroidPlatformInfo)) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage",
                     "Android Platform was not found.");
@@ -260,7 +274,19 @@ public final class MobileActivityVisualSummaryPanel extends JPanel {
             androidSdk.setText(((AndroidSdk) property).getDisplayName());
             androidSdk.setToolTipText(((AndroidSdk) property).getSdkPath());
         }
-        property = wizardDescriptor.getProperty(PROP_PHONE_TABLET_PLATFORM);
+        switch (type) {
+            case MOBILE:
+                property = wizardDescriptor.getProperty(PROP_PHONE_TABLET_PLATFORM);
+                break;
+            case WEAR:
+                property = wizardDescriptor.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_PLATFORM);
+                break;
+            case TV:
+                property = wizardDescriptor.getProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_PLATFORM);
+                break;
+            default:
+                throw new AssertionError(type.name());
+        }
         if (property instanceof AndroidPlatformInfo) {
             platform.setText(SdkVersionInfo.getCodeName(((AndroidPlatformInfo) property).getAndroidVersion().getApiLevel()) + " " + SdkVersionInfo.getVersionString(((AndroidPlatformInfo) property).getAndroidVersion().getApiLevel()));
             platform.setToolTipText(((AndroidPlatformInfo) property).getAndroidVersion().getApiString());
@@ -275,8 +301,27 @@ public final class MobileActivityVisualSummaryPanel extends JPanel {
             targetSdkVersion.setText(SdkVersionInfo.getCodeName(targetSdk.getApiLevel()) + " " + SdkVersionInfo.getVersionString(targetSdk.getApiLevel()));
             targetSdkVersion.setToolTipText(targetSdk.getApiString());
             wizardDescriptor.putProperty(PROP_MAX_BUILD_LEVEL, targetSdk.getApiLevel());
-            wizardDescriptor.putProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_ENABLED, false);
-            wizardDescriptor.putProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_ENABLED, false);
+            switch (type) {
+                case MOBILE:
+                    wizardDescriptor.putProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_ENABLED, true);
+                    wizardDescriptor.putProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_ENABLED, false);
+                    wizardDescriptor.putProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_ENABLED, false);
+                    break;
+                case WEAR:
+                    wizardDescriptor.putProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_ENABLED, false);
+                    wizardDescriptor.putProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_ENABLED, true);
+                    wizardDescriptor.putProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_ENABLED, false);
+                    break;
+                case TV:
+                    wizardDescriptor.putProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_ENABLED, false);
+                    wizardDescriptor.putProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_WEAR_ENABLED, false);
+                    wizardDescriptor.putProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_ENABLED, true);
+                    break;
+                default:
+                    throw new AssertionError(type.name());
+
+            }
+
         }
         property = wizardDescriptor.getProperty(BUILD_TOOL_VERSION);
         if (property instanceof String) {

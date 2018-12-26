@@ -26,23 +26,36 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 
-public class MobileActivityWizardSummaryPanel implements WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel {
+public class ActivityWizardSummaryPanel implements WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel {
+
+    public static enum Type {
+        MOBILE,
+        WEAR,
+        TV
+    }
 
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private MobileActivityVisualSummaryPanel component;
+    private ActivityVisualSummaryPanel component;
     private WizardDescriptor wizardDescriptor;
+
+    private final Type type;
+
+    public ActivityWizardSummaryPanel(Type type) {
+        this.type = type;
+    }
+
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
     // but never displayed, or not all panels are displayed, it is better to
     // create only those which really need to be visible.
     @Override
-    public MobileActivityVisualSummaryPanel getComponent() {
+    public ActivityVisualSummaryPanel getComponent() {
         if (component == null) {
-            component = new MobileActivityVisualSummaryPanel(this);
+            component = new ActivityVisualSummaryPanel(this, type);
         }
         return component;
     }
