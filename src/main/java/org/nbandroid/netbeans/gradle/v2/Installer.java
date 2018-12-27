@@ -6,10 +6,6 @@
 package org.nbandroid.netbeans.gradle.v2;
 
 import com.android.ddmlib.AndroidDebugBridge;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import org.nbandroid.netbeans.gradle.symlink.GradleSymLinkRemover;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.netbeans.modules.dlight.terminal.ui.TerminalContainerTopComponent;
 import static org.netbeans.modules.dlight.terminal.ui.TerminalContainerTopComponent.AUTO_OPEN_LOCAL_PROPERTY;
@@ -17,9 +13,6 @@ import org.openide.modules.ModuleInstall;
 import org.openide.windows.WindowManager;
 
 public class Installer extends ModuleInstall {
-
-    private static final ScheduledExecutorService POOL = Executors.newScheduledThreadPool(1);
-
 
     @Override
     public void restored() {
@@ -32,7 +25,6 @@ public class Installer extends ModuleInstall {
             }
         };
         WindowManager.getDefault().invokeWhenUIReady(runnable);
-        POOL.scheduleWithFixedDelay(new GradleSymLinkRemover(), 30, 60, TimeUnit.SECONDS);
     }
 
     @Override
