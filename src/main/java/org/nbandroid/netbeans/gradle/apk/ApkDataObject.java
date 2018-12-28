@@ -117,6 +117,11 @@ public class ApkDataObject extends MultiDataObject implements Deployable {
         }
 
         @Override
+        public String getShortDescription() {
+            return pf.getPath(); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
         public Action[] getActions(boolean context) {
             return new Action[]{
                 SystemAction.get(SaveAsAction.class),
@@ -131,7 +136,7 @@ public class ApkDataObject extends MultiDataObject implements Deployable {
         public String getHtmlDisplayName() {
             String name = super.getDisplayName();
             if (project != null) {
-                if (pf.getParent().equals(project.getProjectDirectory())) {
+                if (pf.getParent() != null && pf.getParent().getParent() != null && pf.getParent().getParent().equals(project.getProjectDirectory())) {
                     return "<html><font color=\"#00802b\"><b>" + name + "</b></font></html>";
                 } else {
                     return name;
@@ -140,8 +145,6 @@ public class ApkDataObject extends MultiDataObject implements Deployable {
                 return name;
             }
         }
-
-
 
         @Override
         public Image getIcon(int type) {

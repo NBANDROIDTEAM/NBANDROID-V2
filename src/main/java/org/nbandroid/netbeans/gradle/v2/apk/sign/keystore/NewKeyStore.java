@@ -182,7 +182,9 @@ public class NewKeyStore extends javax.swing.JPanel implements KeyListener {
         int resp = chooser.showSaveDialog(findDialogParent());
         if (JFileChooser.APPROVE_OPTION == resp) {
             File f = chooser.getSelectedFile();
-            path.setText(f.getAbsolutePath());
+            String absolutePath = f.getAbsolutePath();
+            if(!absolutePath.endsWith(".jks"));
+            path.setText(absolutePath + ".jks");
         }
     }//GEN-LAST:event_selectPathActionPerformed
 

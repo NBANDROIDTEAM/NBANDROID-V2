@@ -18,7 +18,6 @@
  */
 package org.nbandroid.netbeans.gradle.v2.template.mobile;
 
-import org.nbandroid.netbeans.gradle.v2.template.ProjectWizardSummaryPanel;
 import android.studio.imports.templates.Parameter;
 import android.studio.imports.templates.Template;
 import android.studio.imports.templates.TemplateManager;
@@ -63,6 +62,7 @@ import org.nbandroid.netbeans.gradle.v2.project.template.parameters.Globals;
 import org.nbandroid.netbeans.gradle.v2.project.template.parameters.TemplateValueInjector;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
+import org.nbandroid.netbeans.gradle.v2.template.ProjectWizardSummaryPanel;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;

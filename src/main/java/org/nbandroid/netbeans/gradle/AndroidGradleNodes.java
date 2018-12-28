@@ -7,6 +7,8 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.awt.Image;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,6 +40,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
@@ -187,6 +190,16 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
 
         public ApksFilterNodeChildrensV2() {
             super(true);
+            List<FileObject> folders = findApks();
+
+            for (FileObject folder : folders) {
+                folder.addRecursiveListener(WeakListeners.create(FileChangeListener.class, this, folder));
+            }
+        }
+
+        private List<FileObject> findApks() {
+            List<DataObject> keys = new ArrayList<>();
+            List<FileObject> folders = new ArrayList<>();
             AndroidProject androidProject = p.getLookup().lookup(AndroidProject.class);
             Iterator<Variant> variants = androidProject.getVariants().iterator();
             while (variants.hasNext()) {
@@ -194,59 +207,59 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
                 Iterator<AndroidArtifactOutput> outputs = next.getMainArtifact().getOutputs().iterator();
                 while (outputs.hasNext()) {
                     AndroidArtifactOutput output = outputs.next();
-                    //  File outputFile = output.getOutputFile();
+                    File outputFile = output.getOutputFile();
+                    try {
+                        if (outputFile.exists() && outputFile.isFile()) {
+                            keys.add(DataObject.find(FileUtil.toFileObject(outputFile)));
+                        }
+                        File folder = outputFile.getParentFile();
+                        folder.mkdirs();
+                        folders.add(FileUtil.toFileObject(folder));
+                    } catch (DataObjectNotFoundException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
 
             }
-
-            //  aProject.getVariants().iterator().next().getMainArtifact().getOutputs().iterator().next().
-            p.getProjectDirectory().addRecursiveListener(WeakListeners.create(FileChangeListener.class, this, p.getProjectDirectory()));
-            refreshFolders(null);
+            try {
+                FileObject release = FileUtil.createFolder(p.getProjectDirectory(), "release");
+                folders.add(release);
+                FileObject[] childrens = release.getChildren();
+                for (FileObject children : childrens) {
+                    if ("apk".equals(children.getExt())) {
+                        keys.add(DataObject.find(children));
+                    }
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            try {
+                FileObject debug = FileUtil.createFolder(p.getProjectDirectory(), "debug");
+                folders.add(debug);
+                FileObject[] childrens = debug.getChildren();
+                for (FileObject children : childrens) {
+                    if ("apk".equals(children.getExt())) {
+                        keys.add(DataObject.find(children));
+                    }
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            Collections.sort(keys, new Comparator<DataObject>() {
+                @Override
+                public int compare(DataObject o1, DataObject o2) {
+                    return o1.getPrimaryFile().getName().compareTo(o2.getPrimaryFile().getName());
+                }
+            });
+            setKeys(keys);
+            return folders;
         }
 
         private void refreshFolders(FileEvent fe) {
-            if (fe != null && !p.getProjectDirectory().equals(fe.getFile().getParent()) && !"apk".equalsIgnoreCase(fe.getFile().getParent().getName())
-                    && !"outputs".equalsIgnoreCase(fe.getFile().getParent().getParent().getName())) {
-                return;
-            }
 
             Runnable runnable = new Runnable() {
                 public void run() {
-                    List<DataObject> keys = new ArrayList<>();
-                    FileObject[] childrens = p.getProjectDirectory().getChildren();
-                    for (FileObject children : childrens) {
-                        if ("apk".equals(children.getExt())) {
-                            try {
-                                keys.add(DataObject.find(children));
-                            } catch (DataObjectNotFoundException ex) {
-                            }
-                        }
-                    }
-                    FileObject build = p.getProjectDirectory().getFileObject("build");
-                    if (build != null) {
-                        FileObject outputs = build.getFileObject("outputs");
-                        if (outputs != null) {
-                            FileObject apkFolder = outputs.getFileObject("apk");
-                            if (apkFolder != null) {
-                                childrens = apkFolder.getChildren();
-                                for (FileObject children : childrens) {
-                                    if ("apk".equals(children.getExt())) {
-                                        try {
-                                            keys.add(DataObject.find(children));
-                                        } catch (DataObjectNotFoundException ex) {
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    Collections.sort(keys, new Comparator<DataObject>() {
-                        @Override
-                        public int compare(DataObject o1, DataObject o2) {
-                            return o1.getPrimaryFile().getName().compareTo(o2.getPrimaryFile().getName());
-                        }
-                    });
-                    setKeys(keys);
+                    findApks();
                 }
             };
             RP.execute(runnable);
