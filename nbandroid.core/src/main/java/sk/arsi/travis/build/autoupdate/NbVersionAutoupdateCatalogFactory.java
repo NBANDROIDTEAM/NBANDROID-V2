@@ -40,13 +40,13 @@ public class NbVersionAutoupdateCatalogFactory {
         String name;
         if (version != null && version.contains("8.1")) {
             try {
-                url = new URL("http://server.arsi.sk/nbandroid81/");
+                url = new URL("http://server.arsi.sk/nbandroid81/updates.xml");
             } catch (MalformedURLException ex) {
                 return null;
             }
         } else {
             try {
-                url = new URL("http://server.arsi.sk/nbandroid82/");
+                url = new URL("http://server.arsi.sk/nbandroid82/updates.xml");
             } catch (MalformedURLException ex) {
                 return null;
             }

@@ -1,4 +1,7 @@
 /target/
-/src/main/resources/rebel.xml
 **/*.log
 **/*.bak
+/nbandroid/target/
+/nbandroid.maven/target/
+/nbandroid.ext.libs/target/
+/nbandroid.ext.src/target/
