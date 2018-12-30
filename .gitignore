@@ -5,3 +5,6 @@
 /nbandroid.maven/target/
 /nbandroid.ext.libs/target/
 /nbandroid.ext.src/target/
+/nbandroid.maven.impl/target/
+/rebel.xml
+/nbandroid.maven.impl/src/main/resources/rebel.xml

@@ -681,5 +681,10 @@
             <artifactId>org-netbeans-modules-projectui</artifactId>
             <version>${version.nb}</version>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>Gradle-Android-support-maven</artifactId>
+            <version>01.00-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>
