@@ -16,25 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package sk.arsi.netbeans.gradle.android.maven.repository;
 
-package sk.arsi.netbeans.gradle.android.google.impl;
-
-import org.openide.util.Lookup;
-import org.openide.windows.OnShowing;
+import sk.arsi.netbeans.gradle.android.maven.repository.Repository;
+import sk.arsi.netbeans.gradle.android.maven.repository.RepositoryType;
 
 /**
  *
  * @author arsi
  */
-@OnShowing
-public class GoogleOnShowing implements Runnable {
+public class JCenterRepository extends Repository {
 
-    @Override
-    public void run() {
-        GoogleSearchProviderImpl provider = Lookup.getDefault().lookup(GoogleSearchProviderImpl.class);
-        if (provider instanceof GoogleSearchProviderImpl) {
-            new Thread(((GoogleSearchProviderImpl) provider), "Google-index-updater").start();
-        }
+    public JCenterRepository() {
+        super("http://jcenter.bintray.com", RepositoryType.JCENTER);
     }
 
 }

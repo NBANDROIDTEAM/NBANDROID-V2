@@ -22,8 +22,7 @@
                     <cluster>${cluster}</cluster>
                     <publicPackages>
                         <publicPackage>sk.arsi.netbeans.gradle.android.maven</publicPackage>
-                        <publicPackage>sk.arsi.netbeans.gradle.android.bintray</publicPackage>
-                        <publicPackage>sk.arsi.netbeans.gradle.android.google</publicPackage>
+                        <publicPackage>sk.arsi.netbeans.gradle.android.maven.repository</publicPackage>
                     </publicPackages>
                     <codeNameBase>sk-arsi-netbeans-gradle-android-Gradle-Android-support-Maven</codeNameBase>
                     <moduleDependencies>

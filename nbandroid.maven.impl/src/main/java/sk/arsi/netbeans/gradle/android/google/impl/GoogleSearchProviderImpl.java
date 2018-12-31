@@ -1,7 +1,20 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package sk.arsi.netbeans.gradle.android.google.impl;
 
@@ -27,7 +40,9 @@ import org.apache.lucene.util.NamedThreadFactory;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -37,16 +52,21 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
-import sk.arsi.netbeans.gradle.android.google.GoogleSearchProvider;
 import sk.arsi.netbeans.gradle.android.maven.MavenDependencyInfo;
+import sk.arsi.netbeans.gradle.android.maven.MavenSearchProvider;
 import sk.arsi.netbeans.gradle.android.maven.RepoSearchListener;
+import sk.arsi.netbeans.gradle.android.maven.repository.Repository;
+import sk.arsi.netbeans.gradle.android.maven.repository.RepositoryType;
 
 /**
  *
  * @author arsi
  */
-@ServiceProvider(service = GoogleSearchProvider.class)
-public class GoogleSearchProviderImpl implements GoogleSearchProvider, Runnable {
+@ServiceProviders({
+    @ServiceProvider(service = MavenSearchProvider.class),
+    @ServiceProvider(service = GoogleSearchProviderImpl.class)})
+
+public class GoogleSearchProviderImpl implements MavenSearchProvider, Runnable {
 
     private static final String BASE_URL = "https://dl.google.com/dl/android/maven2/";
     private static final String MASTER_INDEX = "master-index.xml";
@@ -54,24 +74,45 @@ public class GoogleSearchProviderImpl implements GoogleSearchProvider, Runnable 
     private final List<MavenDependencyInfo> googleIndex = new ArrayList<>();
     public final String NBANDROID_FOLDER = "nbandroid/";
     private final File cacheGoogleIndex = Places.getCacheSubfile(NBANDROID_FOLDER + "google.index");
-    public static final ScheduledThreadPoolExecutor POOL_EXECUTOR = new ScheduledThreadPoolExecutor(3, new NamedThreadFactory("Android-index-search"));
-
+    public static final ScheduledThreadPoolExecutor POOL_EXECUTOR = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("Android-index-download"));
+    public static final RequestProcessor SEARCH_PROCESSOR = new RequestProcessor("nbandroid-index-search-processor", 12);
     public GoogleSearchProviderImpl() {
     }
 
     @Override
-    public void searchPackageName(String name, String repo, RepoSearchListener listener, long searchId) {
+    public void searchPackageName(String searchText, String repo, RepoSearchListener listener, long searchId, List<Repository> repositories) {
         Runnable runnable = new Runnable() {
+            @Override
             public void run() {
-                List<MavenDependencyInfo> collected = googleIndex.parallelStream().filter(info -> info.getGradleLine().toLowerCase().contains(name)).collect(Collectors.toList());
+                List<MavenDependencyInfo> collected = googleIndex.parallelStream().filter(info -> info.getGradleLine().toLowerCase().contains(searchText)).collect(Collectors.toList());
                 try {
-                    listener.searchDone(searchId, collected);
+                    listener.searchDone(RepoSearchListener.Type.GOOGLE, searchId, false, collected);
                 } catch (Exception e) {
                     Exceptions.printStackTrace(e);
                 }
             }
         };
-        GoogleSearchProviderImpl.POOL_EXECUTOR.execute(runnable);
+        boolean enabled = false;
+        for (Repository repository : repositories) {
+            if (repository.getType() == RepositoryType.ANDROID || repository.getUrl().contains(".google.com/")) {
+                enabled = true;
+                break;
+            }
+        }
+        if (enabled) {
+            try {
+                listener.searchDone(RepoSearchListener.Type.GOOGLE, searchId, true, new ArrayList<>());
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+            }
+            GoogleSearchProviderImpl.SEARCH_PROCESSOR.execute(runnable);
+        } else {
+            try {
+                listener.searchDone(RepoSearchListener.Type.GOOGLE, searchId, false, new ArrayList<>());
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
     }
 
     private List<MavenDependencyInfo> downloadGoogleIndex(int connectTimeout, int readTimeout) {

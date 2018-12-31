@@ -39,7 +39,7 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.gradle.internal.impldep.org.apache.commons.io.IOUtils;
 import org.nbandroid.netbeans.gradle.v2.gradle.GradleAndroidRepositoriesProvider;
-import org.nbandroid.netbeans.gradle.v2.gradle.Repository;
+import sk.arsi.netbeans.gradle.android.maven.repository.Repository;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.util.Exceptions;
 

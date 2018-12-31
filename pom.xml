@@ -6,11 +6,11 @@
     <version>01.00-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
-        <module>nbandroid.core</module>
         <module>nbandroid.maven</module>
         <module>nbandroid.ext.libs</module>
         <module>nbandroid.ext.src</module>
         <module>nbandroid.maven.impl</module>
+        <module>nbandroid.core</module>
     </modules>
     <build>
         <extensions>

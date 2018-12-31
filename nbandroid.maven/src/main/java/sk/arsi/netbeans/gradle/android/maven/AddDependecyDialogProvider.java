@@ -16,16 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.gradle;
+
+package sk.arsi.netbeans.gradle.android.maven;
+
+import java.util.List;
+import sk.arsi.netbeans.gradle.android.maven.repository.Repository;
 
 /**
  *
  * @author arsi
  */
-public class JCenterRepository extends Repository {
+public interface AddDependecyDialogProvider {
 
-    public JCenterRepository() {
-        super("http://jcenter.bintray.com");
-    }
-
+    public MavenDependencyInfo showAddDependencyDialog(List<Repository> repositories, List<String> currentPackages);
 }

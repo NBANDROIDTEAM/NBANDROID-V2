@@ -16,25 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-package sk.arsi.netbeans.gradle.android.google.impl;
-
-import org.openide.util.Lookup;
-import org.openide.windows.OnShowing;
+package sk.arsi.netbeans.gradle.android.maven.repository;
 
 /**
  *
  * @author arsi
  */
-@OnShowing
-public class GoogleOnShowing implements Runnable {
-
-    @Override
-    public void run() {
-        GoogleSearchProviderImpl provider = Lookup.getDefault().lookup(GoogleSearchProviderImpl.class);
-        if (provider instanceof GoogleSearchProviderImpl) {
-            new Thread(((GoogleSearchProviderImpl) provider), "Google-index-updater").start();
-        }
-    }
-
+public enum RepositoryType {
+    MAVEN_CENTRAL,
+    MAVEN,
+    IVY,
+    ANDROID,
+    JCENTER
 }

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.gradle;
+package sk.arsi.netbeans.gradle.android.maven.repository;
 
 import java.util.Objects;
 
@@ -27,9 +27,15 @@ import java.util.Objects;
 public abstract class Repository {
 
     protected final String url;
+    protected final RepositoryType type;
 
-    public Repository(String url) {
+    public Repository(String url, RepositoryType type) {
         this.url = url;
+        this.type = type;
+    }
+
+    public RepositoryType getType() {
+        return type;
     }
 
     public String getUrl() {
@@ -39,6 +45,14 @@ public abstract class Repository {
     @Override
     public String toString() {
         return url;
+    }
+
+    public String extractNameFromUrl() {
+        String repoName = url.replace("https://", "");
+        repoName = repoName.replace("http://", "");
+        repoName = repoName.replace("/", "_");
+        repoName = repoName.replace(".", "_");
+        return repoName;
     }
 
     @Override

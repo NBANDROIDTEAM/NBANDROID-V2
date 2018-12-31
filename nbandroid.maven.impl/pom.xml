@@ -25,6 +25,26 @@
                     </publicPackages>
                     <codeNameBase>sk-arsi-netbeans-gradle-android-Gradle-Android-support-Maven-impl</codeNameBase>
                     <moduleDependencies>
+                        <!--                        <dependency>
+                            Private Package Reference
+                            <id>org.netbeans.modules:org-netbeans-modules-maven</id>
+                            <type>impl</type>
+                        </dependency>
+                        <dependency>
+                            Private Package Reference
+                            <id>org.netbeans.modules:org-netbeans-bootstrap</id>
+                            <type>impl</type>
+                        </dependency>
+                        <dependency>
+                            Private Package Reference
+                            <id>org.netbeans.modules:org-netbeans-core-startup</id>
+                            <type>impl</type>
+                        </dependency>
+                        <dependency>
+                            Private Package Reference
+                            <id>org.netbeans.modules:org-netbeans-core-startup-base</id>
+                            <type>impl</type>
+                        </dependency>-->
                         <dependency>
                             <!--Private Package Reference-->
                             <id>org.netbeans.modules:org-netbeans-modules-maven-indexer</id>
@@ -147,6 +167,26 @@
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-modules</artifactId>
             <version>${version.nb}</version>
+        </dependency>
+        <!--        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-maven</artifactId>
+            <version>${version.nb}</version>
+        </dependency>-->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-nodes</artifactId>
+            <version>RELEASE82</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-explorer</artifactId>
+            <version>RELEASE82</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-dialogs</artifactId>
+            <version>RELEASE82</version>
         </dependency>
     </dependencies>
 </project>

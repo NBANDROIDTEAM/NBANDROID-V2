@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package sk.arsi.netbeans.gradle.android.bintray.impl;
 
 import java.beans.Transient;
@@ -369,15 +387,15 @@ public class BintraySearchResult implements Serializable {
     @Transient
     List<MavenDependencyInfo> build() {
         List<MavenDependencyInfo> tmp = new ArrayList<>();
-        for (int i = 0; i < versions.size(); i++) {
-            String version = versions.get(i);
-            StringTokenizer tok = new StringTokenizer(name, ":", false);
-            if (tok.countTokens() == 2) {
-                tmp.add(new MavenDependencyInfo(MavenDependencyInfo.Type.JCENTER, tok.nextToken(), tok.nextToken(), version));
+        StringTokenizer tok = new StringTokenizer(name, ":", false);
+        if (tok.countTokens() == 2) {
+            MavenDependencyInfo dependencyInfo = new MavenDependencyInfo(MavenDependencyInfo.Type.JCENTER, tok.nextToken(), tok.nextToken());
+            tmp.add(dependencyInfo);
+            for (String version : versions) {
+                dependencyInfo.addVersion(version);
             }
         }
         return tmp;
     }
-
 
 }
