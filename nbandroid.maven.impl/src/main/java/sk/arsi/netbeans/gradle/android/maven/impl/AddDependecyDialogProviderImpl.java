@@ -22,7 +22,9 @@ package sk.arsi.netbeans.gradle.android.maven.impl;
 import java.util.List;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
+import sk.arsi.netbeans.gradle.android.google.impl.GoogleSearchProviderImpl;
 import sk.arsi.netbeans.gradle.android.maven.AddDependecyDialogProvider;
 import sk.arsi.netbeans.gradle.android.maven.dialog.AddDependencyPanel;
 import sk.arsi.netbeans.gradle.android.maven.repository.Repository;
@@ -46,6 +48,25 @@ public class AddDependecyDialogProviderImpl implements AddDependecyDialogProvide
         Object notify = DialogDisplayer.getDefault().notify(dd);
         if (notify.equals(panel.getOkButton())) {
             return panel.getSelected();
+        }
+        return null;
+    }
+
+    @Override
+    public String showAddGoogleDependencyDialog(List<Repository> repositories, List<String> currentPackages) {
+        GoogleSearchProviderImpl searchProviderImpl = Lookup.getDefault().lookup(GoogleSearchProviderImpl.class);
+        if (searchProviderImpl != null) {
+            AddDependencyPanel panel = new AddDependencyPanel(repositories, currentPackages, searchProviderImpl.getGoogleIndex());
+            DialogDescriptor dd = new DialogDescriptor(panel, "Add Google Android dependency");
+            dd.setClosingOptions(null);
+            dd.setOptions(new Object[]{
+                panel.getOkButton(),
+                panel.getCancelButton(),});
+            panel.attachDialogDisplayer(dd);
+            Object notify = DialogDisplayer.getDefault().notify(dd);
+            if (notify.equals(panel.getOkButton())) {
+                return panel.getSelected();
+            }
         }
         return null;
     }
