@@ -132,6 +132,38 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         SwingUtilities.invokeLater(runnable);
     }
 
+    public AddDependencyPanel(List<Repository> repositories, List<String> currentPackages, List<MavenDependencyInfo> index) {
+        initComponents();
+        this.repositories = repositories;
+        this.currentPackages = currentPackages;
+        for (String currentPackage : currentPackages) {
+            StringTokenizer tok = new StringTokenizer(currentPackage, ":", false);
+            if (tok.countTokens() > 1) {
+                String grp = tok.nextToken();
+                String packg = tok.nextToken();
+                installedDependenciesInfos.add(new MavenDependencyInfo(MavenDependencyInfo.Type.MAVEN, grp, packg));
+                installedDependenciesInfos.add(new MavenDependencyInfo(MavenDependencyInfo.Type.GOOGLE, grp, packg));
+                installedDependenciesInfos.add(new MavenDependencyInfo(MavenDependencyInfo.Type.JCENTER, grp, packg));
+            }
+        }
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                queryPanel = new QueryPanel();
+                resultsPanel.add(queryPanel, BorderLayout.CENTER);
+                labelQ.setVisible(false);
+                searchField.setVisible(false);
+                labelHelp.setVisible(false);
+                googleDependenciesInfos.addAll(index);
+                jcenterPartial = false;
+                googlePartial = false;
+                mavenPartial = false;
+                queryPanel.updateResults();
+            }
+        };
+        SwingUtilities.invokeLater(runnable);
+    }
+
     public String getSelected() {
         return selected;
     }
@@ -197,9 +229,9 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         labelVersion = new javax.swing.JLabel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
-        jLabel7 = new javax.swing.JLabel();
+        labelQ = new javax.swing.JLabel();
         searchField = new javax.swing.JTextField();
-        jLabel8 = new javax.swing.JLabel();
+        labelHelp = new javax.swing.JLabel();
         resultsLabel = new javax.swing.JLabel();
         resultsPanel = new javax.swing.JPanel();
         ok = new javax.swing.JButton();
@@ -220,12 +252,12 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         labelVersion.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(labelVersion, org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.labelVersion.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.jLabel7.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(labelQ, org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.labelQ.text")); // NOI18N
 
         searchField.setText(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.searchField.text")); // NOI18N
 
-        jLabel8.setForeground(new java.awt.Color(153, 153, 153));
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.jLabel8.text")); // NOI18N
+        labelHelp.setForeground(new java.awt.Color(153, 153, 153));
+        org.openide.awt.Mnemonics.setLocalizedText(labelHelp, org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.labelHelp.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(resultsLabel, org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.resultsLabel.text")); // NOI18N
 
@@ -245,11 +277,11 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel7)
+                        .addComponent(labelQ)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel8)
+                                .addComponent(labelHelp)
                                 .addGap(0, 477, Short.MAX_VALUE))
                             .addComponent(searchField)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
@@ -267,10 +299,10 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel7)
+                    .addComponent(labelQ)
                     .addComponent(searchField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel8)
+                .addComponent(labelHelp)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(resultsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -328,12 +360,12 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel labelArtifact;
     private javax.swing.JLabel labelGroup;
+    private javax.swing.JLabel labelHelp;
+    private javax.swing.JLabel labelQ;
     private javax.swing.JLabel labelVersion;
     private javax.swing.JButton ok;
     private javax.swing.JLabel resultsLabel;

@@ -115,6 +115,11 @@ public class GoogleSearchProviderImpl implements MavenSearchProvider, Runnable {
         }
     }
 
+    public List<MavenDependencyInfo> getGoogleIndex() {
+        return googleIndex;
+    }
+
+
     private List<MavenDependencyInfo> downloadGoogleIndex(int connectTimeout, int readTimeout) {
         ProgressHandle handle = ProgressHandle.createHandle("Goodle index download");
         List<MavenDependencyInfo> tmp = new ArrayList<>();

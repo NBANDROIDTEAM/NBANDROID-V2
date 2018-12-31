@@ -29,4 +29,6 @@ import sk.arsi.netbeans.gradle.android.maven.repository.Repository;
 public interface AddDependecyDialogProvider {
 
     public String showAddDependencyDialog(List<Repository> repositories, List<String> currentPackages);
+
+    public String showAddGoogleDependencyDialog(List<Repository> repositories, List<String> currentPackages);
 }
