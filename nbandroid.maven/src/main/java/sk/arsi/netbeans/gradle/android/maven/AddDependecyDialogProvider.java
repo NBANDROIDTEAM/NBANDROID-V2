@@ -28,5 +28,5 @@ import sk.arsi.netbeans.gradle.android.maven.repository.Repository;
  */
 public interface AddDependecyDialogProvider {
 
-    public MavenDependencyInfo showAddDependencyDialog(List<Repository> repositories, List<String> currentPackages);
+    public String showAddDependencyDialog(List<Repository> repositories, List<String> currentPackages);
 }

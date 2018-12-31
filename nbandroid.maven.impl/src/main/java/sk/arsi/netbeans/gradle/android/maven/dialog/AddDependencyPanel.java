@@ -132,6 +132,10 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         SwingUtilities.invokeLater(runnable);
     }
 
+    public String getSelected() {
+        return selected;
+    }
+
     public void attachDialogDisplayer(DialogDescriptor dd) {
         nls = dd.getNotificationLineSupport();
         if (nls == null) {
@@ -159,7 +163,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             labelGroup.setText(dependencyInfo.getGroupId());
             labelArtifact.setText(dependencyInfo.getArtifactId());
             labelVersion.setText("+");
-            selected = dependencyInfo.getGradleLine() + "+";
+            selected = dependencyInfo.getGradleLine() + ":+";
         } else {
             labelGroup.setText("...");
             labelArtifact.setText("...");

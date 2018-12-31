@@ -22,11 +22,15 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.nbandroid.netbeans.gradle.api.AndroidClassPath;
 import org.nbandroid.netbeans.gradle.v2.gradle.GradleAndroidRepositoriesProvider;
+import org.nbandroid.netbeans.gradle.v2.gradle.build.parser.AndroidGradleDependencyUpdater;
 import org.nbandroid.netbeans.gradle.v2.maven.ArtifactData;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -44,7 +48,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.actions.NodeAction;
 import sk.arsi.netbeans.gradle.android.maven.AddDependecyDialogProvider;
-import sk.arsi.netbeans.gradle.android.maven.MavenDependencyInfo;
 import sk.arsi.netbeans.gradle.android.maven.repository.Repository;
 
 /**
@@ -85,7 +88,19 @@ public class AddDependencyAction extends NodeAction {
                             packages.add(mavenLocation);
                         }
                     }
-                    MavenDependencyInfo DependencyToAdd = dialogProvider.showAddDependencyDialog(repositories, packages);
+                    String mavenUrl = dialogProvider.showAddDependencyDialog(repositories, packages);
+                    if (mavenUrl != null) {
+                        Map<String, List<String>> dependencies = new HashMap<>();
+                        List<String> tmp = new ArrayList<>();
+                        tmp.add(mavenUrl);
+                        dependencies.put("implementation", tmp);
+                        String builGradle = project.getProjectDirectoryAsFile().getAbsolutePath() + File.separator + "build.gradle";
+                        File builGradleFile = new File(builGradle);
+                        if (builGradleFile.exists()) {
+                            AndroidGradleDependencyUpdater.insertDependencies(builGradleFile, dependencies);
+                            project.reloadProject();
+                        }
+                    }
                 }
             }
         }

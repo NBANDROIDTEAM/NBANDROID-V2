@@ -24,7 +24,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.lookup.ServiceProvider;
 import sk.arsi.netbeans.gradle.android.maven.AddDependecyDialogProvider;
-import sk.arsi.netbeans.gradle.android.maven.MavenDependencyInfo;
 import sk.arsi.netbeans.gradle.android.maven.dialog.AddDependencyPanel;
 import sk.arsi.netbeans.gradle.android.maven.repository.Repository;
 
@@ -36,7 +35,7 @@ import sk.arsi.netbeans.gradle.android.maven.repository.Repository;
 public class AddDependecyDialogProviderImpl implements AddDependecyDialogProvider {
 
     @Override
-    public MavenDependencyInfo showAddDependencyDialog(List<Repository> repositories, List<String> currentPackages) {
+    public String showAddDependencyDialog(List<Repository> repositories, List<String> currentPackages) {
         AddDependencyPanel panel = new AddDependencyPanel(repositories, currentPackages);
         DialogDescriptor dd = new DialogDescriptor(panel, "Add dependency");
         dd.setClosingOptions(null);
@@ -45,6 +44,9 @@ public class AddDependecyDialogProviderImpl implements AddDependecyDialogProvide
             panel.getCancelButton(),});
         panel.attachDialogDisplayer(dd);
         Object notify = DialogDisplayer.getDefault().notify(dd);
+        if (notify.equals(panel.getOkButton())) {
+            return panel.getSelected();
+        }
         return null;
     }
 
