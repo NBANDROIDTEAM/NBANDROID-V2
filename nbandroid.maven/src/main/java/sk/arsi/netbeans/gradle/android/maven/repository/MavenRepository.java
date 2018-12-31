@@ -16,16 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.gradle;
+package sk.arsi.netbeans.gradle.android.maven.repository;
+
+import sk.arsi.netbeans.gradle.android.maven.repository.Repository;
+import sk.arsi.netbeans.gradle.android.maven.repository.RepositoryType;
 
 /**
  *
  * @author arsi
  */
-public class AndroidRepository extends Repository {
+public class MavenRepository extends Repository {
 
-    public AndroidRepository() {
-        super("https://dl.google.com/dl/android/maven2");
+    public MavenRepository(String url) {
+        super(url, RepositoryType.MAVEN);
     }
 
 }

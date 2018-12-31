@@ -6,10 +6,11 @@
     <version>01.00-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
-        <module>nbandroid.core</module>
         <module>nbandroid.maven</module>
         <module>nbandroid.ext.libs</module>
         <module>nbandroid.ext.src</module>
+        <module>nbandroid.maven.impl</module>
+        <module>nbandroid.core</module>
     </modules>
     <build>
         <extensions>
@@ -174,6 +175,14 @@
             <id>netbeans</id>
             <name>NetBeans</name>
             <url>http://bits.netbeans.org/nexus/content/groups/netbeans/</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>bintray-jfrog-bintray-tools</id>
+            <name>bintray</name>
+            <url>https://dl.bintray.com/jfrog/bintray-tools</url>
         </repository>
         <repository>
             <snapshots>

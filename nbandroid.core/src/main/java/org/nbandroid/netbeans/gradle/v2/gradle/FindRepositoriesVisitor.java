@@ -18,6 +18,12 @@
  */
 package org.nbandroid.netbeans.gradle.v2.gradle;
 
+import sk.arsi.netbeans.gradle.android.maven.repository.JCenterRepository;
+import sk.arsi.netbeans.gradle.android.maven.repository.IvyRepository;
+import sk.arsi.netbeans.gradle.android.maven.repository.AndroidRepository;
+import sk.arsi.netbeans.gradle.android.maven.repository.MavenCentralRepository;
+import sk.arsi.netbeans.gradle.android.maven.repository.MavenRepository;
+import sk.arsi.netbeans.gradle.android.maven.repository.Repository;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

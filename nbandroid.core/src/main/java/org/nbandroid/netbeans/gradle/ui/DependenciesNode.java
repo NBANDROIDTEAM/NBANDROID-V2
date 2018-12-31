@@ -57,6 +57,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -209,7 +210,8 @@ public final class DependenciesNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        return this.librariesNodeActions;
+        List<? extends Action> actionsForPath = Utilities.actionsForPath("Actions/NbAndroid/Dependencies");
+        return actionsForPath.toArray(new Action[actionsForPath.size()]);
     }
 
     @Override
