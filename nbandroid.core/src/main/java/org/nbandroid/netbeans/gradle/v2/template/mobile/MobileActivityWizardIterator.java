@@ -210,10 +210,13 @@ public final class MobileActivityWizardIterator implements WizardDescriptor.Inst
                 Variant variant = buildVariant.getCurrentVariant();
                 wizard.putProperty(BUILD_VARIANT, variant);
                 if (srcRootFolder != null) {
-                    String packageName = targetPath.replace(srcRootFolder.getPath(), "");
-                    packageName = packageName.replace("/", ".").replace("\\", ".");
-                    packageName = packageName.substring(1);
-                    wizard.putProperty(PROP_PROJECT_PACKAGE, packageName);
+                    try {
+                        String packageName = targetPath.replace(srcRootFolder.getPath(), "");
+                        packageName = packageName.replace("/", ".").replace("\\", ".");
+                        packageName = packageName.substring(1);
+                        wizard.putProperty(PROP_PROJECT_PACKAGE, packageName);
+                    } catch (Exception e) {
+                    }
                 }
                 AndroidPlatformInfo projectPlatform = AndroidProjects.projectPlatform(project);
                 if (projectPlatform != null) {

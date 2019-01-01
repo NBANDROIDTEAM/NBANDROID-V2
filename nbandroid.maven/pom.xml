@@ -14,7 +14,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>
-                <version>3.13</version>
+                <version>${version.nb.plugin}</version>
                 <extensions>true</extensions>
                 <configuration>
                     <requiresRestart>true</requiresRestart>

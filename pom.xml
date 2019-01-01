@@ -6,9 +6,10 @@
     <version>01.00-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
-        <module>nbandroid.maven</module>
         <module>nbandroid.ext.libs</module>
+        <module>nbandroid.ext.libs.android</module>
         <module>nbandroid.ext.src</module>
+        <module>nbandroid.maven</module>
         <module>nbandroid.maven.impl</module>
         <module>nbandroid.core</module>
     </modules>
@@ -24,7 +25,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>
-                <version>3.13</version>
+                <version>${version.nb.plugin}</version>
                 <extensions>true</extensions>
                 
             </plugin>
@@ -53,7 +54,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>nbm-maven-plugin</artifactId>
-                        <version>3.13</version>
+                        <version>${version.nb.plugin}</version>
                         <extensions>true</extensions>
                     </plugin>
                 </plugins>
@@ -82,7 +83,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>nbm-maven-plugin</artifactId>
-                        <version>3.13</version>
+                        <version>${version.nb.plugin}</version>
                         <extensions>true</extensions>
                     </plugin>
                 </plugins>
@@ -111,7 +112,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>nbm-maven-plugin</artifactId>
-                        <version>3.13</version>
+                        <version>${version.nb.plugin}</version>
                         <extensions>true</extensions>
                     </plugin>
                 </plugins>
@@ -131,7 +132,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>nbm-maven-plugin</artifactId>
-                        <version>3.13</version>
+                        <version>${version.nb.plugin}</version>
                         <extensions>true</extensions>
                         <configuration>
                             <netbeansUserdir>/jetty/netbeans9/user</netbeansUserdir>
@@ -155,7 +156,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>nbm-maven-plugin</artifactId>
-                        <version>3.13</version>
+                        <version>${version.nb.plugin}</version>
                         <extensions>true</extensions>
                         <configuration>
                             <netbeansInstallation>/ssd/nb/netbeans-8.2-e3/</netbeansInstallation>
@@ -211,7 +212,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <version.android>26.2.1 </version.android>
         <version.nb.gradle>1.4.4</version.nb.gradle>
-        <android.gradle.model.version>3.0.1</android.gradle.model.version>
+        <version.nb.plugin>4.1</version.nb.plugin>
+        <android.gradle.model.version>3.2.1</android.gradle.model.version>
         <cluster>nbandroid</cluster>
         
         <!--1.4.2-->

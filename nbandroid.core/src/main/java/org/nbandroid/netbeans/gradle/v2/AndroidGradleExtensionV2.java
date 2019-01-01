@@ -50,7 +50,6 @@ import org.nbandroid.netbeans.gradle.api.TestOutputConsumer;
 import org.nbandroid.netbeans.gradle.config.AndroidBuildVariants;
 import org.nbandroid.netbeans.gradle.config.AndroidTestRunConfiguration;
 import org.nbandroid.netbeans.gradle.config.BuildVariant;
-import org.nbandroid.netbeans.gradle.core.sdk.StatsCollector;
 import org.nbandroid.netbeans.gradle.launch.GradleDebugInfo;
 import org.nbandroid.netbeans.gradle.launch.Launches;
 import org.nbandroid.netbeans.gradle.query.AndroidTaskVariableQuery;
@@ -257,7 +256,6 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         levelQuery.setProject(aPrj);
         this.aPrj = aPrj;
         this.gradleBuild = build;
-        StatsCollector.getDefault().incrementCounter("gradleproject");
     }
 
     private void clearAndroidProject() {

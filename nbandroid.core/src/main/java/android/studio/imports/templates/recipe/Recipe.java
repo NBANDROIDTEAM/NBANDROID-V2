@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package android.studio.imports.templates.recipe;
 
 import static com.android.SdkConstants.DOT_FTL;
@@ -78,14 +77,20 @@ public class Recipe implements RecipeInstruction {
     }
 
     private static Recipe unmarshal(@NotNull Reader xmlReader) throws JAXBException {
-        Unmarshaller unmarshaller = JAXBContext.newInstance(Recipe.class).createUnmarshaller();
-        unmarshaller.setEventHandler(new ValidationEventHandler() {
-            @Override
-            public boolean handleEvent(ValidationEvent event) {
-                throw new RuntimeException(event.getLinkedException());
-            }
-        });
-        return (Recipe) unmarshaller.unmarshal(xmlReader);
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(Recipe.class.getClassLoader());
+            Unmarshaller unmarshaller = JAXBContext.newInstance(Recipe.class).createUnmarshaller();
+            unmarshaller.setEventHandler(new ValidationEventHandler() {
+                @Override
+                public boolean handleEvent(ValidationEvent event) {
+                    throw new RuntimeException(event.getLinkedException());
+                }
+            });
+            return (Recipe) unmarshaller.unmarshal(xmlReader);
+        } finally {
+            Thread.currentThread().setContextClassLoader(contextClassLoader);
+        }
     }
 
     @NotNull
