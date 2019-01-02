@@ -27,6 +27,9 @@ public class TemplateManager {
         URL location = TemplateManager.class.getProtectionDomain().getCodeSource().getLocation();
         FileObject fo = URLMapper.findFileObject(location);
         FileObject archiveFile = FileUtil.getArchiveRoot(fo);
+        if (archiveFile == null && fo.isRoot()) {
+            archiveFile = fo;
+        }
         FileObject rootDir = archiveFile.getFileObject("/android/studio/imports/templates/" + subFolder);
         Enumeration<? extends FileObject> children = rootDir.getChildren(true);
         while (children.hasMoreElements()) {
@@ -44,6 +47,9 @@ public class TemplateManager {
         URL location = TemplateManager.class.getProtectionDomain().getCodeSource().getLocation();
         FileObject fo = URLMapper.findFileObject(location);
         FileObject archiveFile = FileUtil.getArchiveRoot(fo);
+        if (archiveFile == null && fo.isRoot()) {
+            archiveFile = fo;
+        }
         return archiveFile.getFileObject("/android/studio/imports/templates/");
     }
 
