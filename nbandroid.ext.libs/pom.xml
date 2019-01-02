@@ -14,13 +14,22 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>
-                <version>3.13</version>
+                <version>${version.nb.plugin}</version>
                 <extensions>true</extensions>
                 <configuration>
                     <requiresRestart>true</requiresRestart>
                     <defaultCluster>${cluster}</defaultCluster>
                     <cluster>${cluster}</cluster>
                     <publicPackages>
+                        <publicPackage>org.codehaus.groovy.*</publicPackage>
+                        <publicPackage>org.codehaus.jackson.*</publicPackage>
+                        <publicPackage>org.bouncycastle.*</publicPackage>
+                        <publicPackage>freemarker.*</publicPackage>
+                        <publicPackage>groovy.*</publicPackage>
+                        <publicPackage>org.apache.commons.compress.*</publicPackage>
+                        <publicPackage>freemarker.*</publicPackage>
+                        <publicPackage>freemarker.*</publicPackage>
+                        
                     </publicPackages>
                     <codeNameBase>sk-arsi-netbeans-gradle-android-Gradle-Android-support-ext-libs</codeNameBase>
                     <moduleDependencies>
@@ -50,13 +59,59 @@
                     <useDefaultManifestFile>true</useDefaultManifestFile>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0-M2</version>
+                <configuration>
+                    <rules>
+                        <dependencyConvergence/>
+                    </rules>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.25</version>
+        </dependency>
+        <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-api-annotations-common</artifactId>
             <version>${version.nb}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>1.56</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.56</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.18</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <version>2.4.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+            <version>2.3.28</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+            <version>1.9.11</version>
+            <type>jar</type>
         </dependency>
     </dependencies>
 </project>

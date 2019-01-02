@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -44,12 +43,15 @@ import org.nbandroid.netbeans.gradle.v2.sdk.PlatformConvertor;
 import org.nbandroid.netbeans.gradle.v2.sdk.ui.SdksCustomizer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.gradle.nbandroid.models.AndroidNbModel;
+import org.netbeans.gradle.nbandroid.models.GradleAndroidModelBuilders;
 import org.netbeans.gradle.project.NbGradleProject;
 import org.netbeans.gradle.project.api.entry.GradleProjectExtension2;
 import org.netbeans.gradle.project.api.entry.GradleProjectExtensionDef;
 import org.netbeans.gradle.project.api.entry.ModelLoadResult;
 import org.netbeans.gradle.project.api.entry.ParsedModel;
-import org.netbeans.gradle.project.api.modelquery.GradleModelDefQuery1;
+import org.netbeans.gradle.project.api.modelquery.GradleModelDef;
+import org.netbeans.gradle.project.api.modelquery.GradleModelDefQuery2;
 import org.netbeans.gradle.project.api.modelquery.GradleTarget;
 import org.netbeans.gradle.project.java.JavaExtensionDef;
 import org.netbeans.gradle.project.properties.global.CommonGlobalSettings;
@@ -67,7 +69,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author arsi
  */
 @ServiceProvider(service = GradleProjectExtensionDef.class, position = 900)
-public class AndroidExtensionDef implements GradleProjectExtensionDef<SerializableLookup> {
+public class AndroidExtensionDef implements GradleProjectExtensionDef<AndroidNbModel> {
 
     public static final String EXTENSION_NAME = "org.nbandroid.netbeans.gradle.v2.AndroidExtensionDef";
     public static final String LOCAL_PROPERTIES = "local.properties";
@@ -88,7 +90,7 @@ public class AndroidExtensionDef implements GradleProjectExtensionDef<Serializab
     private final Lookup lookup;
 
     public AndroidExtensionDef() {
-        this.lookup = Lookups.fixed(new Query1(), new Query2());
+        this.lookup = Lookups.fixed(new Query2());//new Query1(),;
     }
 
     @Override
@@ -107,17 +109,23 @@ public class AndroidExtensionDef implements GradleProjectExtensionDef<Serializab
     }
 
     @Override
-    public Class<SerializableLookup> getModelType() {
-        return SerializableLookup.class;
+    public Class<AndroidNbModel> getModelType() {
+        return AndroidNbModel.class;
     }
 
     @Override
-    public ParsedModel<SerializableLookup> parseModel(ModelLoadResult retrievedModels) {
-        return new ParsedModel<>(new SerializableLookup(retrievedModels.getMainProjectModels()));
+    public ParsedModel<AndroidNbModel> parseModel(ModelLoadResult retrievedModels) {
+        ParsedModel<AndroidNbModel> returnValue = null;
+        AndroidNbModel jpaModel = retrievedModels.getMainProjectModels().lookup(AndroidNbModel.class);
+        if (jpaModel != null) {
+            jpaModel.setLookup(retrievedModels.getMainProjectModels());
+            returnValue = new ParsedModel<>(jpaModel);
+        }
+        return returnValue;
     }
 
     @Override
-    public GradleProjectExtension2<SerializableLookup> createExtension(Project project) throws IOException {
+    public GradleProjectExtension2<AndroidNbModel> createExtension(Project project) throws IOException {
         boolean isAndroidProject = false;
         AndroidSdk defaultSdk = null;
         FileObject localProperties = null;
@@ -286,24 +294,22 @@ public class AndroidExtensionDef implements GradleProjectExtensionDef<Serializab
         return Collections.<String>singleton(JavaExtensionDef.EXTENSION_NAME);
     }
 
-    private static final class Query1 implements GradleModelDefQuery1 {
+    private static final class Query2 implements GradleModelDefQuery2 {
 
-        private static final Collection<Class<?>> RESULT = Collections.<Class<?>>singleton(GradleBuild.class);
+        private static final List<Class<?>> RESULT_A = new ArrayList<>();
+
+        static {
+            RESULT_A.add(GradleBuild.class);
+            RESULT_A.add(AndroidProject.class);
+        }
+
+        private static final GradleModelDef RESULT = GradleModelDef.fromProjectInfoBuilders2(RESULT_A, GradleAndroidModelBuilders.ANDROID_BUILDER);
 
         @Override
-        public Collection<Class<?>> getToolingModels(GradleTarget gradleTarget) {
+        public GradleModelDef getModelDef(GradleTarget gradleTarget) {
             return RESULT;
         }
-    }
 
-    private static final class Query2 implements GradleModelDefQuery1 {
-
-        private static final Collection<Class<?>> RESULT = Collections.<Class<?>>singleton(AndroidProject.class);
-
-        @Override
-        public Collection<Class<?>> getToolingModels(GradleTarget gradleTarget) {
-            return RESULT;
-        }
     }
 
 

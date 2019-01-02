@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -95,9 +96,9 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
     private RepoManager repoManager;
     //max 3 paralel downloads
     public static final ExecutorService DOWNLOAD_POOL = Executors.newFixedThreadPool(3);
-    private final Vector<SdkManagerPlatformChangeListener> listeners = new Vector<>();
-    private final Vector<SdkManagerToolsChangeListener> toolsListeners = new Vector<>();
-    private final Vector<LocalPlatformChangeListener> localListeners = new Vector<>();
+    private final List<SdkManagerPlatformChangeListener> listeners = new CopyOnWriteArrayList<>();
+    private final List<SdkManagerToolsChangeListener> toolsListeners = new CopyOnWriteArrayList<>();
+    private final List<LocalPlatformChangeListener> localListeners = new CopyOnWriteArrayList<>();
     private Vector<UpdatablePackage> platforms = new Vector<>();
     private SdkManagerPlatformPackagesRootNode platformPackages = null;
     private List<UpdatablePackage> toolsPackages = null;

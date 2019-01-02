@@ -1,19 +1,14 @@
 package org.nbandroid.netbeans.gradle;
 
-import com.android.builder.model.AndroidArtifactOutput;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.Variant;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.awt.Image;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
 import org.nbandroid.netbeans.gradle.api.AndroidConstants;
@@ -200,27 +195,27 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
         private List<FileObject> findApks() {
             List<DataObject> keys = new ArrayList<>();
             List<FileObject> folders = new ArrayList<>();
-            AndroidProject androidProject = p.getLookup().lookup(AndroidProject.class);
-            Iterator<Variant> variants = androidProject.getVariants().iterator();
-            while (variants.hasNext()) {
-                Variant next = variants.next();
-                Iterator<AndroidArtifactOutput> outputs = next.getMainArtifact().getOutputs().iterator();
-                while (outputs.hasNext()) {
-                    AndroidArtifactOutput output = outputs.next();
-                    File outputFile = output.getOutputFile();
-                    try {
-                        if (outputFile.exists() && outputFile.isFile()) {
-                            keys.add(DataObject.find(FileUtil.toFileObject(outputFile)));
-                        }
-                        File folder = outputFile.getParentFile();
-                        folder.mkdirs();
-                        folders.add(FileUtil.toFileObject(folder));
-                    } catch (DataObjectNotFoundException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-
-            }
+//            AndroidProject androidProject = p.getLookup().lookup(AndroidProject.class);
+//            Iterator<Variant> variants = androidProject.getVariants().iterator();
+//            while (variants.hasNext()) {
+//                Variant next = variants.next();
+//                Iterator<AndroidArtifactOutput> outputs = next.getMainArtifact().getOutputs().iterator();
+//                while (outputs.hasNext()) {
+//                    AndroidArtifactOutput output = outputs.next();
+//                    File outputFile = output.getOutputFile();
+//                    try {
+//                        if (outputFile.exists() && outputFile.isFile()) {
+//                            keys.add(DataObject.find(FileUtil.toFileObject(outputFile)));
+//                        }
+//                        File folder = outputFile.getParentFile();
+//                        folder.mkdirs();
+//                        folders.add(FileUtil.toFileObject(folder));
+//                    } catch (DataObjectNotFoundException ex) {
+//                        Exceptions.printStackTrace(ex);
+//                    }
+//                }
+//
+//            }
             try {
                 FileObject release = FileUtil.createFolder(p.getProjectDirectory(), "release");
                 folders.add(release);

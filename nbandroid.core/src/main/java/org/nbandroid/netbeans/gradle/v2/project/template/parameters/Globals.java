@@ -76,14 +76,20 @@ public class Globals {
     }
 
     private static Globals unmarshal(@NotNull Reader xmlReader) throws JAXBException {
-        Unmarshaller unmarshaller = JAXBContext.newInstance(Globals.class).createUnmarshaller();
-        unmarshaller.setEventHandler(new ValidationEventHandler() {
-            @Override
-            public boolean handleEvent(ValidationEvent event) {
-                throw new RuntimeException(event.getLinkedException());
-            }
-        });
-        return (Globals) unmarshaller.unmarshal(xmlReader);
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(Globals.class.getClassLoader());
+            Unmarshaller unmarshaller = JAXBContext.newInstance(Globals.class).createUnmarshaller();
+            unmarshaller.setEventHandler(new ValidationEventHandler() {
+                @Override
+                public boolean handleEvent(ValidationEvent event) {
+                    throw new RuntimeException(event.getLinkedException());
+                }
+            });
+            return (Globals) unmarshaller.unmarshal(xmlReader);
+        } finally {
+            Thread.currentThread().setContextClassLoader(contextClassLoader);
+        }
     }
 
     public static final class GlobalInstruction {

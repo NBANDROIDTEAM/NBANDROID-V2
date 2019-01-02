@@ -39,7 +39,6 @@ import java.util.regex.Pattern;
 import org.nbandroid.netbeans.gradle.AndroidIO;
 import org.nbandroid.netbeans.gradle.avd.AvdSelector;
 import org.nbandroid.netbeans.gradle.core.sdk.SdkLogProvider;
-import org.nbandroid.netbeans.gradle.core.sdk.StatsCollector;
 import org.nbandroid.netbeans.gradle.core.ui.DeviceChooserImpl;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
@@ -74,7 +73,6 @@ public class AndroidLauncherImpl implements AndroidLauncher {
     @Override
     public Future<Client> launch(AndroidPlatformInfo platform, Lookup context, String mode) {
         initIO();
-        collectStats();
         LaunchConfiguration launchCfg = context.lookup(LaunchConfiguration.class);
         AvdSelector.LaunchData launchData = context.lookup(AvdSelector.LaunchData.class);
         Project project = Preconditions.checkNotNull(context.lookup(Project.class));
@@ -299,10 +297,6 @@ public class AndroidLauncherImpl implements AndroidLauncher {
     }
 
     private static final Pattern sAmErrorType = Pattern.compile("Error type (\\d+)");
-
-    private void collectStats() {
-        StatsCollector.getDefault().incrementCounter("launch");
-    }
 
     /**
      * Output receiver for am process (Activity Manager)

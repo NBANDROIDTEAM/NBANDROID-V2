@@ -50,7 +50,6 @@ import org.nbandroid.netbeans.gradle.api.TestOutputConsumer;
 import org.nbandroid.netbeans.gradle.config.AndroidBuildVariants;
 import org.nbandroid.netbeans.gradle.config.AndroidTestRunConfiguration;
 import org.nbandroid.netbeans.gradle.config.BuildVariant;
-import org.nbandroid.netbeans.gradle.core.sdk.StatsCollector;
 import org.nbandroid.netbeans.gradle.launch.GradleDebugInfo;
 import org.nbandroid.netbeans.gradle.launch.Launches;
 import org.nbandroid.netbeans.gradle.query.AndroidTaskVariableQuery;
@@ -77,6 +76,7 @@ import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.nbandroid.netbeans.gradle.v2.template.PrivilegedTemplatesImpl;
 import org.netbeans.api.project.Project;
+import org.netbeans.gradle.nbandroid.models.AndroidNbModel;
 import org.netbeans.gradle.project.NbGradleProject;
 import org.netbeans.gradle.project.api.config.GradleArgumentQuery;
 import org.netbeans.gradle.project.api.entry.GradleProjectExtension2;
@@ -98,7 +98,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author radim
  */
-public class AndroidGradleExtensionV2 implements GradleProjectExtension2<SerializableLookup>, PropertyChangeListener {
+public class AndroidGradleExtensionV2 implements GradleProjectExtension2<AndroidNbModel>, PropertyChangeListener {
 
     private static final Logger LOG = Logger.getLogger(AndroidGradleExtensionV2.class.getName());
 
@@ -192,9 +192,9 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
     }
 
     @Override
-    public void activateExtension(SerializableLookup parsedModel) {
+    public void activateExtension(AndroidNbModel parsedModel) {
         if (sdk != null && sdk.isValid()) {
-            modelsLoaded(parsedModel.lookup);
+            modelsLoaded((Lookup) parsedModel.getLookup());
         }
     }
 
@@ -257,7 +257,6 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Seriali
         levelQuery.setProject(aPrj);
         this.aPrj = aPrj;
         this.gradleBuild = build;
-        StatsCollector.getDefault().incrementCounter("gradleproject");
     }
 
     private void clearAndroidProject() {
