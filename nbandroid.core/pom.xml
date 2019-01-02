@@ -66,37 +66,7 @@
                         </dependency>
                         <dependency>
                             <!--Private Package Reference-->
-                            <id>org.netbeans.modules:org-netbeans-lib-terminalemulator</id>
-                            <type>impl</type>
-                        </dependency>
-                        <dependency>
-                            <!--Private Package Reference-->
-                            <id>org.netbeans.modules:org-netbeans-modules-terminal</id>
-                            <type>impl</type>
-                        </dependency>
-                        <dependency>
-                            <!--Private Package Reference-->
-                            <id>org.netbeans.modules:org-netbeans-modules-terminal-nb</id>
-                            <type>impl</type>
-                        </dependency>
-                        <dependency>
-                            <!--Private Package Reference-->
-                            <id>org.netbeans.modules:org-netbeans-libs-jna</id>
-                            <type>impl</type>
-                        </dependency>
-                        <dependency>
-                            <!--Private Package Reference-->
                             <id>org.netbeans.modules:org-netbeans-modules-xml-text</id>
-                            <type>impl</type>
-                        </dependency>
-                        <dependency>
-                            <!--Private Package Reference-->
-                            <id>org.netbeans.modules:org-netbeans-modules-editor-breadcrumbs</id>
-                            <type>impl</type>
-                        </dependency>
-                        <dependency>
-                            <!--Private Package Reference-->
-                            <id>org.netbeans.modules:org-netbeans-modules-editor-structure</id>
                             <type>impl</type>
                         </dependency>
                         <dependency>
@@ -210,9 +180,6 @@
             <version>${version.nb}</version>
             <type>jar</type>
         </dependency>
-        
-        <!-- https://mvnrepository.com/artifact/com.android.tools/sdklib -->
-        
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-extexecution</artifactId>
@@ -222,12 +189,6 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-core-ide</artifactId>
-            <version>${version.nb}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.netbeans.api</groupId>
-            <artifactId>org-netbeans-spi-debugger-ui</artifactId>
             <version>${version.nb}</version>
             <type>jar</type>
         </dependency>
@@ -365,11 +326,6 @@
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
-            <artifactId>org-apache-tools-ant-module</artifactId>
-            <version>${version.nb}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-projectuiapi</artifactId>
             <version>${version.nb}</version>
         </dependency>
@@ -456,16 +412,6 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-editor-completion</artifactId>
-            <version>${version.nb}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.netbeans.modules</groupId>
-            <artifactId>org-netbeans-modules-editor-breadcrumbs</artifactId>
-            <version>${version.nb}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.netbeans.modules</groupId>
-            <artifactId>org-netbeans-modules-editor-structure</artifactId>
             <version>${version.nb}</version>
         </dependency>
         <dependency>
