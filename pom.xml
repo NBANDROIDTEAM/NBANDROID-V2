@@ -6,6 +6,7 @@
     <version>01.00-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
+        <module>nbandroid.models</module>
         <module>nbandroid.ext.libs</module>
         <module>nbandroid.ext.libs.android</module>
         <module>nbandroid.ext.src</module>

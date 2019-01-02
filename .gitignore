@@ -8,3 +8,5 @@
 /nbandroid.maven.impl/target/
 /rebel.xml
 /nbandroid.maven.impl/src/main/resources/rebel.xml
+/nbandroid.models/target/
+/nbandroid.models/src/main/resources/rebel.xml

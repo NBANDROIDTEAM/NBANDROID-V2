@@ -25,13 +25,13 @@
                     </publicPackages>
                     <codeNameBase>sk-arsi-netbeans-gradle-android-Gradle-Android-support</codeNameBase>
                     <nbmResources>
-                        <nbmResource>
+                        <!--                        <nbmResource>
                             <directory>src/main/patches/</directory>
                             <targetPath>modules/patches/sk-arsi-netbeans-gradle-android-Gradle-Android-support</targetPath>
                             <includes>
                                 <include>*</include>
                             </includes>
-                        </nbmResource>
+                        </nbmResource>-->
                     </nbmResources>
                     <moduleDependencies>
                         <dependency>
@@ -127,7 +127,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.5.1</version>
                 <configuration>
-                    <showDeprecation>true</showDeprecation>
+                    <showDeprecation>false</showDeprecation>
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
@@ -501,6 +501,11 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>Gradle-Android-support-ext-libs</artifactId>
+            <version>01.00-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>Gradle-Android-support-models</artifactId>
             <version>01.00-SNAPSHOT</version>
         </dependency>
     </dependencies>
