@@ -20,7 +20,6 @@ package org.nbandroid.netbeans.gradle.v2.layout.completion.analyzer;
 
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 
 public class StyleableClassVisitor
         extends ClassVisitor {
@@ -28,9 +27,10 @@ public class StyleableClassVisitor
     private final StyleableResultCollector resultCollector;
 
     private final MethodVisitor methodVisitor;
+    public static final int ASM5 = 327680;
 
     public StyleableClassVisitor(MethodVisitor methodVisitor, StyleableResultCollector resultCollector) {
-        super(Opcodes.ASM5);
+        super(ASM5);
         this.methodVisitor = methodVisitor;
         this.resultCollector = resultCollector;
     }
