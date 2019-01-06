@@ -246,6 +246,9 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Android
         for (Object item : items) {
             ic.add(item);
         }
+        if (resValuesProvider != null) {
+            ic.remove(resValuesProvider);
+        }
         resValuesProvider = new AndroidResValuesProvider(aPrj, project);
         ic.add(resValuesProvider);
         for (AndroidModelAware ama : projectAddOnLookup.lookupAll(AndroidModelAware.class)) {

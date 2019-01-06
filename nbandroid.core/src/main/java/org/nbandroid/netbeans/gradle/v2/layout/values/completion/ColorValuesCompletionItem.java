@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.nbandroid.netbeans.gradle.v2.layout.values.completion;
 
 import java.awt.Color;
@@ -49,6 +48,16 @@ public class ColorValuesCompletionItem extends BasicValuesCompletionItem {
         return super.getIcon(); //To change body of generated methods, choose Tools | Templates.
     }
 
+    public Color getColor() {
+        Color color = null;
+        if (value.length() == 9) {
+            color = decodeAlfa(value);
+        } else {
+            color = decodeAlfa(value.replace("#", "#FF"));
+        }
+        return color;
+    }
+
     public static ImageIcon createImage(Color c, Dimension size) {
         BufferedImage img = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
         Graphics g = img.createGraphics();
@@ -56,6 +65,5 @@ public class ColorValuesCompletionItem extends BasicValuesCompletionItem {
         g.fillRect(0, 0, size.width, size.height);
         return new ImageIcon(img);
     }
-
 
 }

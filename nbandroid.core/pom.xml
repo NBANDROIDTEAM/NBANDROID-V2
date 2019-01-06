@@ -36,6 +36,16 @@
                     <moduleDependencies>
                         <dependency>
                             <!--Private Package Reference-->
+                            <id>org.netbeans.modules:org-netbeans-bootstrap</id>
+                            <type>impl</type>
+                        </dependency>
+                        <dependency>
+                            <!--Private Package Reference-->
+                            <id>org.netbeans.modules:org-netbeans-core-startup</id>
+                            <type>impl</type>
+                        </dependency>
+                        <dependency>
+                            <!--Private Package Reference-->
                             <id>org.netbeans.modules:org-netbeans-modules-gsf-testrunner</id>
                             <type>impl</type>
                         </dependency>
@@ -453,6 +463,22 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>Gradle-Android-support-models</artifactId>
             <version>01.00-SNAPSHOT</version>
+        </dependency>
+        <dependency> 
+            <groupId>com.junichi11</groupId> 
+            <artifactId>netbeans-color-codes-preview</artifactId> 
+            <version>0.8.1-NBA</version> 
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-bootstrap</artifactId>
+            <version>${version.nb}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-core-startup</artifactId>
+            <version>${version.nb}</version>
         </dependency>
     </dependencies>
 </project>

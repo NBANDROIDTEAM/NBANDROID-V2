@@ -10,3 +10,6 @@
 /nbandroid.maven.impl/src/main/resources/rebel.xml
 /nbandroid.models/target/
 /nbandroid.models/src/main/resources/rebel.xml
+/Gradle-Android-support-color-preview/target/
+/Gradle-Android-support-color-preview/src/main/resources/rebel.xml
+/nbandroid.color.preview/target/
