@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiFunction;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -127,17 +128,16 @@ public class AndroidResValuesProvider implements FileChangeListener {
             }
         }
         if (type != null) {
-            Iterator<List<BasicValuesCompletionItem>> iterator = completions.values().iterator();
-            while (iterator.hasNext()) {
-                List<BasicValuesCompletionItem> next = iterator.next();
+            final AndroidValueType t = type;
+            completions.forEach((fo, next) -> {
                 for (BasicValuesCompletionItem completionItem : next) {
-                    if (type.equals(completionItem.getType())) {
+                    if (t.equals(completionItem.getType())) {
                         if (!tmp.contains(completionItem)) {
                             tmp.add(completionItem);
                         }
                     }
                 }
-            }
+            });
         }
         if (attrTypes.contains(AndroidStyleableAttrType.Color)) {
             type = AndroidValueType.COLOR;
@@ -197,7 +197,12 @@ public class AndroidResValuesProvider implements FileChangeListener {
         } catch (ParserConfigurationException | SAXException | XPathExpressionException ex) {
             Exceptions.printStackTrace(ex);
         }
-        completions.put(nextElement, tmp);
+        completions.compute(nextElement, new BiFunction<FileObject, List<BasicValuesCompletionItem>, List<BasicValuesCompletionItem>>() {
+            @Override
+            public List<BasicValuesCompletionItem> apply(FileObject t, List<BasicValuesCompletionItem> u) {
+                return tmp;
+            }
+        });
         if (!statuses.containsKey(nextElement)) {
             statuses.put(nextElement, new AtomicBoolean(false));
         }
@@ -296,6 +301,22 @@ public class AndroidResValuesProvider implements FileChangeListener {
 
     @Override
     public void fileAttributeChanged(FileAttributeEvent fe) {
+    }
+
+    public List<BasicValuesCompletionItem> forType(final AndroidValueType type) {
+        List<BasicValuesCompletionItem> tmp = new ArrayList<>();
+        if (type != null) {
+            completions.forEach((fo, next) -> {
+                for (BasicValuesCompletionItem completionItem : next) {
+                    if (type.equals(completionItem.getType())) {
+                        if (!tmp.contains(completionItem)) {
+                            tmp.add(completionItem);
+                        }
+                    }
+                }
+            });
+        }
+        return tmp;
     }
 
     private class ProcessFile implements Runnable {
