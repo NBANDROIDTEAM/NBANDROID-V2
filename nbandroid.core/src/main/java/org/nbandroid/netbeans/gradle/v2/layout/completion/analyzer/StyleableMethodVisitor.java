@@ -18,16 +18,17 @@
  */
 package org.nbandroid.netbeans.gradle.v2.layout.completion.analyzer;
 
+import static org.nbandroid.netbeans.gradle.v2.layout.completion.analyzer.StyleableClassVisitor.ASM5;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 
 public class StyleableMethodVisitor
         extends MethodVisitor {
 
     private final StyleableResultCollector resultCollector;
 
+
     public StyleableMethodVisitor(StyleableResultCollector resultCollector) {
-        super(Opcodes.ASM5);
+        super(ASM5);
         this.resultCollector = resultCollector;
     }
 
