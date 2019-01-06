@@ -15,6 +15,22 @@ The compiled version of the last commit is here:<br>
 NetBeans 8.1 http://server.arsi.sk/nbandroid81/
 
 NetBeans 8.2 http://server.arsi.sk/nbandroid82/
+
+## Color preview support
+![Color preview](https://user-images.githubusercontent.com/22594510/50722224-20224380-10cc-11e9-8a0a-90e2106b3c9d.png)
+![Color preview](https://user-images.githubusercontent.com/22594510/50724036-f9253b00-10e6-11e9-92d0-c092ec9ed1f4.png)
+![Color preview](https://user-images.githubusercontent.com/22594510/50724463-30e3b100-10ee-11e9-8d71-97dd83a3a357.png)
+
+To use Android Color preview support you must first uninstall netbeans-color-codes-preview plugin if you have it installed.
+
+And install the modified version of netbeans-color-codes-preview plugin from http://server.arsi.sk/ascp/ or add an update center 
+http://server.arsi.sk/ascp/updates.xml. 
+
+I'm waiting for PR to accept. Current source codes are here https://github.com/arsi-apli/netbeans-color-codes-preview. 
+
+And I added basic support for Java, Color constants and RGB Color values.
+![Color preview](https://user-images.githubusercontent.com/22594510/50656806-ab98b900-0f94-11e9-9d14-890c3303c7b7.png)
+
 ### What Works:
 * Code Assistance
 * Build
