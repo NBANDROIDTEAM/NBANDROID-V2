@@ -31,7 +31,7 @@ NetBeans 8.2 http://server.arsi.sk/nbandroid82/updates.xml
 
 
 ## Color preview support
-![Color preview](https://user-images.githubusercontent.com/22594510/50820918-2fa0c700-132e-11e9-9cc3-dbdf49bb17b4.png)
+![Color preview](https://user-images.githubusercontent.com/22594510/50722224-20224380-10cc-11e9-8a0a-90e2106b3c9d.png)
 ![Color preview](https://user-images.githubusercontent.com/22594510/50724036-f9253b00-10e6-11e9-92d0-c092ec9ed1f4.png)
 ![Color preview](https://user-images.githubusercontent.com/22594510/50724463-30e3b100-10ee-11e9-8d71-97dd83a3a357.png)
 
