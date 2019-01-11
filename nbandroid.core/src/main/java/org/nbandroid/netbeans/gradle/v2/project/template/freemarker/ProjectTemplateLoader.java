@@ -98,7 +98,21 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
         FileObject fileObject = root.getFileObject(path);
         if (fileObject == null) {
             if (pushedFolders.isEmpty()) {
-                throw new IOException("Template source " + path + " not found!");
+                //handle bugs in templates
+                //attempt to find right folder
+                Enumeration<? extends FileObject> children = root.getChildren(false);
+                while (children.hasMoreElements()) {
+                    FileObject nextRoot = children.nextElement();
+                    if (nextRoot.isFolder()) {
+                        fileObject = nextRoot.getFileObject(path);
+                        if (fileObject != null) {
+                            break;
+                        }
+                    }
+                }
+                if (fileObject == null) {
+                    throw new IOException("Template source " + path + " not found!");
+                }
             } else {
                 String name = path.replace(templatePath, "");
                 for (String pushedFolder : pushedFolders) {
