@@ -63,6 +63,8 @@ public class BasicValuesCompletionItem implements CompletionItem {
             case STRING:
             case INTEGER:
             case BOOL:
+            case ENUM:
+            case FLAG:
                 return new BasicValuesCompletionItem(type, name, value, comment);
             case DIMEN:
                 return new DimenValuesCompletionItem(type, name, value, comment);
