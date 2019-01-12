@@ -32,7 +32,6 @@ import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleable;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableAttr;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableNamespace;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableStore;
-import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableType;
 import org.nbandroid.netbeans.gradle.v2.layout.parsers.AndroidResValuesProvider;
 import org.nbandroid.netbeans.gradle.v2.layout.tools.ToolsNamespaceProvider;
 import org.nbandroid.netbeans.gradle.v2.layout.values.completion.BasicValuesCompletionItem;
@@ -259,20 +258,27 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
             return;
         }
         tmpAttrs.addAll(styleable.getAllAttrs(declaredNamespaces));
+        List<AndroidStyleable> allLayoutParams = styleable.findAllLayoutParams();
+        for (AndroidStyleable currentP : allLayoutParams) {
+            List<AttrCompletionItem> allAttrs = currentP.getAllAttrs(declaredNamespaces);
+            for (AttrCompletionItem allAttr : allAttrs) {
+                if (!tmpAttrs.contains(allAttr)) {
+                    tmpAttrs.add(allAttr);
+                }
+            }
+        }
         AndroidStyleable parentStyleable = null;
         if (pathFromRoot.size() > 1) {
             for (int i = 0; i < pathFromRoot.size() - 1; i++) {
                 QName qname = pathFromRoot.get(i);
                 attributeRoot = qname.getLocalPart();
                 parentStyleable = findStyleable(attributeRoot, namespacesIn);
-                if (parentStyleable != null && parentStyleable.getAndroidStyleableType() == AndroidStyleableType.Layout) {
-                    List<AndroidStyleable> findAllLayoutParams = parentStyleable.findAllLayoutParams();
-                    for (AndroidStyleable superS : findAllLayoutParams) {
-                        List<AttrCompletionItem> allAttrs = superS.getAllAttrs(declaredNamespaces);
-                        for (AttrCompletionItem allAttr : allAttrs) {
-                            if (!tmpAttrs.contains(allAttr)) {
-                                tmpAttrs.add(allAttr);
-                            }
+                List<AndroidStyleable> findAllLayoutParams = parentStyleable.findAllLayoutParams();
+                for (AndroidStyleable superS : findAllLayoutParams) {
+                    List<AttrCompletionItem> allAttrs = superS.getAllAttrs(declaredNamespaces);
+                    for (AttrCompletionItem allAttr : allAttrs) {
+                        if (!tmpAttrs.contains(allAttr)) {
+                            tmpAttrs.add(allAttr);
                         }
                     }
                 }

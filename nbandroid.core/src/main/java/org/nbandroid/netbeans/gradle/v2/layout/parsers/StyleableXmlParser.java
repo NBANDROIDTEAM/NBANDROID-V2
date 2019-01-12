@@ -419,7 +419,7 @@ public class StyleableXmlParser {
         for (Map.Entry<String, AndroidStyleable> entry : styleableMap.entrySet()) {
             AndroidStyleable styleable = entry.getValue();
             String superStyleableName = styleable.getSuperStyleableName();
-            if (superStyleableName != null) {
+            if (superStyleableName != null && styleable.getSuperStyleable() == null) {
                 styleable.setSuperStyleable(styleableMap.get(superStyleableName));
             }
             switch (styleable.getAndroidStyleableType()) {
