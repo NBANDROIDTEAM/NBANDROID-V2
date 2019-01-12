@@ -231,7 +231,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <version.android>26.2.1 </version.android>
         <version.nb.gradle>1.4.4</version.nb.gradle>
-        <version.nb.plugin>4.1-NBANDROID</version.nb.plugin>
+        <version.nb.plugin>4.1.1-NBANDROID</version.nb.plugin>
         <android.gradle.model.version>3.2.1</android.gradle.model.version>
         <cluster>nbandroid</cluster>
         
