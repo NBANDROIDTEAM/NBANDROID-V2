@@ -45,8 +45,19 @@ I'm waiting for PR to accept. Current source codes are here https://github.com/a
 And I added basic support for Java, Color constants and RGB Color values.
 ![Color preview](https://user-images.githubusercontent.com/22594510/50656806-ab98b900-0f94-11e9-9d14-890c3303c7b7.png)
 
+## Checking for external changes - Suspended, high cpu usage<br>
+There is a problem with Gradle, it creates broken links in the tmp directory and Netbeans 8.2 contains a bug with their handling.<br>
+When you run into this problem, you can install this modules with patch for NB82:<br>
+org-netbeans-modules-masterfs-patch-module<br>
+org-netbeans-modules-versioning-masterfs-patch-module<br>
+From this update center:  http://server.arsi.sk/masterfs/updates.xml
+
+## Current project status:
 ### What Works:
 * Code Assistance
+* Android XML Code Completion support
+* Color preview support
+* Google, Bintray jcenter and Maven dependency browser
 * Build
 * Build Signed APK + Key Store Manager
 * Run
@@ -74,7 +85,8 @@ This plugin depends on Gradle Support plugin. You need to add it to platform fol
 * Copy .netbeans/NB_Version/modules/ext folder to NB_COPY/extide/modules/
 * Copy .netbeans/NB_Version/update_tracking/org-netbeans-modules-options-java.xml to NB_COPY/extide/update_tracking/
 * Copy .netbeans/NB_Version/config/Modules/org-netbeans-gradle-project.xml to NB_COPY/extide/config/Modules/
-* Add new Profile to pom.xml
+* Add new Profile to root project pom.xml
+* Copy Run and Debug Actions from default profile to your profile. Project->properties->Actions
 ```xml
     <profiles>
         <profile>
