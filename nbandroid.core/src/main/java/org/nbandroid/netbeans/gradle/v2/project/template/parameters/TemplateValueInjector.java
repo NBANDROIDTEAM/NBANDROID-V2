@@ -20,7 +20,6 @@ package org.nbandroid.netbeans.gradle.v2.project.template.parameters;
 
 import static android.studio.imports.templates.TemplateMetadata.*;
 import com.android.SdkConstants;
-import com.android.repository.Revision;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,6 +30,7 @@ import org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplateP
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_SDK;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
+import static org.nbandroid.netbeans.gradle.v2.template.mobile.MobileActivityWizardIterator.BUILD_TOOL_VERSION;
 import org.openide.WizardDescriptor;
 
 /**
@@ -44,8 +44,6 @@ public class TemplateValueInjector {
         parameters.put(ATTR_SDK_DIR, androidSdk.getSdkPath());
         int maxBuildLevel = (int) wiz.getProperty(PROP_MAX_BUILD_LEVEL);
         AndroidPlatformInfo platformInfo = (AndroidPlatformInfo) wiz.getProperty(platformPropertyName);
-        int revision = platformInfo.getAndroidTarget().getRevision();
-        Revision revisionBuildTool = platformInfo.getAndroidTarget().getBuildToolInfo().getRevision();
         parameters.put(ATTR_IS_NEW_PROJECT, newProject); // Android Modules are called Gradle Projects
         parameters.put(ATTR_THEME_EXISTS, true); // New modules always have a theme (unless its a library, but it will have no activity)
 
@@ -53,10 +51,12 @@ public class TemplateValueInjector {
         parameters.put(ATTR_MIN_API, platformInfo.getAndroidVersion().getApiString());
         parameters.put(ATTR_BUILD_API, maxBuildLevel);
         parameters.put(ATTR_BUILD_API_STRING, String.valueOf(maxBuildLevel));
-        parameters.put(ATTR_TARGET_API, platformInfo.getAndroidVersion().getApiLevel());
-        parameters.put(ATTR_TARGET_API_STRING, platformInfo.getAndroidVersion().getApiString());
-        parameters.put(ATTR_BUILD_API_REVISION, revision);
-        parameters.put(ATTR_BUILD_TOOLS_VERSION, revisionBuildTool.toString());
+
+        parameters.put(ATTR_TARGET_API, maxBuildLevel);
+        parameters.put(ATTR_TARGET_API_STRING, String.valueOf(maxBuildLevel));
+
+        parameters.put(ATTR_BUILD_API_REVISION, maxBuildLevel);
+        parameters.put(ATTR_BUILD_TOOLS_VERSION, wiz.getProperty(BUILD_TOOL_VERSION));
 
         parameters.put(ATTR_GRADLE_PLUGIN_VERSION, SdkConstants.GRADLE_PLUGIN_LATEST_VERSION);
         parameters.put(ATTR_GRADLE_VERSION, SdkConstants.GRADLE_LATEST_VERSION);

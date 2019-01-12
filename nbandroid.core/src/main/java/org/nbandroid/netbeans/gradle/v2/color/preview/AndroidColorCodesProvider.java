@@ -47,7 +47,7 @@ public class AndroidColorCodesProvider implements ColorCodesProvider {
 
     @Override
     public boolean isMimeTypeSupported(Document document, String mimeType) {
-        if ("text/plain+xml".equals(mimeType) || "text/x-java".equals(mimeType) || ColorsDataObject.SETTINGS_MIME_TYPE.equals(mimeType)) {
+        if ("text/x-android-styles+xml".equals(mimeType) || "text/plain+xml".equals(mimeType) || "text/x-java".equals(mimeType) || ColorsDataObject.SETTINGS_MIME_TYPE.equals(mimeType)) {
             return true;
         }
         return false;
@@ -93,13 +93,13 @@ public class AndroidColorCodesProvider implements ColorCodesProvider {
 
     @Override
     public void addAllColorValues(Document document, String mimeType, String line, int lineNumber, List<ColorValue> colorValues) {
-        if ("text/plain+xml".equals(mimeType) || "text/x-java".equals(mimeType) || ColorsDataObject.SETTINGS_MIME_TYPE.equals(mimeType)) {
+        if ("text/x-android-styles+xml".equals(mimeType) || "text/plain+xml".equals(mimeType) || "text/x-java".equals(mimeType) || ColorsDataObject.SETTINGS_MIME_TYPE.equals(mimeType)) {
             FileObject primaryFile = getPrimaryFile(document);
             if (primaryFile != null) {
                 Project project = FileOwnerQuery.getOwner(primaryFile);
                 if (project != null && "text/plain+xml".equals(mimeType)) {
                     parseColorVariables(project, line, colorValues, lineNumber);
-                } else if (project != null && ColorsDataObject.SETTINGS_MIME_TYPE.equals(mimeType)) {
+                } else if (project != null && ColorsDataObject.SETTINGS_MIME_TYPE.equals(mimeType) || "text/x-android-styles+xml".equals(mimeType)) {
                     parseColorVariables(project, line, colorValues, lineNumber);
                     getHexColorCodes(this, line, lineNumber, colorValues);
 
@@ -170,6 +170,9 @@ public class AndroidColorCodesProvider implements ColorCodesProvider {
                     Color color = ((ColorValuesCompletionItem) basicValuesCompletionItem).getColor();
                     String completionText = basicValuesCompletionItem.getCompletionText();
                     if (color != null && completionText != null && line.contains("\"" + completionText + "\"")) {
+                        colorValues.add(new ReadOnlyColorValue(this, color, completionText, 0, 0, lineNumber));
+                    }
+                    if (color != null && completionText != null && line.contains(">" + completionText + "<")) {
                         colorValues.add(new ReadOnlyColorValue(this, color, completionText, 0, 0, lineNumber));
                     }
                 }

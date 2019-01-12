@@ -64,6 +64,7 @@ import org.nbandroid.netbeans.gradle.core.sdk.NbDownloader;
 import org.nbandroid.netbeans.gradle.core.sdk.NbOutputWindowProgressIndicator;
 import org.nbandroid.netbeans.gradle.core.sdk.SdkLogProvider;
 import org.nbandroid.netbeans.gradle.core.sdk.Util;
+import org.nbandroid.netbeans.gradle.v2.ext.ComparableVersion;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPackageNode;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformChangeListener;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformPackagesRootNode;
@@ -511,6 +512,24 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
                     toolsPackages.add(info);
                 }
             }
+            List<UpdatablePackage> buildTools = new ArrayList<>();
+            for (UpdatablePackage toolsPackage : toolsPackages) {
+                if (toolsPackage.getRepresentative().getPath().startsWith("build-tools")) {
+                    if (!toolsPackage.getRepresentative().getVersion().isPreview()) {
+                        buildTools.add(toolsPackage);
+                    }
+                }
+            }
+            Collections.sort(buildTools, new Comparator<UpdatablePackage>() {
+                @Override
+                public int compare(UpdatablePackage o1, UpdatablePackage o2) {
+                    return new ComparableVersion(o2.getRepresentative().getVersion().toString()).compareTo(new ComparableVersion(o1.getRepresentative().getVersion().toString()));
+                }
+            });
+            if (!buildTools.isEmpty()) {
+                properties.put("buildToolsVersion", buildTools.get(0).getRepresentative().getVersion().toString());
+                properties.put("compileSdkVersion", "" + buildTools.get(0).getRepresentative().getVersion().getMajor());
+            }
 
             platforms = platformsTmp;
 
@@ -656,6 +675,16 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
             return "<html><b>" + displayName + " (default)</b></html>";
         }
         return displayName; //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public String getBuildToolsVersion() {
+        return properties.get("buildToolsVersion");
+    }
+
+    @Override
+    public String getCompileSdkVersion() {
+        return properties.get("compileSdkVersion");
     }
 
 }

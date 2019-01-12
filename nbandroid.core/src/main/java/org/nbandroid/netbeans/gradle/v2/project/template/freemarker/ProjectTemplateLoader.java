@@ -94,17 +94,31 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
 
     @Override
     public Object findTemplateSource(String path) throws IOException {
+        path = path.replace('\\', '/');
         path = path.replace("root://", "");
         FileObject fileObject = root.getFileObject(path);
         if (fileObject == null) {
             if (pushedFolders.isEmpty()) {
                 //handle bugs in templates
                 //attempt to find right folder
-                Enumeration<? extends FileObject> children = root.getChildren(false);
+                Enumeration<? extends FileObject> children = root.getChildren(true);
+                String name = path.replace(templatePath, "");
+                String simpleName = name;
+                if (simpleName.contains("/")) {
+                    simpleName = name.substring(name.lastIndexOf('/') + 1);
+                }
                 while (children.hasMoreElements()) {
                     FileObject nextRoot = children.nextElement();
                     if (nextRoot.isFolder()) {
                         fileObject = nextRoot.getFileObject(path);
+                        if (fileObject != null) {
+                            break;
+                        }
+                        fileObject = nextRoot.getFileObject(name);
+                        if (fileObject != null) {
+                            break;
+                        }
+                        fileObject = nextRoot.getFileObject(simpleName);
                         if (fileObject != null) {
                             break;
                         }
@@ -115,14 +129,25 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
                 }
             } else {
                 String name = path.replace(templatePath, "");
+                String simpleName = name;
+                if (simpleName.contains("/")) {
+                    simpleName = name.substring(name.lastIndexOf('/') + 1);
+                }
                 for (String pushedFolder : pushedFolders) {
                     if (!pushedFolder.endsWith("/") || !pushedFolder.endsWith("\\")) {
-                        name = pushedFolder + File.separator + name;
+                        name = pushedFolder + "/" + name;
+                        simpleName = pushedFolder + "/" + simpleName;
                     } else {
                         name = pushedFolder + name;
+                        simpleName = pushedFolder + simpleName;
                     }
                     name = name.replace("root://", "");
+                    simpleName = simpleName.replace("root://", "");
                     fileObject = root.getFileObject(name);
+                    if (fileObject != null) {
+                        break;
+                    }
+                    fileObject = root.getFileObject(simpleName);
                     if (fileObject != null) {
                         break;
                     }
@@ -171,7 +196,10 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
 
     @Override
     public void copy(File from, File to) {
-        FileObject fileObject = root.getFileObject(templatePath + from.getPath());
+        String path = from.getPath().replace('\\', '/');
+        path = path.replace("root://", "");
+        from = new File(path);
+        FileObject fileObject = root.getFileObject(templatePath + path);
         if (fileObject != null) {
             if (fileObject.isData()) {
                 try {
@@ -236,6 +264,7 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
     @Override
     public void merge(File from, File to) throws TemplateProcessingException {
         //     if (from.getName().endsWith(".ftl")) {
+        from = new File(from.getPath().replace('\\', '/'));
         String process = process(templatePath + from.getPath(), parameters);
         if (process == null) {
             NotifyDescriptor nd = new NotifyDescriptor.Message("Unable to instantiate template " + from.getPath(), NotifyDescriptor.ERROR_MESSAGE);
@@ -354,6 +383,7 @@ public class ProjectTemplateLoader implements TemplateLoader, RecipeExecutor {
 
     @Override
     public void pushFolder(String folder) {
+        folder = folder.replace('\\', '/');
         pushedFolders.add(0, folder);
     }
 

@@ -43,6 +43,7 @@ import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTe
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_SDK;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
+import static org.nbandroid.netbeans.gradle.v2.template.mobile.MobileActivityWizardIterator.BUILD_TOOL_VERSION;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -345,19 +346,16 @@ public class AndroidProjectTemplatePanelVisualAndroidSettings extends JPanel imp
                 return Integer.compare(o1.getAndroidVersion().getApiLevel(), o2.getAndroidVersion().getApiLevel());
             }
         });
-        int maxBuildLevel = 0;
         phonePlatforms.setModel(new DefaultComboBoxModel(platforms.toArray()));
         phonePlatforms.setRenderer(new ComboBoxRenderer());
         for (Iterator<AndroidPlatformInfo> iterator = platforms.iterator(); iterator.hasNext();) {
             AndroidPlatformInfo next = iterator.next();
-            if (next.getAndroidVersion().getFeatureLevel() > maxBuildLevel) {
-                maxBuildLevel = next.getAndroidVersion().getFeatureLevel();
-            }
             if (next.getAndroidVersion().getApiLevel() < 20) {
                 iterator.remove();
             }
         }
-        settings.putProperty(PROP_MAX_BUILD_LEVEL, maxBuildLevel);
+        settings.putProperty(PROP_MAX_BUILD_LEVEL, Integer.valueOf(androidSdk.getCompileSdkVersion()));
+        settings.putProperty(BUILD_TOOL_VERSION, androidSdk.getBuildToolsVersion());
         wearPlatforms.setModel(new DefaultComboBoxModel(platforms.toArray()));
         wearPlatforms.setRenderer(new ComboBoxRenderer());
         for (Iterator<AndroidPlatformInfo> iterator = platforms.iterator(); iterator.hasNext();) {
