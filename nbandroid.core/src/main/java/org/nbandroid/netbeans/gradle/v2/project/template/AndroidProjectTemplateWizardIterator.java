@@ -138,6 +138,7 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
     public Set/*<FileObject>*/ instantiate(/*ProgressHandle handle*/) throws IOException {
         Set<FileObject> resultSet = new LinkedHashSet<>();
         File projectRoot = (File) wiz.getProperty(AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_DIR);
+        projectRoot.mkdirs();
         FileObject dir = FileUtil.toFileObject(projectRoot);
         resultSet.add(dir);
         Template projectTemplate = TemplateManager.findProjectTemplate("Android Project");

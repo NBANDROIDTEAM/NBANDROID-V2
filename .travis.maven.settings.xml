@@ -7,6 +7,16 @@
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
+            <pluginRepositories>
+                <pluginRepository>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                    <id>bintray-nbandroidteam-nbm-maven-plugin</id>
+                    <name>bintray-plugins</name>
+                    <url>https://dl.bintray.com/nbandroidteam/nbm-maven-plugin</url>
+                </pluginRepository>
+            </pluginRepositories>
             <repositories>
                 <repository>
                     <snapshots>

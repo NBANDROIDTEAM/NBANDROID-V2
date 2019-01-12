@@ -101,6 +101,20 @@ public abstract class AndroidSdk {
     public abstract void removeSdkToolsChangeListener(SdkManagerToolsChangeListener l);
 
     /**
+     * Get latest BuildToolsVersion for new project
+     *
+     * @return latest BuildToolsVersion
+     */
+    public abstract String getBuildToolsVersion();
+
+    /**
+     * Get latest CompileSdkVersion for new project
+     *
+     * @return latest CompileSdkVersion
+     */
+    public abstract String getCompileSdkVersion();
+
+    /**
      * Uninstall android package After unistall is called
      * updateSdkPlatformPackages()
      *

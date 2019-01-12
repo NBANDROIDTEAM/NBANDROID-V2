@@ -81,8 +81,7 @@ public class AndroidResValuesMerge {
                 if (androidNodeTypeName != null) {
                     String nodeValue = androidNodeTypeName.getNodeValue();
                     masterResources.add(nodeName + ":" + nodeValue);
-                    Node importNode = document.importNode(node, false);
-                    importNode.setTextContent(node.getTextContent());
+                    Node importNode = document.importNode(node, true);
                     resourcesNode.appendChild(importNode);
                 }
             }
@@ -97,8 +96,7 @@ public class AndroidResValuesMerge {
                 if (androidNodeTypeName != null) {
                     String nodeValue = androidNodeTypeName.getNodeValue();
                     if (!masterResources.contains(nodeName + ":" + nodeValue)) {
-                        Node importNode = document.importNode(node, false);
-                        importNode.setTextContent(node.getTextContent());
+                        Node importNode = document.importNode(node, true);
                         resourcesNode.appendChild(importNode);
                     }
                 }
