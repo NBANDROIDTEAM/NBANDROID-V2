@@ -30,10 +30,13 @@ import javax.swing.text.JTextComponent;
 import javax.xml.namespace.QName;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleable;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableAttr;
+import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableAttrEnum;
+import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableAttrFlag;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableNamespace;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableStore;
 import org.nbandroid.netbeans.gradle.v2.layout.parsers.AndroidResValuesProvider;
 import org.nbandroid.netbeans.gradle.v2.layout.tools.ToolsNamespaceProvider;
+import org.nbandroid.netbeans.gradle.v2.layout.values.completion.AndroidValueType;
 import org.nbandroid.netbeans.gradle.v2.layout.values.completion.BasicValuesCompletionItem;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatform;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatformProvider;
@@ -369,6 +372,14 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
                     if (attribute.equals(tmpAttr.getCompletionText())) {
                         List<BasicValuesCompletionItem> forType = valuesProvider.forType(tmpAttr.getAttr().getAttrTypes(), typedChars, doc, caretOffset);
                         attrValues.addAll(forType);
+                        AndroidStyleableAttrEnum[] enums = tmpAttr.getAttr().getEnums();
+                        for (AndroidStyleableAttrEnum aEnum : enums) {
+                            attrValues.add(BasicValuesCompletionItem.create(AndroidValueType.ENUM, aEnum.getName(), aEnum.getValue(), aEnum.getComment()));
+                        }
+                        AndroidStyleableAttrFlag[] flags = tmpAttr.getAttr().getFlags();
+                        for (AndroidStyleableAttrFlag flag : flags) {
+                            attrValues.add(BasicValuesCompletionItem.create(AndroidValueType.FLAG, flag.getName(), flag.getValue(), flag.getComment()));
+                        }
                         break;
                     }
                 }
