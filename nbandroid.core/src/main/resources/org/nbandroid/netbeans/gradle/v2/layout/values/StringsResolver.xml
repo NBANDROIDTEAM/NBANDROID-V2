@@ -113,4 +113,13 @@
             
         </resolver>
     </file>
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-android-menu+xml">
+            <xml-rule>
+                <element name="menu"/>
+            </xml-rule>
+            
+        </resolver>
+    </file>
 </MIME-resolver>
