@@ -1,0 +1,64 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context="c.newandroidproject.MainActivity" >
+    <item android:id="@+id/action_settings"
+          android:title="@string/action_settings"
+          android:orderInCategory="100"
+          app:showAsAction="never" />
+    <item android:id="@+id/action_settings"
+          android:title="@string/action_settings"
+          android:orderInCategory="100"
+          app:showAsAction="never" />
+    <item android:id="@+id/file"
+          android:title="@string/file" >
+        <!-- "file" submenu -->
+        <menu>
+            <item android:id="@+id/create_new"
+                  android:title="@string/create_new" />
+            <item android:id="@+id/open"
+                  android:title="@string/open" />
+        </menu>
+    </item>
+    <item android:id="@+id/file"
+          android:title="@string/file" >
+        <!-- "file" submenu -->
+        <menu>
+            <item android:id="@+id/create_new"
+                  android:title="@string/create_new" />
+            <item android:id="@+id/open"
+                  android:title="@string/open" />
+        </menu>
+    </item>
+    <!-- menu group -->
+    <group android:id="@+id/group_delete">
+        <item android:id="@+id/menu_archive"
+              android:title="@string/menu_archive" />
+        <item android:id="@+id/menu_delete"
+              android:title="@string/menu_delete" />
+        <group android:id="@+id/group_delete">
+            <item android:id="@+id/menu_archive"
+                  android:title="@string/menu_archive" />
+            <item android:id="@+id/menu_delete"
+                  android:title="@string/menu_delete" />
+        </group>
+    </group>
+    <!-- menu group -->
+    <group android:id="@+id/group_delete">
+        <item android:id="@+id/menu_archive"
+              android:title="@string/menu_archive" />
+        <item android:id="@+id/menu_delete"
+              android:title="@string/menu_delete" />
+        <item android:id="@+id/file"
+              android:title="@string/file" >
+            <!-- "file" submenu -->
+            <menu>
+                <item android:id="@+id/create_new"
+                      android:title="@string/create_new" />
+                <item android:id="@+id/open"
+                      android:title="@string/open" />
+            </menu>
+        </item>
+    </group>
+
+</menu>

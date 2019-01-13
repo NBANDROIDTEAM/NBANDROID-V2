@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+    TODO define vocabulary identification
+    PUBLIC ID: -//vendor//vocabulary//EN
+    SYSTEM ID: http://server/path/menu1.dtd
+
+-->
+
+<!--
+    An example how to use this DTD from your XML document:
+
+    <?xml version="1.0"?>
+
+    <!DOCTYPE xs:schema SYSTEM "menu1.dtd">
+
+    <xs:schema>
+    ...
+    </xs:schema>
+-->
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT menu (item|group)*>
+<!ATTLIST menu
+    xmlns:android CDATA #IMPLIED
+    xmlns:tools CDATA #IMPLIED
+    xmlns:app CDATA #IMPLIED
+    tools:context CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT item (menu)*>
+<!ATTLIST item
+    android:orderInCategory CDATA #IMPLIED
+    android:title CDATA #REQUIRED
+    android:id CDATA #REQUIRED
+    android:icon CDATA #IMPLIED
+    app:showAsAction CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT group (item|group)*>
+<!ATTLIST group
+    android:id CDATA #REQUIRED
+  >

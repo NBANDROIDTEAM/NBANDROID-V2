@@ -34,6 +34,7 @@ import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableAttrEnum;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableAttrFlag;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableNamespace;
 import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleableStore;
+import org.nbandroid.netbeans.gradle.v2.layout.menu.MenuDataObject;
 import org.nbandroid.netbeans.gradle.v2.layout.parsers.AndroidResValuesProvider;
 import org.nbandroid.netbeans.gradle.v2.layout.tools.ToolsNamespaceProvider;
 import org.nbandroid.netbeans.gradle.v2.layout.values.completion.AndroidValueType;
@@ -90,7 +91,8 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
     protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
         resultSet.setWaitText("Loading android Styleables..");
         XMLSyntaxSupport support = (XMLSyntaxSupport) ((BaseDocument) doc).getSyntaxSupport();
-        if (!support.noCompletion(component) && CompletionUtil.canProvideCompletion((BaseDocument) doc)) {
+        String mimeType = (String) ((BaseDocument) doc).getProperty(BaseDocument.MIME_TYPE_PROP);
+        if (!support.noCompletion(component) && CompletionUtil.canProvideCompletion((BaseDocument) doc) && mimeType != null && !MenuDataObject.SETTINGS_MIME_TYPE.equals(mimeType)) {
             Project owner = FileOwnerQuery.getOwner(primaryFile);
             if (owner instanceof NbGradleProject) {
                 AndroidProject androidProject = ((NbGradleProject) owner).getLookup().lookup(AndroidProject.class);
