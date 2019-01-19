@@ -115,6 +115,14 @@
     </file>
     <file>
         <ext name="xml"/>
+        <pattern value="android:orientation" range="4000" ignorecase="false"></pattern>
+        <pattern value="android:layout_width" range="4000" ignorecase="false"></pattern>
+        <pattern value="android:layout_height" range="4000" ignorecase="false"></pattern>
+        <resolver mime="text/x-android-layout+xml">
+        </resolver>
+    </file>
+    <file>
+        <ext name="xml"/>
         <resolver mime="text/x-android-menu+xml">
             <xml-rule>
                 <element name="menu"/>

@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -16,15 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.layout.menu;
 
-import java.io.IOException;
-import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleable;
-import org.nbandroid.netbeans.gradle.v2.layout.values.ResourceXsdValidateXMLSupport;
+package org.nbandroid.netbeans.gradle.v2.layout.layout;
+
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
+import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObject;
@@ -41,29 +40,29 @@ import org.openide.windows.TopComponent;
  */
 @MIMEResolver.Registration(
         resource = "/org/nbandroid/netbeans/gradle/v2/layout/values/StringsResolver.xml",
-        displayName = "Android menu.xml"
+        displayName = "Android layout.xml"
 )
 @DataObject.Registration(
-        mimeType = "text/x-android-menu+xml",
-        iconBase = "org/nbandroid/netbeans/gradle/v2/layout/menu.png",
+        mimeType = "text/x-android-layout+xml",
+        iconBase = "org/nbandroid/netbeans/gradle/v2/layout/layout/activity.png",
         position = 300
 )
-public class MenuDataObject extends MultiDataObject {
+public class LayoutDataObject extends MultiDataObject {
 
-    public static final String SETTINGS_MIME_TYPE = "text/x-android-menu+xml";
+    public static final String LAYOUT_MIME_TYPE = "text/x-android-layout+xml";
 
-    public MenuDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
+    public LayoutDataObject(FileObject fo, MultiFileLoader loader) throws DataObjectExistsException {
+        super(fo, loader);
         final CookieSet cookies = getCookieSet();
-        registerEditor(SETTINGS_MIME_TYPE, false);
         cookies.add(new CheckXMLSupport(DataObjectAdapters.inputSource(this)));
-        cookies.add(new ResourceXsdValidateXMLSupport(DataObjectAdapters.inputSource(this), AndroidStyleable.class.getResource("menu.xsd")));
+        cookies.add(new ValidateXMLSupport(DataObjectAdapters.inputSource(this)));
+        registerEditor(LAYOUT_MIME_TYPE, true);
     }
 
     @MultiViewElement.Registration(
             displayName = "&Source",
-            iconBase = "org/nbandroid/netbeans/gradle/v2/layout/menu.png",
-            mimeType = "text/x-android-menu+xml",
+            iconBase = "org/nbandroid/netbeans/gradle/v2/layout/layout/activity.png",
+            mimeType = "text/x-android-layout+xml",
             persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
             preferredID = "source",
             position = 1
@@ -79,7 +78,7 @@ public class MenuDataObject extends MultiDataObject {
 
     @Override
     public Lookup getLookup() {
-        return getCookieSet().getLookup();
+        return super.getLookup();
     }
 
 }

@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+OpenIDE-Module-Localizing-Bundle: sk/arsi/netbeans/gradle/android/layout/spi/Bundle.properties
+OpenIDE-Module-Needs: sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewProvider
