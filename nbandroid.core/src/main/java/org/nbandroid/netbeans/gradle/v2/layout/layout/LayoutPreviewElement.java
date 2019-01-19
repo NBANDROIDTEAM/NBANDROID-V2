@@ -106,6 +106,7 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
         toolbar = new javax.swing.JToolBar();
         split = new javax.swing.JSplitPane();
         editorPanel = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
 
         toolbar.setRollover(true);
 
@@ -114,6 +115,19 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
 
         editorPanel.setLayout(new java.awt.CardLayout());
         split.setLeftComponent(editorPanel);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 650, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 491, Short.MAX_VALUE)
+        );
+
+        split.setRightComponent(jPanel1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -224,6 +238,7 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel editorPanel;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JSplitPane split;
     private javax.swing.JToolBar toolbar;
     // End of variables declaration//GEN-END:variables

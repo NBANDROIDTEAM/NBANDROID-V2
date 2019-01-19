@@ -7,8 +7,6 @@ package sk.arsi.netbeans.gradle.android.layout.impl;
 
 import android.annotation.NonNull;
 import com.android.ide.common.rendering.api.LayoutLog;
-import com.android.ide.common.rendering.api.RenderSession;
-import com.android.ide.common.rendering.api.Result;
 import com.android.ide.common.rendering.api.SessionParams;
 import com.android.ide.common.resources.FrameworkResources;
 import com.android.ide.common.resources.ResourceItem;
@@ -18,9 +16,6 @@ import com.android.ide.common.resources.configuration.FolderConfiguration;
 import com.android.io.FolderWrapper;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
 import com.android.tools.nbandroid.layoutlib.ConfigGenerator;
-import com.android.tools.nbandroid.layoutlib.LayoutLibrary;
-import com.android.tools.nbandroid.layoutlib.LayoutLibraryLoader;
-import com.android.tools.nbandroid.layoutlib.LogWrapper;
 import java.io.File;
 import javax.swing.JPanel;
 import org.openide.util.lookup.ServiceProvider;
@@ -39,19 +34,19 @@ public class LayoutPreviewProviderImpl extends LayoutPreviewProvider {
 
     @Override
     public JPanel getPreview(File platformFolder, File layoutFile, File appResFolder, String themeName) {
-        ImagePanel imagePanel = new ImagePanel();
-        this.appResFolder = appResFolder;
-        try {
-            LayoutLibrary layoutLibrary = LayoutLibraryLoader.load(platformFolder);
-            RenderSession session = layoutLibrary.createSession(getSessionParams(platformFolder, new LayoutPullParser(layoutFile), ConfigGenerator.NEXUS_7, new LayoutLibTestCallback(new LogWrapper()), themeName, true, SessionParams.RenderingMode.NORMAL, 27));
-            Result renderResult = session.render();
-            if (renderResult.getException() != null) {
-                renderResult.getException().printStackTrace();
-            }
-            imagePanel.setImage(session.getImage());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        LayoutPreviewPanelImpl imagePanel = new LayoutPreviewPanelImpl(platformFolder, layoutFile, appResFolder, themeName);
+//        this.appResFolder = appResFolder;
+//        try {
+//            LayoutLibrary layoutLibrary = LayoutLibraryLoader.load(platformFolder);
+//            RenderSession session = layoutLibrary.createSession(getSessionParams(platformFolder, new LayoutPullParser(layoutFile), ConfigGenerator.NEXUS_7, new LayoutLibTestCallback(new LogWrapper()), themeName, true, SessionParams.RenderingMode.NORMAL, 27));
+//            Result renderResult = session.render();
+//            if (renderResult.getException() != null) {
+//                renderResult.getException().printStackTrace();
+//            }
+//            imagePanel.setImage(session.getImage());
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
         return imagePanel;
     }
 
