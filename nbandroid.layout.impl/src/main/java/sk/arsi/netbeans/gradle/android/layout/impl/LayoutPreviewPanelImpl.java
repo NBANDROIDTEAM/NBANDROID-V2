@@ -32,16 +32,25 @@ import com.android.tools.nbandroid.layoutlib.LogWrapper;
 import com.android.tools.nbandroid.layoutlib.RenderingException;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JPanel;
+import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
 import org.openide.util.RequestProcessor;
 import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewPanel;
@@ -50,7 +59,7 @@ import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewPanel;
  *
  * @author arsi
  */
-public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnable, ComponentListener {
+public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnable, ComponentListener, ActionListener, ItemListener {
 
     private BufferedImage image = null;
     private final int dpi;
@@ -59,6 +68,12 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     private ResourceRepository sProjectResources;
     private final AtomicBoolean refreshLock = new AtomicBoolean(false);
     private final RequestProcessor RP = new RequestProcessor(LayoutPreviewPanel.class);
+    private final ImagePanel imagePanel = new ImagePanel();
+    private static final String WINDOW_SIZE = "Window size";
+    private int imageWidth = 100;
+    private int imageHeight = 100;
+    private boolean imageFit = true;
+    private final DefaultComboBoxModel model = new DefaultComboBoxModel(new String[]{WINDOW_SIZE, "1920x1080", "1920x1200", "1600x2560", "1080x1920", "1280x800", "1280x768"});
 
     /**
      * Creates new form LayoutPreviewPanelImpl1
@@ -71,6 +86,10 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     public LayoutPreviewPanelImpl(File platformFolder, File layoutFile, File appResFolder, String themeName) {
         super(platformFolder, layoutFile, appResFolder, themeName);
         initComponents();
+        previewSize.setModel(model);
+        previewSize.addActionListener(this);
+        previewSize.setEditable(true);
+        scrollPane.setViewportView(imagePanel);
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
         dpi = Toolkit.getDefaultToolkit().getScreenResolution();
         try {
@@ -79,6 +98,8 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
             Logger.getLogger(LayoutPreviewPanelImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
         addComponentListener(this);
+        scale.addItemListener(this);
+        screenOrientation.addItemListener(this);
     }
 
     /**
@@ -91,35 +112,64 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jPanel1 = new javax.swing.JPanel();
-        label = new javax.swing.JLabel();
-        progress = new javax.swing.JProgressBar();
+        toolbar = new javax.swing.JToolBar();
+        previewSize = new javax.swing.JComboBox<>();
+        jSeparator1 = new javax.swing.JToolBar.Separator();
+        jLabel1 = new javax.swing.JLabel();
+        scale = new javax.swing.JCheckBox();
+        jSeparator3 = new javax.swing.JToolBar.Separator();
+        screenOrientation = new javax.swing.JComboBox<>();
+        jSeparator2 = new javax.swing.JToolBar.Separator();
+        scrollPane = new javax.swing.JScrollPane();
 
-        jPanel1.setOpaque(false);
-        jPanel1.setLayout(new java.awt.GridBagLayout());
+        toolbar.setFloatable(false);
+        toolbar.setRollover(true);
+        toolbar.setMaximumSize(new java.awt.Dimension(65745, 25));
+        toolbar.setMinimumSize(new java.awt.Dimension(267, 25));
 
-        label.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
-        label.setText(org.openide.util.NbBundle.getMessage(LayoutPreviewPanelImpl.class, "LayoutPreviewPanelImpl.label.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        jPanel1.add(label, gridBagConstraints);
+        previewSize.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        previewSize.setMaximumSize(new java.awt.Dimension(200, 32767));
+        previewSize.setMinimumSize(new java.awt.Dimension(200, 24));
+        previewSize.setPreferredSize(new java.awt.Dimension(200, 24));
+        toolbar.add(previewSize);
 
-        progress.setIndeterminate(true);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        jPanel1.add(progress, gridBagConstraints);
+        jSeparator1.setOrientation(javax.swing.SwingConstants.HORIZONTAL);
+        toolbar.add(jSeparator1);
+
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(LayoutPreviewPanelImpl.class, "LayoutPreviewPanelImpl.jLabel1.text")); // NOI18N
+        toolbar.add(jLabel1);
+
+        scale.setSelected(true);
+        scale.setText(org.openide.util.NbBundle.getMessage(LayoutPreviewPanelImpl.class, "LayoutPreviewPanelImpl.scale.text")); // NOI18N
+        scale.setFocusable(false);
+        scale.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        scale.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        toolbar.add(scale);
+
+        jSeparator3.setOrientation(javax.swing.SwingConstants.HORIZONTAL);
+        toolbar.add(jSeparator3);
+
+        screenOrientation.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Portrait", "Landscape" }));
+        screenOrientation.setMaximumSize(new java.awt.Dimension(150, 32767));
+        screenOrientation.setMinimumSize(new java.awt.Dimension(150, 24));
+        toolbar.add(screenOrientation);
+
+        jSeparator2.setOrientation(javax.swing.SwingConstants.HORIZONTAL);
+        toolbar.add(jSeparator2);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 569, Short.MAX_VALUE)
+            .addComponent(toolbar, javax.swing.GroupLayout.DEFAULT_SIZE, 569, Short.MAX_VALUE)
+            .addComponent(scrollPane)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE)
+                .addGap(0, 0, 0)
+                .addComponent(toolbar, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -142,16 +192,20 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
             g.drawImage(image, 0, 0, this); // see javadoc for more info on the parameters
         }
 
-
     }
 
     private ConfigGenerator getCurrentConfig() {
+        ScreenOrientation orientation = ScreenOrientation.LANDSCAPE;
+        if("Portrait".equals(screenOrientation.getSelectedItem())){
+            orientation = ScreenOrientation.PORTRAIT;
+        }
+
         ConfigGenerator current = new ConfigGenerator()
-                .setScreenHeight(getHeight())
-                .setScreenWidth(getWidth())
+                .setScreenHeight(imageHeight)
+                .setScreenWidth(imageWidth)
                 .setXdpi(dpi)
                 .setYdpi(dpi)
-                .setOrientation(ScreenOrientation.PORTRAIT)
+                .setOrientation(orientation)
                 .setDensity(Density.XXHIGH)
                 .setRatio(ScreenRatio.NOTLONG)
                 .setSize(ScreenSize.NORMAL)
@@ -166,9 +220,9 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     @Override
     public void run() {
         refreshLock.set(false);
-        label.setText("Loading...");
-        label.setVisible(true);
-        progress.setVisible(true);
+        imagePanel.label.setText("Loading...");
+        imagePanel.label.setVisible(true);
+        imagePanel.progress.setVisible(true);
         try {
             RenderSession session = layoutLibrary.createSession(getSessionParams(platformFolder, new LayoutPullParser(layoutFile), getCurrentConfig(), new LayoutLibTestCallback(new LogWrapper()), themeName, true, SessionParams.RenderingMode.NORMAL, 27));
             Result renderResult = session.render();
@@ -176,11 +230,11 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
                 renderResult.getException().printStackTrace();
             }
             setImage(session.getImage());
-            label.setVisible(false);
-            progress.setVisible(false);
+            imagePanel.label.setVisible(false);
+            imagePanel.progress.setVisible(false);
         } catch (Exception e) {
-            label.setText("Error!");
-            label.setVisible(true);
+            imagePanel.label.setText("Error!");
+            imagePanel.label.setVisible(true);
         }
     }
 
@@ -215,6 +269,10 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     @Override
     public void componentResized(ComponentEvent e) {
         if (refreshLock.compareAndSet(false, true)) {
+            if (WINDOW_SIZE.equals(model.getSelectedItem())) {
+                imageWidth = imagePanel.getWidth();
+                imageHeight = imagePanel.getHeight();
+            }
             RP.execute(LayoutPreviewPanelImpl.this);
         }
     }
@@ -231,9 +289,215 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     public void componentHidden(ComponentEvent e) {
     }
 
+    private int selectedIndex = -1;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        int index = previewSize.getSelectedIndex();
+        if (index >= 0) {
+            selectedIndex = index;
+            Object value = model.getSelectedItem();
+            if (WINDOW_SIZE.equals(value)) {
+                imageFit = true;
+                imagePanel.setMaximumSize(new Dimension(scrollPane.getWidth(), scrollPane.getHeight()));
+                imagePanel.setPreferredSize(new Dimension(scrollPane.getWidth(), scrollPane.getHeight()));
+                imageWidth = scrollPane.getWidth();
+                imageHeight = scrollPane.getHeight();
+                scrollPane.updateUI();
+                refreshPreview();
+            } else {
+                StringTokenizer tok = new StringTokenizer((String) value, "x", false);
+                if (tok.countTokens() == 2) {
+                    imageWidth = Integer.parseInt(tok.nextToken());
+                    imageHeight = Integer.parseInt(tok.nextToken());
+                    if (scale.isSelected()) {
+                        imagePanel.setMaximumSize(new Dimension(scrollPane.getWidth(), scrollPane.getHeight()));
+                        imagePanel.setPreferredSize(new Dimension(scrollPane.getWidth(), scrollPane.getHeight()));
+                        imageFit = true;
+                    } else {
+                        imagePanel.setMaximumSize(new Dimension(imageWidth, imageHeight));
+                        imagePanel.setPreferredSize(new Dimension(imageWidth, imageHeight));
+                        imageFit = false;
+                    }
+                    imagePanel.updateUI();
+                    refreshPreview();
+                }
+            }
+        } else if ("comboBoxEdited".equals(e.getActionCommand())) {
+            Object newValue = model.getSelectedItem();
+            if ((newValue instanceof String) && ((String) newValue).contains("x")) {
+                StringTokenizer tok = new StringTokenizer((String) newValue, "x", false);
+                if (tok.countTokens() == 2) {
+                    try {
+                        int width = Integer.parseInt(tok.nextToken());
+                        int height = Integer.parseInt(tok.nextToken());
+                        imageWidth = width;
+                        imageHeight = height;
+                        model.addElement(newValue);
+                        previewSize.setSelectedItem(newValue);
+                        selectedIndex = model.getIndexOf(newValue);
+                        if (scale.isSelected()) {
+                            imageFit = true;
+                            imagePanel.setMaximumSize(new Dimension(scrollPane.getWidth(), scrollPane.getHeight()));
+                            imagePanel.setPreferredSize(new Dimension(scrollPane.getWidth(), scrollPane.getHeight()));
+                        } else {
+                            imageFit = false;
+                            imagePanel.setMaximumSize(new Dimension(imageWidth, imageHeight));
+                            imagePanel.setPreferredSize(new Dimension(imageWidth, imageHeight));
+                        }
+                        imagePanel.updateUI();
+                        refreshPreview();
+                    } catch (NumberFormatException numberFormatException) {
+                    }
+                }
+
+            }
+        }
+    }
+
+    private void refreshPreview() {
+        if (refreshLock.compareAndSet(false, true)) {
+            RP.execute(LayoutPreviewPanelImpl.this);
+        }
+    }
+
+    @Override
+    public void itemStateChanged(ItemEvent e) {
+        actionPerformed(new ActionEvent(this, 0, ""));
+    }
+
+    private class ImagePanel extends JPanel implements Scrollable {
+
+        private javax.swing.JPanel jPanel1;
+        private javax.swing.JLabel label;
+        private javax.swing.JProgressBar progress;
+
+        public ImagePanel() {
+            initComponents();
+        }
+
+        private void initComponents() {
+            java.awt.GridBagConstraints gridBagConstraints;
+
+            jPanel1 = new javax.swing.JPanel();
+            label = new javax.swing.JLabel();
+            progress = new javax.swing.JProgressBar();
+
+            jPanel1.setOpaque(false);
+            jPanel1.setLayout(new java.awt.GridBagLayout());
+
+            label.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
+            label.setText("Loading..."); // NOI18N
+            gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 1;
+            gridBagConstraints.gridy = 1;
+            jPanel1.add(label, gridBagConstraints);
+
+            progress.setIndeterminate(true);
+            gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 1;
+            gridBagConstraints.gridy = 2;
+            jPanel1.add(progress, gridBagConstraints);
+
+            javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+            this.setLayout(layout);
+            layout.setHorizontalGroup(
+                    layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 569, Short.MAX_VALUE)
+            );
+            layout.setVerticalGroup(
+                    layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            );
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            if (image != null) {
+                if (scale.isSelected()) {
+                    int imgWidth = image.getWidth(null);
+                    int imgHeight = image.getHeight(null);
+
+                    double imgAspect = (double) imgHeight / imgWidth;
+
+                    int canvasWidth = getWidth();
+                    int canvasHeight = getHeight();
+
+                    double canvasAspect = (double) canvasHeight / canvasWidth;
+
+                    int x1 = 0; // top left X position
+                    int y1 = 0; // top left Y position
+                    int x2 = 0; // bottom right X position
+                    int y2 = 0; // bottom right Y position
+
+                    if (imgWidth < canvasWidth && imgHeight < canvasHeight) {
+                        // the image is smaller than the canvas
+                        x1 = (canvasWidth - imgWidth) / 2;
+                        y1 = (canvasHeight - imgHeight) / 2;
+                        x2 = imgWidth + x1;
+                        y2 = imgHeight + y1;
+
+                    } else {
+                        if (canvasAspect > imgAspect) {
+                            y1 = canvasHeight;
+                            // keep image aspect ratio
+                            canvasHeight = (int) (canvasWidth * imgAspect);
+                            y1 = (y1 - canvasHeight) / 2;
+                        } else {
+                            x1 = canvasWidth;
+                            // keep image aspect ratio
+                            canvasWidth = (int) (canvasHeight / imgAspect);
+                            x1 = (x1 - canvasWidth) / 2;
+                        }
+                        x2 = canvasWidth + x1;
+                        y2 = canvasHeight + y1;
+                    }
+
+                    g.drawImage(image, x1, y1, x2, y2, 0, 0, imgWidth, imgHeight, null);
+                } else {
+                    g.drawImage(image, 0, 0, this);
+                }
+            }
+
+        }
+
+        @Override
+        public Dimension getPreferredScrollableViewportSize() {
+            return new Dimension(imageWidth, imageHeight);
+        }
+
+        @Override
+        public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return 5;
+        }
+
+        @Override
+        public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return 10;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportWidth() {
+            return imageFit;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportHeight() {
+            return imageFit;
+        }
+
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JLabel label;
-    private javax.swing.JProgressBar progress;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JToolBar.Separator jSeparator1;
+    private javax.swing.JToolBar.Separator jSeparator2;
+    private javax.swing.JToolBar.Separator jSeparator3;
+    private javax.swing.JComboBox<String> previewSize;
+    private javax.swing.JCheckBox scale;
+    private javax.swing.JComboBox<String> screenOrientation;
+    private javax.swing.JScrollPane scrollPane;
+    private javax.swing.JToolBar toolbar;
     // End of variables declaration//GEN-END:variables
 }
