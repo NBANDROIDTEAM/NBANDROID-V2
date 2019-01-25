@@ -31,7 +31,9 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
+import org.nbandroid.netbeans.gradle.api.AndroidProjects;
 import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.tools.DelayedDocumentChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -42,9 +44,14 @@ import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.editor.BaseDocument;
 import org.openide.awt.UndoRedo;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -63,7 +70,7 @@ import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewProvider;
         preferredID = "preview",
         position = 2
 )
-public class LayoutPreviewElement extends TopComponent implements MultiViewElement, ChangeListener {
+public class LayoutPreviewElement extends TopComponent implements MultiViewElement, ChangeListener, FileChangeListener {
 
     private transient MultiViewElementCallback callback;
     private LayoutDataObject dataObject;
@@ -83,9 +90,16 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
         editorElement = new MultiViewEditorElement(dataObject.getLookup());
         JComponent visualRepresentation = editorElement.getComponent();
         Project project = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
+        //find res folder
+        FileObject resFo = AndroidProjects.findResFolder(project);
+        if (resFo != null) {
+            //refresh preview on res file change
+            resFo.addRecursiveListener(WeakListeners.create(FileChangeListener.class, this, resFo));
+        }
+        final File resFolderFile = AndroidProjects.findResFolderAsFile(project);
+        //find aars folders from classpath
         GradleAndroidClassPathProvider androidClassPathProvider = project.getLookup().lookup(GradleAndroidClassPathProvider.class);
         ClassPath classPath = androidClassPathProvider.getCompilePath();
-        //find aars folders from classpath
         FileObject[] roots = classPath.getRoots();
         final List<File> aars = new ArrayList<>();
         for (FileObject root : roots) {
@@ -93,6 +107,11 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
                 aars.add(FileUtil.toFile(FileUtil.getArchiveFile(root).getParent().getParent()));
             }
         }
+        //find project theme
+        final String projectTheme = AndroidProjects.parseProjectTheme(project);
+        //find platform
+        AndroidPlatformInfo projectPlatform = AndroidProjects.projectPlatform(project);
+        final File platformFolder = projectPlatform.getPlatformFolder();
         editorPanel.add(visualRepresentation);
         editorPanel.invalidate();
         editorPanel.repaint();
@@ -102,9 +121,9 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
             public void run() {
                 try {
                     LayoutPreviewProvider previewProvider = Lookup.getDefault().lookup(LayoutPreviewProvider.class);
-                    panel = previewProvider.getPreview(new File("/jetty/android-studio-sdk/platforms/android-27"),
-                            new File("/projekty/opensource/layoutlib-demo-2/res/testApp/MyApplication/src/main/res/layout/simple_activity.xml"),
-                            new File("/projekty/opensource/layoutlib-demo-2/res/testApp/MyApplication/src/main/res"), "AppTheme", aars);
+                    panel = previewProvider.getPreview(platformFolder,
+                            FileUtil.toFile(dataObject.getPrimaryFile()),
+                            resFolderFile, projectTheme, aars);
                     Runnable runnable1 = new Runnable() {
                         @Override
                         public void run() {
@@ -207,32 +226,6 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
     @Override
     public void componentActivated() {
         super.componentActivated();
-//        Container parent = this.getParent().getParent().getParent();
-//        try {
-//            Field field = parent.getClass().getDeclaredField("alreadyAddedElements");
-//            field.setAccessible(true);
-//            List<MultiViewElement> tmp = new ArrayList<>((Set<MultiViewElement>) field.get(parent));
-//            for (MultiViewElement el : tmp) {
-//                if (el instanceof MultiViewEditorElement) {
-//                    editorElement = (MultiViewEditorElement) el;
-//                    editorPanel.add(editorElement.getVisualRepresentation());
-//                    editorPanel.invalidate();
-//                    editorPanel.repaint();
-//                    editorElement.componentActivated();
-//                }
-//            }
-//
-//            System.out.println("org.nbandroid.netbeans.gradle.v2.layout.layout.LayoutPreviewElement.componentActivated()");
-//        } catch (NoSuchFieldException ex) {
-//            Exceptions.printStackTrace(ex);
-//        } catch (SecurityException ex) {
-//            Exceptions.printStackTrace(ex);
-//        } catch (IllegalArgumentException ex) {
-//            Exceptions.printStackTrace(ex);
-//        } catch (IllegalAccessException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
-
         editorElement.componentActivated();
     }
 
@@ -281,7 +274,7 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        if (e!=null && e.getSource() instanceof BaseDocument) {
+        if (e != null && e.getSource() instanceof BaseDocument) {
             try {
                 if (panel != null) {
                     BaseDocument doc = (BaseDocument) e.getSource();
@@ -294,9 +287,38 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
             } catch (IOException ex) {
             } catch (BadLocationException ex) {
             }
-        }else{
+        } else {
             panel.showTypingIndicator();
         }
+    }
+
+
+    @Override
+    public void fileFolderCreated(FileEvent fe) {
+    }
+
+    @Override
+    public void fileDataCreated(FileEvent fe) {
+        stateChanged(new ChangeEvent(editorElement.getEditorPane().getDocument()));
+    }
+
+    @Override
+    public void fileChanged(FileEvent fe) {
+        stateChanged(new ChangeEvent(editorElement.getEditorPane().getDocument()));
+    }
+
+    @Override
+    public void fileDeleted(FileEvent fe) {
+        stateChanged(new ChangeEvent(editorElement.getEditorPane().getDocument()));
+    }
+
+    @Override
+    public void fileRenamed(FileRenameEvent fe) {
+        stateChanged(new ChangeEvent(editorElement.getEditorPane().getDocument()));
+    }
+
+    @Override
+    public void fileAttributeChanged(FileAttributeEvent fe) {
     }
 
 }
