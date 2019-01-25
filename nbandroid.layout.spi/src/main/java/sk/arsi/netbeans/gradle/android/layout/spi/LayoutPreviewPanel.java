@@ -7,6 +7,8 @@
 package sk.arsi.netbeans.gradle.android.layout.spi;
 
 import java.io.File;
+import java.io.InputStream;
+import java.util.List;
 import javax.swing.JPanel;
 
 /**
@@ -19,12 +21,14 @@ public abstract class LayoutPreviewPanel extends JPanel {
     protected final File layoutFile;
     protected final File appResFolder;
     protected final String themeName;
+    protected final List<File> aars;
 
-    public LayoutPreviewPanel(File platformFolder, File layoutFile, File appResFolder, String themeName) {
+    public LayoutPreviewPanel(File platformFolder, File layoutFile, File appResFolder, String themeName, List<File> aars) {
         this.platformFolder = platformFolder;
         this.layoutFile = layoutFile;
         this.appResFolder = appResFolder;
         this.themeName = themeName;
+        this.aars = aars;
     }
 
     public LayoutPreviewPanel() {
@@ -32,6 +36,11 @@ public abstract class LayoutPreviewPanel extends JPanel {
         this.layoutFile = null;
         this.appResFolder = null;
         this.themeName = null;
+        this.aars = null;
     }
+
+    public abstract void refreshPreview(InputStream stream);
+
+    public abstract void showTypingIndicator();
 
 }

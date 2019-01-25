@@ -51,6 +51,11 @@
             <artifactId>org-netbeans-api-annotations-common</artifactId>
             <version>${version.nb}</version>
         </dependency>
+        <dependency>
+            <groupId>com.android.tools</groupId>
+            <artifactId>common</artifactId>
+            <version>26.0.1</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

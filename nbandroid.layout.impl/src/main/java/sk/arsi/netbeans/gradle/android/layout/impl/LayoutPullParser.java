@@ -60,6 +60,17 @@ public class LayoutPullParser extends KXmlParser implements ILayoutPullParser {
         }
     }
 
+    public LayoutPullParser(InputStream layoutFileStream) {
+        if (layoutFileStream == null) {
+            throw new NullPointerException("LayoutStream is null");
+        }
+        try {
+            init(layoutFileStream);
+        } catch (XmlPullParserException e) {
+            throw new IOError(e);
+        }
+    }
+
     private void init(InputStream stream) throws XmlPullParserException {
         setFeature(FEATURE_PROCESS_NAMESPACES, true);
         setInput(stream, null);

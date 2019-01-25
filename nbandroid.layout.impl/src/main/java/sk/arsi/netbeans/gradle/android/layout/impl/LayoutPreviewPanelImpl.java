@@ -42,9 +42,18 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BoxLayout;
@@ -73,6 +82,9 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     private int imageWidth = 100;
     private int imageHeight = 100;
     private boolean imageFit = true;
+    InputStream layoutStream = null;
+    private boolean typing = false;
+    private final AtomicInteger typingProgress = new AtomicInteger(0);
     private final DefaultComboBoxModel model = new DefaultComboBoxModel(new String[]{WINDOW_SIZE, "1920x1080", "1920x1200", "1600x2560", "1080x1920", "1280x800", "1280x768"});
 
     /**
@@ -83,8 +95,8 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         dpi = 0;
     }
 
-    public LayoutPreviewPanelImpl(File platformFolder, File layoutFile, File appResFolder, String themeName) {
-        super(platformFolder, layoutFile, appResFolder, themeName);
+    public LayoutPreviewPanelImpl(File platformFolder, File layoutFile, File appResFolder, String themeName, List<File> aars) {
+        super(platformFolder, layoutFile, appResFolder, themeName, aars);
         initComponents();
         previewSize.setModel(model);
         previewSize.addActionListener(this);
@@ -93,7 +105,24 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
         dpi = Toolkit.getDefaultToolkit().getScreenResolution();
         try {
-            layoutLibrary = LayoutLibraryLoader.load(platformFolder);
+            layoutStream = new FileInputStream(layoutFile);
+        } catch (FileNotFoundException ex) {
+        }
+        List<URL> urls = new ArrayList<>();
+        for (File aar : aars) {
+            File classes = new File(aar.getPath() + File.separator + "jars" + File.separator + "classes.jar");
+            if (classes.exists() && classes.isFile()) {
+                try {
+                    urls.add(classes.toURI().toURL());
+                } catch (MalformedURLException ex) {
+                }
+            }
+        }
+        try {
+            ClassLoader moduleClassLoader = LayoutPreviewPanelImpl.class.getClassLoader();
+            URLClassLoader uRLClassLoader = new URLClassLoader(urls.toArray(new URL[urls.size()]), moduleClassLoader);
+            //load Bridge with arr classpath
+            layoutLibrary = LayoutLibraryLoader.load(platformFolder, uRLClassLoader);
         } catch (RenderingException | IOException ex) {
             Logger.getLogger(LayoutPreviewPanelImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -196,7 +225,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
 
     private ConfigGenerator getCurrentConfig() {
         ScreenOrientation orientation = ScreenOrientation.LANDSCAPE;
-        if("Portrait".equals(screenOrientation.getSelectedItem())){
+        if ("Portrait".equals(screenOrientation.getSelectedItem())) {
             orientation = ScreenOrientation.PORTRAIT;
         }
 
@@ -223,17 +252,37 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         imagePanel.label.setText("Loading...");
         imagePanel.label.setVisible(true);
         imagePanel.progress.setVisible(true);
+        if (layoutStream instanceof FileInputStream) {
+            //first is layout loaded from file and FileInputStream dont supports reset
+            try {
+                layoutStream.close();
+            } catch (IOException ex) {
+            }
+            try {
+                layoutStream = new FileInputStream(layoutFile);
+            } catch (FileNotFoundException ex) {
+            }
+        } else {
+            try {
+                layoutStream.reset();
+            } catch (IOException ex) {
+            }
+
+        }
+
         try {
-            RenderSession session = layoutLibrary.createSession(getSessionParams(platformFolder, new LayoutPullParser(layoutFile), getCurrentConfig(), new LayoutLibTestCallback(new LogWrapper()), themeName, true, SessionParams.RenderingMode.NORMAL, 27));
+            RenderSession session = layoutLibrary.createSession(getSessionParams(platformFolder, new LayoutPullParser(layoutStream), getCurrentConfig(), new LayoutLibTestCallback(new LogWrapper()), themeName, true, SessionParams.RenderingMode.NORMAL, 27));
             Result renderResult = session.render();
             if (renderResult.getException() != null) {
-                renderResult.getException().printStackTrace();
+                imagePanel.label.setText("Error rendering layout");
+                imagePanel.label.setVisible(true);
+            } else {
+                setImage(session.getImage());
+                imagePanel.label.setVisible(false);
+                imagePanel.progress.setVisible(false);
             }
-            setImage(session.getImage());
-            imagePanel.label.setVisible(false);
-            imagePanel.progress.setVisible(false);
         } catch (Exception e) {
-            imagePanel.label.setText("Error!");
+            imagePanel.label.setText("Error rendering layout");
             imagePanel.label.setVisible(true);
         }
     }
@@ -366,6 +415,29 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         actionPerformed(new ActionEvent(this, 0, ""));
     }
 
+    @Override
+    public void refreshPreview(InputStream stream) {
+        layoutStream = stream;
+        imagePanel.label.setVisible(false);
+        typingProgress.set(0);
+        refreshPreview();
+    }
+
+    @Override
+    public void showTypingIndicator() {
+        imagePanel.label.setVisible(true);
+        int progress = typingProgress.incrementAndGet();
+        String tmp = "";
+        for (int i = 0; i < progress; i++) {
+            tmp += ".";
+        }
+        imagePanel.label.setText(tmp);
+        if (image != null) {
+            image = null;
+            imagePanel.updateUI();
+        }
+    }
+
     private class ImagePanel extends JPanel implements Scrollable {
 
         private javax.swing.JPanel jPanel1;
@@ -386,7 +458,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
             jPanel1.setOpaque(false);
             jPanel1.setLayout(new java.awt.GridBagLayout());
 
-            label.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
+            label.setFont(new java.awt.Font("Arial", 1, 25)); // NOI18N
             label.setText("Loading..."); // NOI18N
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 1;

@@ -70,9 +70,6 @@
           </AuxValues>
         </Component>
         <Component class="javax.swing.JToolBar$Separator" name="jSeparator1">
-          <Properties>
-            <Property name="orientation" type="int" value="0"/>
-          </Properties>
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel1">
           <Properties>
@@ -93,9 +90,6 @@
           </Properties>
         </Component>
         <Component class="javax.swing.JToolBar$Separator" name="jSeparator3">
-          <Properties>
-            <Property name="orientation" type="int" value="0"/>
-          </Properties>
         </Component>
         <Component class="javax.swing.JComboBox" name="screenOrientation">
           <Properties>
@@ -117,9 +111,6 @@
           </AuxValues>
         </Component>
         <Component class="javax.swing.JToolBar$Separator" name="jSeparator2">
-          <Properties>
-            <Property name="orientation" type="int" value="0"/>
-          </Properties>
         </Component>
       </SubComponents>
     </Container>

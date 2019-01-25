@@ -6,7 +6,7 @@
 package sk.arsi.netbeans.gradle.android.layout.spi;
 
 import java.io.File;
-import javax.swing.JPanel;
+import java.util.List;
 import org.openide.util.Lookup;
 
 /**
@@ -19,6 +19,6 @@ public abstract class LayoutPreviewProvider {
         return Lookup.getDefault().lookup(LayoutPreviewProvider.class);
     }
 
-    public abstract JPanel getPreview(File platformFolder, File layoutFile, File appResFolder, String themeName);
+    public abstract LayoutPreviewPanel getPreview(File platformFolder, File layoutFile, File appResFolder, String themeName, List<File> aars);
 
 }
