@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -86,6 +85,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     private boolean typing = false;
     private final AtomicInteger typingProgress = new AtomicInteger(0);
     private final DefaultComboBoxModel model = new DefaultComboBoxModel(new String[]{WINDOW_SIZE, "1920x1080", "1920x1200", "1600x2560", "1080x1920", "1280x800", "1280x768"});
+    private LayoutClassLoader uRLClassLoader;
 
     /**
      * Creates new form LayoutPreviewPanelImpl1
@@ -119,8 +119,8 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
             }
         }
         try {
-            ClassLoader moduleClassLoader = LayoutPreviewPanelImpl.class.getClassLoader();
-            URLClassLoader uRLClassLoader = new URLClassLoader(urls.toArray(new URL[urls.size()]), moduleClassLoader);
+            ClassLoader moduleClassLoader = LayoutLibrary.class.getClassLoader();
+            uRLClassLoader = new LayoutClassLoader(urls.toArray(new URL[urls.size()]), aars, moduleClassLoader);
             //load Bridge with arr classpath
             layoutLibrary = LayoutLibraryLoader.load(platformFolder, uRLClassLoader);
         } catch (RenderingException | IOException ex) {
@@ -271,7 +271,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         }
 
         try {
-            RenderSession session = layoutLibrary.createSession(getSessionParams(platformFolder, new LayoutPullParser(layoutStream), getCurrentConfig(), new LayoutLibTestCallback(new LogWrapper()), themeName, true, SessionParams.RenderingMode.NORMAL, 27));
+            RenderSession session = layoutLibrary.createSession(getSessionParams(platformFolder, new LayoutPullParser(layoutStream), getCurrentConfig(), new LayoutLibTestCallback(new LogWrapper(),aars,uRLClassLoader), themeName, true, SessionParams.RenderingMode.NORMAL, 27));
             Result renderResult = session.render();
             if (renderResult.getException() != null) {
                 imagePanel.label.setText("Error rendering layout");

@@ -72,6 +72,7 @@
                     <nbmResources>
                     </nbmResources>
                     <publicPackages>
+                        <publicPackage>android.os.*</publicPackage>
                         <publicPackage>com.android.*</publicPackage>
                         <publicPackage>com.google.*</publicPackage>
                         <publicPackage>org.xmlpull.*</publicPackage>

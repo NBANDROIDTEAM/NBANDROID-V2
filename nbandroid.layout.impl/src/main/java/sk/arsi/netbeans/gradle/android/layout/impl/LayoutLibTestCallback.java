@@ -32,10 +32,18 @@ import com.android.resources.ResourceType;
 import com.android.util.Pair;
 import com.android.utils.ILogger;
 import com.google.android.collect.Maps;
+import com.google.common.io.Files;
 import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.kxml2.io.KXmlParser;
+import org.openide.util.Exceptions;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -49,17 +57,72 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
     private final ActionBarCallback mActionBarCallback = new ActionBarCallback();
     private String package_name;
     private final AtomicInteger counter = new AtomicInteger(0x7F060000);
+    private final List<File> aars;
+    private final ClassLoader classLoader;
 
-    public LayoutLibTestCallback(ILogger logger) {
+    public LayoutLibTestCallback(ILogger logger, List<File> aars, ClassLoader classLoader) {
         mLog = logger;
+        this.aars = aars;
+        this.classLoader = classLoader;
+        initResources();
     }
 
-    public void initResources() throws ClassNotFoundException {
+    public void initResources() {
+        for (File aar : aars) {
+            File rTxt = new File(aar.getPath() + File.separator + "R.txt");
+            if (rTxt.exists() && rTxt.isFile()) {
+                try {
+                    List<String> readLines = Files.readLines(rTxt, StandardCharsets.UTF_8);
+                    for (String line : readLines) {
+                        StringTokenizer tok = new StringTokenizer(line, " ", false);
+                        if (tok.countTokens() > 3) {
+                            switch (tok.nextToken()) {
+                                case "int":
+                                    handle(tok);
+                                    break;
+                                case "int[]":
+                                    handleArray(tok);
+                                    break;
+                            }
+                        }
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
+
+    private void handle(StringTokenizer tok) {
+
+        ResourceType resourceType = ResourceType.getEnum(tok.nextToken());
+        String name = tok.nextToken();
+        String value = tok.nextToken();
+        Map<String, Integer> map = mResources.get(resourceType);
+        if (map == null) {
+            map = new HashMap<>();
+            mResources.put(resourceType, map);
+        }
+        int id = Integer.decode(value);
+        map.put(name, id);
+        mProjectResources.put(id, Pair.of(resourceType, name));
+
+    }
+
+    private void handleArray(StringTokenizer tok) {
     }
 
     @Override
     public Object loadView(String name, Class[] constructorSignature, Object[] constructorArgs)
             throws Exception {
+        try {
+            Class<?> viewClass = classLoader.loadClass(name);
+            Constructor<?> viewConstructor = viewClass.getConstructor(constructorSignature);
+            viewConstructor.setAccessible(true);
+            return viewConstructor.newInstance(constructorArgs);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         throw new UnsupportedOperationException();
     }
 
@@ -71,7 +134,11 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
 
     @Override
     public Pair<ResourceType, String> resolveResourceId(int id) {
-        return mProjectResources.get(id);
+        Pair<ResourceType, String> pair = mProjectResources.get(id);
+        if (pair != null) {
+            System.out.println("sk.arsi.netbeans.gradle.android.layout.impl.LayoutLibTestCallback.resolveResourceId()");
+        }
+        return pair;
     }
 
     @Override
@@ -87,7 +154,13 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
             System.out.println(">" + type + ":" + name + " : " + incrementAndGet);
             return incrementAndGet;
         }
-        return resName2Id.get(name);
+        Integer id = resName2Id.get(name);
+        if (id == null) {
+            int incrementAndGet = counter.incrementAndGet();
+            System.out.println(">" + type + ":" + name + " : " + incrementAndGet);
+            return incrementAndGet;
+        }
+        return id;
     }
 
     @Override
