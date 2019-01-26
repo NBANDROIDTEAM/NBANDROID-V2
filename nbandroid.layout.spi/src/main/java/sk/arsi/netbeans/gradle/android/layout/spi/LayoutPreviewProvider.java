@@ -19,6 +19,6 @@ public abstract class LayoutPreviewProvider {
         return Lookup.getDefault().lookup(LayoutPreviewProvider.class);
     }
 
-    public abstract LayoutPreviewPanel getPreview(File platformFolder, File layoutFile, File appResFolder, String themeName, List<File> aars);
+    public abstract LayoutPreviewPanel getPreview(File platformFolder, File layoutFile, File appResFolder, String themeName, List<File> aars, List<File> jars);
 
 }

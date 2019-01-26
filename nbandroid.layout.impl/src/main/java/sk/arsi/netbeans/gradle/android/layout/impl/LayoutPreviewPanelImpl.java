@@ -108,8 +108,8 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         dpi = 0;
     }
 
-    public LayoutPreviewPanelImpl(File platformFolder, File layoutFile, File appResFolder, String themeName, List<File> aars) {
-        super(platformFolder, layoutFile, appResFolder, themeName, aars);
+    public LayoutPreviewPanelImpl(File platformFolder, File layoutFile, File appResFolder, String themeName, List<File> aars, List<File> jars) {
+        super(platformFolder, layoutFile, appResFolder, themeName, aars, jars);
         initComponents();
         String projectRoot = appResFolder.getParent();
         File manifest = new File(projectRoot + File.separator + "AndroidManifest.xml");
@@ -140,6 +140,14 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
             if (classes.exists() && classes.isFile()) {
                 try {
                     urls.add(classes.toURI().toURL());
+                } catch (MalformedURLException ex) {
+                }
+            }
+        }
+        for (File jar : jars) {
+            if (jar.exists() && jar.isFile()) {
+                try {
+                    urls.add(jar.toURI().toURL());
                 } catch (MalformedURLException ex) {
                 }
             }
@@ -297,7 +305,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         }
 
         try {
-            RenderSession session = layoutLibrary.createSession(getSessionParams(platformFolder, new LayoutPullParser(layoutStream,appNamespace), getCurrentConfig(), new LayoutLibTestCallback(new LogWrapper(), aars, uRLClassLoader, appNamespace), themeName, true, SessionParams.RenderingMode.NORMAL, 27));
+            RenderSession session = layoutLibrary.createSession(getSessionParams(platformFolder, new LayoutPullParser(layoutStream, appNamespace), getCurrentConfig(), new LayoutLibTestCallback(new LogWrapper(), aars, uRLClassLoader, appNamespace), themeName, true, SessionParams.RenderingMode.NORMAL, 27));
             Result renderResult = session.render();
             if (renderResult.getException() != null) {
                 renderResult.getException().printStackTrace();

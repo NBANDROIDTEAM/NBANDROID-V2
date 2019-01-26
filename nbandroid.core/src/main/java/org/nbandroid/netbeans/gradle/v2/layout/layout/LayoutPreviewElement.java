@@ -104,9 +104,12 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
         ClassPath classPath = androidClassPathProvider.getCompilePath();
         FileObject[] roots = classPath.getRoots();
         final List<File> aars = new ArrayList<>();
+        final List<File> jars = new ArrayList<>();
         for (FileObject root : roots) {
             if ("classes.jar".equals(FileUtil.getArchiveFile(root).getNameExt())) {
                 aars.add(FileUtil.toFile(FileUtil.getArchiveFile(root).getParent().getParent()));
+            } else {
+                jars.add(FileUtil.toFile(FileUtil.getArchiveFile(root)));
             }
         }
         //find project theme
@@ -125,7 +128,7 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
                     LayoutPreviewProvider previewProvider = Lookup.getDefault().lookup(LayoutPreviewProvider.class);
                     panel = previewProvider.getPreview(platformFolder,
                             FileUtil.toFile(dataObject.getPrimaryFile()),
-                            resFolderFile, projectTheme, aars);
+                            resFolderFile, projectTheme, aars, jars);
                     Runnable runnable1 = new Runnable() {
 
                         @Override
