@@ -6,12 +6,18 @@
 package sk.arsi.netbeans.gradle.android.layout.impl;
 
 import android.os._Original_Build;
+import com.android.ide.common.xml.ManifestData;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Deque;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +26,8 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.Remapper;
+import org.openide.util.Exceptions;
+import static sk.arsi.netbeans.gradle.android.layout.impl.ResClassGenerator.parseProjectManifest;
 
 /**
  *
@@ -30,30 +38,52 @@ public class LayoutClassLoader extends URLClassLoader {
     public LayoutClassLoader(URL[] urls, List<File> aars, ClassLoader parent) {
         super(urls, parent);
         generate(_Original_Build.class, (className, classBytes) -> defineClass(className, classBytes, 0, classBytes.length));
-        String out = "/jetty/netbeans9/xxx";
+        Map<String, List<File>> packages = new HashMap<>();
+        //sort aars by package, it can only one R class for single package
         for (File aar : aars) {
-            ResClassGenerator gen = new ResClassGenerator(aar);
-            if (gen.isR()) {
-                String rootFqcn = gen.getFqcn();
-                byte[] rootClass = gen.getRootClass();
+            File rTxt = new File(aar.getPath() + File.separator + "R.txt");
+            if (rTxt.exists() && rTxt.isFile()) {
+                File manifest = new File(aar.getPath() + File.separator + "AndroidManifest.xml");
+                if (manifest.exists() && manifest.isFile()) {
+                    try {
+                        ManifestData manifestData = parseProjectManifest(new FileInputStream(manifest));
+                        if (manifestData != null) {
+                            String fqcn = manifestData.getPackage() + ".R";
+                            List<File> tmp = packages.get(fqcn);
+                            if (tmp == null) {
+                                tmp = new ArrayList<>();
+                                packages.put(fqcn, tmp);
+                            }
+                            tmp.add(aar);
+                        }
+                    } catch (FileNotFoundException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+        for (Map.Entry<String, List<File>> entry : packages.entrySet()) {
+            String fqcn = entry.getKey();
+            List<File> aarList = entry.getValue();
+            ResClassGenerator gen = new ResClassGenerator(fqcn, aarList);
+            String rootFqcn = gen.getFqcn();
+            byte[] rootClass = gen.getRootClass();
+            try {
+                Class<?> defineClass = defineClass(rootFqcn, rootClass, 0, rootClass.length);
+            } catch (Exception exception) {
+            }
+            System.out.println("sk.arsi.netbeans.gradle.android.layout.impl.LayoutClassLoader.<init>()");
+            Map<String, byte[]> innerClasses = gen.getInnerClasses();
+            for (Map.Entry<String, byte[]> entry1 : innerClasses.entrySet()) {
+                String fqcn1 = entry1.getKey();
+                byte[] bytecode = entry1.getValue();
                 try {
-                    Class<?> defineClass = defineClass(rootFqcn, rootClass, 0, rootClass.length);
+                    Class<?> defineClass1 = defineClass(fqcn1.replace("/", "."), bytecode, 0, bytecode.length);
                 } catch (Exception exception) {
                 }
                 System.out.println("sk.arsi.netbeans.gradle.android.layout.impl.LayoutClassLoader.<init>()");
-                Map<String, byte[]> innerClasses = gen.getInnerClasses();
-                for (Map.Entry<String, byte[]> entry : innerClasses.entrySet()) {
-                    String fqcn = entry.getKey();
-                    byte[] bytecode = entry.getValue();
-                    try {
-                        Class<?> defineClass1 = defineClass(fqcn.replace("/", "."), bytecode, 0, bytecode.length);
-                    } catch (Exception exception) {
-                    }
-                    System.out.println("sk.arsi.netbeans.gradle.android.layout.impl.LayoutClassLoader.<init>()");
-                }
-                System.out.println("sk.arsi.netbeans.gradle.android.layout.impl.LayoutClassLoader.<init>()");
             }
-
+            System.out.println("sk.arsi.netbeans.gradle.android.layout.impl.LayoutClassLoader.<init>()");
         }
     }
 
@@ -116,5 +146,30 @@ public class LayoutClassLoader extends URLClassLoader {
         }
         return s;
     }
+
+    @Override
+    public URL findResource(String name) {
+        System.out.println("findResource() " + name);
+        return super.findResource(name); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Enumeration<URL> findResources(String name) throws IOException {
+        System.out.println("findResources() " + name);
+        return super.findResources(name); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public URL getResource(String name) {
+        System.out.println("getResource() " + name);
+        return super.getResource(name); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public InputStream getResourceAsStream(String name) {
+        System.out.println("getResourceAsStream() " + name);
+        return super.getResourceAsStream(name); //To change body of generated methods, choose Tools | Templates.
+    }
+
 
 }

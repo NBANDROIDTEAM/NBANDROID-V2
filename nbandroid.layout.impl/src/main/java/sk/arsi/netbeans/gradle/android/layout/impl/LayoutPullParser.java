@@ -22,6 +22,7 @@ import static com.android.SdkConstants.LIST_VIEW;
 import static com.android.SdkConstants.SPINNER;
 import static com.android.SdkConstants.TOOLS_URI;
 import com.android.ide.common.rendering.api.ILayoutPullParser;
+import com.android.ide.common.rendering.api.ResourceNamespace;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -36,10 +37,12 @@ import org.xmlpull.v1.XmlPullParserException;
 
 public class LayoutPullParser extends KXmlParser implements ILayoutPullParser {
 
+    private final ResourceNamespace appNamespace;
     /**
      * @param layoutPath Must start with '/' and be relative to test resources.
      */
-    public LayoutPullParser(String layoutPath) {
+    public LayoutPullParser(String layoutPath, ResourceNamespace appNamespace) {
+        this.appNamespace = appNamespace;
         try {
             init(new FileInputStream(new File(layoutPath)));
         } catch (XmlPullParserException e) {
@@ -52,7 +55,8 @@ public class LayoutPullParser extends KXmlParser implements ILayoutPullParser {
     /**
      * @param layoutFile Path of the layout xml file on disk.
      */
-    public LayoutPullParser(File layoutFile) {
+    public LayoutPullParser(File layoutFile, ResourceNamespace appNamespace) {
+        this.appNamespace = appNamespace;
         try {
             init(new FileInputStream(layoutFile));
         } catch (XmlPullParserException | FileNotFoundException e) {
@@ -60,7 +64,8 @@ public class LayoutPullParser extends KXmlParser implements ILayoutPullParser {
         }
     }
 
-    public LayoutPullParser(InputStream layoutFileStream) {
+    public LayoutPullParser(InputStream layoutFileStream, ResourceNamespace appNamespace) {
+        this.appNamespace = appNamespace;
         if (layoutFileStream == null) {
             throw new NullPointerException("LayoutStream is null");
         }
@@ -110,8 +115,8 @@ public class LayoutPullParser extends KXmlParser implements ILayoutPullParser {
     }
 
     @Override
-    public ILayoutPullParser getParser(String string) {
-        return null;
+    public ResourceNamespace getLayoutNamespace() {
+        return appNamespace;
     }
 
 }

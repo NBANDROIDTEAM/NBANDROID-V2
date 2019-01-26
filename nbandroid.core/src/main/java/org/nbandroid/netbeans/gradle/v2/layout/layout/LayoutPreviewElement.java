@@ -31,6 +31,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.nbandroid.netbeans.gradle.api.AndroidProjects;
 import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
@@ -76,6 +77,7 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
     private LayoutDataObject dataObject;
     private MultiViewEditorElement editorElement;
     private LayoutPreviewPanel panel;
+    private Document document;
 
     /**
      * Creates new form LayoutPreviewElement
@@ -125,12 +127,14 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
                             FileUtil.toFile(dataObject.getPrimaryFile()),
                             resFolderFile, projectTheme, aars);
                     Runnable runnable1 = new Runnable() {
+
                         @Override
                         public void run() {
                             if (panel != null) {
                                 split.setRightComponent(panel);
                             }
                             split.revalidate();
+                            document = editorElement.getEditorPane().getDocument();
                             DelayedDocumentChangeListener.create(editorElement.getEditorPane().getDocument(), LayoutPreviewElement.this, 2000);
                         }
                     };
@@ -299,22 +303,22 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
 
     @Override
     public void fileDataCreated(FileEvent fe) {
-        stateChanged(new ChangeEvent(editorElement.getEditorPane().getDocument()));
+        stateChanged(new ChangeEvent(document));
     }
 
     @Override
     public void fileChanged(FileEvent fe) {
-        stateChanged(new ChangeEvent(editorElement.getEditorPane().getDocument()));
+        stateChanged(new ChangeEvent(document));
     }
 
     @Override
     public void fileDeleted(FileEvent fe) {
-        stateChanged(new ChangeEvent(editorElement.getEditorPane().getDocument()));
+        stateChanged(new ChangeEvent(document));
     }
 
     @Override
     public void fileRenamed(FileRenameEvent fe) {
-        stateChanged(new ChangeEvent(editorElement.getEditorPane().getDocument()));
+        stateChanged(new ChangeEvent(document));
     }
 
     @Override

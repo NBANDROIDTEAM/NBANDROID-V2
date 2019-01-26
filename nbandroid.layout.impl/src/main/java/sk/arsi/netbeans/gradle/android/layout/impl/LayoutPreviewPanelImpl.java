@@ -8,19 +8,25 @@ package sk.arsi.netbeans.gradle.android.layout.impl;
 import android.annotation.NonNull;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.RenderSession;
+import com.android.ide.common.rendering.api.ResourceNamespace;
+import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.Result;
 import com.android.ide.common.rendering.api.SessionParams;
-import com.android.ide.common.resources.FrameworkResources;
-import com.android.ide.common.resources.ResourceItem;
-import com.android.ide.common.resources.ResourceRepository;
 import com.android.ide.common.resources.ResourceResolver;
+import com.android.ide.common.resources.ResourceValueMap;
 import com.android.ide.common.resources.configuration.FolderConfiguration;
+import com.android.ide.common.resources.deprecated.FrameworkResources;
+import com.android.ide.common.resources.deprecated.ResourceItem;
+import com.android.ide.common.resources.deprecated.ResourceRepository;
+import com.android.ide.common.util.DisjointUnionMap;
+import com.android.ide.common.xml.ManifestData;
 import com.android.io.FolderWrapper;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
 import com.android.resources.Density;
 import com.android.resources.Keyboard;
 import com.android.resources.KeyboardState;
 import com.android.resources.Navigation;
+import com.android.resources.ResourceType;
 import com.android.resources.ScreenOrientation;
 import com.android.resources.ScreenRatio;
 import com.android.resources.ScreenSize;
@@ -49,10 +55,13 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BoxLayout;
@@ -60,7 +69,9 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import static sk.arsi.netbeans.gradle.android.layout.impl.ResClassGenerator.parseProjectManifest;
 import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewPanel;
 
 /**
@@ -83,6 +94,8 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     private boolean imageFit = true;
     InputStream layoutStream = null;
     private boolean typing = false;
+    private String appNamespaceName = "app";
+    private ResourceNamespace appNamespace;
     private final AtomicInteger typingProgress = new AtomicInteger(0);
     private final DefaultComboBoxModel model = new DefaultComboBoxModel(new String[]{WINDOW_SIZE, "1920x1080", "1920x1200", "1600x2560", "1080x1920", "1280x800", "1280x768"});
     private LayoutClassLoader uRLClassLoader;
@@ -98,6 +111,19 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     public LayoutPreviewPanelImpl(File platformFolder, File layoutFile, File appResFolder, String themeName, List<File> aars) {
         super(platformFolder, layoutFile, appResFolder, themeName, aars);
         initComponents();
+        String projectRoot = appResFolder.getParent();
+        File manifest = new File(projectRoot + File.separator + "AndroidManifest.xml");
+        if (manifest.exists() && manifest.isFile()) {
+            try {
+                ManifestData manifestData = parseProjectManifest(new FileInputStream(manifest));
+                if (manifestData != null) {
+                    appNamespaceName = manifestData.getPackage();
+                }
+            } catch (FileNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        appNamespace = ResourceNamespace.fromPackageName(appNamespaceName);
         previewSize.setModel(model);
         previewSize.addActionListener(this);
         previewSize.setEditable(true);
@@ -271,9 +297,10 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         }
 
         try {
-            RenderSession session = layoutLibrary.createSession(getSessionParams(platformFolder, new LayoutPullParser(layoutStream), getCurrentConfig(), new LayoutLibTestCallback(new LogWrapper(),aars,uRLClassLoader), themeName, true, SessionParams.RenderingMode.NORMAL, 27));
+            RenderSession session = layoutLibrary.createSession(getSessionParams(platformFolder, new LayoutPullParser(layoutStream,appNamespace), getCurrentConfig(), new LayoutLibTestCallback(new LogWrapper(), aars, uRLClassLoader, appNamespace), themeName, true, SessionParams.RenderingMode.NORMAL, 27));
             Result renderResult = session.render();
             if (renderResult.getException() != null) {
+                renderResult.getException().printStackTrace();
                 imagePanel.label.setText("Error rendering layout");
                 imagePanel.label.setVisible(true);
             } else {
@@ -299,13 +326,26 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
             @NonNull
             @Override
             protected ResourceItem createResourceItem(@NonNull String name) {
-                return new ResourceItem(name);
+                return new ResourceItem(name) {
+                };
             }
         };
         sProjectResources.loadResources();
         FolderConfiguration config = configGenerator.getFolderConfig();
-        ResourceResolver resourceResolver = ResourceResolver.create(sProjectResources.getConfiguredResources(config), sFrameworkRepo.getConfiguredResources(config), themeName, isProjectTheme);
-
+        Map<ResourceType, ResourceValueMap> pRes = sProjectResources.getConfiguredResources(config);
+        Map<ResourceType, ResourceValueMap> fRes = sFrameworkRepo.getConfiguredResources(config);
+        Map<ResourceNamespace, Map<ResourceType, ResourceValueMap>> allResources
+                = new DisjointUnionMap<>(Collections.singletonMap(ResourceNamespace.ANDROID, fRes), Collections.singletonMap(appNamespace, pRes));
+        ResourceReference theme = new ResourceReference(appNamespace, ResourceType.STYLE, themeName);
+        ResourceResolver resourceResolver = ResourceResolver.create(allResources, theme);
+        resourceResolver.setDeviceDefaults("Holo");
+        resourceResolver.setProjectIdChecker(new Predicate<ResourceReference>() {
+            @Override
+            public boolean test(ResourceReference t) {
+                System.out.println(">>>" + t);
+                return true;
+            }
+        });
         SessionParams sessionParams
                 = new SessionParams(layoutParser, renderingMode, null /*used for caching*/,
                         configGenerator.getHardwareConfig(), resourceResolver, layoutLibCallback, 0,

@@ -6,6 +6,7 @@
 package sk.arsi.netbeans.gradle.android.layout.impl;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import org.openide.util.lookup.ServiceProvider;
 import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewPanel;
@@ -20,7 +21,7 @@ public class LayoutPreviewProviderImpl extends LayoutPreviewProvider {
 
     @Override
     public LayoutPreviewPanel getPreview(File platformFolder, File layoutFile, File appResFolder, String themeName, List<File> aars) {
-        LayoutPreviewPanelImpl imagePanel = new LayoutPreviewPanelImpl(platformFolder, layoutFile, appResFolder, themeName, aars);
+        LayoutPreviewPanelImpl imagePanel = new LayoutPreviewPanelImpl(platformFolder, layoutFile, appResFolder, themeName, new ArrayList<>(aars));
         return imagePanel;
     }
 

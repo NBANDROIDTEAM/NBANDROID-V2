@@ -11,8 +11,6 @@ import com.android.resources.ResourceType;
 import com.google.android.collect.Maps;
 import com.google.common.io.Files;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -53,7 +51,6 @@ public class ResClassGenerator {
     private final Map<ResourceType, Map<String, Object>> mResources = Maps.newHashMap();
     private String fqcn;
     private byte[] rootClass;
-    private final boolean r;
     private Map<String, byte[]> innerClasses = new HashMap<>();
 
     public byte[] getRootClass() {
@@ -68,14 +65,10 @@ public class ResClassGenerator {
         return fqcn;
     }
 
-    public boolean isR() {
-        return r;
-    }
-
-
-    public ResClassGenerator(File aar) {
-        File rTxt = new File(aar.getPath() + File.separator + "R.txt");
-        if (rTxt.exists() && rTxt.isFile()) {
+    public ResClassGenerator(String fqcn, List<File> aarList) {
+        this.fqcn = fqcn;
+        for (File aar : aarList) {
+            File rTxt = new File(aar.getPath() + File.separator + "R.txt");
             try {
                 List<String> readLines = Files.readLines(rTxt, StandardCharsets.UTF_8);
                 for (String line : readLines) {
@@ -94,19 +87,8 @@ public class ResClassGenerator {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            r = true;
-        } else {
-            r = false;
         }
-        File manifest = new File(aar.getPath() + File.separator + "AndroidManifest.xml");
-        if (manifest.exists() && manifest.isFile()) {
-            try {
-                ManifestData manifestData = parseProjectManifest(new FileInputStream(manifest));
-                fqcn = manifestData.getPackage() + ".R";
-            } catch (FileNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
+
         generate();
     }
 

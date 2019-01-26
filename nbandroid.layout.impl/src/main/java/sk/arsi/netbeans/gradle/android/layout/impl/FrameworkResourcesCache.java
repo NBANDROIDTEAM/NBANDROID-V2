@@ -5,7 +5,7 @@
  */
 package sk.arsi.netbeans.gradle.android.layout.impl;
 
-import com.android.ide.common.resources.FrameworkResources;
+import com.android.ide.common.resources.deprecated.FrameworkResources;
 import com.android.io.FolderWrapper;
 import com.android.tools.nbandroid.layoutlib.LogWrapper;
 import com.google.common.cache.CacheBuilder;
