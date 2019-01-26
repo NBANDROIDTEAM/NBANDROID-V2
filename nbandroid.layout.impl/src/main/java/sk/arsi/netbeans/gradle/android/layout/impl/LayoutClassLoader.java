@@ -7,7 +7,6 @@ package sk.arsi.netbeans.gradle.android.layout.impl;
 
 import android.os._Original_Build;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -21,7 +20,6 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.Remapper;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -35,28 +33,26 @@ public class LayoutClassLoader extends URLClassLoader {
         String out = "/jetty/netbeans9/xxx";
         for (File aar : aars) {
             ResClassGenerator gen = new ResClassGenerator(aar);
-            String rootFqcn = gen.getFqcn();
-            byte[] rootClass = gen.getRootClass();
-            try (FileOutputStream stream = new FileOutputStream(out + "/" + rootFqcn.substring(rootFqcn.lastIndexOf('.') + 1) + ".class")) {
-                stream.write(rootClass);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            Class<?> defineClass = defineClass(rootFqcn, rootClass, 0, rootClass.length);
-            System.out.println("sk.arsi.netbeans.gradle.android.layout.impl.LayoutClassLoader.<init>()");
-            Map<String, byte[]> innerClasses = gen.getInnerClasses();
-            for (Map.Entry<String, byte[]> entry : innerClasses.entrySet()) {
-                String fqcn = entry.getKey();
-                byte[] bytecode = entry.getValue();
-                // Class<?> defineClass1 = defineClass(fqcn, bytecode, 0, bytecode.length);
-                System.out.println("sk.arsi.netbeans.gradle.android.layout.impl.LayoutClassLoader.<init>()");
-                try (FileOutputStream stream = new FileOutputStream(out + "/" + fqcn.substring(rootFqcn.lastIndexOf('.') + 1) + ".class")) {
-                    stream.write(bytecode);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+            if (gen.isR()) {
+                String rootFqcn = gen.getFqcn();
+                byte[] rootClass = gen.getRootClass();
+                try {
+                    Class<?> defineClass = defineClass(rootFqcn, rootClass, 0, rootClass.length);
+                } catch (Exception exception) {
                 }
+                System.out.println("sk.arsi.netbeans.gradle.android.layout.impl.LayoutClassLoader.<init>()");
+                Map<String, byte[]> innerClasses = gen.getInnerClasses();
+                for (Map.Entry<String, byte[]> entry : innerClasses.entrySet()) {
+                    String fqcn = entry.getKey();
+                    byte[] bytecode = entry.getValue();
+                    try {
+                        Class<?> defineClass1 = defineClass(fqcn.replace("/", "."), bytecode, 0, bytecode.length);
+                    } catch (Exception exception) {
+                    }
+                    System.out.println("sk.arsi.netbeans.gradle.android.layout.impl.LayoutClassLoader.<init>()");
+                }
+                System.out.println("sk.arsi.netbeans.gradle.android.layout.impl.LayoutClassLoader.<init>()");
             }
-            System.out.println("sk.arsi.netbeans.gradle.android.layout.impl.LayoutClassLoader.<init>()");
 
         }
     }

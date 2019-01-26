@@ -53,6 +53,7 @@ public class ResClassGenerator {
     private final Map<ResourceType, Map<String, Object>> mResources = Maps.newHashMap();
     private String fqcn;
     private byte[] rootClass;
+    private final boolean r;
     private Map<String, byte[]> innerClasses = new HashMap<>();
 
     public byte[] getRootClass() {
@@ -65,6 +66,10 @@ public class ResClassGenerator {
 
     public String getFqcn() {
         return fqcn;
+    }
+
+    public boolean isR() {
+        return r;
     }
 
 
@@ -89,6 +94,9 @@ public class ResClassGenerator {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+            r = true;
+        } else {
+            r = false;
         }
         File manifest = new File(aar.getPath() + File.separator + "AndroidManifest.xml");
         if (manifest.exists() && manifest.isFile()) {
@@ -143,11 +151,6 @@ public class ResClassGenerator {
         String className = fqcn.replace('.', '/');
         ClassWriter cw = new ClassWriter(0);
         cw.visit(V1_6, ACC_PUBLIC + ACC_FINAL + ACC_SUPER, className, null, Type.getInternalName(Object.class), null);
-        for (Map.Entry<ResourceType, Map<String, Object>> entry : mResources.entrySet()) {
-            ResourceType t = entry.getKey();
-            Map<String, Object> values = entry.getValue();
-            cw.visitInnerClass(className + "$" + t.getName(), className, t.getName(), ACC_PUBLIC + ACC_FINAL + ACC_STATIC);
-        }
         generateConstructor(cw);
         cw.visitEnd();
         rootClass = cw.toByteArray();
@@ -155,29 +158,35 @@ public class ResClassGenerator {
             ResourceType resourceType = entry.getKey();
             Map<String, Object> values = entry.getValue();
             cw = new ClassWriter(0);
-            cw.visit(V1_6, ACC_PUBLIC + ACC_FINAL + ACC_SUPER, className, null, Type.getInternalName(Object.class), null);
+            cw.visit(V1_6, ACC_PUBLIC + ACC_FINAL + ACC_SUPER, className + "$" + resourceType.getName(), null, Type.getInternalName(Object.class), null);
+            cw.visitInnerClass(className + "$" + resourceType.getName(), className, resourceType.getName(), ACC_PUBLIC + ACC_FINAL + ACC_STATIC);
             if (resourceType == ResourceType.STYLEABLE || resourceType == ResourceType.DECLARE_STYLEABLE) {
                 resourceType = ResourceType.STYLEABLE;
-                cw.visitInnerClass(className + "$" + resourceType.getName(), className, resourceType.getName(), ACC_PUBLIC + ACC_FINAL + ACC_STATIC);
+                Map<String, List<Integer>> tmp = new HashMap<>();
                 for (Map.Entry<String, Object> entry1 : values.entrySet()) {
                     String name = entry1.getKey();
                     Object value = entry1.getValue();
                     if (value instanceof Integer) {
                         generateField(cw, name, (int) value);
                     } else {
-                        MethodVisitor mv = cw.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
-                        mv.visitCode();
-                        generateArrayInitialization(mv, className, name, (List<Integer>) value);
-                        mv.visitInsn(RETURN);
-                        mv.visitMaxs(4, 0);
-                        mv.visitEnd();
+                        generateArrayField(cw, name);
+                        tmp.put(name, (List<Integer>) value);
                     }
                 }
+                MethodVisitor mv = cw.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
+                mv.visitCode();
+                for (Map.Entry<String, List<Integer>> entry1 : tmp.entrySet()) {
+                    String name = entry1.getKey();
+                    List<Integer> value = entry1.getValue();
+                    generateArrayInitialization(mv, className, name, value);
+                }
+                mv.visitInsn(RETURN);
+                mv.visitMaxs(4, 0);
+                mv.visitEnd();
                 generateConstructor(cw);
                 cw.visitEnd();
                 innerClasses.put(className + "$" + resourceType.getName(), cw.toByteArray());
             } else {
-                cw.visitInnerClass(className + "$" + resourceType.getName(), className, resourceType.getName(), ACC_PUBLIC + ACC_FINAL + ACC_STATIC);
                 for (Map.Entry<String, Object> entry1 : values.entrySet()) {
                     String name = entry1.getKey();
                     Object value = entry1.getValue();
@@ -185,8 +194,8 @@ public class ResClassGenerator {
                         generateField(cw, name, (int) value);
                     }
                 }
-                cw.visitEnd();
                 generateConstructor(cw);
+                cw.visitEnd();
                 innerClasses.put(className + "$" + resourceType.getName(), cw.toByteArray());
             }
 
