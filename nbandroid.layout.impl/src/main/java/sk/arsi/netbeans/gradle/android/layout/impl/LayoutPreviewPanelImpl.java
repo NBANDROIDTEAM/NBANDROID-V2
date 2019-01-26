@@ -71,7 +71,6 @@ import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
-import static sk.arsi.netbeans.gradle.android.layout.impl.ResClassGenerator.parseProjectManifest;
 import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewPanel;
 
 /**
@@ -115,7 +114,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         File manifest = new File(projectRoot + File.separator + "AndroidManifest.xml");
         if (manifest.exists() && manifest.isFile()) {
             try {
-                ManifestData manifestData = parseProjectManifest(new FileInputStream(manifest));
+                ManifestData manifestData = ResourceClassGenerator.parseProjectManifest(new FileInputStream(manifest));
                 if (manifestData != null) {
                     appNamespaceName = manifestData.getPackage();
                 }
