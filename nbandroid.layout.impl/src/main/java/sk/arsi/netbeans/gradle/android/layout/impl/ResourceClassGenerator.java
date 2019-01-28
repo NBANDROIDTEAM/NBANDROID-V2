@@ -5,12 +5,15 @@
  */
 package sk.arsi.netbeans.gradle.android.layout.impl;
 
+import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.xml.AndroidManifestParser;
 import com.android.ide.common.xml.ManifestData;
 import com.android.resources.ResourceType;
 import com.google.android.collect.Maps;
 import com.google.common.io.Files;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -262,6 +265,20 @@ public class ResourceClassGenerator {
         }
 
         return null;
+    }
+
+    public static ResourceNamespace findAarNamespace(File aarFolder) {
+        File manifest = new File(aarFolder.getPath() + File.separator + "AndroidManifest.xml");
+        if (manifest.exists() && manifest.isFile()) {
+            try {
+                ManifestData manifestData = parseProjectManifest(new FileInputStream(manifest));
+                if (manifestData != null) {
+                    return ResourceNamespace.fromPackageName(manifestData.getPackage());
+                }
+            } catch (FileNotFoundException ex) {
+            }
+        }
+        return ResourceNamespace.RES_AUTO;
     }
 
 }

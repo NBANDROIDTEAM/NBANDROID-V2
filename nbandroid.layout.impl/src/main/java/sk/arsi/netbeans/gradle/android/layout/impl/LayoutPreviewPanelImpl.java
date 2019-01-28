@@ -12,12 +12,8 @@ import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.Result;
 import com.android.ide.common.rendering.api.SessionParams;
-import com.android.ide.common.resources.ResourceResolver;
 import com.android.ide.common.resources.ResourceValueMap;
 import com.android.ide.common.resources.configuration.FolderConfiguration;
-import com.android.ide.common.resources.deprecated.FrameworkResources;
-import com.android.ide.common.resources.deprecated.ResourceItem;
-import com.android.ide.common.resources.deprecated.ResourceRepository;
 import com.android.ide.common.util.DisjointUnionMap;
 import com.android.ide.common.xml.ManifestData;
 import com.android.io.FolderWrapper;
@@ -56,6 +52,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -71,6 +68,10 @@ import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import sk.arsi.netbeans.gradle.android.layout.impl.android.FrameworkResources;
+import sk.arsi.netbeans.gradle.android.layout.impl.android.ResourceItem;
+import sk.arsi.netbeans.gradle.android.layout.impl.android.ResourceRepository;
+import sk.arsi.netbeans.gradle.android.layout.impl.android.ResourceResolver;
 import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewPanel;
 
 /**
@@ -316,6 +317,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
                 imagePanel.progress.setVisible(false);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             imagePanel.label.setText("Error rendering layout");
             imagePanel.label.setVisible(true);
         }
@@ -326,10 +328,11 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
             String themeName, boolean isProjectTheme, SessionParams.RenderingMode renderingMode,
             @SuppressWarnings("SameParameterValue") int targetSdk) {
         File data_dir = new File(platformFolder, "data");
+        SessionResolver sessionResolver = new SessionResolver();
         File res = new File(data_dir, "res");
         sFrameworkRepo = FrameworkResourcesCache.getOrCreateFrameworkResources(res);
         sProjectResources = new ResourceRepository(new FolderWrapper(appResFolder),
-                false) {
+                false, appNamespace) {
             @NonNull
             @Override
             protected ResourceItem createResourceItem(@NonNull String name) {
@@ -339,13 +342,20 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         };
         sProjectResources.loadResources();
         FolderConfiguration config = configGenerator.getFolderConfig();
-        Map<ResourceType, ResourceValueMap> pRes = sProjectResources.getConfiguredResources(config);
-        Map<ResourceType, ResourceValueMap> fRes = sFrameworkRepo.getConfiguredResources(config);
-        Map<ResourceNamespace, Map<ResourceType, ResourceValueMap>> allResources
-                = new DisjointUnionMap<>(Collections.singletonMap(ResourceNamespace.ANDROID, fRes), Collections.singletonMap(appNamespace, pRes));
+        List<Map<ResourceNamespace, Map<ResourceType, ResourceValueMap>>> resources = new ArrayList<>();
+        for (File aar : aars) {
+            ResourceRepository aarResources = AarResourcesCache.getOrCreateAarResources(aar);
+            if (aarResources != null) {
+                resources.add(Collections.singletonMap(ResourceClassGenerator.findAarNamespace(aar), aarResources.getConfiguredResources(config)));
+                //resources.add(Collections.singletonMap(ResourceNamespace.RES_AUTO, aarResources.getConfiguredResources(config)));
+            }
+        }
+        resources.add(Collections.singletonMap(appNamespace, sProjectResources.getConfiguredResources(config)));
+        // resources.add(Collections.singletonMap(ResourceNamespace.RES_AUTO, sProjectResources.getConfiguredResources(config)));
         ResourceReference theme = new ResourceReference(appNamespace, ResourceType.STYLE, themeName);
-        ResourceResolver resourceResolver = ResourceResolver.create(allResources, theme);
-        resourceResolver.setDeviceDefaults("Holo");
+        Map<ResourceNamespace, Map<ResourceType, ResourceValueMap>> flatModel = createFlatNamespacesModel(resources);
+        ResourceResolver resourceResolver = ResourceResolver.create(new DisjointUnionMap<>(Collections.singletonMap(ResourceNamespace.ANDROID, sFrameworkRepo.getConfiguredResources(config)), flatModel), theme);
+        //    resourceResolver.setDeviceDefaults("Material");
         resourceResolver.setProjectIdChecker(new Predicate<ResourceReference>() {
             @Override
             public boolean test(ResourceReference t) {
@@ -360,6 +370,34 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         sessionParams.setFlag(RenderParamsFlags.FLAG_DO_NOT_RENDER_ON_CREATE, true);
         sessionParams.setAssetRepository(new TestAssetRepository());
         return sessionParams;
+    }
+
+    private static Map<ResourceNamespace, Map<ResourceType, ResourceValueMap>> createFlatNamespacesModel(List<Map<ResourceNamespace, Map<ResourceType, ResourceValueMap>>> resources) {
+        Map<ResourceNamespace, Map<ResourceType, ResourceValueMap>> out = new HashMap<>();
+        for (Map<ResourceNamespace, Map<ResourceType, ResourceValueMap>> resource : resources) {
+            for (Map.Entry<ResourceNamespace, Map<ResourceType, ResourceValueMap>> entry : resource.entrySet()) {
+                ResourceNamespace namespace = entry.getKey();
+                Map<ResourceType, ResourceValueMap> values = entry.getValue();
+                Map<ResourceType, ResourceValueMap> current = out.get(namespace);
+                if (current == null) {
+                    current = new HashMap<>();
+                }
+                out.put(namespace, current);
+                for (Map.Entry<ResourceType, ResourceValueMap> entry1 : values.entrySet()) {
+                    ResourceType resourceType = entry1.getKey();
+                    ResourceValueMap resourceValueMap = entry1.getValue();
+                    ResourceValueMap resourceValueMapOut = current.get(resourceType);
+                    if (resourceValueMapOut == null) {
+                        resourceValueMapOut = ResourceValueMap.create();
+                        current.put(resourceType, resourceValueMapOut);
+                    }
+                    resourceValueMapOut.putAll(resourceValueMap);
+
+                }
+
+            }
+        }
+        return out;
     }
 
     @Override

@@ -47,10 +47,10 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
     private String package_name;
     private final AtomicInteger counter = new AtomicInteger(0x7F060000);
     private final List<File> aars;
-    private final ClassLoader classLoader;
+    private final LayoutClassLoader classLoader;
     private final ResourceNamespace appNamespace;
 
-    public LayoutLibTestCallback(ILogger logger, List<File> aars, ClassLoader classLoader, ResourceNamespace appNamespace) {
+    public LayoutLibTestCallback(ILogger logger, List<File> aars, LayoutClassLoader classLoader, ResourceNamespace appNamespace) {
         mLog = logger;
         this.aars = aars;
         this.classLoader = classLoader;
@@ -88,6 +88,12 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
         return true; //To change body of generated methods, choose Tools | Templates.
     }
 
+    @Override
+    public boolean hasAndroidXAppCompat() {
+        return false; //To change body of generated methods, choose Tools | Templates.
+    }
+
+
 
     @Override
     public ILayoutPullParser getParser(ResourceValue layoutResource) {
@@ -121,14 +127,21 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
     @Override
     public <T> T getFlag(Key<T> key) {
         if (key.equals(RenderParamsFlags.FLAG_KEY_APPLICATION_PACKAGE)) {
-            return (T) "aa";
+            return (T) appNamespace.getPackageName();
         }
         return null;
     }
+    //0x7f0f0005
 
     @Override
     public int getOrGenerateResourceId(ResourceReference resource) {
+        Integer value = classLoader.getResourceTypeToId().get(resource.getResourceType());
+        if (value != null) {
+            return value;
+        }
         int incrementAndGet = counter.incrementAndGet();
+        classLoader.getResourceTypeToId().put(resource.getResourceType(), incrementAndGet);
+        classLoader.getIdToReferences().put(incrementAndGet, resource);
         System.out.println(">" + resource);
         return incrementAndGet;
     }
@@ -141,7 +154,7 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
     @Override
     public XmlPullParser createXmlParserForFile(String fileName) {
         System.out.println(fileName);
-        return new LayoutPullParser(fileName, appNamespace);
+        return new LayoutPullParser(fileName, ResourceNamespace.ANDROID);
     }
 
     @Override
@@ -149,8 +162,17 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
         return new KXmlParser();
     }
 
+
     @Override
     public ResourceReference resolveResourceId(int id) {
-        return null;
+        ResourceReference reference = classLoader.getIdToReferences().get(id);
+        System.out.println(">>>>" + reference);
+        return reference;
     }
+
+    @Override
+    public boolean isResourceNamespacingRequired() {
+        return true; //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

@@ -5,13 +5,13 @@
  */
 package sk.arsi.netbeans.gradle.android.layout.impl;
 
-import com.android.ide.common.resources.deprecated.FrameworkResources;
 import com.android.io.FolderWrapper;
 import com.android.tools.nbandroid.layoutlib.LogWrapper;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import java.io.File;
+import sk.arsi.netbeans.gradle.android.layout.impl.android.FrameworkResources;
 
 /**
  *
@@ -20,6 +20,7 @@ import java.io.File;
 public class FrameworkResourcesCache {
 
     private static final LoadingCache<File, FrameworkResources> cache = CacheBuilder.newBuilder().softValues().build(new CacheLoader<File, FrameworkResources>() {
+
         @Override
         public FrameworkResources load(File key) throws Exception {
             FrameworkResources sFrameworkRepo = new FrameworkResources(new FolderWrapper(key));

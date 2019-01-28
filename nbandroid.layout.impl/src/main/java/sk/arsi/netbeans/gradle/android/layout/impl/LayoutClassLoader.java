@@ -6,6 +6,7 @@
 package sk.arsi.netbeans.gradle.android.layout.impl;
 
 import android.os._Original_Build;
+import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.xml.ManifestData;
 import com.android.resources.ResourceType;
 import java.io.File;
@@ -33,6 +34,18 @@ import org.openide.util.Exceptions;
  * @author arsi
  */
 public class LayoutClassLoader extends URLClassLoader {
+
+    private final Map<Integer, ResourceReference> idToReferences = new HashMap<>();
+    private final Map<ResourceType, Integer> resourceTypeToId = new HashMap<>();
+
+    public Map<Integer, ResourceReference> getIdToReferences() {
+        return idToReferences;
+    }
+
+    public Map<ResourceType, Integer> getResourceTypeToId() {
+        return resourceTypeToId;
+    }
+
 
     public LayoutClassLoader(URL[] urls, List<File> aars, ClassLoader parent) {
         super(urls, parent);
@@ -65,6 +78,23 @@ public class LayoutClassLoader extends URLClassLoader {
             String fqcn = entry.getKey();
             List<File> aarList = entry.getValue();
             Map<ResourceType, Map<String, Object>> resourceMap = ResourceClassGenerator.buildResourceMap(fqcn, aarList);
+            for (Map.Entry<ResourceType, Map<String, Object>> entry1 : resourceMap.entrySet()) {
+                ResourceType resourceType = entry1.getKey();
+                Map<String, Object> value = entry1.getValue();
+                for (Map.Entry<String, Object> entry2 : value.entrySet()) {
+                    String name = entry2.getKey();
+                    Object val = entry2.getValue();
+                    if (val instanceof Integer) {
+                        idToReferences.put((Integer) val, new ResourceReference(ResourceClassGenerator.findAarNamespace(aarList.get(0)), resourceType, name));
+                        if (!resourceTypeToId.containsKey(resourceType)) {
+                            resourceTypeToId.put(resourceType, (Integer) val);
+                        } else {
+                            System.out.println("sk.arsi.netbeans.gradle.android.layout.impl.LayoutClassLoader.<init>()");
+                        }
+                    }
+
+                }
+            }
             ResourceClassGenerator.generate(fqcn, resourceMap, (className, classBytes) -> defineClass(className, classBytes, 0, classBytes.length));
         }
     }
