@@ -5,18 +5,18 @@
  */
 package sk.arsi.netbeans.gradle.android.layout.impl;
 
-import android.annotation.NonNull;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.RenderSession;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.Result;
 import com.android.ide.common.rendering.api.SessionParams;
+import com.android.ide.common.resources.MergingException;
+import com.android.ide.common.resources.ResourceMerger;
+import com.android.ide.common.resources.ResourceSet;
 import com.android.ide.common.resources.ResourceValueMap;
 import com.android.ide.common.resources.configuration.FolderConfiguration;
-import com.android.ide.common.util.DisjointUnionMap;
 import com.android.ide.common.xml.ManifestData;
-import com.android.io.FolderWrapper;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
 import com.android.resources.Density;
 import com.android.resources.Keyboard;
@@ -32,6 +32,7 @@ import com.android.tools.nbandroid.layoutlib.LayoutLibrary;
 import com.android.tools.nbandroid.layoutlib.LayoutLibraryLoader;
 import com.android.tools.nbandroid.layoutlib.LogWrapper;
 import com.android.tools.nbandroid.layoutlib.RenderingException;
+import com.android.utils.StdLogger;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -51,7 +52,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,9 +69,11 @@ import javax.swing.SwingUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import sk.arsi.netbeans.gradle.android.layout.impl.android.FrameworkResources;
-import sk.arsi.netbeans.gradle.android.layout.impl.android.ResourceItem;
 import sk.arsi.netbeans.gradle.android.layout.impl.android.ResourceRepository;
 import sk.arsi.netbeans.gradle.android.layout.impl.android.ResourceResolver;
+import sk.arsi.netbeans.gradle.android.layout.impl.v2.AarResourceSet;
+import sk.arsi.netbeans.gradle.android.layout.impl.v2.FrameworkResourceSet;
+import sk.arsi.netbeans.gradle.android.layout.impl.v2.MergerResourceRepositoryV2;
 import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewPanel;
 
 /**
@@ -269,7 +271,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
                 .setXdpi(dpi)
                 .setYdpi(dpi)
                 .setOrientation(orientation)
-                .setDensity(Density.XXHIGH)
+                .setDensity(Density.MEDIUM)
                 .setRatio(ScreenRatio.NOTLONG)
                 .setSize(ScreenSize.NORMAL)
                 .setKeyboard(Keyboard.NOKEY)
@@ -327,39 +329,61 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
             ConfigGenerator configGenerator, LayoutLibTestCallback layoutLibCallback,
             String themeName, boolean isProjectTheme, SessionParams.RenderingMode renderingMode,
             @SuppressWarnings("SameParameterValue") int targetSdk) {
+
+        //************
+        ResourceMerger resourceMerger = new ResourceMerger(0);
+        ResourceMerger platformResourceMerger = new ResourceMerger(0);
         File data_dir = new File(platformFolder, "data");
-        SessionResolver sessionResolver = new SessionResolver();
         File res = new File(data_dir, "res");
-        sFrameworkRepo = FrameworkResourcesCache.getOrCreateFrameworkResources(res);
-        sProjectResources = new ResourceRepository(new FolderWrapper(appResFolder),
-                false, appNamespace) {
-            @NonNull
-            @Override
-            protected ResourceItem createResourceItem(@NonNull String name) {
-                return new ResourceItem(name) {
-                };
-            }
-        };
-        sProjectResources.loadResources();
-        FolderConfiguration config = configGenerator.getFolderConfig();
-        List<Map<ResourceNamespace, Map<ResourceType, ResourceValueMap>>> resources = new ArrayList<>();
+
+        FrameworkResourceSet framefork = new FrameworkResourceSet(res, false);
+        try {
+            framefork.loadFromFiles(new StdLogger(StdLogger.Level.INFO));
+        } catch (MergingException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        resourceMerger.addDataSet(framefork);
+        //***
         for (File aar : aars) {
-            ResourceRepository aarResources = AarResourcesCache.getOrCreateAarResources(aar);
-            if (aarResources != null) {
-                resources.add(Collections.singletonMap(ResourceClassGenerator.findAarNamespace(aar), aarResources.getConfiguredResources(config)));
-                //resources.add(Collections.singletonMap(ResourceNamespace.RES_AUTO, aarResources.getConfiguredResources(config)));
+            AarResourceSet aarSet = new AarResourceSet(aar.getName(), ResourceClassGenerator.findAarNamespace(aar), aar.getName(), false);
+            File resFolder = new File(aar.getPath() + File.separator + "res");
+            if (resFolder.exists() && resFolder.isDirectory()) {
+                aarSet.addSource(resFolder);
+                aarSet.setShouldParseResourceIds(true);
+                aarSet.setTrackSourcePositions(true);
+                aarSet.setCheckDuplicates(true);
+                try {
+                    aarSet.loadFromFiles(new StdLogger(StdLogger.Level.INFO));
+                    resourceMerger.addDataSet(aarSet);
+                } catch (MergingException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
-        resources.add(Collections.singletonMap(appNamespace, sProjectResources.getConfiguredResources(config)));
-        // resources.add(Collections.singletonMap(ResourceNamespace.RES_AUTO, sProjectResources.getConfiguredResources(config)));
+        ResourceSet projectSet = new ResourceSet("project", appNamespace, "project", false);
+        projectSet.addSource(appResFolder);
+        projectSet.setShouldParseResourceIds(true);
+        projectSet.setTrackSourcePositions(false);
+        projectSet.setCheckDuplicates(false);
+        try {
+            projectSet.loadFromFiles(new StdLogger(StdLogger.Level.INFO));
+            resourceMerger.addDataSet(projectSet);
+        } catch (MergingException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        //**
+
+        MergerResourceRepositoryV2 repo = new MergerResourceRepositoryV2();
+        repo.update(resourceMerger);
+
+        //****************
+        FolderConfiguration config = configGenerator.getFolderConfig();
         ResourceReference theme = new ResourceReference(appNamespace, ResourceType.STYLE, themeName);
-        Map<ResourceNamespace, Map<ResourceType, ResourceValueMap>> flatModel = createFlatNamespacesModel(resources);
-        ResourceResolver resourceResolver = ResourceResolver.create(new DisjointUnionMap<>(Collections.singletonMap(ResourceNamespace.ANDROID, sFrameworkRepo.getConfiguredResources(config)), flatModel), theme);
-        //    resourceResolver.setDeviceDefaults("Material");
+        ResourceResolver resourceResolver = ResourceResolver.create(repo.getConfiguredResources(config).rowMap(), theme);
+        resourceResolver.setDeviceDefaults("Material");
         resourceResolver.setProjectIdChecker(new Predicate<ResourceReference>() {
             @Override
             public boolean test(ResourceReference t) {
-                System.out.println(">>>" + t);
                 return true;
             }
         });

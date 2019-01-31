@@ -88,8 +88,6 @@ public class LayoutClassLoader extends URLClassLoader {
                         idToReferences.put((Integer) val, new ResourceReference(ResourceClassGenerator.findAarNamespace(aarList.get(0)), resourceType, name));
                         if (!resourceTypeToId.containsKey(resourceType)) {
                             resourceTypeToId.put(resourceType, (Integer) val);
-                        } else {
-                            System.out.println("sk.arsi.netbeans.gradle.android.layout.impl.LayoutClassLoader.<init>()");
                         }
                     }
 

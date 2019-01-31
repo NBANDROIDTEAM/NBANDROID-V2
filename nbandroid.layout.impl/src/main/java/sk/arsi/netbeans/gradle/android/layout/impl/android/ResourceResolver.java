@@ -419,6 +419,7 @@ public class ResourceResolver extends RenderResources {
 
     @Override
     public ResourceValue getUnresolvedResource(ResourceReference reference) {
+        //TODO  find out where is the problem with namespaces
         if (reference.getResourceType() == ResourceType.SAMPLE_DATA) {
             return findSampleDataValue(reference);
         }
@@ -427,7 +428,6 @@ public class ResourceResolver extends RenderResources {
         if (resourceValueMap != null) {
             ResourceValue v = resourceValueMap.get(reference.getName().replace(".", "_"));
             if (v != null) {
-                System.out.println("[" + reference + "][" + v.getValue() + "]");
             } else {
                 for (Map.Entry<ResourceNamespace, Map<ResourceType, ResourceValueMap>> entry : mResources.entrySet()) {
                     ResourceNamespace key = entry.getKey();
@@ -441,17 +441,25 @@ public class ResourceResolver extends RenderResources {
 
                     }
                 }
-                if (v != null) {
-                    System.out.println("sk.arsi.netbeans.gradle.android.layout.impl.android.ResourceResolver.getUnresolvedResource()");
-                } else {
-                    System.out.println("sk.arsi.netbeans.gradle.android.layout.impl.android.ResourceResolver.getUnresolvedResource()");
+            }
+            return v;
+        } else {
+            ResourceValue v = null;
+            for (Map.Entry<ResourceNamespace, Map<ResourceType, ResourceValueMap>> entry : mResources.entrySet()) {
+                ResourceNamespace key = entry.getKey();
+                Map<ResourceType, ResourceValueMap> value = entry.getValue();
+                ResourceValueMap vv = value.get(reference.getResourceType());
+                if (vv != null) {
+                    v = vv.get(reference.getName().replace(".", "_"));
+                    if (v != null) {
+                        break;
+                    }
+
                 }
-                System.out.println("sk.arsi.netbeans.gradle.android.layout.impl.android.ResourceResolver.getUnresolvedResource()");
             }
             return v;
         }
 
-        return null;
     }
 
     @Override
@@ -544,12 +552,14 @@ public class ResourceResolver extends RenderResources {
         if (resValue == null) {
             return null;
         }
-
         boolean referenceToItself = false;
         for (int depth = 0; depth < MAX_RESOURCE_INDIRECTION; depth++) {
             String value = resValue.getValue();
-            if (value == null || resValue instanceof ArrayResourceValue) {
+            if (value == null) {
                 // If there's no value or this an array resource (e.g. <string-array>), return.
+                return resValue;
+            }
+            if (resValue instanceof ArrayResourceValue) {
                 return resValue;
             }
 

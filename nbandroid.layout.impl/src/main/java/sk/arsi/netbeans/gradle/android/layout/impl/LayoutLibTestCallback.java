@@ -75,6 +75,18 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public ResourceNamespace.Resolver getImplicitNamespaces() {
+        final ResourceNamespace.Resolver implicitNamespaces = super.getImplicitNamespaces(); //To change body of generated methods, choose Tools | Templates.
+        return new ResourceNamespace.Resolver() {
+            @Override
+            public String prefixToUri(String namespacePrefix) {
+                return implicitNamespaces.prefixToUri(namespacePrefix);
+            }
+        };
+    }
+
+
 
     @Override
     public String getNamespace() {
@@ -97,7 +109,10 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
 
     @Override
     public ILayoutPullParser getParser(ResourceValue layoutResource) {
-        return new LayoutPullParser(new File(layoutResource.getValue()), appNamespace);
+        if (layoutResource.getValue() != null) {
+            return new LayoutPullParser(new File(layoutResource.getValue()), appNamespace);
+        }
+        return null;
     }
 
     @Override
@@ -142,7 +157,6 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
         int incrementAndGet = counter.incrementAndGet();
         classLoader.getResourceTypeToId().put(resource.getResourceType(), incrementAndGet);
         classLoader.getIdToReferences().put(incrementAndGet, resource);
-        System.out.println(">" + resource);
         return incrementAndGet;
     }
 
@@ -153,9 +167,9 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
 
     @Override
     public XmlPullParser createXmlParserForFile(String fileName) {
-        System.out.println(fileName);
         return new LayoutPullParser(fileName, ResourceNamespace.ANDROID);
     }
+
 
     @Override
     public XmlPullParser createXmlParser() {
@@ -166,7 +180,6 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
     @Override
     public ResourceReference resolveResourceId(int id) {
         ResourceReference reference = classLoader.getIdToReferences().get(id);
-        System.out.println(">>>>" + reference);
         return reference;
     }
 

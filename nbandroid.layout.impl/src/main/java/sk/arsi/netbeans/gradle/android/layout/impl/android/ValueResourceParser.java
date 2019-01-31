@@ -113,11 +113,6 @@ public final class ValueResourceParser extends DefaultHandler {
 
         @Override
         public ResourceReference getParentStyle() {
-            String parentStyleName = getParentStyleName();
-            if (parentStyleName != null && parentStyleName.contains("AppCompat")) {
-                System.out.println("sk.arsi.netbeans.gradle.android.layout.impl.android.ValueResourceParser.StyleResourceValueImpl2.getParentStyle()");
-            }
-            String name = getName();
             if (getParentStyleName() != null) {
                 ResourceUrl url = ResourceUrl.parseStyleParentReference(getParentStyleName());
                 if (url == null) {
