@@ -65,12 +65,19 @@
                 <version>${version.nb.plugin}</version>
                 <extensions>true</extensions>
                 <configuration>
+                    <nbmResources>
+                        <nbmResource>
+                            <directory>src/main/layoutlib_v28_res</directory>
+                            <targetPath>modules/ext/layoutlib_v28_res</targetPath>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                        </nbmResource>
+                    </nbmResources>
                     <requiresRestart>true</requiresRestart>
                     <defaultCluster>${cluster}</defaultCluster>
                     <cluster>${cluster}</cluster>
                     <codeNameBase>sk-arsi-netbeans-gradle-android-Gradle-Android-support-layout-lib</codeNameBase>
-                    <nbmResources>
-                    </nbmResources>
                     <publicPackages>
                         <publicPackage>android.os.*</publicPackage>
                         <publicPackage>com.android.*</publicPackage>
