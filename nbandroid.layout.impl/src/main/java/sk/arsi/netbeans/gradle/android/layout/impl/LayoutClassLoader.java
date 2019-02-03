@@ -6,7 +6,7 @@
 package sk.arsi.netbeans.gradle.android.layout.impl;
 
 import android.os._Original_Build;
-import com.android.ide.common.rendering.api.ResourceReference;
+import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.xml.ManifestData;
 import com.android.resources.ResourceType;
 import java.io.File;
@@ -35,21 +35,22 @@ import org.openide.util.Exceptions;
  */
 public class LayoutClassLoader extends URLClassLoader {
 
-    private final Map<Integer, ResourceReference> idToReferences = new HashMap<>();
-    private final Map<ResourceType, Integer> resourceTypeToId = new HashMap<>();
+    private final ResourceClassGeneratorConfig classGeneratorConfig;
+    private final ResourceNamespace appNamespace;
 
-    public Map<Integer, ResourceReference> getIdToReferences() {
-        return idToReferences;
+    public ResourceClassGeneratorConfig getClassGeneratorConfig() {
+        return classGeneratorConfig;
     }
 
-    public Map<ResourceType, Integer> getResourceTypeToId() {
-        return resourceTypeToId;
-    }
-
-
-    public LayoutClassLoader(URL[] urls, List<File> aars, ClassLoader parent) {
+    public LayoutClassLoader(URL[] urls, List<File> aars, ClassLoader parent, ResourceNamespace appNamespace) {
         super(urls, parent);
+        classGeneratorConfig = new ResourceClassGeneratorConfig(appNamespace);
+        this.appNamespace = ResourceNamespace.RES_AUTO;
         generate(_Original_Build.class, (className, classBytes) -> defineClass(className, classBytes, 0, classBytes.length));
+        generateRs(aars);
+    }
+
+    private void generateRs(List<File> aars) {
         Map<String, List<File>> packages = new HashMap<>();
         //sort aars by package, it can only one R class for single package
         for (File aar : aars) {
@@ -74,25 +75,11 @@ public class LayoutClassLoader extends URLClassLoader {
                 }
             }
         }
+//        //geterate R.class
         for (Map.Entry<String, List<File>> entry : packages.entrySet()) {
             String fqcn = entry.getKey();
             List<File> aarList = entry.getValue();
-            Map<ResourceType, Map<String, Object>> resourceMap = ResourceClassGenerator.buildResourceMap(fqcn, aarList);
-            for (Map.Entry<ResourceType, Map<String, Object>> entry1 : resourceMap.entrySet()) {
-                ResourceType resourceType = entry1.getKey();
-                Map<String, Object> value = entry1.getValue();
-                for (Map.Entry<String, Object> entry2 : value.entrySet()) {
-                    String name = entry2.getKey();
-                    Object val = entry2.getValue();
-                    if (val instanceof Integer) {
-                        idToReferences.put((Integer) val, new ResourceReference(ResourceClassGenerator.findAarNamespace(aarList.get(0)), resourceType, name));
-                        if (!resourceTypeToId.containsKey(resourceType)) {
-                            resourceTypeToId.put(resourceType, (Integer) val);
-                        }
-                    }
-
-                }
-            }
+            Map<ResourceType, Map<String, Object>> resourceMap = ResourceClassGenerator.buildFullResourceMap(ResourceNamespace.RES_AUTO, fqcn, aarList, classGeneratorConfig);
             ResourceClassGenerator.generate(fqcn, resourceMap, (className, classBytes) -> defineClass(className, classBytes, 0, classBytes.length));
         }
     }

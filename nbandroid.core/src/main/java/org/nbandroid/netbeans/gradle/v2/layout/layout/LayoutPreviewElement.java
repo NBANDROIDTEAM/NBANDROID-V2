@@ -18,14 +18,22 @@
  */
 package org.nbandroid.netbeans.gradle.v2.layout.layout;
 
+import com.android.builder.model.AndroidLibrary;
+import com.android.builder.model.Dependencies;
+import com.android.builder.model.MavenCoordinates;
+import com.google.common.collect.Lists;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
@@ -33,7 +41,11 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.nbandroid.netbeans.gradle.api.AndroidProjects;
+import org.nbandroid.netbeans.gradle.config.BuildVariant;
 import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
+import org.nbandroid.netbeans.gradle.v2.layout.dependency.graph.Graph;
+import org.nbandroid.netbeans.gradle.v2.layout.dependency.graph.NodeValueListener;
+import org.nbandroid.netbeans.gradle.v2.maven.ArtifactData;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.tools.DelayedDocumentChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -58,6 +70,7 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewPanel;
 import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewProvider;
+import sk.arsi.netbeans.gradle.android.maven.MavenPomParser;
 
 /**
  *
@@ -67,7 +80,7 @@ import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewProvider;
         displayName = "&Preview",
         iconBase = "org/nbandroid/netbeans/gradle/v2/layout/layout/activity.png",
         mimeType = "text/x-android-layout+xml",
-        persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+        persistenceType = TopComponent.PERSISTENCE_NEVER,
         preferredID = "preview",
         position = 2
 )
@@ -101,13 +114,58 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
         final File resFolderFile = AndroidProjects.findResFolderAsFile(project);
         //find aars folders from classpath
         GradleAndroidClassPathProvider androidClassPathProvider = project.getLookup().lookup(GradleAndroidClassPathProvider.class);
+        Map<URL, ArtifactData> artifactDatas = androidClassPathProvider.getArtifactDatas();
+        Map<String, List<String>> deps = new HashMap<>();
+        final List<String> orderedDependencies = new ArrayList<String>();
+        Graph<String> graph = new Graph<String>(new NodeValueListener<String>() {
+            public void evaluating(String nodeValue) {
+                orderedDependencies.add(nodeValue);
+            }
+        });
+        for (Map.Entry<URL, ArtifactData> entry : artifactDatas.entrySet()) {
+            ArtifactData data = entry.getValue();
+            List<String> dependencies = MavenPomParser.getDefault().parseDependenciesFromPom(new File(data.getPomPath()));
+//            for (Iterator<String> iterator = dependencies.iterator(); iterator.hasNext();) {
+//                String next = iterator.next();
+//                if (!next.startsWith("aar:")) {
+//                    iterator.remove();
+//                }
+//            }
+            MavenCoordinates coordinates = data.getLibrary().getResolvedCoordinates();
+            if ("aar".equals(coordinates.getPackaging())) {
+                String mavenId = coordinates.getPackaging() + ":" + coordinates.getGroupId() + ":" + coordinates.getArtifactId() + ":" + coordinates.getVersion();
+                for (String dependency : dependencies) {
+                    graph.addDependency(mavenId, dependency);
+                }
+            }
+        }
+        graph.generateDependencies();
+        List<String> reorderedDependencies = Lists.reverse(orderedDependencies);
+        BuildVariant variant = project.getLookup().lookup(BuildVariant.class);
+        Dependencies dependencies = variant.getCurrentVariant().getMainArtifact().getDependencies();
+        Collection<AndroidLibrary> libraries = dependencies.getLibraries();
+        Map<String, File> aarFolders = new HashMap<>();
+        for (AndroidLibrary lib : libraries) {
+            MavenCoordinates coordinates = lib.getResolvedCoordinates();
+            String mavenId = coordinates.getPackaging() + ":" + coordinates.getGroupId() + ":" + coordinates.getArtifactId() + ":" + coordinates.getVersion();
+            aarFolders.put(mavenId, lib.getFolder());
+        }
+        final List<File> aars = new ArrayList<>();
+        for (String depName : reorderedDependencies) {
+            File file = aarFolders.get(depName);
+            if (file != null) {
+                aars.add(file);
+            } else {
+                System.out.println("org.nbandroid.netbeans.gradle.v2.layout.layout.LayoutPreviewElement.<init>()");
+            }
+        }
+
         ClassPath classPath = androidClassPathProvider.getCompilePath();
         FileObject[] roots = classPath.getRoots();
-        final List<File> aars = new ArrayList<>();
         final List<File> jars = new ArrayList<>();
         for (FileObject root : roots) {
             if ("classes.jar".equals(FileUtil.getArchiveFile(root).getNameExt())) {
-                aars.add(FileUtil.toFile(FileUtil.getArchiveFile(root).getParent().getParent()));
+                // aars.add(FileUtil.toFile(FileUtil.getArchiveFile(root).getParent().getParent()));
             } else {
                 jars.add(FileUtil.toFile(FileUtil.getArchiveFile(root)));
             }
@@ -116,7 +174,7 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
         final String projectTheme = AndroidProjects.parseProjectTheme(project);
         //find platform
         AndroidPlatformInfo projectPlatform = AndroidProjects.projectPlatform(project);
-        final File platformFolder = projectPlatform.getPlatformFolder();
+        final File platformFolder = new File("/jetty/android-studio-sdk/platforms/android-28");//projectPlatform.getPlatformFolder();
         editorPanel.add(visualRepresentation);
         editorPanel.invalidate();
         editorPanel.repaint();
@@ -221,8 +279,11 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
     @Override
     public void setMultiViewCallback(MultiViewElementCallback callback) {
         this.callback = callback;
-        callback.getTopComponent().setDisplayName(dataObject.getName());
-        editorElement.setMultiViewCallback(callback);
+        try {
+            callback.getTopComponent().setDisplayName(dataObject.getName());
+            editorElement.setMultiViewCallback(callback);
+        } catch (Exception e) {
+        }
     }
 
     @Override
@@ -298,7 +359,6 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
             panel.showTypingIndicator();
         }
     }
-
 
     @Override
     public void fileFolderCreated(FileEvent fe) {

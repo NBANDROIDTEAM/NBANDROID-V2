@@ -419,48 +419,18 @@ public class ResourceResolver extends RenderResources {
 
     @Override
     public ResourceValue getUnresolvedResource(ResourceReference reference) {
-        //TODO  find out where is the problem with namespaces
         if (reference.getResourceType() == ResourceType.SAMPLE_DATA) {
             return findSampleDataValue(reference);
         }
         ResourceValueMap resourceValueMap
                 = getResourceValueMap(reference.getNamespace(), reference.getResourceType());
         if (resourceValueMap != null) {
-            ResourceValue v = resourceValueMap.get(reference.getName().replace(".", "_"));
-            if (v != null) {
-            } else {
-                for (Map.Entry<ResourceNamespace, Map<ResourceType, ResourceValueMap>> entry : mResources.entrySet()) {
-                    ResourceNamespace key = entry.getKey();
-                    Map<ResourceType, ResourceValueMap> value = entry.getValue();
-                    ResourceValueMap vv = value.get(reference.getResourceType());
-                    if (vv != null) {
-                        v = vv.get(reference.getName().replace(".", "_"));
-                        if (v != null) {
-                            break;
-                        }
-
-                    }
-                }
-            }
-            return v;
-        } else {
-            ResourceValue v = null;
-            for (Map.Entry<ResourceNamespace, Map<ResourceType, ResourceValueMap>> entry : mResources.entrySet()) {
-                ResourceNamespace key = entry.getKey();
-                Map<ResourceType, ResourceValueMap> value = entry.getValue();
-                ResourceValueMap vv = value.get(reference.getResourceType());
-                if (vv != null) {
-                    v = vv.get(reference.getName().replace(".", "_"));
-                    if (v != null) {
-                        break;
-                    }
-
-                }
-            }
-            return v;
+            return resourceValueMap.get(reference.getName());
         }
 
+        return null;
     }
+
 
     @Override
     @Nullable

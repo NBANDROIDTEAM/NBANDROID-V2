@@ -187,7 +187,7 @@ public class ConfigGenerator {
         config.setLayoutDirectionQualifier(new LayoutDirectionQualifier());
         config.setNetworkCodeQualifier(new NetworkCodeQualifier());
         config.setLocaleQualifier(new LocaleQualifier());
-        config.setVersionQualifier(new VersionQualifier());
+        config.setVersionQualifier(new VersionQualifier(28));
         return config;
     }
 

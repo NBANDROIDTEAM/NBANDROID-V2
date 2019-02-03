@@ -5,17 +5,22 @@
  */
 package sk.arsi.netbeans.gradle.android.layout.impl;
 
+import com.android.ide.common.rendering.api.ILayoutPullParser;
 import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.RenderSession;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceReference;
+import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.Result;
 import com.android.ide.common.rendering.api.SessionParams;
+import com.android.ide.common.rendering.api.StyleResourceValueImpl;
 import com.android.ide.common.resources.MergingException;
+import com.android.ide.common.resources.ResourceItem;
 import com.android.ide.common.resources.ResourceMerger;
 import com.android.ide.common.resources.ResourceSet;
 import com.android.ide.common.resources.ResourceValueMap;
 import com.android.ide.common.resources.configuration.FolderConfiguration;
+import com.android.ide.common.resources.configuration.VersionQualifier;
 import com.android.ide.common.xml.ManifestData;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
 import com.android.resources.Density;
@@ -23,6 +28,7 @@ import com.android.resources.Keyboard;
 import com.android.resources.KeyboardState;
 import com.android.resources.Navigation;
 import com.android.resources.ResourceType;
+import com.android.resources.ResourceUrl;
 import com.android.resources.ScreenOrientation;
 import com.android.resources.ScreenRatio;
 import com.android.resources.ScreenSize;
@@ -53,8 +59,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -101,6 +109,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     private final AtomicInteger typingProgress = new AtomicInteger(0);
     private final DefaultComboBoxModel model = new DefaultComboBoxModel(new String[]{WINDOW_SIZE, "1920x1080", "1920x1200", "1600x2560", "1080x1920", "1280x800", "1280x768"});
     private LayoutClassLoader uRLClassLoader;
+    private ArrayList<ResourceValue> resourceLookupChain;
 
     /**
      * Creates new form LayoutPreviewPanelImpl1
@@ -125,7 +134,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
                 Exceptions.printStackTrace(ex);
             }
         }
-        appNamespace = ResourceNamespace.fromPackageName(appNamespaceName);
+        appNamespace = ResourceNamespace.RES_AUTO;
         previewSize.setModel(model);
         previewSize.addActionListener(this);
         previewSize.setEditable(true);
@@ -156,7 +165,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         }
         try {
             ClassLoader moduleClassLoader = LayoutLibrary.class.getClassLoader();
-            uRLClassLoader = new LayoutClassLoader(urls.toArray(new URL[urls.size()]), aars, moduleClassLoader);
+            uRLClassLoader = new LayoutClassLoader(urls.toArray(new URL[urls.size()]), aars, moduleClassLoader, appNamespace);
             //load Bridge with arr classpath
             layoutLibrary = LayoutLibraryLoader.load(platformFolder, uRLClassLoader);
         } catch (RenderingException | IOException ex) {
@@ -307,8 +316,9 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         }
 
         try {
-            RenderSession session = layoutLibrary.createSession(getSessionParams(platformFolder, new LayoutPullParser(layoutStream, appNamespace), getCurrentConfig(), new LayoutLibTestCallback(new LogWrapper(), aars, uRLClassLoader, appNamespace), themeName, true, SessionParams.RenderingMode.NORMAL, 27));
+            RenderSession session = layoutLibrary.createSession(getSessionParams(platformFolder, LayoutFilePullParser.create(layoutStream, appNamespace), getCurrentConfig(), new LayoutLibTestCallback(new LogWrapper(), aars, uRLClassLoader, appNamespace), themeName, true, SessionParams.RenderingMode.NORMAL, 27));
             Result renderResult = session.render();
+            int size = resourceLookupChain.size();
             if (renderResult.getException() != null) {
                 renderResult.getException().printStackTrace();
                 imagePanel.label.setText("Error rendering layout");
@@ -325,14 +335,13 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         }
     }
 
-    protected SessionParams getSessionParams(File platformFolder, LayoutPullParser layoutParser,
+    protected SessionParams getSessionParams(File platformFolder, ILayoutPullParser layoutParser,
             ConfigGenerator configGenerator, LayoutLibTestCallback layoutLibCallback,
             String themeName, boolean isProjectTheme, SessionParams.RenderingMode renderingMode,
             @SuppressWarnings("SameParameterValue") int targetSdk) {
 
         //************
         ResourceMerger resourceMerger = new ResourceMerger(0);
-        ResourceMerger platformResourceMerger = new ResourceMerger(0);
         File data_dir = new File(platformFolder, "data");
         File res = new File(data_dir, "res");
 
@@ -344,12 +353,14 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         }
         resourceMerger.addDataSet(framefork);
         //***
+        List<ResourceNamespace> namespaceOrder = new ArrayList<>();
         for (File aar : aars) {
-            AarResourceSet aarSet = new AarResourceSet(aar.getName(), ResourceClassGenerator.findAarNamespace(aar), aar.getName(), false);
             File resFolder = new File(aar.getPath() + File.separator + "res");
             if (resFolder.exists() && resFolder.isDirectory()) {
+                namespaceOrder.add(ResourceNamespace.RES_AUTO);
+                AarResourceSet aarSet = new AarResourceSet(aar.getName(), ResourceNamespace.RES_AUTO, aar.getName(), false);
                 aarSet.addSource(resFolder);
-                aarSet.setShouldParseResourceIds(true);
+                aarSet.setShouldParseResourceIds(false);
                 aarSet.setTrackSourcePositions(true);
                 aarSet.setCheckDuplicates(true);
                 try {
@@ -360,7 +371,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
                 }
             }
         }
-        ResourceSet projectSet = new ResourceSet("project", appNamespace, "project", false);
+        ResourceSet projectSet = new ResourceSet("project", ResourceNamespace.RES_AUTO, "project", false);
         projectSet.addSource(appResFolder);
         projectSet.setShouldParseResourceIds(true);
         projectSet.setTrackSourcePositions(false);
@@ -372,24 +383,76 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
             Exceptions.printStackTrace(ex);
         }
         //**
-
+        FolderConfiguration config = configGenerator.getFolderConfig();
+        config.setVersionQualifier(VersionQualifier.getQualifier(VersionQualifier.getFolderSegment(28)));
         MergerResourceRepositoryV2 repo = new MergerResourceRepositoryV2();
         repo.update(resourceMerger);
+        Set<ResourceNamespace> namespaces1 = repo.getNamespaces();
+        Iterator<ResourceNamespace> iterator1 = namespaces1.iterator();
+        while (iterator1.hasNext()) {
+            ResourceNamespace next1 = iterator1.next();
+            if (ResourceNamespace.ANDROID.equals(next1)) {
+                continue;
+            }
+            List<ResourceItem> resourceItems = repo.getResourceItems(next1, ResourceType.STYLE);
+            resourceLookupChain = new ArrayList<ResourceValue>();
+            for (ResourceItem resourceItem : resourceItems) {
+                ResourceValue resourceValue = resourceItem.getResourceValue();
+                if (resourceValue instanceof StyleResourceValueImpl) {
+                    String parentStyleName = ((StyleResourceValueImpl) resourceValue).getParentStyleName();
+                    Set<ResourceNamespace> namespaces = repo.getNamespaces();
+                    Iterator<ResourceNamespace> iterator = namespaces.iterator();
+                    while (iterator.hasNext()) {
+                        ResourceNamespace next = iterator.next();
+                        List<ResourceItem> tmp = repo.getResourceItems(next, ResourceType.STYLE, parentStyleName);
+                        if (!tmp.isEmpty()) {
+//                            String fullName = tmp.get(tmp.size() - 1).getNamespace().getPackageName() + ":" + ((StyleResourceValueImpl) resourceValue).getParentStyleName();
+//                            try {
+//                                Field field = StyleResourceValue.class.getDeclaredField("mParentStyle");
+//                                field.setAccessible(true);
+//                                field.set(resourceValue, fullName);
+//                            } catch (NoSuchFieldException ex) {
+//                                Exceptions.printStackTrace(ex);
+//                            } catch (SecurityException ex) {
+//                                Exceptions.printStackTrace(ex);
+//                            } catch (IllegalArgumentException ex) {
+//                                Exceptions.printStackTrace(ex);
+//                            } catch (IllegalAccessException ex) {
+//                                Exceptions.printStackTrace(ex);
+//                            }
+                        }
+                    }
+
+                }
+            }
+        }
 
         //****************
-        FolderConfiguration config = configGenerator.getFolderConfig();
-        ResourceReference theme = new ResourceReference(appNamespace, ResourceType.STYLE, themeName);
+        ResourceReference theme = null;
+        ResourceUrl themeUrl = ResourceUrl.parse("@style/AppTheme.NoActionBar");
+        if (themeUrl != null) {
+            theme = themeUrl.resolve(appNamespace, new ResourceNamespace.Resolver() {
+                @Override
+                public String prefixToUri(String namespacePrefix) {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+            });
+        }
+
+        //****************
+        //   ResourceReference theme = new ResourceReference(appNamespace, ResourceType.STYLE, themeName);
         ResourceResolver resourceResolver = ResourceResolver.create(repo.getConfiguredResources(config).rowMap(), theme);
-        resourceResolver.setDeviceDefaults("Material");
+    //    resourceResolver.setDeviceDefaults("Material");
         resourceResolver.setProjectIdChecker(new Predicate<ResourceReference>() {
             @Override
             public boolean test(ResourceReference t) {
                 return true;
             }
         });
+
         SessionParams sessionParams
                 = new SessionParams(layoutParser, renderingMode, null /*used for caching*/,
-                        configGenerator.getHardwareConfig(), resourceResolver, layoutLibCallback, 0,
+                        configGenerator.getHardwareConfig(), resourceResolver.createRecorder(resourceLookupChain), layoutLibCallback, 0,
                         targetSdk, new LayoutLog());
         sessionParams.setFlag(RenderParamsFlags.FLAG_DO_NOT_RENDER_ON_CREATE, true);
         sessionParams.setAssetRepository(new TestAssetRepository());

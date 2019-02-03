@@ -27,6 +27,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.gradle.internal.impldep.org.apache.commons.io.FilenameUtils;
+import org.nbandroid.netbeans.gradle.v2.nodes.DependencyNode;
 import static org.nbandroid.netbeans.gradle.v2.nodes.DependencyNode.EXTRAS_ANDROID_M2;
 import static org.nbandroid.netbeans.gradle.v2.nodes.DependencyNode.EXTRAS_GOOGLE_M2;
 import static org.nbandroid.netbeans.gradle.v2.nodes.DependencyNode.EXTRAS_M2;
@@ -53,12 +54,19 @@ public class ArtifactData {
     private final String mavenLocation;
     private final String javadocFileName;
     private final String srcFileName;
+    private final String pomFileName;
     private String javaDocPath;
     private String srcPath;
+    private String pomPath;
     private String origMd5ParentName = null;
     private File gradleArtifactRoot;
     public static final String PROPERTY_SRC_LOCAL = "PROPERTY_SRC_LOCAL";
     public static final String PROPERTY_DOC_LOCAL = "PROPERTY_DOC_LOCAL";
+
+    public String getPomPath() {
+        return pomPath;
+    }
+
 
     public ArtifactData(Library library, Project project) {
         this.library = library;
@@ -66,6 +74,7 @@ public class ArtifactData {
         this.mavenLocation = makeMavenLocation();
         this.javadocFileName = makeJavadocFileName();
         this.srcFileName = makeSrcFileName();
+        this.pomFileName = makePomFileName();
         analyzeArtifact();
     }
 
@@ -115,6 +124,18 @@ public class ArtifactData {
         String name = f.getName();
         String baseName = FilenameUtils.getBaseName(name);
         return baseName + JAVADOC_NAME;
+    }
+
+    private String makePomFileName() {
+        File f;
+        if (library instanceof AndroidLibrary) {
+            f = ((AndroidLibrary) library).getBundle();
+        } else {
+            f = ((JavaLibrary) library).getJarFile();
+        }
+        String name = f.getName();
+        String baseName = FilenameUtils.getBaseName(name);
+        return baseName + DependencyNode.POM_NAME;
     }
 
     private String makeSrcFileName() {
@@ -410,6 +431,10 @@ public class ArtifactData {
                                     srcLocal.set(true);
                                 } else {
                                     srcPath = bundleRoot.getAbsolutePath() + File.separator + srcFileName;
+                                }
+                                File pomFile = new File(f, pomFileName);
+                                if (pomFile.exists()) {
+                                    pomPath = pomFile.getAbsolutePath();
                                 }
                             }
                         }

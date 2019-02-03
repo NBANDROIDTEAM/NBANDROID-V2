@@ -52,7 +52,8 @@ import org.xml.sax.SAXException;
  */
 public class ResourceClassGenerator {
 
-    public static Map<ResourceType, Map<String, Object>> buildResourceMap(String fqcn, List<File> aarList) {
+    public static Map<ResourceType, Map<String, Object>> buildFullResourceMap(ResourceNamespace namespace, String fqcn, List<File> aarList, ResourceClassGeneratorConfig config) {
+        final Map<Integer, Integer> originalToGenerated = new HashMap<>();
         final Map<ResourceType, Map<String, Object>> resources = Maps.newHashMap();
         for (File aar : aarList) {
             File rTxt = new File(aar.getPath() + File.separator + "R.txt");
@@ -63,10 +64,10 @@ public class ResourceClassGenerator {
                     if (tok.countTokens() > 3) {
                         switch (tok.nextToken()) {
                             case "int":
-                                handle(tok, resources);
+                                handleFullLine(namespace, tok, resources, originalToGenerated, config);
                                 break;
                             case "int[]":
-                                handleArray(tok, line, resources);
+                                handleFullLineArray(tok, line, resources);
                                 break;
                         }
                     }
@@ -75,10 +76,32 @@ public class ResourceClassGenerator {
                 Exceptions.printStackTrace(ex);
             }
         }
+        //refresh array ids to new IDs
+        for (Map.Entry<ResourceType, Map<String, Object>> entry : resources.entrySet()) {
+            ResourceType type = entry.getKey();
+            Map<String, Object> values = entry.getValue();
+            for (Map.Entry<String, Object> entry1 : values.entrySet()) {
+                String name = entry1.getKey();
+                Object value = entry1.getValue();
+                if (value instanceof List) {
+                    List<Integer> in = (List<Integer>) value;
+                    List<Integer> out = new ArrayList<>();
+                    for (Integer val : in) {
+                        Integer newVal = originalToGenerated.get(val);
+                        if (newVal == null) {
+                            out.add(val);
+                        } else {
+                            out.add(newVal);
+                        }
+                    }
+                    values.replace(name, out);
+                }
+            }
+        }
         return resources;
     }
 
-    private static void handle(StringTokenizer tok, final Map<ResourceType, Map<String, Object>> resources) {
+    private static void handleFullLine(ResourceNamespace namespace, StringTokenizer tok, final Map<ResourceType, Map<String, Object>> resources, Map<Integer, Integer> originalToGenerated, ResourceClassGeneratorConfig config) {
 
         ResourceType resourceType = ResourceType.getEnum(tok.nextToken());
         String name = tok.nextToken();
@@ -89,11 +112,17 @@ public class ResourceClassGenerator {
             resources.put(resourceType, map);
         }
         int id = Integer.decode(value);
-        map.put(name, id);
+        int newId = id;
+        int packageId = (id & ResourceClassGeneratorConfig.NAMESPACE_MASK);
+        if (packageId > ResourceClassGeneratorConfig.ANDROID_NAMESPACE) {
+            newId = config.getOrCreateId(namespace, resourceType, name);
+        }
+        originalToGenerated.put(id, newId);
+        map.put(name, newId);
 
     }
 
-    private static void handleArray(StringTokenizer tok, String line, final Map<ResourceType, Map<String, Object>> resources) {
+    private static void handleFullLineArray(StringTokenizer tok, String line, final Map<ResourceType, Map<String, Object>> resources) {
         ResourceType resourceType = ResourceType.getEnum(tok.nextToken());
         String name = tok.nextToken();
         line = line.replace(" ", "");

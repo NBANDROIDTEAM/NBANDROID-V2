@@ -42,6 +42,7 @@ public class DependencyNode extends FilterNode implements PropertyChangeListener
     private final Library library;
     public static final String JAVADOC_NAME = "-javadoc.jar";
     public static final String SRC_NAME = "-sources.jar";
+    public static final String POM_NAME = ".pom";
     public static final String EXTRAS = "extras";
     public static final String ANDROID = "android";
     public static final String M2REPOSITORY = "m2repository";

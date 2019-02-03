@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package sk.arsi.netbeans.gradle.android.layout.impl.v2;
 
 import com.android.ide.common.rendering.api.ResourceNamespace;
@@ -34,7 +33,6 @@ public class AarResourceSet extends ResourceSet {
 
         // Skip locale-specific folders if myWithLocaleResources is false.
         // Skip files that don't contain resources.
-
         return fileName.equals("public.xml") || fileName.equals("symbols.xml");
     }
 }
