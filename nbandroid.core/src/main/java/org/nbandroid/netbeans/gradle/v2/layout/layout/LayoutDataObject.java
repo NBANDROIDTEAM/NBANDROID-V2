@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.nbandroid.netbeans.gradle.v2.layout.layout;
 
 import org.netbeans.core.spi.multiview.MultiViewElement;
@@ -68,7 +67,30 @@ public class LayoutDataObject extends MultiDataObject {
             position = 1
     )
     public static MultiViewEditorElement createEditor(Lookup lkp) {
-        return new MultiViewEditorElement(lkp);
+        return new LayoutMultiViewEditorElement(lkp);
+    }
+
+    public static class LayoutMultiViewEditorElement extends MultiViewEditorElement {
+
+        private final Lookup lookup;
+
+        public LayoutMultiViewEditorElement(Lookup lookup) {
+            super(lookup);
+            this.lookup = lookup;
+        }
+
+        @Override
+        public void componentShowing() {
+            super.componentShowing();
+            LaoutPreviewTopComponent.showLaoutPreview(lookup, LayoutMultiViewEditorElement.this);
+        }
+
+        @Override
+        public void componentHidden() {
+            super.componentHidden();
+            LaoutPreviewTopComponent.hideLaoutPreview(LayoutMultiViewEditorElement.this);
+        }
+
     }
 
     @Override

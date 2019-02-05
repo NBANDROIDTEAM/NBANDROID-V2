@@ -294,6 +294,10 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     @Override
     public void run() {
         refreshLock.set(false);
+        if (WINDOW_SIZE.equals(model.getSelectedItem())) {
+            imageWidth = imagePanel.getWidth();
+            imageHeight = imagePanel.getHeight();
+        }
         imagePanel.label.setText("Loading...");
         imagePanel.label.setVisible(true);
         imagePanel.progress.setVisible(true);
@@ -442,7 +446,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         //****************
         //   ResourceReference theme = new ResourceReference(appNamespace, ResourceType.STYLE, themeName);
         ResourceResolver resourceResolver = ResourceResolver.create(repo.getConfiguredResources(config).rowMap(), theme);
-    //    resourceResolver.setDeviceDefaults("Material");
+        //    resourceResolver.setDeviceDefaults("Material");
         resourceResolver.setProjectIdChecker(new Predicate<ResourceReference>() {
             @Override
             public boolean test(ResourceReference t) {
@@ -490,10 +494,6 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     @Override
     public void componentResized(ComponentEvent e) {
         if (refreshLock.compareAndSet(false, true)) {
-            if (WINDOW_SIZE.equals(model.getSelectedItem())) {
-                imageWidth = imagePanel.getWidth();
-                imageHeight = imagePanel.getHeight();
-            }
             RP.execute(LayoutPreviewPanelImpl.this);
         }
     }

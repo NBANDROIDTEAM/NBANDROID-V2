@@ -25,11 +25,12 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import javax.swing.Action;
-import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.nbandroid.netbeans.gradle.api.AndroidProjects;
@@ -38,12 +39,11 @@ import org.nbandroid.netbeans.gradle.v2.tools.DelayedDocumentChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.core.spi.multiview.CloseOperationState;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.editor.BaseDocument;
-import org.openide.awt.UndoRedo;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -52,51 +52,113 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
-import org.openide.util.WeakListeners;
-import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewPanel;
 import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewProvider;
 
 /**
- *
- * @author arsi
+ * Top component which displays something.
  */
-@MultiViewElement.Registration(
-        displayName = "&Preview",
-        iconBase = "org/nbandroid/netbeans/gradle/v2/layout/layout/activity.png",
-        mimeType = "text/x-android-layout+xml",
-        persistenceType = TopComponent.PERSISTENCE_NEVER,
-        preferredID = "preview",
-        position = 2
+@ConvertAsProperties(
+        dtd = "-//org.nbandroid.netbeans.gradle.v2.layout.layout//LaoutPreview//EN",
+        autostore = false
 )
-public class LayoutPreviewElement extends TopComponent implements MultiViewElement, ChangeListener, FileChangeListener {
+@TopComponent.Description(
+        preferredID = "LaoutPreviewTopComponent",
+        //iconBase="SET/PATH/TO/ICON/HERE",
+        persistenceType = TopComponent.PERSISTENCE_ALWAYS
+)
+@TopComponent.Registration(mode = "commonpalette", openAtStartup = false)
+@ActionID(category = "Window", id = "org.nbandroid.netbeans.gradle.v2.layout.layout.LaoutPreviewTopComponent")
+@ActionReference(path = "Menu/Window/Android" /*, position = 333 */)
+@TopComponent.OpenActionRegistration(
+        displayName = "#CTL_LaoutPreviewAction",
+        preferredID = "LaoutPreviewTopComponent"
+)
+@Messages({
+    "CTL_LaoutPreviewAction=Android Laout Preview",
+    "CTL_LaoutPreviewTopComponent=Laout Preview",
+    "HINT_LaoutPreviewTopComponent=This is a LaoutPreview window"
+})
+public final class LaoutPreviewTopComponent extends TopComponent implements ChangeListener, FileChangeListener, LookupListener {
 
-    private transient MultiViewElementCallback callback;
+    static void showLaoutPreview(Lookup lkp, MultiViewEditorElement editorElement) {
+        WindowManager wm = WindowManager.getDefault();
+        TopComponent topComponent = wm.findTopComponent("LaoutPreviewTopComponent"); // NOI18N
+        if (topComponent instanceof LaoutPreviewTopComponent) {
+            if (!topComponent.isOpened()) {
+                topComponent.open();
+            }
+            ((LaoutPreviewTopComponent) topComponent).setupPanel(lkp, editorElement);
+        }
+
+    }
+
+    static void hideLaoutPreview(MultiViewEditorElement editorElement) {
+        WindowManager wm = WindowManager.getDefault();
+        TopComponent topComponent = wm.findTopComponent("LaoutPreviewTopComponent"); // NOI18N
+        if (null != topComponent) {
+            if (topComponent instanceof LaoutPreviewTopComponent) {
+                if (((LaoutPreviewTopComponent) topComponent).editorElement == null || ((LaoutPreviewTopComponent) topComponent).editorElement.equals(editorElement)) {
+                    topComponent.close();
+                }
+            }
+        }
+    }
     private LayoutDataObject dataObject;
     private MultiViewEditorElement editorElement;
     private LayoutPreviewPanel panel;
     private Document document;
+    private FileObject resFo;
+    private DocumentListener documentListener;
+    private Lookup lookup;
+    private Lookup.Result<LayoutDataObject> lookupResult;
 
-    /**
-     * Creates new form LayoutPreviewElement
-     */
-    public LayoutPreviewElement() {
+    public LaoutPreviewTopComponent() {
         initComponents();
+        setName(Bundle.CTL_LaoutPreviewTopComponent());
+        setToolTipText(Bundle.HINT_LaoutPreviewTopComponent());
     }
 
-    public LayoutPreviewElement(Lookup lkp) {
-        initComponents();
-        dataObject = lkp.lookup(LayoutDataObject.class);
-        editorElement = new MultiViewEditorElement(dataObject.getLookup());
-        JComponent visualRepresentation = editorElement.getComponent();
+    protected void setupPanel(Lookup lkp, MultiViewEditorElement editorElement) {
+        stopPanel();
+        this.lookup = lkp;
+        lookupResult = lkp.lookupResult(LayoutDataObject.class);
+        lookupResult.addLookupListener(this);
+        this.editorElement = editorElement;
+        resultChanged(null);
+
+    }
+
+    protected void stopPanel() {
+        removeAll();
+        if (resFo != null) {
+            resFo.removeRecursiveListener(this);
+        }
+        if (documentListener != null && document != null) {
+            document.removeDocumentListener(documentListener);
+        }
+        resFo = null;
+        document = null;
+        documentListener = null;
+        if (lookupResult != null) {
+            lookupResult.removeLookupListener(this);
+        }
+    }
+
+    private void initLayoutEditor() {
+        setName("Laout Preview [" + dataObject.getPrimaryFile().getNameExt() + "]");
+        setToolTipText("Laout Preview [" + dataObject.getPrimaryFile().getNameExt() + "]");
         Project project = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
         //find res folder
-        FileObject resFo = AndroidProjects.findResFolder(project);
+        resFo = AndroidProjects.findResFolder(project);
         if (resFo != null) {
             //refresh preview on res file change
-            resFo.addRecursiveListener(WeakListeners.create(FileChangeListener.class, this, resFo));
+            resFo.addRecursiveListener(this);
         }
         final File resFolderFile = AndroidProjects.findResFolderAsFile(project);
         //find aars folders from classpath
@@ -116,9 +178,6 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
         final String projectTheme = AndroidProjects.parseProjectTheme(project);
         //find platform
         final File platformFolder = InstalledFileLocator.getDefault().locate("modules/ext/layoutlib_v28_res", "sk-arsi-netbeans-gradle-android-Gradle-Android-support-layout-li", false);
-        editorPanel.add(visualRepresentation);
-        editorPanel.invalidate();
-        editorPanel.repaint();
 
         Runnable runnable = new Runnable() {
             @Override
@@ -128,16 +187,18 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
                     panel = previewProvider.getPreview(platformFolder,
                             FileUtil.toFile(dataObject.getPrimaryFile()),
                             resFolderFile, projectTheme, aars, jars);
-                    Runnable runnable1 = new Runnable() {
-
+                    final Runnable runnable1 = new Runnable() {
                         @Override
                         public void run() {
-                            if (panel != null) {
-                                split.setRightComponent(panel);
+                            JEditorPane editorPane = editorElement.getEditorPane();
+                            if (editorPane != null) {
+                                if (panel != null) {
+                                    add(panel);
+                                }
+                                revalidate();
+                                document = editorElement.getEditorPane().getDocument();
+                                documentListener = DelayedDocumentChangeListener.create(editorElement.getEditorPane().getDocument(), LaoutPreviewTopComponent.this, 2000);
                             }
-                            split.revalidate();
-                            document = editorElement.getEditorPane().getDocument();
-                            DelayedDocumentChangeListener.create(editorElement.getEditorPane().getDocument(), LayoutPreviewElement.this, 2000);
                         }
                     };
                     WindowManager.getDefault().invokeWhenUIReady(runnable1);
@@ -148,6 +209,7 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
             }
         };
         new Thread(runnable).start();
+
     }
 
     /**
@@ -155,141 +217,34 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
      * WARNING: Do NOT modify this code. The content of this method is always
      * regenerated by the Form Editor.
      */
-    @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        toolbar = new javax.swing.JToolBar();
-        split = new javax.swing.JSplitPane();
-        editorPanel = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
-
-        toolbar.setRollover(true);
-
-        split.setDividerLocation(300);
-        split.setDividerSize(5);
-
-        editorPanel.setLayout(new java.awt.CardLayout());
-        split.setLeftComponent(editorPanel);
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 351, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 491, Short.MAX_VALUE)
-        );
-
-        split.setRightComponent(jPanel1);
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(split, javax.swing.GroupLayout.Alignment.TRAILING)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(split, javax.swing.GroupLayout.Alignment.TRAILING)
-        );
+        setLayout(new java.awt.CardLayout());
     }// </editor-fold>//GEN-END:initComponents
 
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    // End of variables declaration//GEN-END:variables
     @Override
-    public JComponent getVisualRepresentation() {
-        return this;
-    }
-
-    @Override
-    public JComponent getToolbarRepresentation() {
-        return toolbar;
-    }
-
-    @Override
-    public Action[] getActions() {
-        return editorElement.getActions(); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Lookup getLookup() {
-        try {
-            return new ProxyLookup(editorElement.getLookup());
-        } catch (Exception e) {
-            return Lookup.EMPTY;
-        }
-    }
-
-    @Override
-    public void setMultiViewCallback(MultiViewElementCallback callback) {
-        this.callback = callback;
-        try {
-            callback.getTopComponent().setDisplayName(dataObject.getName());
-            editorElement.setMultiViewCallback(callback);
-        } catch (Exception e) {
-        }
-    }
-
-    @Override
-    public CloseOperationState canCloseElement() {
-        return CloseOperationState.STATE_OK;
-    }
-
-    @Override
-    public void componentActivated() {
-        super.componentActivated();
-        if (editorElement!=null) {
-            editorElement.componentActivated();
-        }
-    }
-
-    @Override
-    public void componentDeactivated() {
-        super.componentDeactivated();
-        if (editorElement != null) {
-            editorElement.componentDeactivated();
-        }
-    }
-
-    @Override
-    public void componentHidden() {
-        super.componentHidden(); //To change body of generated methods, choose Tools | Templates.
-        editorElement.componentHidden();
-    }
-
-    @Override
-    public void componentShowing() {
-        super.componentShowing(); //To change body of generated methods, choose Tools | Templates.
-        editorElement.componentShowing();
+    public void componentOpened() {
+        // TODO add custom code on component opening
     }
 
     @Override
     public void componentClosed() {
-        super.componentClosed(); //To change body of generated methods, choose Tools | Templates.
-        editorElement.componentClosed();
+        // TODO add custom code on component closing
     }
 
-    @Override
-    public void componentOpened() {
-        super.componentOpened(); //To change body of generated methods, choose Tools | Templates.
-        editorElement.componentOpened();
-
+    void writeProperties(java.util.Properties p) {
+        // better to version settings since initial version as advocated at
+        // http://wiki.apidesign.org/wiki/PropertyFiles
+        p.setProperty("version", "1.0");
+        // TODO store your settings
     }
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel editorPanel;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JSplitPane split;
-    private javax.swing.JToolBar toolbar;
-    // End of variables declaration//GEN-END:variables
-
-    @Override
-    public UndoRedo getUndoRedo() {
-        if (editorElement!=null) {
-            return editorElement.getUndoRedo();
-        }
-        return super.getUndoRedo();
+    void readProperties(java.util.Properties p) {
+        String version = p.getProperty("version");
+        // TODO read your settings according to their version
     }
 
     @Override
@@ -338,6 +293,20 @@ public class LayoutPreviewElement extends TopComponent implements MultiViewEleme
 
     @Override
     public void fileAttributeChanged(FileAttributeEvent fe) {
+    }
+
+    @Override
+    public void resultChanged(LookupEvent ev) {
+        Collection<? extends LayoutDataObject> allInstances = lookupResult.allInstances();
+        if (!allInstances.isEmpty()) {
+            dataObject = allInstances.iterator().next();
+            if (dataObject != null) {
+                initLayoutEditor();
+            } else {
+                setName(Bundle.CTL_LaoutPreviewTopComponent());
+                setToolTipText(Bundle.HINT_LaoutPreviewTopComponent());
+            }
+        }
     }
 
 }
