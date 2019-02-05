@@ -44,17 +44,14 @@ import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.editor.BaseDocument;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle.Messages;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewPanel;
@@ -70,7 +67,7 @@ import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewProvider;
 @TopComponent.Description(
         preferredID = "LaoutPreviewTopComponent",
         //iconBase="SET/PATH/TO/ICON/HERE",
-        persistenceType = TopComponent.PERSISTENCE_ALWAYS
+        persistenceType = TopComponent.PERSISTENCE_NEVER
 )
 @TopComponent.Registration(mode = "commonpalette", openAtStartup = false)
 @ActionID(category = "Window", id = "org.nbandroid.netbeans.gradle.v2.layout.layout.LaoutPreviewTopComponent")
@@ -84,7 +81,8 @@ import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewProvider;
     "CTL_LaoutPreviewTopComponent=Laout Preview",
     "HINT_LaoutPreviewTopComponent=This is a LaoutPreview window"
 })
-public final class LaoutPreviewTopComponent extends TopComponent implements ChangeListener, FileChangeListener, LookupListener {
+public final class LaoutPreviewTopComponent extends TopComponent implements ChangeListener, LookupListener {
+
 
     static void showLaoutPreview(Lookup lkp, MultiViewEditorElement editorElement) {
         WindowManager wm = WindowManager.getDefault();
@@ -92,6 +90,10 @@ public final class LaoutPreviewTopComponent extends TopComponent implements Chan
         if (topComponent instanceof LaoutPreviewTopComponent) {
             if (!topComponent.isOpened()) {
                 topComponent.open();
+                Mode mode = wm.findMode("commonpalette");
+                if (mode != null) {
+                    mode.dockInto(topComponent);
+                }
             }
             ((LaoutPreviewTopComponent) topComponent).setupPanel(lkp, editorElement);
         }
@@ -113,7 +115,6 @@ public final class LaoutPreviewTopComponent extends TopComponent implements Chan
     private MultiViewEditorElement editorElement;
     private LayoutPreviewPanel panel;
     private Document document;
-    private FileObject resFo;
     private DocumentListener documentListener;
     private Lookup lookup;
     private Lookup.Result<LayoutDataObject> lookupResult;
@@ -136,13 +137,9 @@ public final class LaoutPreviewTopComponent extends TopComponent implements Chan
 
     protected void stopPanel() {
         removeAll();
-        if (resFo != null) {
-            resFo.removeRecursiveListener(this);
-        }
         if (documentListener != null && document != null) {
             document.removeDocumentListener(documentListener);
         }
-        resFo = null;
         document = null;
         documentListener = null;
         if (lookupResult != null) {
@@ -155,11 +152,6 @@ public final class LaoutPreviewTopComponent extends TopComponent implements Chan
         setToolTipText("Laout Preview [" + dataObject.getPrimaryFile().getNameExt() + "]");
         Project project = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
         //find res folder
-        resFo = AndroidProjects.findResFolder(project);
-        if (resFo != null) {
-            //refresh preview on res file change
-            resFo.addRecursiveListener(this);
-        }
         final File resFolderFile = AndroidProjects.findResFolderAsFile(project);
         //find aars folders from classpath
         GradleAndroidClassPathProvider androidClassPathProvider = project.getLookup().lookup(GradleAndroidClassPathProvider.class);
@@ -265,34 +257,6 @@ public final class LaoutPreviewTopComponent extends TopComponent implements Chan
         } else {
             panel.showTypingIndicator();
         }
-    }
-
-    @Override
-    public void fileFolderCreated(FileEvent fe) {
-    }
-
-    @Override
-    public void fileDataCreated(FileEvent fe) {
-        stateChanged(new ChangeEvent(document));
-    }
-
-    @Override
-    public void fileChanged(FileEvent fe) {
-        stateChanged(new ChangeEvent(document));
-    }
-
-    @Override
-    public void fileDeleted(FileEvent fe) {
-        stateChanged(new ChangeEvent(document));
-    }
-
-    @Override
-    public void fileRenamed(FileRenameEvent fe) {
-        stateChanged(new ChangeEvent(document));
-    }
-
-    @Override
-    public void fileAttributeChanged(FileAttributeEvent fe) {
     }
 
     @Override

@@ -5,13 +5,16 @@
  */
 package sk.arsi.netbeans.gradle.android.layout.impl;
 
-import com.android.io.FolderWrapper;
-import com.android.tools.nbandroid.layoutlib.LogWrapper;
+import com.android.ide.common.resources.MergerResourceRepository;
+import com.android.ide.common.resources.MergingException;
+import com.android.ide.common.resources.ResourceMerger;
+import com.android.utils.StdLogger;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import java.io.File;
-import sk.arsi.netbeans.gradle.android.layout.impl.android.FrameworkResources;
+import org.openide.util.Exceptions;
+import sk.arsi.netbeans.gradle.android.layout.impl.v2.FrameworkResourceSet;
 
 /**
  *
@@ -19,18 +22,26 @@ import sk.arsi.netbeans.gradle.android.layout.impl.android.FrameworkResources;
  */
 public class FrameworkResourcesCache {
 
-    private static final LoadingCache<File, FrameworkResources> cache = CacheBuilder.newBuilder().softValues().build(new CacheLoader<File, FrameworkResources>() {
+    private static final LoadingCache<File, MergerResourceRepository> cache = CacheBuilder.newBuilder().softValues().build(new CacheLoader<File, MergerResourceRepository>() {
 
         @Override
-        public FrameworkResources load(File key) throws Exception {
-            FrameworkResources sFrameworkRepo = new FrameworkResources(new FolderWrapper(key));
-            sFrameworkRepo.loadResources();
-            sFrameworkRepo.loadPublicResources(new LogWrapper());
-            return sFrameworkRepo;
+        public MergerResourceRepository load(File res) throws Exception {
+            MergerResourceRepository repo = new MergerResourceRepository();
+            ResourceMerger resourceMerger = new ResourceMerger(0);
+
+            FrameworkResourceSet framefork = new FrameworkResourceSet(res, false);
+            try {
+                framefork.loadFromFiles(new StdLogger(StdLogger.Level.INFO));
+            } catch (MergingException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            resourceMerger.addDataSet(framefork);
+            repo.update(resourceMerger);
+            return repo;
         }
     });
 
-    public static FrameworkResources getOrCreateFrameworkResources(File platformResFolder) {
+    public static MergerResourceRepository getOrCreateFrameworkResources(File platformResFolder) {
         return cache.getUnchecked(platformResFolder);
     }
 }

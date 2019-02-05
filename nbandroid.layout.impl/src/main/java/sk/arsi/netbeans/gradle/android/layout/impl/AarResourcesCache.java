@@ -5,14 +5,16 @@
  */
 package sk.arsi.netbeans.gradle.android.layout.impl;
 
-import android.annotation.NonNull;
-import com.android.io.FolderWrapper;
+import com.android.ide.common.resources.MergerResourceRepository;
+import com.android.ide.common.resources.MergingException;
+import com.android.ide.common.resources.ResourceMerger;
+import com.android.utils.StdLogger;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import java.io.File;
-import sk.arsi.netbeans.gradle.android.layout.impl.android.ResourceItem;
-import sk.arsi.netbeans.gradle.android.layout.impl.android.ResourceRepository;
+import org.openide.util.Exceptions;
+import sk.arsi.netbeans.gradle.android.layout.impl.v2.FrameworkResourceSet;
 
 /**
  *
@@ -20,34 +22,26 @@ import sk.arsi.netbeans.gradle.android.layout.impl.android.ResourceRepository;
  */
 public class AarResourcesCache {
 
-    private static final LoadingCache<File, ResourceRepository> cache = CacheBuilder.newBuilder().softValues().build(new CacheLoader<File, ResourceRepository>() {
+    private static final LoadingCache<File, MergerResourceRepository> cache = CacheBuilder.newBuilder().softValues().build(new CacheLoader<File, MergerResourceRepository>() {
+
         @Override
-        public ResourceRepository load(File key) throws Exception {
-            File resFolder = new File(key.getPath() + File.separator + "res");
-            if (resFolder.exists() && resFolder.isDirectory()) {
-                ResourceRepository aarResources = new ResourceRepository(new FolderWrapper(resFolder), false, ResourceClassGenerator.findAarNamespace(key)) {
-                    @NonNull
-                    @Override
-                    protected ResourceItem createResourceItem(@NonNull String name) {
-                        return new ResourceItem(name) {
+        public MergerResourceRepository load(File res) throws Exception {
+            MergerResourceRepository repo = new MergerResourceRepository();
+            ResourceMerger resourceMerger = new ResourceMerger(0);
 
-                        };
-                    }
-
-                };
-                aarResources.loadResources();
-                return aarResources;
-            } else {
-                throw new UnsupportedOperationException();
+            FrameworkResourceSet framefork = new FrameworkResourceSet(res, false);
+            try {
+                framefork.loadFromFiles(new StdLogger(StdLogger.Level.INFO));
+            } catch (MergingException ex) {
+                Exceptions.printStackTrace(ex);
             }
+            resourceMerger.addDataSet(framefork);
+            repo.update(resourceMerger);
+            return repo;
         }
     });
 
-    public static ResourceRepository getOrCreateAarResources(File platformResFolder) {
-        try {
-            return cache.getUnchecked(platformResFolder);
-        } catch (Exception e) {
-            return null;
-        }
+    public static MergerResourceRepository getOrCreateAarResources(File platformResFolder) {
+        return cache.getUnchecked(platformResFolder);
     }
 }

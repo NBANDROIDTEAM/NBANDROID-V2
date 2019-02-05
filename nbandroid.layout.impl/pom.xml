@@ -86,5 +86,11 @@
             <version>${version.nb}</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-filesystems</artifactId>
+            <version>${version.nb}</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 </project>

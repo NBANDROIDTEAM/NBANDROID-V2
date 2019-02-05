@@ -13,14 +13,15 @@ import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.Result;
 import com.android.ide.common.rendering.api.SessionParams;
-import com.android.ide.common.rendering.api.StyleResourceValueImpl;
+import com.android.ide.common.resources.FileStatus;
+import com.android.ide.common.resources.MergerResourceRepository;
 import com.android.ide.common.resources.MergingException;
-import com.android.ide.common.resources.ResourceItem;
 import com.android.ide.common.resources.ResourceMerger;
 import com.android.ide.common.resources.ResourceSet;
 import com.android.ide.common.resources.ResourceValueMap;
 import com.android.ide.common.resources.configuration.FolderConfiguration;
 import com.android.ide.common.resources.configuration.VersionQualifier;
+import com.android.ide.common.util.DisjointUnionMap;
 import com.android.ide.common.xml.ManifestData;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
 import com.android.resources.Density;
@@ -58,15 +59,11 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BoxLayout;
@@ -74,62 +71,66 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
-import sk.arsi.netbeans.gradle.android.layout.impl.android.FrameworkResources;
-import sk.arsi.netbeans.gradle.android.layout.impl.android.ResourceRepository;
+import org.openide.util.WeakListeners;
 import sk.arsi.netbeans.gradle.android.layout.impl.android.ResourceResolver;
 import sk.arsi.netbeans.gradle.android.layout.impl.v2.AarResourceSet;
-import sk.arsi.netbeans.gradle.android.layout.impl.v2.FrameworkResourceSet;
-import sk.arsi.netbeans.gradle.android.layout.impl.v2.MergerResourceRepositoryV2;
 import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewPanel;
 
 /**
  *
  * @author arsi
  */
-public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnable, ComponentListener, ActionListener, ItemListener {
+public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnable, ComponentListener, ActionListener, ItemListener, FileChangeListener {
 
     private BufferedImage image = null;
     private final int dpi;
     private LayoutLibrary layoutLibrary;
-    private FrameworkResources sFrameworkRepo;
-    private ResourceRepository sProjectResources;
     private final AtomicBoolean refreshLock = new AtomicBoolean(false);
-    private final RequestProcessor RP = new RequestProcessor(LayoutPreviewPanel.class);
+    private static final RequestProcessor RP = new RequestProcessor(LayoutPreviewPanel.class);
     private final ImagePanel imagePanel = new ImagePanel();
     private static final String WINDOW_SIZE = "Window size";
     private int imageWidth = 100;
     private int imageHeight = 100;
     private boolean imageFit = true;
     InputStream layoutStream = null;
-    private boolean typing = false;
-    private String appNamespaceName = "app";
     private ResourceNamespace appNamespace;
     private final AtomicInteger typingProgress = new AtomicInteger(0);
     private final DefaultComboBoxModel model = new DefaultComboBoxModel(new String[]{WINDOW_SIZE, "1920x1080", "1920x1200", "1600x2560", "1080x1920", "1280x800", "1280x768"});
     private LayoutClassLoader uRLClassLoader;
     private ArrayList<ResourceValue> resourceLookupChain;
+    private ResourceMerger projectResourceMerger;
+    private ResourceSet projectResourceSet;
+    private MergerResourceRepository projectResourceRepository;
+    private FileObject layoutFileObject;
+    private final File appResFolder;
 
     /**
      * Creates new form LayoutPreviewPanelImpl1
      */
     public LayoutPreviewPanelImpl() {
         initComponents();
+        appResFolder = null;
         dpi = 0;
     }
 
     public LayoutPreviewPanelImpl(File platformFolder, File layoutFile, File appResFolder, String themeName, List<File> aars, List<File> jars) {
         super(platformFolder, layoutFile, appResFolder, themeName, aars, jars);
+        this.appResFolder = appResFolder;
         initComponents();
         String projectRoot = appResFolder.getParent();
         File manifest = new File(projectRoot + File.separator + "AndroidManifest.xml");
         if (manifest.exists() && manifest.isFile()) {
             try {
                 ManifestData manifestData = ResourceClassGenerator.parseProjectManifest(new FileInputStream(manifest));
-                if (manifestData != null) {
-                    appNamespaceName = manifestData.getPackage();
-                }
+                ManifestData.Activity[] activities = manifestData.getActivities();
             } catch (FileNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -174,6 +175,9 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         addComponentListener(this);
         scale.addItemListener(this);
         screenOrientation.addItemListener(this);
+        FileObject resFo = FileUtil.toFileObject(appResFolder);
+        resFo.addRecursiveListener(WeakListeners.create(FileChangeListener.class, this, resFo));
+        layoutFileObject = FileUtil.toFileObject(layoutFile);
     }
 
     /**
@@ -298,6 +302,11 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
             imageWidth = imagePanel.getWidth();
             imageHeight = imagePanel.getHeight();
         }
+        if (projectResourceMerger == null) {
+            initProjectRepository();
+        } else {
+            projectResourceRepository.update(projectResourceMerger);
+        }
         imagePanel.label.setText("Loading...");
         imagePanel.label.setVisible(true);
         imagePanel.progress.setVisible(true);
@@ -344,94 +353,9 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
             String themeName, boolean isProjectTheme, SessionParams.RenderingMode renderingMode,
             @SuppressWarnings("SameParameterValue") int targetSdk) {
 
-        //************
-        ResourceMerger resourceMerger = new ResourceMerger(0);
-        File data_dir = new File(platformFolder, "data");
-        File res = new File(data_dir, "res");
-
-        FrameworkResourceSet framefork = new FrameworkResourceSet(res, false);
-        try {
-            framefork.loadFromFiles(new StdLogger(StdLogger.Level.INFO));
-        } catch (MergingException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        resourceMerger.addDataSet(framefork);
-        //***
-        List<ResourceNamespace> namespaceOrder = new ArrayList<>();
-        for (File aar : aars) {
-            File resFolder = new File(aar.getPath() + File.separator + "res");
-            if (resFolder.exists() && resFolder.isDirectory()) {
-                namespaceOrder.add(ResourceNamespace.RES_AUTO);
-                AarResourceSet aarSet = new AarResourceSet(aar.getName(), ResourceNamespace.RES_AUTO, aar.getName(), false);
-                aarSet.addSource(resFolder);
-                aarSet.setShouldParseResourceIds(false);
-                aarSet.setTrackSourcePositions(true);
-                aarSet.setCheckDuplicates(true);
-                try {
-                    aarSet.loadFromFiles(new StdLogger(StdLogger.Level.INFO));
-                    resourceMerger.addDataSet(aarSet);
-                } catch (MergingException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
-        ResourceSet projectSet = new ResourceSet("project", ResourceNamespace.RES_AUTO, "project", false);
-        projectSet.addSource(appResFolder);
-        projectSet.setShouldParseResourceIds(true);
-        projectSet.setTrackSourcePositions(false);
-        projectSet.setCheckDuplicates(false);
-        try {
-            projectSet.loadFromFiles(new StdLogger(StdLogger.Level.INFO));
-            resourceMerger.addDataSet(projectSet);
-        } catch (MergingException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        //**
+        //****************
         FolderConfiguration config = configGenerator.getFolderConfig();
         config.setVersionQualifier(VersionQualifier.getQualifier(VersionQualifier.getFolderSegment(28)));
-        MergerResourceRepositoryV2 repo = new MergerResourceRepositoryV2();
-        repo.update(resourceMerger);
-        Set<ResourceNamespace> namespaces1 = repo.getNamespaces();
-        Iterator<ResourceNamespace> iterator1 = namespaces1.iterator();
-        while (iterator1.hasNext()) {
-            ResourceNamespace next1 = iterator1.next();
-            if (ResourceNamespace.ANDROID.equals(next1)) {
-                continue;
-            }
-            List<ResourceItem> resourceItems = repo.getResourceItems(next1, ResourceType.STYLE);
-            resourceLookupChain = new ArrayList<ResourceValue>();
-            for (ResourceItem resourceItem : resourceItems) {
-                ResourceValue resourceValue = resourceItem.getResourceValue();
-                if (resourceValue instanceof StyleResourceValueImpl) {
-                    String parentStyleName = ((StyleResourceValueImpl) resourceValue).getParentStyleName();
-                    Set<ResourceNamespace> namespaces = repo.getNamespaces();
-                    Iterator<ResourceNamespace> iterator = namespaces.iterator();
-                    while (iterator.hasNext()) {
-                        ResourceNamespace next = iterator.next();
-                        List<ResourceItem> tmp = repo.getResourceItems(next, ResourceType.STYLE, parentStyleName);
-                        if (!tmp.isEmpty()) {
-//                            String fullName = tmp.get(tmp.size() - 1).getNamespace().getPackageName() + ":" + ((StyleResourceValueImpl) resourceValue).getParentStyleName();
-//                            try {
-//                                Field field = StyleResourceValue.class.getDeclaredField("mParentStyle");
-//                                field.setAccessible(true);
-//                                field.set(resourceValue, fullName);
-//                            } catch (NoSuchFieldException ex) {
-//                                Exceptions.printStackTrace(ex);
-//                            } catch (SecurityException ex) {
-//                                Exceptions.printStackTrace(ex);
-//                            } catch (IllegalArgumentException ex) {
-//                                Exceptions.printStackTrace(ex);
-//                            } catch (IllegalAccessException ex) {
-//                                Exceptions.printStackTrace(ex);
-//                            }
-                        }
-                    }
-
-                }
-            }
-        }
-
-        //****************
         ResourceReference theme = null;
         ResourceUrl themeUrl = ResourceUrl.parse("@style/AppTheme.NoActionBar");
         if (themeUrl != null) {
@@ -442,18 +366,20 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
                 }
             });
         }
-
         //****************
-        //   ResourceReference theme = new ResourceReference(appNamespace, ResourceType.STYLE, themeName);
-        ResourceResolver resourceResolver = ResourceResolver.create(repo.getConfiguredResources(config).rowMap(), theme);
-        //    resourceResolver.setDeviceDefaults("Material");
-        resourceResolver.setProjectIdChecker(new Predicate<ResourceReference>() {
-            @Override
-            public boolean test(ResourceReference t) {
-                return true;
-            }
-        });
-
+        File platform_data_dir = new File(platformFolder, "data");
+        File platform_res_dir = new File(platform_data_dir, "res");
+        //****************
+        Map<ResourceNamespace, Map<ResourceType, ResourceValueMap>> allResources
+                = new DisjointUnionMap<>(FrameworkResourcesCache.getOrCreateFrameworkResources(platform_res_dir).getConfiguredResources(config).rowMap(), projectResourceRepository.getConfiguredResources(config).rowMap());
+        ResourceResolver resourceResolver = ResourceResolver.create(allResources, theme);
+        resourceResolver.setDeviceDefaults("Material");
+        try {
+            projectResourceSet.updateWith(new File("/home/arsi/NetBeansProjects/NewAndroidProject/NewAndroidProject_mobile/src/main/res/values/"), new File("/home/arsi/NetBeansProjects/NewAndroidProject/NewAndroidProject_mobile/src/main/res/values/colors.xml"), FileStatus.CHANGED, new StdLogger(StdLogger.Level.INFO));
+        } catch (MergingException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        resourceLookupChain = new ArrayList<>();
         SessionParams sessionParams
                 = new SessionParams(layoutParser, renderingMode, null /*used for caching*/,
                         configGenerator.getHardwareConfig(), resourceResolver.createRecorder(resourceLookupChain), layoutLibCallback, 0,
@@ -463,32 +389,40 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         return sessionParams;
     }
 
-    private static Map<ResourceNamespace, Map<ResourceType, ResourceValueMap>> createFlatNamespacesModel(List<Map<ResourceNamespace, Map<ResourceType, ResourceValueMap>>> resources) {
-        Map<ResourceNamespace, Map<ResourceType, ResourceValueMap>> out = new HashMap<>();
-        for (Map<ResourceNamespace, Map<ResourceType, ResourceValueMap>> resource : resources) {
-            for (Map.Entry<ResourceNamespace, Map<ResourceType, ResourceValueMap>> entry : resource.entrySet()) {
-                ResourceNamespace namespace = entry.getKey();
-                Map<ResourceType, ResourceValueMap> values = entry.getValue();
-                Map<ResourceType, ResourceValueMap> current = out.get(namespace);
-                if (current == null) {
-                    current = new HashMap<>();
+    private void initProjectRepository() {
+        //************
+        projectResourceMerger = new ResourceMerger(0);
+        for (File aar : aars) {
+            File resFolder = new File(aar.getPath() + File.separator + "res");
+            if (resFolder.exists() && resFolder.isDirectory()) {
+                AarResourceSet aarSet = new AarResourceSet(aar.getName(), ResourceNamespace.RES_AUTO, aar.getName(), false);
+                aarSet.addSource(resFolder);
+                aarSet.setShouldParseResourceIds(false);
+                aarSet.setTrackSourcePositions(true);
+                aarSet.setCheckDuplicates(true);
+                try {
+                    aarSet.loadFromFiles(new StdLogger(StdLogger.Level.INFO));
+                    projectResourceMerger.addDataSet(aarSet);
+                } catch (MergingException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-                out.put(namespace, current);
-                for (Map.Entry<ResourceType, ResourceValueMap> entry1 : values.entrySet()) {
-                    ResourceType resourceType = entry1.getKey();
-                    ResourceValueMap resourceValueMap = entry1.getValue();
-                    ResourceValueMap resourceValueMapOut = current.get(resourceType);
-                    if (resourceValueMapOut == null) {
-                        resourceValueMapOut = ResourceValueMap.create();
-                        current.put(resourceType, resourceValueMapOut);
-                    }
-                    resourceValueMapOut.putAll(resourceValueMap);
-
-                }
-
             }
         }
-        return out;
+
+        projectResourceSet = new ResourceSet("project", ResourceNamespace.RES_AUTO, "project", false);
+        projectResourceSet.addSource(appResFolder);
+        projectResourceSet.setShouldParseResourceIds(true);
+        projectResourceSet.setTrackSourcePositions(false);
+        projectResourceSet.setCheckDuplicates(false);
+        try {
+            projectResourceSet.loadFromFiles(new StdLogger(StdLogger.Level.INFO));
+            projectResourceMerger.addDataSet(projectResourceSet);
+        } catch (MergingException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        //**
+        projectResourceRepository = new MergerResourceRepository();
+        projectResourceRepository.update(projectResourceMerger);
     }
 
     @Override
@@ -592,7 +526,6 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         layoutStream = stream;
         imagePanel.label.setVisible(false);
         typingProgress.set(0);
-        refreshPreview();
     }
 
     @Override
@@ -608,6 +541,87 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
             image = null;
             imagePanel.updateUI();
         }
+    }
+
+    @Override
+    public void fileFolderCreated(FileEvent fe) {
+    }
+
+    @Override
+    public void fileDataCreated(FileEvent fe) {
+         if (fe.getFile().equals(layoutFileObject)) {
+            return;
+        }
+        File createdFile = FileUtil.toFile(fe.getFile());
+        try {
+            projectResourceSet.updateWith(appResFolder, createdFile, FileStatus.NEW, new StdLogger(StdLogger.Level.INFO));
+        } catch (Exception ex) {
+        }
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                }
+                refreshPreview();
+            }
+        };
+        RP.execute(runnable);
+    }
+
+    @Override
+    public void fileChanged(FileEvent fe) {
+        if (fe.getFile().equals(layoutFileObject)) {
+            return;
+        }
+        File createdFile = FileUtil.toFile(fe.getFile());
+        try {
+            projectResourceSet.updateWith(appResFolder, createdFile, FileStatus.CHANGED, new StdLogger(StdLogger.Level.INFO));
+        } catch (Exception ex) {
+        }
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                }
+                refreshPreview();
+            }
+        };
+        RP.execute(runnable);
+    }
+
+    @Override
+    public void fileDeleted(FileEvent fe) {
+        if (fe.getFile().equals(layoutFileObject)) {
+            return;
+        }
+        File createdFile = FileUtil.toFile(fe.getFile());
+        try {
+            projectResourceSet.updateWith(appResFolder, createdFile, FileStatus.REMOVED, new StdLogger(StdLogger.Level.INFO));
+        } catch (Exception ex) {
+        }
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                }
+                refreshPreview();
+            }
+        };
+        RP.execute(runnable);
+    }
+
+    @Override
+    public void fileRenamed(FileRenameEvent fe) {
+    }
+
+    @Override
+    public void fileAttributeChanged(FileAttributeEvent fe) {
     }
 
     private class ImagePanel extends JPanel implements Scrollable {
