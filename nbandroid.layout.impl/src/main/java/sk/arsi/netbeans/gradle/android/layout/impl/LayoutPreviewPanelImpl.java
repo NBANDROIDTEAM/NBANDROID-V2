@@ -526,6 +526,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         layoutStream = stream;
         imagePanel.label.setVisible(false);
         typingProgress.set(0);
+        refreshPreview();
     }
 
     @Override

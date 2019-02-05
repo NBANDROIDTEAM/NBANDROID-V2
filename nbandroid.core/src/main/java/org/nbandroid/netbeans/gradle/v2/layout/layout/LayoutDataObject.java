@@ -70,29 +70,6 @@ public class LayoutDataObject extends MultiDataObject {
         return new LayoutMultiViewEditorElement(lkp);
     }
 
-    public static class LayoutMultiViewEditorElement extends MultiViewEditorElement {
-
-        private final Lookup lookup;
-
-        public LayoutMultiViewEditorElement(Lookup lookup) {
-            super(lookup);
-            this.lookup = lookup;
-        }
-
-        @Override
-        public void componentShowing() {
-            super.componentShowing();
-            LaoutPreviewTopComponent.showLaoutPreview(lookup, LayoutMultiViewEditorElement.this);
-        }
-
-        @Override
-        public void componentHidden() {
-            super.componentHidden();
-            LaoutPreviewTopComponent.hideLaoutPreview(LayoutMultiViewEditorElement.this);
-        }
-
-    }
-
     @Override
     protected int associateLookup() {
         return 1;
