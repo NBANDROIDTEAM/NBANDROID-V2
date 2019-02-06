@@ -24,7 +24,6 @@ import com.android.ide.common.resources.configuration.VersionQualifier;
 import com.android.ide.common.util.DisjointUnionMap;
 import com.android.ide.common.xml.ManifestData;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
-import com.android.resources.Density;
 import com.android.resources.Keyboard;
 import com.android.resources.KeyboardState;
 import com.android.resources.Navigation;
@@ -124,6 +123,8 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     public LayoutPreviewPanelImpl(File platformFolder, File layoutFile, File appResFolder, String themeName, List<File> aars, List<File> jars) {
         super(platformFolder, layoutFile, appResFolder, themeName, aars, jars);
         initComponents();
+        density.setModel(new DefaultComboBoxModel<>(Density.values()));
+        density.setSelectedItem(Density.MEDIUM);
         this.appResFolder = appResFolder;
         previewSize.setModel(model);
         previewSize.addActionListener(LayoutPreviewPanelImpl.this);
@@ -177,7 +178,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
                 }
                 addComponentListener(LayoutPreviewPanelImpl.this);
                 scale.addItemListener(LayoutPreviewPanelImpl.this);
-                screenOrientation.addItemListener(LayoutPreviewPanelImpl.this);
+                density.addItemListener(LayoutPreviewPanelImpl.this);
                 FileObject resFo = FileUtil.toFileObject(appResFolder);
                 resFo.addRecursiveListener(WeakListeners.create(FileChangeListener.class, LayoutPreviewPanelImpl.this, resFo));
                 layoutFileObject = FileUtil.toFileObject(layoutFile);
@@ -195,7 +196,6 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         toolbar = new javax.swing.JToolBar();
         previewSize = new javax.swing.JComboBox<>();
@@ -203,7 +203,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         jLabel1 = new javax.swing.JLabel();
         scale = new javax.swing.JCheckBox();
         jSeparator3 = new javax.swing.JToolBar.Separator();
-        screenOrientation = new javax.swing.JComboBox<>();
+        density = new javax.swing.JComboBox<>();
         jSeparator2 = new javax.swing.JToolBar.Separator();
         scrollPane = new javax.swing.JScrollPane();
 
@@ -217,8 +217,6 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         previewSize.setMinimumSize(new java.awt.Dimension(200, 24));
         previewSize.setPreferredSize(new java.awt.Dimension(200, 24));
         toolbar.add(previewSize);
-
-        jSeparator1.setOrientation(javax.swing.SwingConstants.HORIZONTAL);
         toolbar.add(jSeparator1);
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(LayoutPreviewPanelImpl.class, "LayoutPreviewPanelImpl.jLabel1.text")); // NOI18N
@@ -230,16 +228,11 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         scale.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         scale.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         toolbar.add(scale);
-
-        jSeparator3.setOrientation(javax.swing.SwingConstants.HORIZONTAL);
         toolbar.add(jSeparator3);
 
-        screenOrientation.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Portrait", "Landscape" }));
-        screenOrientation.setMaximumSize(new java.awt.Dimension(150, 32767));
-        screenOrientation.setMinimumSize(new java.awt.Dimension(150, 24));
-        toolbar.add(screenOrientation);
-
-        jSeparator2.setOrientation(javax.swing.SwingConstants.HORIZONTAL);
+        density.setMaximumSize(new java.awt.Dimension(150, 32767));
+        density.setMinimumSize(new java.awt.Dimension(150, 24));
+        toolbar.add(density);
         toolbar.add(jSeparator2);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -280,18 +273,14 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     }
 
     private ConfigGenerator getCurrentConfig() {
-        ScreenOrientation orientation = ScreenOrientation.LANDSCAPE;
-        if ("Portrait".equals(screenOrientation.getSelectedItem())) {
-            orientation = ScreenOrientation.PORTRAIT;
-        }
 
         ConfigGenerator current = new ConfigGenerator()
                 .setScreenHeight(imageHeight)
                 .setScreenWidth(imageWidth)
                 .setXdpi(dpi)
                 .setYdpi(dpi)
-                .setOrientation(orientation)
-                .setDensity(Density.MEDIUM)
+                .setOrientation(ScreenOrientation.PORTRAIT)
+                .setDensity(((Density) density.getSelectedItem()).getDensity())
                 .setRatio(ScreenRatio.NOTLONG)
                 .setSize(ScreenSize.NORMAL)
                 .setKeyboard(Keyboard.NOKEY)
@@ -756,13 +745,13 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<Density> density;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JToolBar.Separator jSeparator2;
     private javax.swing.JToolBar.Separator jSeparator3;
     private javax.swing.JComboBox<String> previewSize;
     private javax.swing.JCheckBox scale;
-    private javax.swing.JComboBox<String> screenOrientation;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JToolBar toolbar;
     // End of variables declaration//GEN-END:variables
