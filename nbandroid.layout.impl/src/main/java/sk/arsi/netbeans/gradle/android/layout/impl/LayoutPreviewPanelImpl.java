@@ -91,7 +91,7 @@ import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewPanel;
 public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnable, ComponentListener, ActionListener, ItemListener, FileChangeListener {
 
     private BufferedImage image = null;
-    private final int dpi;
+    private int dpi;
     private LayoutLibrary layoutLibrary;
     private final AtomicBoolean refreshLock = new AtomicBoolean(false);
     private static final RequestProcessor RP = new RequestProcessor(LayoutPreviewPanel.class);
@@ -123,61 +123,68 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
 
     public LayoutPreviewPanelImpl(File platformFolder, File layoutFile, File appResFolder, String themeName, List<File> aars, List<File> jars) {
         super(platformFolder, layoutFile, appResFolder, themeName, aars, jars);
-        this.appResFolder = appResFolder;
         initComponents();
-        String projectRoot = appResFolder.getParent();
-        File manifest = new File(projectRoot + File.separator + "AndroidManifest.xml");
-        if (manifest.exists() && manifest.isFile()) {
-            try {
-                ManifestData manifestData = ResourceClassGenerator.parseProjectManifest(new FileInputStream(manifest));
-                ManifestData.Activity[] activities = manifestData.getActivities();
-            } catch (FileNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        appNamespace = ResourceNamespace.RES_AUTO;
+        this.appResFolder = appResFolder;
         previewSize.setModel(model);
-        previewSize.addActionListener(this);
+        previewSize.addActionListener(LayoutPreviewPanelImpl.this);
         previewSize.setEditable(true);
         scrollPane.setViewportView(imagePanel);
-        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-        dpi = Toolkit.getDefaultToolkit().getScreenResolution();
-        try {
-            layoutStream = new FileInputStream(layoutFile);
-        } catch (FileNotFoundException ex) {
-        }
-        List<URL> urls = new ArrayList<>();
-        for (File aar : aars) {
-            File classes = new File(aar.getPath() + File.separator + "jars" + File.separator + "classes.jar");
-            if (classes.exists() && classes.isFile()) {
-                try {
-                    urls.add(classes.toURI().toURL());
-                } catch (MalformedURLException ex) {
+        setLayout(new BoxLayout(LayoutPreviewPanelImpl.this, BoxLayout.PAGE_AXIS));
+        //dont block UI
+        Runnable runnable = new Runnable() {
+            public void run() {
+                String projectRoot = appResFolder.getParent();
+                File manifest = new File(projectRoot + File.separator + "AndroidManifest.xml");
+                if (manifest.exists() && manifest.isFile()) {
+                    try {
+                        ManifestData manifestData = ResourceClassGenerator.parseProjectManifest(new FileInputStream(manifest));
+                        ManifestData.Activity[] activities = manifestData.getActivities();
+                    } catch (FileNotFoundException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
-            }
-        }
-        for (File jar : jars) {
-            if (jar.exists() && jar.isFile()) {
+                appNamespace = ResourceNamespace.RES_AUTO;
+                dpi = Toolkit.getDefaultToolkit().getScreenResolution();
                 try {
-                    urls.add(jar.toURI().toURL());
-                } catch (MalformedURLException ex) {
+                    layoutStream = new FileInputStream(layoutFile);
+                } catch (FileNotFoundException ex) {
                 }
+                List<URL> urls = new ArrayList<>();
+                for (File aar : aars) {
+                    File classes = new File(aar.getPath() + File.separator + "jars" + File.separator + "classes.jar");
+                    if (classes.exists() && classes.isFile()) {
+                        try {
+                            urls.add(classes.toURI().toURL());
+                        } catch (MalformedURLException ex) {
+                        }
+                    }
+                }
+                for (File jar : jars) {
+                    if (jar.exists() && jar.isFile()) {
+                        try {
+                            urls.add(jar.toURI().toURL());
+                        } catch (MalformedURLException ex) {
+                        }
+                    }
+                }
+                try {
+                    ClassLoader moduleClassLoader = LayoutLibrary.class.getClassLoader();
+                    uRLClassLoader = new LayoutClassLoader(urls.toArray(new URL[urls.size()]), aars, moduleClassLoader, appNamespace);
+                    //load Bridge with arr classpath
+                    layoutLibrary = LayoutLibraryLoader.load(platformFolder, uRLClassLoader);
+                } catch (RenderingException | IOException ex) {
+                    Logger.getLogger(LayoutPreviewPanelImpl.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                addComponentListener(LayoutPreviewPanelImpl.this);
+                scale.addItemListener(LayoutPreviewPanelImpl.this);
+                screenOrientation.addItemListener(LayoutPreviewPanelImpl.this);
+                FileObject resFo = FileUtil.toFileObject(appResFolder);
+                resFo.addRecursiveListener(WeakListeners.create(FileChangeListener.class, LayoutPreviewPanelImpl.this, resFo));
+                layoutFileObject = FileUtil.toFileObject(layoutFile);
+                refreshPreview();
             }
-        }
-        try {
-            ClassLoader moduleClassLoader = LayoutLibrary.class.getClassLoader();
-            uRLClassLoader = new LayoutClassLoader(urls.toArray(new URL[urls.size()]), aars, moduleClassLoader, appNamespace);
-            //load Bridge with arr classpath
-            layoutLibrary = LayoutLibraryLoader.load(platformFolder, uRLClassLoader);
-        } catch (RenderingException | IOException ex) {
-            Logger.getLogger(LayoutPreviewPanelImpl.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        addComponentListener(this);
-        scale.addItemListener(this);
-        screenOrientation.addItemListener(this);
-        FileObject resFo = FileUtil.toFileObject(appResFolder);
-        resFo.addRecursiveListener(WeakListeners.create(FileChangeListener.class, this, resFo));
-        layoutFileObject = FileUtil.toFileObject(layoutFile);
+        };
+        new Thread(runnable).start();
     }
 
     /**
@@ -550,7 +557,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
 
     @Override
     public void fileDataCreated(FileEvent fe) {
-         if (fe.getFile().equals(layoutFileObject)) {
+        if (fe.getFile().equals(layoutFileObject)) {
             return;
         }
         File createdFile = FileUtil.toFile(fe.getFile());
