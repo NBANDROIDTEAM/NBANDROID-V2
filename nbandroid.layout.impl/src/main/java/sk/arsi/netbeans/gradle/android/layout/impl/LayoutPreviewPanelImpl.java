@@ -13,6 +13,7 @@ import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.Result;
 import com.android.ide.common.rendering.api.SessionParams;
+import com.android.ide.common.rendering.api.StyleResourceValue;
 import com.android.ide.common.resources.FileStatus;
 import com.android.ide.common.resources.MergerResourceRepository;
 import com.android.ide.common.resources.MergingException;
@@ -58,9 +59,11 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -110,6 +113,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     private MergerResourceRepository projectResourceRepository;
     private FileObject layoutFileObject;
     private final File appResFolder;
+    private final List<String> themes = new ArrayList<>();
 
     /**
      * Creates new form LayoutPreviewPanelImpl1
@@ -204,8 +208,12 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         scale = new javax.swing.JCheckBox();
         jSeparator3 = new javax.swing.JToolBar.Separator();
         density = new javax.swing.JComboBox<>();
-        jSeparator2 = new javax.swing.JToolBar.Separator();
+        jSeparator4 = new javax.swing.JToolBar.Separator();
+        jPanel1 = new javax.swing.JPanel();
         scrollPane = new javax.swing.JScrollPane();
+        jPanel2 = new javax.swing.JPanel();
+        themeCombo = new javax.swing.JComboBox<>();
+        reset = new javax.swing.JButton();
 
         toolbar.setFloatable(false);
         toolbar.setRollover(true);
@@ -233,23 +241,82 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         density.setMaximumSize(new java.awt.Dimension(150, 32767));
         density.setMinimumSize(new java.awt.Dimension(150, 24));
         toolbar.add(density);
-        toolbar.add(jSeparator2);
+        toolbar.add(jSeparator4);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(scrollPane)
+                .addGap(0, 0, 0))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
+        );
+
+        themeCombo.setMaximumSize(new java.awt.Dimension(32767, 24));
+
+        reset.setText(org.openide.util.NbBundle.getMessage(LayoutPreviewPanelImpl.class, "LayoutPreviewPanelImpl.reset.text")); // NOI18N
+        reset.setToolTipText(org.openide.util.NbBundle.getMessage(LayoutPreviewPanelImpl.class, "LayoutPreviewPanelImpl.reset.toolTipText")); // NOI18N
+        reset.setMaximumSize(new java.awt.Dimension(94, 21));
+        reset.setMinimumSize(new java.awt.Dimension(94, 21));
+        reset.setPreferredSize(new java.awt.Dimension(94, 21));
+        reset.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(reset, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(themeCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(themeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(reset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, 0))
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(toolbar, javax.swing.GroupLayout.DEFAULT_SIZE, 569, Short.MAX_VALUE)
-            .addComponent(scrollPane)
+            .addComponent(toolbar, javax.swing.GroupLayout.DEFAULT_SIZE, 675, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE)
+                .addComponent(toolbar, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
-                .addComponent(toolbar, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(0, 0, 0)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void resetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetActionPerformed
+        // TODO add your handling code here:
+        themeCombo.setSelectedItem(themeName);
+    }//GEN-LAST:event_resetActionPerformed
 
     public void setImage(BufferedImage image) {
         this.image = image;
@@ -352,8 +419,36 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         //****************
         FolderConfiguration config = configGenerator.getFolderConfig();
         config.setVersionQualifier(VersionQualifier.getQualifier(VersionQualifier.getFolderSegment(28)));
+        
+        //****************
+        File platform_data_dir = new File(platformFolder, "data");
+        File platform_res_dir = new File(platform_data_dir, "res");
+        //****************
+        Map<ResourceNamespace, Map<ResourceType, ResourceValueMap>> allResources
+                = new DisjointUnionMap<>(FrameworkResourcesCache.getOrCreateFrameworkResources(platform_res_dir).getConfiguredResources(config).rowMap(), projectResourceRepository.getConfiguredResources(config).rowMap());
+
+        if (themes.isEmpty()) {
+            for (Map.Entry<ResourceNamespace, Map<ResourceType, ResourceValueMap>> entry : allResources.entrySet()) {
+                if (entry.getKey().equals(ResourceNamespace.RES_AUTO)) {
+                    Map<ResourceType, ResourceValueMap> value = entry.getValue();
+                    ResourceValueMap m = value.get(ResourceType.STYLE);
+                    for (Map.Entry<String, ResourceValue> entry1 : m.entrySet()) {
+                        String key = entry1.getKey();
+                        ResourceValue value1 = entry1.getValue();
+                        if (value1 instanceof StyleResourceValue) {
+                            themes.add("@style/" + value1.getName());
+                        }
+                    }
+                }
+
+            }
+            Collections.sort(themes);
+            themeCombo.setModel(new DefaultComboBoxModel<>(new Vector<>(themes)));
+            themeCombo.setSelectedItem(themeName);
+            themeCombo.addItemListener(this);
+        }
         ResourceReference theme = null;
-        ResourceUrl themeUrl = ResourceUrl.parse("@style/AppTheme.NoActionBar");
+        ResourceUrl themeUrl = ResourceUrl.parse((String) themeCombo.getSelectedItem());
         if (themeUrl != null) {
             theme = themeUrl.resolve(appNamespace, new ResourceNamespace.Resolver() {
                 @Override
@@ -362,19 +457,8 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
                 }
             });
         }
-        //****************
-        File platform_data_dir = new File(platformFolder, "data");
-        File platform_res_dir = new File(platform_data_dir, "res");
-        //****************
-        Map<ResourceNamespace, Map<ResourceType, ResourceValueMap>> allResources
-                = new DisjointUnionMap<>(FrameworkResourcesCache.getOrCreateFrameworkResources(platform_res_dir).getConfiguredResources(config).rowMap(), projectResourceRepository.getConfiguredResources(config).rowMap());
         ResourceResolver resourceResolver = ResourceResolver.create(allResources, theme);
         resourceResolver.setDeviceDefaults("Material");
-        try {
-            projectResourceSet.updateWith(new File("/home/arsi/NetBeansProjects/NewAndroidProject/NewAndroidProject_mobile/src/main/res/values/"), new File("/home/arsi/NetBeansProjects/NewAndroidProject/NewAndroidProject_mobile/src/main/res/values/colors.xml"), FileStatus.CHANGED, new StdLogger(StdLogger.Level.INFO));
-        } catch (MergingException ex) {
-            Exceptions.printStackTrace(ex);
-        }
         resourceLookupChain = new ArrayList<>();
         SessionParams sessionParams
                 = new SessionParams(layoutParser, renderingMode, null /*used for caching*/,
@@ -747,12 +831,16 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox<Density> density;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JToolBar.Separator jSeparator1;
-    private javax.swing.JToolBar.Separator jSeparator2;
     private javax.swing.JToolBar.Separator jSeparator3;
+    private javax.swing.JToolBar.Separator jSeparator4;
     private javax.swing.JComboBox<String> previewSize;
+    private javax.swing.JButton reset;
     private javax.swing.JCheckBox scale;
     private javax.swing.JScrollPane scrollPane;
+    private javax.swing.JComboBox<String> themeCombo;
     private javax.swing.JToolBar toolbar;
     // End of variables declaration//GEN-END:variables
 }

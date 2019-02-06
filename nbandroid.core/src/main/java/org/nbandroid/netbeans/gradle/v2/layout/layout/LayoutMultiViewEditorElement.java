@@ -20,6 +20,8 @@ package org.nbandroid.netbeans.gradle.v2.layout.layout;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -33,8 +35,12 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.xml.parsers.ParserConfigurationException;
 import org.nbandroid.netbeans.gradle.api.AndroidProjects;
 import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
+import org.nbandroid.netbeans.gradle.v2.manifest.AndroidManifestParser;
+import org.nbandroid.netbeans.gradle.v2.manifest.ManifestData;
+import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.AssetNameConverter;
 import org.nbandroid.netbeans.gradle.v2.tools.DelayedDocumentChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -44,10 +50,12 @@ import org.netbeans.editor.BaseDocument;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.windows.WindowManager;
+import org.xml.sax.SAXException;
 import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewPanel;
 import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewProvider;
 
@@ -85,13 +93,36 @@ public class LayoutMultiViewEditorElement extends MultiViewEditorElement impleme
 
     private void initLayoutEditor() {
         Project project = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
-        //find res folder
-        final File resFolderFile = AndroidProjects.findResFolderAsFile(project);
         //find aars folders from classpath
-        GradleAndroidClassPathProvider androidClassPathProvider = project.getLookup().lookup(GradleAndroidClassPathProvider.class);
+        GradleAndroidClassPathProvider androidClassPathProvider = project.getLookup().lookup(GradleAndroidClassPathProvider.class);;
+        if (androidClassPathProvider == null) {
+            //restored from serialized TopComponent wait for NBAndroid to come up
+            int safetyCounter = 1200;
+            do {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                }
+                safetyCounter--;
+                androidClassPathProvider = project.getLookup().lookup(GradleAndroidClassPathProvider.class);
+            } while (androidClassPathProvider == null && safetyCounter > 0);
+        }
         final List<File> aars = new ArrayList<>();
         ClassPath classPath = androidClassPathProvider.getCompilePath();
         FileObject[] roots = classPath.getRoots();
+        if (roots.length == 0) {
+            //restored from serialized TopComponent wait for NBAndroid to come up
+            int safetyCounter = 1200;
+            do {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                }
+                classPath = androidClassPathProvider.getCompilePath();
+                safetyCounter--;
+                roots = classPath.getRoots();
+            } while (roots.length == 0 && safetyCounter > 0);
+        }
         final List<File> jars = new ArrayList<>();
         for (FileObject root : roots) {
             if ("classes.jar".equals(FileUtil.getArchiveFile(root).getNameExt())) {
@@ -100,8 +131,49 @@ public class LayoutMultiViewEditorElement extends MultiViewEditorElement impleme
                 jars.add(FileUtil.toFile(FileUtil.getArchiveFile(root)));
             }
         }
-        //find project theme
-        final String projectTheme = AndroidProjects.parseProjectTheme(project);
+        //find res folder
+        File resFolderFile = AndroidProjects.findResFolderAsFile(project);;
+        if (resFolderFile == null) {
+            //restored from serialized TopComponent wait for NBAndroid to come up
+            int safetyCounter = 1200;
+            do {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                }
+                safetyCounter--;
+                resFolderFile = AndroidProjects.findResFolderAsFile(project);
+            } while (resFolderFile == null && safetyCounter > 0);
+        }
+        //find activity theme
+        String projectTheme = null;
+        String projectRoot = resFolderFile.getParent();
+        File manifest = new File(projectRoot + File.separator + "AndroidManifest.xml");
+        if (manifest.exists() && manifest.isFile()) {
+            try {
+                ManifestData manifestData = AndroidManifestParser.parse(new FileInputStream(manifest));
+                projectTheme = manifestData.getTheme();
+                ManifestData.Activity[] activities = manifestData.getActivities();
+                for (ManifestData.Activity activity : activities) {
+                    String activityName = activity.getName();
+                    String activityNameFromRes = new AssetNameConverter(AssetNameConverter.Type.LAYOUT, dataObject.getName()).getValue(AssetNameConverter.Type.ACTIVITY);
+                    activityNameFromRes = manifestData.getPackage() + "." + activityNameFromRes;
+                    if (activityName.equals(activityNameFromRes)) {
+                        if (activity.getTheme() != null) {
+                            projectTheme = activity.getTheme();
+                            break;
+                        }
+                    }
+                }
+            } catch (FileNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ParserConfigurationException | SAXException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
         //find platform
         final File platformFolder = InstalledFileLocator.getDefault().locate("modules/ext/layoutlib_v28_res", "sk-arsi-netbeans-gradle-android-Gradle-Android-support-layout-li", false);
 
@@ -113,10 +185,10 @@ public class LayoutMultiViewEditorElement extends MultiViewEditorElement impleme
             @Override
             public void run() {
                 JEditorPane editorPane = getEditorPane();
-                            if (editorPane != null) {
-                                document = getEditorPane().getDocument();
-                                documentListener = DelayedDocumentChangeListener.create(getEditorPane().getDocument(), LayoutMultiViewEditorElement.this, 2000);
-                            }
+                if (editorPane != null) {
+                    document = getEditorPane().getDocument();
+                    documentListener = DelayedDocumentChangeListener.create(getEditorPane().getDocument(), LayoutMultiViewEditorElement.this, 2000);
+                }
 
             }
         };
