@@ -92,5 +92,10 @@
             <version>${version.nb}</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-api-io</artifactId>
+            <version>${version.nb}</version>
+        </dependency>
     </dependencies>
 </project>

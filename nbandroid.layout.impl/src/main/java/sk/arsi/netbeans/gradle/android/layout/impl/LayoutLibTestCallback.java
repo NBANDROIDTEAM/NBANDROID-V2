@@ -88,7 +88,7 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
             viewConstructor.setAccessible(true);
             return viewConstructor.newInstance(constructorArgs);
         } catch (Exception e) {
-            e.printStackTrace();
+            LayoutIO.logError("unable to load view " + name, e);
         }
         throw new UnsupportedOperationException();
     }
@@ -101,14 +101,20 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
         viewConstructor.setAccessible(true);
             return viewConstructor.newInstance(constructorArgs);
         } catch (Exception e) {
-            e.printStackTrace();
+            LayoutIO.logError("unable to load class " + name, e);
+
         }
         throw new ClassNotFoundException(name);
     }
 
     @Override
     public Class<?> findClass(String name) throws ClassNotFoundException {
-        return classLoader.loadClass(name);
+        try {
+            return classLoader.loadClass(name);
+        } catch (ClassNotFoundException e) {
+            LayoutIO.logError("unable to load view " + name, e);
+            throw e;
+        }
     }
 
 

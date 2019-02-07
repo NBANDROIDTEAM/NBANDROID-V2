@@ -274,6 +274,28 @@ public class ResourceResolver extends RenderResources {
         }
     }
 
+    /**
+     * Updates the parent of a given framework style. This method is used to
+     * patch DeviceDefault styles when using a CompatibilityTarget.
+     */
+    public void patchAutoStyleParent(String childStyleName, String parentName) {
+        // TODO(namespaces): why only framework styles?
+        ResourceValueMap map = getResourceValueMap(ResourceNamespace.RES_AUTO, ResourceType.STYLE);
+        if (map != null) {
+            StyleResourceValue from = (StyleResourceValue) map.get(childStyleName);
+            StyleResourceValue to = (StyleResourceValue) map.get(parentName);
+
+            if (from != null && to != null) {
+                StyleResourceValue newStyle
+                        = new StyleResourceValueImpl(
+                                from.asReference(), parentName, from.getLibraryName());
+                newStyle.replaceWith(from);
+                mStyleInheritanceMap.put(newStyle, to);
+                mReverseStyleInheritanceMap.clear();
+            }
+        }
+    }
+
     // ---- Methods to help dealing with older LayoutLibs.
     @Nullable
     public StyleResourceValue getTheme() {

@@ -37,9 +37,7 @@ import com.android.resources.TouchScreen;
 import com.android.tools.nbandroid.layoutlib.ConfigGenerator;
 import com.android.tools.nbandroid.layoutlib.LayoutLibrary;
 import com.android.tools.nbandroid.layoutlib.LayoutLibraryLoader;
-import com.android.tools.nbandroid.layoutlib.LogWrapper;
 import com.android.tools.nbandroid.layoutlib.RenderingException;
-import com.android.utils.StdLogger;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -260,6 +258,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
                 .addGap(0, 0, 0))
         );
 
+        themeCombo.setToolTipText(org.openide.util.NbBundle.getMessage(LayoutPreviewPanelImpl.class, "LayoutPreviewPanelImpl.themeCombo.toolTipText")); // NOI18N
         themeCombo.setMaximumSize(new java.awt.Dimension(32767, 24));
 
         reset.setText(org.openide.util.NbBundle.getMessage(LayoutPreviewPanelImpl.class, "LayoutPreviewPanelImpl.reset.text")); // NOI18N
@@ -361,6 +360,8 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     @Override
     public void run() {
         refreshLock.set(false);
+        LayoutIO.getDefaultIO().reset();
+        LayoutIO.logInfo("I'm starting to generate a preview of " + layoutFile.getName());
         if (WINDOW_SIZE.equals(model.getSelectedItem())) {
             imageWidth = imagePanel.getWidth();
             imageHeight = imagePanel.getHeight();
@@ -392,30 +393,32 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         }
 
         try {
-            RenderSession session = layoutLibrary.createSession(getSessionParams(platformFolder, LayoutFilePullParser.create(layoutStream, appNamespace), getCurrentConfig(), new LayoutLibTestCallback(new LogWrapper(), aars, uRLClassLoader, appNamespace), themeName, true, SessionParams.RenderingMode.NORMAL, 27));
+            RenderSession session = layoutLibrary.createSession(getSessionParams(platformFolder, LayoutFilePullParser.create(layoutStream, appNamespace), getCurrentConfig(), new LayoutLibTestCallback(new LayoutIO(), aars, uRLClassLoader, appNamespace), themeName, true, SessionParams.RenderingMode.NORMAL, 27));
             Result renderResult = session.render();
-            int size = resourceLookupChain.size();
             if (renderResult.getException() != null) {
+                LayoutIO.logError("unable to generate layout preview", renderResult.getException());
                 renderResult.getException().printStackTrace();
                 imagePanel.label.setText("Error rendering layout");
                 imagePanel.label.setVisible(true);
-            } else {
+            } else if(renderResult.getStatus()==Result.Status.SUCCESS){
                 setImage(session.getImage());
                 imagePanel.label.setVisible(false);
                 imagePanel.progress.setVisible(false);
+            } else {
+                LayoutIO.logError("unable to generate layout preview: " + renderResult.getStatus(), null);
             }
         } catch (Exception e) {
             e.printStackTrace();
             imagePanel.label.setText("Error rendering layout");
             imagePanel.label.setVisible(true);
         }
+        LayoutIO.logInfo("Preview of " + layoutFile.getName() + " is done.");
     }
 
     protected SessionParams getSessionParams(File platformFolder, ILayoutPullParser layoutParser,
             ConfigGenerator configGenerator, LayoutLibTestCallback layoutLibCallback,
             String themeName, boolean isProjectTheme, SessionParams.RenderingMode renderingMode,
             @SuppressWarnings("SameParameterValue") int targetSdk) {
-
         //****************
         FolderConfiguration config = configGenerator.getFolderConfig();
         config.setVersionQualifier(VersionQualifier.getQualifier(VersionQualifier.getFolderSegment(28)));
@@ -448,7 +451,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
             themeCombo.addItemListener(this);
         }
         ResourceReference theme = null;
-        ResourceUrl themeUrl = ResourceUrl.parse((String) themeCombo.getSelectedItem());
+        ResourceUrl themeUrl = ResourceUrl.parse(themeName);
         if (themeUrl != null) {
             theme = themeUrl.resolve(appNamespace, new ResourceNamespace.Resolver() {
                 @Override
@@ -458,6 +461,10 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
             });
         }
         ResourceResolver resourceResolver = ResourceResolver.create(allResources, theme);
+        if(!((String) themeCombo.getSelectedItem()).equals(themeName)){
+            resourceResolver.patchAutoStyleParent(themeName.replace("@style/", ""), ((String) themeCombo.getSelectedItem()).replace("@style/", ""));
+            LayoutIO.logInfo("Theme patch, theme parent changed to: "+((String) themeCombo.getSelectedItem()));
+        }
         resourceResolver.setDeviceDefaults("Material");
         resourceLookupChain = new ArrayList<>();
         SessionParams sessionParams
@@ -481,7 +488,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
                 aarSet.setTrackSourcePositions(true);
                 aarSet.setCheckDuplicates(true);
                 try {
-                    aarSet.loadFromFiles(new StdLogger(StdLogger.Level.INFO));
+                    aarSet.loadFromFiles(new LayoutIO());
                     projectResourceMerger.addDataSet(aarSet);
                 } catch (MergingException ex) {
                     Exceptions.printStackTrace(ex);
@@ -495,7 +502,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         projectResourceSet.setTrackSourcePositions(false);
         projectResourceSet.setCheckDuplicates(false);
         try {
-            projectResourceSet.loadFromFiles(new StdLogger(StdLogger.Level.INFO));
+            projectResourceSet.loadFromFiles(new LayoutIO());
             projectResourceMerger.addDataSet(projectResourceSet);
         } catch (MergingException ex) {
             Exceptions.printStackTrace(ex);
@@ -635,7 +642,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         }
         File createdFile = FileUtil.toFile(fe.getFile());
         try {
-            projectResourceSet.updateWith(appResFolder, createdFile, FileStatus.NEW, new StdLogger(StdLogger.Level.INFO));
+            projectResourceSet.updateWith(appResFolder, createdFile, FileStatus.NEW, new LayoutIO());
         } catch (Exception ex) {
         }
         Runnable runnable = new Runnable() {
@@ -658,7 +665,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         }
         File createdFile = FileUtil.toFile(fe.getFile());
         try {
-            projectResourceSet.updateWith(appResFolder, createdFile, FileStatus.CHANGED, new StdLogger(StdLogger.Level.INFO));
+            projectResourceSet.updateWith(appResFolder, createdFile, FileStatus.CHANGED, new LayoutIO());
         } catch (Exception ex) {
         }
         Runnable runnable = new Runnable() {
@@ -681,7 +688,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         }
         File createdFile = FileUtil.toFile(fe.getFile());
         try {
-            projectResourceSet.updateWith(appResFolder, createdFile, FileStatus.REMOVED, new StdLogger(StdLogger.Level.INFO));
+            projectResourceSet.updateWith(appResFolder, createdFile, FileStatus.REMOVED, new LayoutIO());
         } catch (Exception ex) {
         }
         Runnable runnable = new Runnable() {

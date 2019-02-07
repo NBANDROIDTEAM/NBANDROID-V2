@@ -8,7 +8,6 @@ package sk.arsi.netbeans.gradle.android.layout.impl;
 import com.android.ide.common.resources.MergerResourceRepository;
 import com.android.ide.common.resources.MergingException;
 import com.android.ide.common.resources.ResourceMerger;
-import com.android.utils.StdLogger;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -31,7 +30,7 @@ public class FrameworkResourcesCache {
 
             FrameworkResourceSet framefork = new FrameworkResourceSet(res, false);
             try {
-                framefork.loadFromFiles(new StdLogger(StdLogger.Level.INFO));
+                framefork.loadFromFiles(new LayoutIO());
             } catch (MergingException ex) {
                 Exceptions.printStackTrace(ex);
             }
