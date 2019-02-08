@@ -71,6 +71,8 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -132,6 +134,17 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         previewSize.addActionListener(LayoutPreviewPanelImpl.this);
         previewSize.setEditable(true);
         scrollPane.setViewportView(imagePanel);
+        themeMode.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent event) {
+                if (themeMode.isSelected()) {
+                    themeMode.setText("Parent");
+                } else {
+                    themeMode.setText("Theme");
+                }
+            }
+        });
+        themeMode.addItemListener(this);
         setLayout(new BoxLayout(LayoutPreviewPanelImpl.this, BoxLayout.PAGE_AXIS));
         //dont block UI
         Runnable runnable = new Runnable() {
@@ -212,6 +225,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         jPanel2 = new javax.swing.JPanel();
         themeCombo = new javax.swing.JComboBox<>();
         reset = new javax.swing.JButton();
+        themeMode = new javax.swing.JToggleButton();
 
         toolbar.setFloatable(false);
         toolbar.setRollover(true);
@@ -261,6 +275,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         themeCombo.setToolTipText(org.openide.util.NbBundle.getMessage(LayoutPreviewPanelImpl.class, "LayoutPreviewPanelImpl.themeCombo.toolTipText")); // NOI18N
         themeCombo.setMaximumSize(new java.awt.Dimension(32767, 24));
 
+        reset.setIcon(new javax.swing.ImageIcon(getClass().getResource("/sk/arsi/netbeans/gradle/android/layout/impl/restore.png"))); // NOI18N
         reset.setText(org.openide.util.NbBundle.getMessage(LayoutPreviewPanelImpl.class, "LayoutPreviewPanelImpl.reset.text")); // NOI18N
         reset.setToolTipText(org.openide.util.NbBundle.getMessage(LayoutPreviewPanelImpl.class, "LayoutPreviewPanelImpl.reset.toolTipText")); // NOI18N
         reset.setMaximumSize(new java.awt.Dimension(94, 21));
@@ -272,6 +287,11 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
             }
         });
 
+        themeMode.setText(org.openide.util.NbBundle.getMessage(LayoutPreviewPanelImpl.class, "LayoutPreviewPanelImpl.themeMode.text")); // NOI18N
+        themeMode.setMaximumSize(new java.awt.Dimension(142, 21));
+        themeMode.setMinimumSize(new java.awt.Dimension(142, 21));
+        themeMode.setPreferredSize(new java.awt.Dimension(142, 21));
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -280,7 +300,9 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
                 .addGap(0, 0, 0)
                 .addComponent(reset, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
-                .addComponent(themeCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(themeMode, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(themeCombo, 0, 539, Short.MAX_VALUE)
                 .addGap(0, 0, 0))
         );
         jPanel2Layout.setVerticalGroup(
@@ -289,7 +311,8 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
                 .addGap(0, 0, 0)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(themeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(reset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(reset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(themeMode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 0, 0))
         );
 
@@ -396,18 +419,21 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
             RenderSession session = layoutLibrary.createSession(getSessionParams(platformFolder, LayoutFilePullParser.create(layoutStream, appNamespace), getCurrentConfig(), new LayoutLibTestCallback(new LayoutIO(), aars, uRLClassLoader, appNamespace), themeName, true, SessionParams.RenderingMode.NORMAL, 27));
             Result renderResult = session.render();
             if (renderResult.getException() != null) {
+                LayoutIO.getDefaultIO().show();
                 LayoutIO.logError("unable to generate layout preview", renderResult.getException());
                 renderResult.getException().printStackTrace();
                 imagePanel.label.setText("Error rendering layout");
                 imagePanel.label.setVisible(true);
-            } else if(renderResult.getStatus()==Result.Status.SUCCESS){
+            } else if (renderResult.getStatus() == Result.Status.SUCCESS) {
                 setImage(session.getImage());
                 imagePanel.label.setVisible(false);
                 imagePanel.progress.setVisible(false);
             } else {
+                LayoutIO.getDefaultIO().show();
                 LayoutIO.logError("unable to generate layout preview: " + renderResult.getStatus(), null);
             }
         } catch (Exception e) {
+            LayoutIO.getDefaultIO().show();
             e.printStackTrace();
             imagePanel.label.setText("Error rendering layout");
             imagePanel.label.setVisible(true);
@@ -422,7 +448,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         //****************
         FolderConfiguration config = configGenerator.getFolderConfig();
         config.setVersionQualifier(VersionQualifier.getQualifier(VersionQualifier.getFolderSegment(28)));
-        
+
         //****************
         File platform_data_dir = new File(platformFolder, "data");
         File platform_res_dir = new File(platform_data_dir, "res");
@@ -450,8 +476,17 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
             themeCombo.setSelectedItem(themeName);
             themeCombo.addItemListener(this);
         }
+        ResourceUrl themeUrl;
+        if (themeMode.isSelected()) {
+            //mode parent
+            themeUrl = ResourceUrl.parse(themeName);
+        } else {
+            //mode theme
+            LayoutIO.logInfo("Theme patch, current theme changed to: " + ((String) themeCombo.getSelectedItem()));
+            themeUrl = ResourceUrl.parse((String) themeCombo.getSelectedItem());
+        }
         ResourceReference theme = null;
-        ResourceUrl themeUrl = ResourceUrl.parse(themeName);
+
         if (themeUrl != null) {
             theme = themeUrl.resolve(appNamespace, new ResourceNamespace.Resolver() {
                 @Override
@@ -461,9 +496,10 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
             });
         }
         ResourceResolver resourceResolver = ResourceResolver.create(allResources, theme);
-        if(!((String) themeCombo.getSelectedItem()).equals(themeName)){
+        if (!((String) themeCombo.getSelectedItem()).equals(themeName) && themeMode.isSelected()) {
+            //mode parent and another theme is selected
             resourceResolver.patchAutoStyleParent(themeName.replace("@style/", ""), ((String) themeCombo.getSelectedItem()).replace("@style/", ""));
-            LayoutIO.logInfo("Theme patch, theme parent changed to: "+((String) themeCombo.getSelectedItem()));
+            LayoutIO.logInfo("Theme patch, theme parent changed to: " + ((String) themeCombo.getSelectedItem()));
         }
         resourceResolver.setDeviceDefaults("Material");
         resourceLookupChain = new ArrayList<>();
@@ -848,6 +884,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     private javax.swing.JCheckBox scale;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JComboBox<String> themeCombo;
+    private javax.swing.JToggleButton themeMode;
     private javax.swing.JToolBar toolbar;
     // End of variables declaration//GEN-END:variables
 }
