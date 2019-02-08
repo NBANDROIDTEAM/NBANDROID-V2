@@ -14,14 +14,6 @@
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
-            <id>NBANDROID</id>
-            <name>NBANDROID</name>
-            <url>https://raw.githubusercontent.com/NBANDROIDTEAM/LIBS-TEST/master/</url>
-        </repository>
-        <repository>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
             <id>google-android-android-tools</id>
             <name>google</name>
             <url>https://maven.google.com</url>

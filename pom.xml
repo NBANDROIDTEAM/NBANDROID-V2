@@ -195,6 +195,14 @@
             <url>https://dl.bintray.com/nbandroidteam/netbeans-color-codes-preview</url>
         </repository>
         <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>bintray-nbandroidteam-layoutlib</id>
+            <name>bintray</name>
+            <url>https://dl.bintray.com/nbandroidteam/layoutlib</url>
+        </repository>
+        <repository>
             <id>netbeans</id>
             <name>NetBeans</name>
             <url>http://bits.netbeans.org/nexus/content/groups/netbeans/</url>

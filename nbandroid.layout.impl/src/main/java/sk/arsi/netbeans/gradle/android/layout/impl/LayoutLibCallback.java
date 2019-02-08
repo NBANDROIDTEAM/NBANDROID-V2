@@ -1,17 +1,20 @@
 /*
- * Copyright (C) 2014 The Android Open Source Project
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package sk.arsi.netbeans.gradle.android.layout.impl;
 
@@ -56,7 +59,7 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 @SuppressWarnings("deprecation") // For Pair
-public class LayoutLibTestCallback extends LayoutlibCallback {
+public class LayoutLibCallback extends LayoutlibCallback {
 
     private final Map<Integer, Pair<ResourceType, String>> mProjectResources = Maps.newHashMap();
     private final Map<ResourceType, Map<String, Integer>> mResources = Maps.newHashMap();
@@ -68,7 +71,7 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
     private final LayoutClassLoader classLoader;
     private final ResourceNamespace appNamespace;
 
-    public LayoutLibTestCallback(ILogger logger, List<File> aars, LayoutClassLoader classLoader, ResourceNamespace appNamespace) {
+    public LayoutLibCallback(ILogger logger, List<File> aars, LayoutClassLoader classLoader, ResourceNamespace appNamespace) {
         mLog = logger;
         this.aars = aars;
         this.classLoader = classLoader;
