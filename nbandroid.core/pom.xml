@@ -480,5 +480,15 @@
             <artifactId>org-netbeans-core-startup</artifactId>
             <version>${version.nb}</version>
         </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-editor-lib2</artifactId>
+            <version>${version.nb}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>Gradle-Android-support-layout-spi</artifactId>
+            <version>01.00-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>

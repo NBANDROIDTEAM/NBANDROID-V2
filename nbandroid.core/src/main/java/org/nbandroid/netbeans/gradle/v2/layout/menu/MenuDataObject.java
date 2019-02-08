@@ -19,8 +19,12 @@
 package org.nbandroid.netbeans.gradle.v2.layout.menu;
 
 import java.io.IOException;
+import org.nbandroid.netbeans.gradle.v2.layout.AndroidStyleable;
+import org.nbandroid.netbeans.gradle.v2.layout.values.ResourceXsdValidateXMLSupport;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.spi.xml.cookies.CheckXMLSupport;
+import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObject;
@@ -52,7 +56,8 @@ public class MenuDataObject extends MultiDataObject {
         super(pf, loader);
         final CookieSet cookies = getCookieSet();
         registerEditor(SETTINGS_MIME_TYPE, false);
-        //   cookies.add(new ResourceXsdValidateXMLSupport(DataObjectAdapters.inputSource(this), AndroidStyleable.class.getResource("menu.xsd")));
+        cookies.add(new CheckXMLSupport(DataObjectAdapters.inputSource(this)));
+        cookies.add(new ResourceXsdValidateXMLSupport(DataObjectAdapters.inputSource(this), AndroidStyleable.class.getResource("menu.xsd")));
     }
 
     @MultiViewElement.Registration(

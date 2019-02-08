@@ -39,10 +39,13 @@ import org.xml.sax.InputSource;
 @ServiceProvider(service = GrammarQueryManager.class, path = "Plugins/XML/GrammarQueryManagers")
 public class MenuGrammarQueryManager extends GrammarQueryManager {
 
-    private static final GrammarQuery QUERY;
+    private static GrammarQuery QUERY;
 
     static {
-        QUERY = DTDUtil.parseDTD(true, new InputSource(AndroidStyleable.class.getResourceAsStream("menu.dtd")));
+        try {
+            QUERY = DTDUtil.parseDTD(false, new InputSource(AndroidStyleable.class.getResourceAsStream("menu.dtd")));
+        } catch (Exception e) {
+        }
     }
 
     public MenuGrammarQueryManager() {

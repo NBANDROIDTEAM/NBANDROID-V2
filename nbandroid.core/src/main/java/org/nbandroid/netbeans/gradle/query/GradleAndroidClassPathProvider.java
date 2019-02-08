@@ -107,6 +107,11 @@ public final class GradleAndroidClassPathProvider
         return artifactDatas.get(url);
     }
 
+    public Map<URL, ArtifactData> getArtifactDatas() {
+        return artifactDatas;
+    }
+
+
     private final ClassPath source, compile, execute, test, testCompile;
     private final BuildVariant buildConfig;
     private final Set<Refreshable> refreshables = Sets.newHashSet();

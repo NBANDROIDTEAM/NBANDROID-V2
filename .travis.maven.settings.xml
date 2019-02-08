@@ -35,6 +35,14 @@
                     <url>https://dl.bintray.com/nbandroidteam/netbeans-color-codes-preview</url>
                 </repository>
                 <repository>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                    <id>bintray-nbandroidteam-layoutlib</id>
+                    <name>bintray</name>
+                    <url>https://dl.bintray.com/nbandroidteam/layoutlib</url>
+                </repository>
+                <repository>
                     <id>central1</id>
                     <name>gradle-releases</name>
                     <url>https://repo.gradle.org/gradle/libs-releases-local</url>

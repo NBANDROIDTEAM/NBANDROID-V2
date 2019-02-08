@@ -60,9 +60,15 @@ public final class ProjectRefResolver implements ReferenceResolver {
         }
         SourceGroup[] genGroups
                 = ProjectUtils.getSources(prj).getSourceGroups(AndroidConstants.SOURCES_TYPE_GENERATED_JAVA);
-        FileObject rFile;
+        FileObject rFile = null;
         if (genGroups != null && genGroups.length > 0) {
-            rFile = genGroups[0].getRootFolder().getFileObject(pkg.replace('.', '/') + "/R.java");
+            for (SourceGroup genGroup : genGroups) {
+                rFile = genGroup.getRootFolder().getFileObject(pkg.replace('.', '/') + "/R.java");
+                if (rFile != null) {
+                    break;
+                }
+            }
+
         } else {
             rFile = prj.getProjectDirectory().getFileObject("gen/" + pkg.replace('.', '/') + "/R.java");
         }
