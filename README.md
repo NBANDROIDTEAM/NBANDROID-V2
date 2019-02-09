@@ -29,6 +29,8 @@ NetBeans 8.2 http://server.arsi.sk/nbandroid82/updates.xml
 ![Install](https://user-images.githubusercontent.com/22594510/50820932-39c2c580-132e-11e9-8450-77c5bd669536.png)
 ![Install](https://user-images.githubusercontent.com/22594510/50820950-421b0080-132e-11e9-9b7d-04f681d73f60.png)
 
+## Layout preview support
+![Layout](https://user-images.githubusercontent.com/22594510/52371231-433a6d00-2a55-11e9-87d6-8ee9246c4168.png)
 
 ## Color preview support
 ![Color preview](https://user-images.githubusercontent.com/22594510/50722224-20224380-10cc-11e9-8a0a-90e2106b3c9d.png)
@@ -54,6 +56,7 @@ From this update center:  http://server.arsi.sk/masterfs/updates.xml
 
 ## Current project status:
 ### What Works:
+* Layout preview
 * Code Assistance
 * Android XML Code Completion support
 * Color preview support
@@ -75,45 +78,3 @@ From this update center:  http://server.arsi.sk/masterfs/updates.xml
 * we currently have no Visual Layout Editor 
 * and many other things
 
-
-# How to run/debug this plugin from NetBeans
-This plugin depends on Gradle Support plugin. You need to add it to platform folder.
-
-* Install Gradle Support plugin to NetBeans
-* Make copy of NetBeans directory
-* Copy .netbeans/NB_Version/modules/org-netbeans-gradle-project.jar to NB_COPY/extide/modules/
-* Copy .netbeans/NB_Version/modules/ext folder to NB_COPY/extide/modules/
-* Copy .netbeans/NB_Version/update_tracking/org-netbeans-modules-options-java.xml to NB_COPY/extide/update_tracking/
-* Copy .netbeans/NB_Version/config/Modules/org-netbeans-gradle-project.xml to NB_COPY/extide/config/Modules/
-* Add new Profile to root project pom.xml
-* Copy Run and Debug Actions from default profile to your profile. Project->properties->Actions
-```xml
-    <profiles>
-        <profile>
-            <id>your_name-NB82</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>nbm-maven-plugin</artifactId>
-                        <version>3.13</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <netbeansInstallation>FULL_PATH_TO_NB_COPY</netbeansInstallation>
-                            <netbeansUserdir>FULL_PATH_TO_CUSTOM_USER_DIR</netbeansUserdir>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-            <properties>
-                <version.nb>RELEASE82</version.nb>
-                <asm.nb>asm-all-5.0.1</asm.nb>
-            </properties>
-        </profile>
-        ...
-    <profiles>
-```
-* And finally select your profile
