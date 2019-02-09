@@ -57,6 +57,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.kxml2.io.KXmlParser;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
+import sk.arsi.netbeans.gradle.android.layout.impl.v2.AndroidXRemmaper;
 
 @SuppressWarnings("deprecation") // For Pair
 public class LayoutLibCallback extends LayoutlibCallback {
@@ -71,6 +72,8 @@ public class LayoutLibCallback extends LayoutlibCallback {
     private final LayoutClassLoader classLoader;
     private final ResourceNamespace appNamespace;
     private final ProjectLayoutClassLoader projectLayoutClassLoader;
+    private boolean hasLegacyAppCompat = false;
+    private boolean hasAndroidXAppCompat = false;
 
     public LayoutLibCallback(ILogger logger, List<File> aars, LayoutClassLoader classLoader, ResourceNamespace appNamespace, ProjectLayoutClassLoader projectLayoutClassLoader) {
         mLog = logger;
@@ -78,15 +81,35 @@ public class LayoutLibCallback extends LayoutlibCallback {
         this.classLoader = classLoader;
         this.appNamespace = appNamespace;
         this.projectLayoutClassLoader = projectLayoutClassLoader;
-        initResources();
-    }
+        try {
+            projectLayoutClassLoader.loadClass("androidx.appcompat.app.WindowDecorActionBar");
+            hasAndroidXAppCompat = true;
+            hasLegacyAppCompat = false;
+        } catch (ClassNotFoundException ex) {
+            hasAndroidXAppCompat = false;
+            hasLegacyAppCompat = false;
+        }
+        if (!hasAndroidXAppCompat) {
+            try {
+                projectLayoutClassLoader.loadClass("android.support.v7.app.WindowDecorActionBar");
+                hasAndroidXAppCompat = false;
+                hasLegacyAppCompat = true;
+            } catch (ClassNotFoundException ex) {
+                hasAndroidXAppCompat = false;
+                hasLegacyAppCompat = false;
+            }
 
-    public void initResources() {
+        }
     }
 
     @Override
     public Object loadView(String name, Class[] constructorSignature, Object[] constructorArgs)
             throws Exception {
+        if (hasAndroidXAppCompat) {
+            name = AndroidXRemmaper.toAndroidX(name);
+        } else if (hasLegacyAppCompat) {
+            name = AndroidXRemmaper.fromAndroidX(name);
+        }
         try {
             Class<?> viewClass = projectLayoutClassLoader.loadClass(name);
             Constructor<?> viewConstructor = viewClass.getConstructor(constructorSignature);
@@ -94,13 +117,18 @@ public class LayoutLibCallback extends LayoutlibCallback {
             return viewConstructor.newInstance(constructorArgs);
         } catch (Exception e) {
             LayoutIO.logError("unable to load view " + name, e);
-            }
+        }
         throw new UnsupportedOperationException();
     }
 
     @Override
     public Object loadClass(String name, Class[] constructorSignature, Object[] constructorArgs) throws ClassNotFoundException {
         try {
+            if (hasAndroidXAppCompat) {
+                name = AndroidXRemmaper.toAndroidX(name);
+            } else if (hasLegacyAppCompat) {
+                name = AndroidXRemmaper.fromAndroidX(name);
+            }
             Class<?> viewClass = projectLayoutClassLoader.loadClass(name);
             Constructor<?> viewConstructor = viewClass.getConstructor(constructorSignature);
             viewConstructor.setAccessible(true);
@@ -108,19 +136,24 @@ public class LayoutLibCallback extends LayoutlibCallback {
         } catch (Exception e) {
             LayoutIO.logError("unable to load class " + name, e);
 
-            }
+        }
         throw new ClassNotFoundException(name);
     }
 
     @Override
     public Class<?> findClass(String name) throws ClassNotFoundException {
         try {
+            if (hasAndroidXAppCompat) {
+                name = AndroidXRemmaper.toAndroidX(name);
+            } else if (hasLegacyAppCompat) {
+                name = AndroidXRemmaper.fromAndroidX(name);
+            }
             return projectLayoutClassLoader.loadClass(name);
         } catch (ClassNotFoundException e) {
             LayoutIO.logError("unable to load view " + name, e);
-                throw e;
-            }
+            throw e;
         }
+    }
 
     @Override
     public ResourceNamespace.Resolver getImplicitNamespaces() {
@@ -147,12 +180,12 @@ public class LayoutLibCallback extends LayoutlibCallback {
 
     @Override
     public boolean hasLegacyAppCompat() {
-        return true; //To change body of generated methods, choose Tools | Templates.
+        return hasLegacyAppCompat;
     }
 
     @Override
     public boolean hasAndroidXAppCompat() {
-        return false; //To change body of generated methods, choose Tools | Templates.
+        return hasAndroidXAppCompat;
     }
 
     @Override
