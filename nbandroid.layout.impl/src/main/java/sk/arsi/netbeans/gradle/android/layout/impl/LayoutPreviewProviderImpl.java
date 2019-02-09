@@ -32,8 +32,8 @@ import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewProvider;
 public class LayoutPreviewProviderImpl extends LayoutPreviewProvider {
 
     @Override
-    public LayoutPreviewPanel getPreview(File platformFolder, File layoutFile, File appResFolder, String themeName, List<File> aars, List<File> jars) {
-        LayoutPreviewPanelImpl imagePanel = new LayoutPreviewPanelImpl(platformFolder, layoutFile, appResFolder, themeName, aars, jars);
+    public LayoutPreviewPanel getPreview(File platformFolder, File layoutFile, File appResFolder, String themeName, List<File> aars, List<File> jars, File projectClassesFolder, File projectR, String appPackage) {
+        LayoutPreviewPanelImpl imagePanel = new LayoutPreviewPanelImpl(platformFolder, layoutFile, appResFolder, themeName, aars, jars, projectClassesFolder, projectR, appPackage);
         return imagePanel;
     }
 

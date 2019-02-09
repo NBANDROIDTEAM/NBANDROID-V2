@@ -192,8 +192,6 @@ public class LayoutFilePullParser extends KXmlParser implements ILayoutPullParse
                 // http://schemas.android.com/apk/res/foo.bar, but the XML document will
                 // be using http://schemas.android.com/apk/res-auto in library projects:
                 value = super.getAttributeValue(AUTO_URI, localName);
-            } else {
-                System.out.println("sk.arsi.netbeans.gradle.android.layout.impl.LayoutFilePullParser.getAttributeValue()");
             }
         }
 

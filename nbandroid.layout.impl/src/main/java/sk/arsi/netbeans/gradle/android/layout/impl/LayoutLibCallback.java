@@ -70,12 +70,14 @@ public class LayoutLibCallback extends LayoutlibCallback {
     private final List<File> aars;
     private final LayoutClassLoader classLoader;
     private final ResourceNamespace appNamespace;
+    private final ProjectLayoutClassLoader projectLayoutClassLoader;
 
-    public LayoutLibCallback(ILogger logger, List<File> aars, LayoutClassLoader classLoader, ResourceNamespace appNamespace) {
+    public LayoutLibCallback(ILogger logger, List<File> aars, LayoutClassLoader classLoader, ResourceNamespace appNamespace, ProjectLayoutClassLoader projectLayoutClassLoader) {
         mLog = logger;
         this.aars = aars;
         this.classLoader = classLoader;
         this.appNamespace = appNamespace;
+        this.projectLayoutClassLoader = projectLayoutClassLoader;
         initResources();
     }
 
@@ -86,41 +88,39 @@ public class LayoutLibCallback extends LayoutlibCallback {
     public Object loadView(String name, Class[] constructorSignature, Object[] constructorArgs)
             throws Exception {
         try {
-        Class<?> viewClass = classLoader.loadClass(name);
+            Class<?> viewClass = projectLayoutClassLoader.loadClass(name);
             Constructor<?> viewConstructor = viewClass.getConstructor(constructorSignature);
             viewConstructor.setAccessible(true);
             return viewConstructor.newInstance(constructorArgs);
         } catch (Exception e) {
             LayoutIO.logError("unable to load view " + name, e);
-        }
+            }
         throw new UnsupportedOperationException();
     }
 
     @Override
     public Object loadClass(String name, Class[] constructorSignature, Object[] constructorArgs) throws ClassNotFoundException {
         try {
-        Class<?> viewClass = classLoader.loadClass(name);
-        Constructor<?> viewConstructor = viewClass.getConstructor(constructorSignature);
-        viewConstructor.setAccessible(true);
+            Class<?> viewClass = projectLayoutClassLoader.loadClass(name);
+            Constructor<?> viewConstructor = viewClass.getConstructor(constructorSignature);
+            viewConstructor.setAccessible(true);
             return viewConstructor.newInstance(constructorArgs);
         } catch (Exception e) {
             LayoutIO.logError("unable to load class " + name, e);
 
-        }
+            }
         throw new ClassNotFoundException(name);
     }
 
     @Override
     public Class<?> findClass(String name) throws ClassNotFoundException {
         try {
-            return classLoader.loadClass(name);
+            return projectLayoutClassLoader.loadClass(name);
         } catch (ClassNotFoundException e) {
             LayoutIO.logError("unable to load view " + name, e);
-            throw e;
+                throw e;
+            }
         }
-    }
-
-
 
     @Override
     public ResourceNamespace.Resolver getImplicitNamespaces() {
@@ -202,7 +202,6 @@ public class LayoutLibCallback extends LayoutlibCallback {
     }
     //0x7f0f0005
 
-
     @Override
     public int getOrGenerateResourceId(ResourceReference resource) {
         int id = classLoader.getClassGeneratorConfig().getOrCreateId(resource.getNamespace(), resource.getResourceType(), resource.getName());
@@ -215,6 +214,7 @@ public class LayoutLibCallback extends LayoutlibCallback {
     }
 
     public static final byte PROTO_XML_LEAD_BYTE = 0x0A;
+
     @Override
     public XmlPullParser createXmlParserForFile(String fileName) {
         try {

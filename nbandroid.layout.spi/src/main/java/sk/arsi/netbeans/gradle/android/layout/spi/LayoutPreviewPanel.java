@@ -36,14 +36,20 @@ public abstract class LayoutPreviewPanel extends JPanel {
     protected final String themeName;
     protected final List<File> aars;
     protected final List<File> jars;
+    protected final File projectClassesFolder;
+    protected final File projectR;
+    protected final String appPackage;
 
-    public LayoutPreviewPanel(File platformFolder, File layoutFile, File appResFolder, String themeName, List<File> aars, List<File> jars) {
+    public LayoutPreviewPanel(File platformFolder, File layoutFile, File appResFolder, String themeName, List<File> aars, List<File> jars, File projectClassesFolder, File projectR, String appPackage) {
         this.platformFolder = platformFolder;
         this.layoutFile = layoutFile;
         this.appResFolder = appResFolder;
         this.themeName = themeName;
         this.aars = aars;
         this.jars = jars;
+        this.projectClassesFolder = projectClassesFolder;
+        this.projectR = projectR;
+        this.appPackage = appPackage;
     }
 
     public LayoutPreviewPanel() {
@@ -53,6 +59,9 @@ public abstract class LayoutPreviewPanel extends JPanel {
         this.themeName = null;
         this.aars = null;
         this.jars = null;
+        this.projectClassesFolder = null;
+        this.projectR = null;
+        this.appPackage = null;
     }
 
     public abstract void refreshPreview(InputStream stream);

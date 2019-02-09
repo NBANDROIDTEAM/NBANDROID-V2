@@ -36,7 +36,6 @@ import com.android.ide.common.resources.ResourceValueMap;
 import com.android.ide.common.resources.configuration.FolderConfiguration;
 import com.android.ide.common.resources.configuration.VersionQualifier;
 import com.android.ide.common.util.DisjointUnionMap;
-import com.android.ide.common.xml.ManifestData;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
 import com.android.resources.Keyboard;
 import com.android.resources.KeyboardState;
@@ -127,6 +126,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
     private FileObject layoutFileObject;
     private final File appResFolder;
     private final List<String> themes = new ArrayList<>();
+    private DelayedFileChangeListener delayedFileChangeListener;
 
     /**
      * Creates new form LayoutPreviewPanelImpl1
@@ -135,10 +135,11 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         initComponents();
         appResFolder = null;
         dpi = 0;
+        this.delayedFileChangeListener = null;
     }
 
-    public LayoutPreviewPanelImpl(File platformFolder, File layoutFile, File appResFolder, String themeName, List<File> aars, List<File> jars) {
-        super(platformFolder, layoutFile, appResFolder, themeName, aars, jars);
+    public LayoutPreviewPanelImpl(File platformFolder, File layoutFile, File appResFolder, String themeName, List<File> aars, List<File> jars, File projectClassesFolder, File projectR, String appPackage) {
+        super(platformFolder, layoutFile, appResFolder, themeName, aars, jars, projectClassesFolder, projectR, appPackage);
         initComponents();
         density.setModel(new DefaultComboBoxModel<>(Density.values()));
         density.setSelectedItem(Density.MEDIUM);
@@ -163,15 +164,6 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         Runnable runnable = new Runnable() {
             public void run() {
                 String projectRoot = appResFolder.getParent();
-                File manifest = new File(projectRoot + File.separator + "AndroidManifest.xml");
-                if (manifest.exists() && manifest.isFile()) {
-                    try {
-                        ManifestData manifestData = ResourceClassGenerator.parseProjectManifest(new FileInputStream(manifest));
-                        ManifestData.Activity[] activities = manifestData.getActivities();
-                    } catch (FileNotFoundException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
                 appNamespace = ResourceNamespace.RES_AUTO;
                 dpi = Toolkit.getDefaultToolkit().getScreenResolution();
                 try {
@@ -211,6 +203,12 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
                 resFo.addRecursiveListener(WeakListeners.create(FileChangeListener.class, LayoutPreviewPanelImpl.this, resFo));
                 layoutFileObject = FileUtil.toFileObject(layoutFile);
                 refreshPreview();
+                //When compiling project classes, a lot of events will occur, but the last one is enough
+                delayedFileChangeListener = new DelayedFileChangeListener(LayoutPreviewPanelImpl.this);
+                if (projectClassesFolder.exists() && projectClassesFolder.isDirectory()) {
+                    FileObject fo = FileUtil.toFileObject(projectClassesFolder);
+                    fo.addRecursiveListener(WeakListeners.create(FileChangeListener.class, delayedFileChangeListener, fo));
+                }
             }
         };
         new Thread(runnable).start();
@@ -398,6 +396,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         refreshLock.set(false);
         LayoutIO.getDefaultIO().reset();
         LayoutIO.logInfo("I'm starting to generate a preview of " + layoutFile.getName());
+        ProjectLayoutClassLoader projectLayoutClassLoader = ProjectLayoutClassLoader.getClassloader(projectClassesFolder, projectR, appPackage, uRLClassLoader);
         if (WINDOW_SIZE.equals(model.getSelectedItem())) {
             imageWidth = imagePanel.getWidth();
             imageHeight = imagePanel.getHeight();
@@ -429,7 +428,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         }
 
         try {
-            RenderSession session = layoutLibrary.createSession(getSessionParams(platformFolder, LayoutFilePullParser.create(layoutStream, appNamespace), getCurrentConfig(), new LayoutLibCallback(new LayoutIO(), aars, uRLClassLoader, appNamespace), themeName, true, SessionParams.RenderingMode.NORMAL, 27));
+            RenderSession session = layoutLibrary.createSession(getSessionParams(platformFolder, LayoutFilePullParser.create(layoutStream, appNamespace), getCurrentConfig(), new LayoutLibCallback(new LayoutIO(), aars, uRLClassLoader, appNamespace, projectLayoutClassLoader), themeName, true, SessionParams.RenderingMode.NORMAL, 27));
             Result renderResult = session.render();
             if (renderResult.getException() != null) {
                 LayoutIO.getDefaultIO().show();
@@ -646,7 +645,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         }
     }
 
-    private void refreshPreview() {
+    public void refreshPreview() {
         if (refreshLock.compareAndSet(false, true)) {
             RP.execute(LayoutPreviewPanelImpl.this);
         }
