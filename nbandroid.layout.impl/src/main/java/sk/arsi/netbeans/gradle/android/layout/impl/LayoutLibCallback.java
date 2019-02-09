@@ -110,15 +110,10 @@ public class LayoutLibCallback extends LayoutlibCallback {
         } else if (hasLegacyAppCompat) {
             name = AndroidXRemmaper.fromAndroidX(name);
         }
-        try {
-            Class<?> viewClass = projectLayoutClassLoader.loadClass(name);
+        Class<?> viewClass = projectLayoutClassLoader.loadClass(name);
             Constructor<?> viewConstructor = viewClass.getConstructor(constructorSignature);
             viewConstructor.setAccessible(true);
             return viewConstructor.newInstance(constructorArgs);
-        } catch (Exception e) {
-            LayoutIO.logError("unable to load view " + name, e);
-        }
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -142,17 +137,12 @@ public class LayoutLibCallback extends LayoutlibCallback {
 
     @Override
     public Class<?> findClass(String name) throws ClassNotFoundException {
-        try {
-            if (hasAndroidXAppCompat) {
+        if (hasAndroidXAppCompat) {
                 name = AndroidXRemmaper.toAndroidX(name);
             } else if (hasLegacyAppCompat) {
                 name = AndroidXRemmaper.fromAndroidX(name);
             }
             return projectLayoutClassLoader.loadClass(name);
-        } catch (ClassNotFoundException e) {
-            LayoutIO.logError("unable to load view " + name, e);
-            throw e;
-        }
     }
 
     @Override
