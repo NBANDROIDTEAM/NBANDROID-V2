@@ -50,6 +50,7 @@ import com.android.tools.nbandroid.layoutlib.ConfigGenerator;
 import com.android.tools.nbandroid.layoutlib.LayoutLibrary;
 import com.android.tools.nbandroid.layoutlib.LayoutLibraryLoader;
 import com.android.tools.nbandroid.layoutlib.RenderingException;
+import com.google.common.collect.ImmutableSet;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -85,6 +86,7 @@ import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.io.ShowOperation;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -399,7 +401,7 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         ProjectLayoutClassLoader projectLayoutClassLoader = ProjectLayoutClassLoader.getClassloader(projectClassesFolder, projectR, appPackage, uRLClassLoader);
         if (WINDOW_SIZE.equals(model.getSelectedItem())) {
             imageWidth = imagePanel.getWidth();
-            if(imageWidth<1){
+            if (imageWidth < 1) {
                 imageWidth = 100;
             }
             imageHeight = imagePanel.getHeight();
@@ -435,23 +437,37 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
 
         try {
             RenderSession session = layoutLibrary.createSession(getSessionParams(platformFolder, LayoutFilePullParser.create(layoutStream, appNamespace), getCurrentConfig(), new LayoutLibCallback(new LayoutIO(), aars, uRLClassLoader, appNamespace, projectLayoutClassLoader), themeName, true, SessionParams.RenderingMode.NORMAL, 27));
-            Result renderResult = session.render();
-            if (renderResult.getException() != null) {
-                LayoutIO.getDefaultIO().show();
-                LayoutIO.logError("unable to generate layout preview", renderResult.getException());
-                renderResult.getException().printStackTrace();
+            if (session.getResult() != null && session.getResult().getException() != null) {
+                String tmp = session.getResult().getErrorMessage();
+                if (tmp == null) {
+                    tmp = "unable to create rendering sesion";
+                }
+                LayoutIO.getDefaultIO().show(ImmutableSet.of(ShowOperation.OPEN, ShowOperation.MAKE_VISIBLE));
+                LayoutIO.logError(tmp, session.getResult().getException());
                 imagePanel.label.setText("Error rendering layout");
                 imagePanel.label.setVisible(true);
-            } else if (renderResult.getStatus() == Result.Status.SUCCESS) {
-                setImage(session.getImage());
-                imagePanel.label.setVisible(false);
-                imagePanel.progress.setVisible(false);
             } else {
-                LayoutIO.getDefaultIO().show();
-                LayoutIO.logError("unable to generate layout preview: " + renderResult.getStatus(), null);
+                Result renderResult = session.render();
+                if (renderResult.getException() != null) {
+                    LayoutIO.getDefaultIO().show(ImmutableSet.of(ShowOperation.OPEN, ShowOperation.MAKE_VISIBLE));
+                    String tmp = renderResult.getErrorMessage();
+                    if (tmp == null) {
+                        tmp = "unable to create rendering sesion";
+                    }
+                    LayoutIO.logError(tmp, renderResult.getException());
+                    imagePanel.label.setText("Error rendering layout");
+                    imagePanel.label.setVisible(true);
+                } else if (renderResult.getStatus() == Result.Status.SUCCESS) {
+                    setImage(session.getImage());
+                    imagePanel.label.setVisible(false);
+                    imagePanel.progress.setVisible(false);
+                } else {
+                    LayoutIO.getDefaultIO().show();
+                    LayoutIO.logError("unable to generate layout preview: " + renderResult.getStatus(), null);
+                }
             }
         } catch (Exception e) {
-            LayoutIO.getDefaultIO().show();
+            LayoutIO.getDefaultIO().show(ImmutableSet.of(ShowOperation.OPEN, ShowOperation.MAKE_VISIBLE));
             e.printStackTrace();
             imagePanel.label.setText("Error rendering layout");
             imagePanel.label.setVisible(true);
