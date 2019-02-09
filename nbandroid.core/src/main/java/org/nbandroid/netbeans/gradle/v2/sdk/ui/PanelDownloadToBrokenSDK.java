@@ -6,7 +6,6 @@
 package org.nbandroid.netbeans.gradle.v2.sdk.ui;
 
 import com.android.utils.FileUtils;
-import com.sun.javafx.PlatformUtil;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -20,6 +19,7 @@ import org.nbandroid.netbeans.gradle.v2.maven.MavenDownloader;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import static org.nbandroid.netbeans.gradle.v2.sdk.ui.SDKVisualPanelInstall.SDK_INSTALLED;
 import org.openide.modules.Places;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -76,12 +76,12 @@ public class PanelDownloadToBrokenSDK extends javax.swing.JPanel {
                 elementsByTagName = parse.getElementsByTagName(SDKURL);
                 length = elementsByTagName.getLength();
                 String filter = "**********";
-                if (PlatformUtil.isLinux()) {
-                    filter = LINUX;
-                } else if (PlatformUtil.isWindows()) {
+                if (BaseUtilities.isWindows()) {
                     filter = WINDOWS;
-                } else if (PlatformUtil.isMac()) {
+                } else if (BaseUtilities.isMac()) { //first test for MACOSX, BaseUtilities.isUnix() has included MACOSX
                     filter = MACOSX;
+                } else if (BaseUtilities.isUnix()) {
+                    filter = LINUX;
                 }
                 if (length > 0) {
                     for (int i = 0; i < length; i++) {
