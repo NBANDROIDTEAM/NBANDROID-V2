@@ -399,7 +399,13 @@ public class LayoutPreviewPanelImpl extends LayoutPreviewPanel implements Runnab
         ProjectLayoutClassLoader projectLayoutClassLoader = ProjectLayoutClassLoader.getClassloader(projectClassesFolder, projectR, appPackage, uRLClassLoader);
         if (WINDOW_SIZE.equals(model.getSelectedItem())) {
             imageWidth = imagePanel.getWidth();
+            if(imageWidth<1){
+                imageWidth = 100;
+            }
             imageHeight = imagePanel.getHeight();
+            if (imageHeight < 1) {
+                imageHeight = 100;
+            }
         }
         if (projectResourceMerger == null) {
             initProjectRepository();
