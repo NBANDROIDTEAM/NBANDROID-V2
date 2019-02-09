@@ -114,6 +114,52 @@ public class ResourceClassGenerator {
         return resources;
     }
 
+    public static Map<ResourceType, Map<String, Object>> buildFullResourceMap(ResourceNamespace namespace, String fqcn, File projectR, ResourceClassGeneratorConfig config) {
+        final Map<Integer, Integer> originalToGenerated = new HashMap<>();
+        final Map<ResourceType, Map<String, Object>> resources = Maps.newHashMap();
+        try {
+            List<String> readLines = Files.readLines(projectR, StandardCharsets.UTF_8);
+            for (String line : readLines) {
+                StringTokenizer tok = new StringTokenizer(line, " ", false);
+                if (tok.countTokens() > 3) {
+                    switch (tok.nextToken()) {
+                        case "int":
+                            handleFullLine(namespace, tok, resources, originalToGenerated, config);
+                            break;
+                        case "int[]":
+                            handleFullLineArray(tok, line, resources);
+                            break;
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        //refresh array ids to new IDs
+        for (Map.Entry<ResourceType, Map<String, Object>> entry : resources.entrySet()) {
+            ResourceType type = entry.getKey();
+            Map<String, Object> values = entry.getValue();
+            for (Map.Entry<String, Object> entry1 : values.entrySet()) {
+                String name = entry1.getKey();
+                Object value = entry1.getValue();
+                if (value instanceof List) {
+                    List<Integer> in = (List<Integer>) value;
+                    List<Integer> out = new ArrayList<>();
+                    for (Integer val : in) {
+                        Integer newVal = originalToGenerated.get(val);
+                        if (newVal == null) {
+                            out.add(val);
+                        } else {
+                            out.add(newVal);
+                        }
+                    }
+                    values.replace(name, out);
+                }
+            }
+        }
+        return resources;
+    }
+
     private static void handleFullLine(ResourceNamespace namespace, StringTokenizer tok, final Map<ResourceType, Map<String, Object>> resources, Map<Integer, Integer> originalToGenerated, ResourceClassGeneratorConfig config) {
 
         ResourceType resourceType = ResourceType.getEnum(tok.nextToken());

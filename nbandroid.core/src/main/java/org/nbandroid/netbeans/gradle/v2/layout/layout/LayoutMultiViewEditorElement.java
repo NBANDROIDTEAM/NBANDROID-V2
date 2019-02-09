@@ -18,6 +18,7 @@
  */
 package org.nbandroid.netbeans.gradle.v2.layout.layout;
 
+import com.android.SdkConstants;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,6 +38,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.xml.parsers.ParserConfigurationException;
 import org.nbandroid.netbeans.gradle.api.AndroidProjects;
+import org.nbandroid.netbeans.gradle.config.BuildVariant;
 import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
 import org.nbandroid.netbeans.gradle.v2.manifest.AndroidManifestParser;
 import org.nbandroid.netbeans.gradle.v2.manifest.ManifestData;
@@ -107,6 +109,14 @@ public class LayoutMultiViewEditorElement extends MultiViewEditorElement impleme
                 androidClassPathProvider = project.getLookup().lookup(GradleAndroidClassPathProvider.class);
             } while (androidClassPathProvider == null && safetyCounter > 0);
         }
+        //****
+        BuildVariant buildVariant = project.getLookup().lookup(BuildVariant.class);
+        File projectClassesFolder = buildVariant.getCurrentVariant().getMainArtifact().getClassesFolder();
+        String variant = projectClassesFolder.getName();
+        File buildRoot = projectClassesFolder.getParentFile().getParentFile();
+        File projectR = new File(buildRoot, SdkConstants.FD_SYMBOLS + File.separator + variant + File.separator + "R.txt");
+        System.out.println("org.nbandroid.netbeans.gradle.v2.layout.layout.LayoutMultiViewEditorElement.initLayoutEditor()");
+        //****
         final List<File> aars = new ArrayList<>();
         ClassPath classPath = androidClassPathProvider.getCompilePath();
         FileObject[] roots = classPath.getRoots();
@@ -146,12 +156,14 @@ public class LayoutMultiViewEditorElement extends MultiViewEditorElement impleme
             } while (resFolderFile == null && safetyCounter > 0);
         }
         //find activity theme
+        String appPackage = null;
         String projectTheme = null;
         String projectRoot = resFolderFile.getParent();
         File manifest = new File(projectRoot + File.separator + "AndroidManifest.xml");
         if (manifest.exists() && manifest.isFile()) {
             try {
                 ManifestData manifestData = AndroidManifestParser.parse(new FileInputStream(manifest));
+                appPackage = manifestData.getPackage();
                 projectTheme = manifestData.getTheme();
                 ManifestData.Activity[] activities = manifestData.getActivities();
                 for (ManifestData.Activity activity : activities) {
@@ -180,7 +192,7 @@ public class LayoutMultiViewEditorElement extends MultiViewEditorElement impleme
         LayoutPreviewProvider previewProvider = Lookup.getDefault().lookup(LayoutPreviewProvider.class);
         panel = previewProvider.getPreview(platformFolder,
                 FileUtil.toFile(dataObject.getPrimaryFile()),
-                resFolderFile, projectTheme, aars, jars);
+                resFolderFile, projectTheme, aars, jars, projectClassesFolder, projectR, appPackage);
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
