@@ -142,7 +142,7 @@ public class LayoutMultiViewEditorElement extends MultiViewEditorElement impleme
             }
         }
         //find res folder
-        File resFolderFile = AndroidProjects.findResFolderAsFile(project);;
+        File resFolderFile = AndroidProjects.findResFolderAsFile(project, dataObject.getPrimaryFile());
         if (resFolderFile == null) {
             //restored from serialized TopComponent wait for NBAndroid to come up
             int safetyCounter = 1200;
@@ -152,7 +152,7 @@ public class LayoutMultiViewEditorElement extends MultiViewEditorElement impleme
                 } catch (InterruptedException ex) {
                 }
                 safetyCounter--;
-                resFolderFile = AndroidProjects.findResFolderAsFile(project);
+                resFolderFile = AndroidProjects.findResFolderAsFile(project, dataObject.getPrimaryFile());
             } while (resFolderFile == null && safetyCounter > 0);
         }
         //find activity theme
