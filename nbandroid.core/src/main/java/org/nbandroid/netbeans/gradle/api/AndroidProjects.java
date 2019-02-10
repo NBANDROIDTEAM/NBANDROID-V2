@@ -84,9 +84,15 @@ public class AndroidProjects {
         return null;
     }
 
-    public static File findResFolderAsFile(Project project) {
+    public static File findResFolderAsFile(Project project, FileObject layoutFo) {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] resGroup = sources.getSourceGroups(AndroidConstants.SOURCES_TYPE_ANDROID_RES);
+        for (SourceGroup sourceGroup : resGroup) {
+            FileObject rootFolder = sourceGroup.getRootFolder();
+            if (FileUtil.isParentOf(rootFolder, layoutFo)) {
+                return FileUtil.toFile(rootFolder);
+            }
+        }
         if (resGroup.length > 0) {
             return FileUtil.toFile(resGroup[0].getRootFolder());
         }
