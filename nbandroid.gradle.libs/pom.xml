@@ -20,6 +20,7 @@
                     <defaultCluster>${cluster}</defaultCluster>
                     <cluster>${cluster}</cluster>
                     <publicPackages>
+                        <publicPackage>org.gradle.*</publicPackage>
                     </publicPackages>
                     <codeNameBase>sk-arsi-netbeans-gradle-android-Gradle-Android-support-gradle-libs</codeNameBase>
                     <moduleDependencies>

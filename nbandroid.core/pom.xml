@@ -490,5 +490,10 @@
             <artifactId>Gradle-Android-support-layout-spi</artifactId>
             <version>01.00-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>Gradle-Android-support-gradle-spi</artifactId>
+            <version>01.00-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>
