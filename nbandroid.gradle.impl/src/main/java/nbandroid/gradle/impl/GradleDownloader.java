@@ -29,7 +29,6 @@ import org.gradle.wrapper.Install;
 import org.gradle.wrapper.Logger;
 import org.gradle.wrapper.PathAssembler;
 import org.gradle.wrapper.WrapperExecutor;
-import org.netbeans.api.io.IOProvider;
 import org.netbeans.api.io.InputOutput;
 import org.netbeans.api.io.ShowOperation;
 import org.netbeans.api.progress.ProgressHandle;
@@ -38,6 +37,7 @@ import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -45,16 +45,36 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author arsi
  */
-public class GradleDownloader extends BootstrapMainStarter implements DownloadProgressListener {
+public class GradleDownloader extends BootstrapMainStarter implements DownloadProgressListener, Runnable {
 
-    private InputOutput io;
+    private final InputOutput io;
     private ProgressHandle progressHandle;
     private boolean init = false;
     private final InstanceContent instanceContent = new InstanceContent();
+    private final Project project;
+    private final Lookup lookup;
+    private static final RequestProcessor RP = new RequestProcessor(GradleDownloader.class.getName(), 4);
 
-    public Lookup findConnector(Project project) {
+    public GradleDownloader(Project project) {
+        this.project = project;
+        io = project.getLookup().lookup(InputOutput.class);
+        lookup = new AbstractLookup(instanceContent);
+        RP.execute(this);
+    }
+
+    public Lookup getLookup() {
+        return lookup;
+    }
+
+    @Override
+    public void start(String[] args, File gradleHome) throws Exception {
+        progressHandle.finish();
+        instanceContent.add(new GradleHome(Status.OK, gradleHome));
+    }
+
+    @Override
+    public void run() {
         FileObject projectDirectory = project.getProjectDirectory();
-        io = IOProvider.getDefault().getIO(projectDirectory.getName(), false);
         FileObject wrapperFolder = null;
         int parents = 5;
         do {
@@ -84,13 +104,6 @@ public class GradleDownloader extends BootstrapMainStarter implements DownloadPr
         } else {
             instanceContent.add(new GradleHome(Status.ERROR, null));
         }
-        return new AbstractLookup(instanceContent);
-    }
-
-    @Override
-    public void start(String[] args, File gradleHome) throws Exception {
-        progressHandle.finish();
-        instanceContent.add(new GradleHome(Status.OK, gradleHome));
     }
 
     public static enum Status {
@@ -117,17 +130,16 @@ public class GradleDownloader extends BootstrapMainStarter implements DownloadPr
 
     }
 
-
     @Override
     public void downloadStatusChanged(URI address, long contentLength, long downloaded) {
-       if(!init){
-           progressHandle.setDisplayName("Downloading:" + address.toString());
-           progressHandle.switchToDeterminate((int) contentLength);
-           init = true;
-           progressHandle.progress((int) downloaded);
-       }else{
-           progressHandle.progress((int) downloaded);
-       }
+        if (!init) {
+            progressHandle.setDisplayName("Downloading:" + address.toString());
+            progressHandle.switchToDeterminate((int) contentLength);
+            init = true;
+            progressHandle.progress((int) downloaded);
+        } else {
+            progressHandle.progress((int) downloaded);
+        }
     }
 
     private class NbLogger extends Logger {

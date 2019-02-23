@@ -21,10 +21,13 @@ package org.netbeans.modules.android.api;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import nbandroid.gradle.spi.GradleHandler;
 import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ProjectConnection;
 import org.gradle.tooling.model.GradleProject;
 import org.gradle.tooling.model.GradleTask;
+import org.gradle.tooling.model.gradle.GradleBuild;
+import org.netbeans.api.io.IOProvider;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileObject;
@@ -47,6 +50,7 @@ public class NbAndroidRootProjectImpl implements Project, Runnable {
 
     public NbAndroidRootProjectImpl(FileObject projectDirectory, ProjectState ps) {
         this.projectDirectory = projectDirectory;
+        ic.add(IOProvider.get("Terminal").getIO(projectDirectory.getName(), false));
         RP.execute(this);
     }
 
@@ -62,6 +66,10 @@ public class NbAndroidRootProjectImpl implements Project, Runnable {
 
     @Override
     public void run() {
+        Lookup modelLookup = GradleHandler.getDefault().getModelLookup(this);
+        GradleHandler.getDefault().refreshModelLookup(this, GradleProject.class, GradleBuild.class);
+        System.out.println("org.netbeans.modules.android.api.NbAndroidRootProjectImpl.run()");
+        GradleHandler.getDefault().refreshModelLookup(this, GradleProject.class);
         List<GradleTask> tasks = new ArrayList<>();
         GradleConnector connector = GradleConnector.newConnector();
         connector.useInstallation(new File("/home/arsi/.gradle/wrapper/dists/gradle-4.10.2-bin/49c0y5oy9a90fibq1gqvcthdn/gradle-4.10.2"));

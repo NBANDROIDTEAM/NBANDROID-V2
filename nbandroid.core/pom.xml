@@ -495,5 +495,10 @@
             <artifactId>Gradle-Android-support-gradle-spi</artifactId>
             <version>01.00-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-api-io</artifactId>
+            <version>${version.nb}</version>
+        </dependency>
     </dependencies>
 </project>
