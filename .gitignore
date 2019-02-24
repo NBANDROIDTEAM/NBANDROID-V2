@@ -21,3 +21,5 @@
 /nbandroid.gradle.libs/target/
 /nbandroid.gradle.spi/target/
 /nbandroid.gradle.impl/target/
+/nbandroid.gradle.tooling/target/
+/nbandroid.gradle.libs/src/main/gradle/android-gradle-tooling.jar

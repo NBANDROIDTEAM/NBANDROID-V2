@@ -21,6 +21,7 @@
                     <cluster>${cluster}</cluster>
                     <publicPackages>
                         <publicPackage>nbandroid.gradle.spi.*</publicPackage>
+                        <publicPackage>nbandroid.gradle.tooling.*</publicPackage>
                     </publicPackages>
                     <codeNameBase>sk-arsi-netbeans-gradle-android-Gradle-Android-support-gradle-spi</codeNameBase>
                     <moduleDependencies>
@@ -67,6 +68,17 @@
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-util-lookup</artifactId>
             <version>${version.nb}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-spi-navigator</artifactId>
+            <version>${version.nb}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>Gradle-Android-support-gradle-tooling</artifactId>
+            <version>01.00-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

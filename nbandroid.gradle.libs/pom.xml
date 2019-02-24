@@ -26,6 +26,15 @@
                     <moduleDependencies>
                         
                     </moduleDependencies>
+                    <nbmResources>
+                        <nbmResource>
+                            <directory>src/main/gradle</directory>
+                            <targetPath>modules/ext/gradle</targetPath>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                        </nbmResource>
+                    </nbmResources>
                 </configuration>
             </plugin>
             <plugin>
@@ -56,7 +65,7 @@
         <dependency>
             <groupId>org.gradle</groupId>
             <artifactId>gradle-tooling-api</artifactId>
-            <version>4.10.3</version>
+            <version>5.0</version>
         </dependency>
 
         <dependency>

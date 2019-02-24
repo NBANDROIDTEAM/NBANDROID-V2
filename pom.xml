@@ -6,6 +6,7 @@
     <version>01.00-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
+        <module>nbandroid.gradle.tooling</module>
         <module>nbandroid.gradle.libs</module>
         <module>nbandroid.gradle.spi</module>
         <module>nbandroid.gradle.impl</module>
@@ -19,6 +20,7 @@
         <module>nbandroid.layout.spi</module>
         <module>nbandroid.layout.impl</module>
         <module>nbandroid.core</module>
+        
     </modules>
     <build>
         <extensions>

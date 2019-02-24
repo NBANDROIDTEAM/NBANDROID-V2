@@ -20,11 +20,13 @@ package nbandroid.gradle.impl;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 import nbandroid.gradle.impl.GradleDownloader.GradleHome;
 import nbandroid.gradle.spi.GradleHandler;
+import nbandroid.gradle.tooling.AndroidProjectInfo;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.gradle.internal.impldep.com.google.common.collect.ImmutableSet;
 import org.gradle.tooling.GradleConnectionException;
@@ -39,6 +41,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -54,6 +58,8 @@ import org.openide.util.lookup.ServiceProvider;
 public class GradleHandlerImpl implements GradleHandler {
 
     private final Map<Project, GradleHandlerApi> handlers = new WeakHashMap<>();
+    final static String TOOLING_JAR = InstalledFileLocator.getDefault().locate("modules/ext/gradle/android-gradle-tooling.jar", "sk-arsi-netbeans-gradle-android-Gradle-Android-support-gradle-libs", false).getAbsolutePath();
+    final static String INIT_SCRIPT = InstalledFileLocator.getDefault().locate("modules/ext/gradle/nba-tooling.gradle", "sk-arsi-netbeans-gradle-android-Gradle-Android-support-gradle-libs", false).getAbsolutePath();
 
     @Override
     public void refreshModelLookup(Project project, Class... classes) {
@@ -99,7 +105,10 @@ public class GradleHandlerImpl implements GradleHandler {
         }
 
         public void refreshModelLookup(Class... classes) {
-            models = classes;
+            Class[] tmp = Arrays.copyOf(classes, classes.length + 1);
+            //add GradleProject from this Module classloader, to init Goals Navigator
+            tmp[classes.length] = AndroidProjectInfo.class;
+            models = tmp;
             resultChanged(null);
         }
 
@@ -119,6 +128,12 @@ public class GradleHandlerImpl implements GradleHandler {
                     try (ProjectConnection connection = connector.connect()) {
                         for (Class model : models) {
                             ModelBuilder modelBuilder = connection.model(model);
+                            //Emulate Android studio
+                            modelBuilder.addArguments("-Pandroid.injected.build.model.only.versioned=3");
+                            //Prepare load of plugin to retreive tasks from Gradle
+                            modelBuilder.addJvmArguments("-DANDROID_TOOLING_JAR=" + TOOLING_JAR);
+                            modelBuilder.addArguments("-I");
+                            modelBuilder.addArguments(INIT_SCRIPT);
                             InputOutput io = project.getLookup().lookup(InputOutput.class);
                             if (io != null) {
                                 io.show(ImmutableSet.of(ShowOperation.OPEN, ShowOperation.MAKE_VISIBLE));
@@ -137,8 +152,8 @@ public class GradleHandlerImpl implements GradleHandler {
                             });
                             try {
                                 modelContent.add(modelBuilder.get());
-                            } catch (GradleConnectionException gradleConnectionException) {
-                            } catch (IllegalStateException illegalStateException) {
+                            } catch (GradleConnectionException | IllegalStateException gradleConnectionException) {
+                                Exceptions.printStackTrace(gradleConnectionException);
                             }
                             progressHandle.finish();
                         }
