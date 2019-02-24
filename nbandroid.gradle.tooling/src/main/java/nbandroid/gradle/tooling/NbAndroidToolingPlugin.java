@@ -63,6 +63,7 @@ public class NbAndroidToolingPlugin implements Plugin<Project> {
         public Object buildAll(String modelName, Project project) {
             AndroidProjectInfo info = new AndroidProjectInfoImpl();
             try {
+                ((AndroidProjectInfoImpl) info).setProjectPath(project.getProjectDir().getAbsolutePath());
                 Map<String, List<TaskInfo>> projectTasks = info.getProjectTasks();
                 Map<Project, Set<Task>> tasks = project.getAllTasks(true);
                 for (Map.Entry<Project, Set<Task>> entry : tasks.entrySet()) {

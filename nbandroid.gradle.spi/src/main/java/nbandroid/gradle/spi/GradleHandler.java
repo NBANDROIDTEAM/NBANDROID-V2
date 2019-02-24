@@ -18,6 +18,7 @@
  */
 package nbandroid.gradle.spi;
 
+import java.io.File;
 import org.netbeans.api.project.Project;
 import org.openide.util.Lookup;
 
@@ -34,4 +35,6 @@ public interface GradleHandler {
     public void refreshModelLookup(Project project, Class... classes);
 
     public Lookup getModelLookup(Project project);
+
+    public File getGradleHome(Project project);
 }

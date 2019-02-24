@@ -71,9 +71,12 @@ public class TaskInfoImpl implements TaskInfo {
 
     @Override
     public int hashCode() {
-        int hash = 7;
+        int hash = 5;
+        hash = 13 * hash + Objects.hashCode(this.group);
+        hash = 13 * hash + Objects.hashCode(this.name);
         return hash;
     }
+
 
     @Override
     public boolean equals(Object obj) {
@@ -83,14 +86,14 @@ public class TaskInfoImpl implements TaskInfo {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (!(obj instanceof TaskInfo)) {
             return false;
         }
-        final TaskInfoImpl other = (TaskInfoImpl) obj;
-        if (!Objects.equals(this.group, other.group)) {
+        final TaskInfo other = (TaskInfo) obj;
+        if (!Objects.equals(this.group, other.getGroup())) {
             return false;
         }
-        if (!Objects.equals(this.name, other.name)) {
+        if (!Objects.equals(this.name, other.getName())) {
             return false;
         }
         return true;

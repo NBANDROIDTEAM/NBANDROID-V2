@@ -18,6 +18,7 @@
  */
 package nbandroid.gradle.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
@@ -57,7 +58,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = GradleHandler.class)
 public class GradleHandlerImpl implements GradleHandler {
 
-    private final Map<Project, GradleHandlerApi> handlers = new WeakHashMap<>();
+    private final static Map<Project, GradleHandlerApi> handlers = new WeakHashMap<>();
+    private final static Map<Project, GradleHome> gradleLocations = new WeakHashMap<>();
     final static String TOOLING_JAR = InstalledFileLocator.getDefault().locate("modules/ext/gradle/android-gradle-tooling.jar", "sk-arsi-netbeans-gradle-android-Gradle-Android-support-gradle-libs", false).getAbsolutePath();
     final static String INIT_SCRIPT = InstalledFileLocator.getDefault().locate("modules/ext/gradle/nba-tooling.gradle", "sk-arsi-netbeans-gradle-android-Gradle-Android-support-gradle-libs", false).getAbsolutePath();
 
@@ -85,6 +87,18 @@ public class GradleHandlerImpl implements GradleHandler {
             }
         }
         return handlerApi.getModelLookup();
+    }
+
+    @Override
+    public File getGradleHome(Project project) {
+        GradleHome gradleHome = null;
+        synchronized (gradleLocations) {
+            gradleHome = gradleLocations.get(project);
+        }
+        if (gradleHome != null) {
+            return gradleHome.getGradleHome();
+        }
+        return null;
     }
 
     private static class GradleHandlerApi implements LookupListener {
@@ -121,6 +135,9 @@ public class GradleHandlerImpl implements GradleHandler {
             if (!lookupResult.allInstances().isEmpty()) {
                 GradleHome gradleHome = lookupResult.allInstances().iterator().next();
                 if (gradleHome.getStatus() == GradleDownloader.Status.OK) {
+                    synchronized (gradleLocations) {
+                        gradleLocations.put(project, gradleHome);
+                    }
                     modelContent.set(Collections.emptyList(), null);
                     GradleConnector connector = GradleConnector.newConnector();
                     connector.useInstallation(gradleHome.getGradleHome());
@@ -178,7 +195,10 @@ public class GradleHandlerImpl implements GradleHandler {
         @Override
         public void write(byte[] b, int off, int len) throws IOException {
             synchronized (writer) {
-                String s = new String(b, off, len, "UTF-8").replaceAll("\u001B(\\[)((\\d+)(;))+(\\d+)m", "").replace("\u001B[0K", "\u001B[0K\u001B[100D");
+                String s = new String(b, off, len, "UTF-8").replaceAll("\u001B(\\[)((\\d+)(;))+(\\d+)m", "");
+                if (!s.contains("\n\r") && s.contains("\n")) {
+                    s = s.replace("\n", "\n\r");
+                }
                 writer.write(s);
             }
         }

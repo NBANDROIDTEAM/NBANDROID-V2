@@ -19,15 +19,22 @@
 package nbandroid.gradle.impl;
 
 import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import static nbandroid.gradle.impl.Bundle.ACT_Execute;
 import nbandroid.gradle.tooling.AndroidProjectInfo;
 import nbandroid.gradle.tooling.TaskInfo;
 import nbandroid.gradle.tooling.TaskInfoImpl;
 import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
@@ -37,6 +44,7 @@ import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -209,11 +217,43 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
             }
             return "<html>" + group + "<b>" + gradleTask.getName() + "</b></html>";
         }
+        
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[]{new RunGoalAction(gradleTask, gradleProject)};
+        }
+
+        @Override
+        public Action getPreferredAction() {
+            return new RunGoalAction(gradleTask, gradleProject);
+        }
 
         @Override
         public Image getIcon(int type) {
             return ImageUtilities.loadImage(MOJO_PNG);
         }
+    }
+
+    @Messages("ACT_Execute=Execute Task")
+    private static class RunGoalAction extends AbstractAction {
+
+        private final TaskInfo gradleTask;
+        private final AndroidProjectInfo gradleProject;
+
+        public RunGoalAction(TaskInfo gradleTask, AndroidProjectInfo gradleProject) {
+            this.gradleTask = gradleTask;
+            this.gradleProject = gradleProject;
+            putValue(Action.NAME, ACT_Execute());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Project project = FileOwnerQuery.getOwner(Utilities.toURI(new File(gradleProject.getProjectPath())));
+            if(project!=null){
+                new ExecuteGoal(project, gradleTask);
+            }
+        }
+
     }
 
     private static final @StaticResource

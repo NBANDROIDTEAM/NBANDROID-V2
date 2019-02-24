@@ -33,4 +33,6 @@ public interface AndroidProjectInfo extends Serializable {
 
     public String getException();
 
+    public String getProjectPath();
+
 }

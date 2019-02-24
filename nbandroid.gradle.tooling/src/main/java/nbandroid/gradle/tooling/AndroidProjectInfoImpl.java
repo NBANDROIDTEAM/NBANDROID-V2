@@ -33,6 +33,8 @@ public class AndroidProjectInfoImpl implements AndroidProjectInfo {
 
     private String exception = "";
 
+    private String projectPath;
+
     @Override
     public Map<String, List<TaskInfo>> getProjectTasks() {
         return projectTasks;
@@ -45,6 +47,15 @@ public class AndroidProjectInfoImpl implements AndroidProjectInfo {
 
     public void setException(String exception) {
         this.exception = exception;
+    }
+
+    @Override
+    public String getProjectPath() {
+        return projectPath;
+    }
+
+    public void setProjectPath(String projectPath) {
+        this.projectPath = projectPath;
     }
 
 }
