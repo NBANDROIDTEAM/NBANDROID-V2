@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.netbeans.modules.android.api;
+package org.netbeans.modules.android.project.api;
 
 import java.awt.Image;
 import java.io.IOException;

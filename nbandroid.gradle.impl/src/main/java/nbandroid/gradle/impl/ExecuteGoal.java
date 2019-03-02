@@ -36,6 +36,7 @@ import org.netbeans.api.io.ShowOperation;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -71,7 +72,10 @@ public class ExecuteGoal implements Runnable {
         try (ProjectConnection connection = connector.connect()) {
             BuildLauncher buildLauncher = connection.newBuild();
             buildLauncher.forTasks(taskInfo.getName());
-            buildLauncher.addArguments("-Pandroid.profile=VEOLIA");
+            ProjectConfigurationProvider pcp = project.getLookup().lookup(ProjectConfigurationProvider.class);
+            if (pcp != null && pcp.getActiveConfiguration() != null) {
+                buildLauncher.addArguments("-Pandroid.profile=" + pcp.getActiveConfiguration());
+            }
             buildLauncher.addJvmArguments("-Xms3000m", "-Xmx5000m");
             InputOutput io = project.getLookup().lookup(InputOutput.class);
             if (io != null) {

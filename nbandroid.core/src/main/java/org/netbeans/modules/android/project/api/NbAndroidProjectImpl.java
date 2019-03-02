@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.netbeans.modules.android.api;
+package org.netbeans.modules.android.project.api;
 
 import com.android.builder.model.AndroidProject;
 import java.awt.Image;
@@ -26,13 +26,12 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import nbandroid.gradle.spi.GradleHandler;
 import nbandroid.gradle.spi.RootGoalsNavigatorHint;
 import org.gradle.tooling.model.gradle.GradleBuild;
 import org.netbeans.api.annotations.common.StaticResource;
-import org.netbeans.api.io.IOProvider;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.android.project.properties.AndroidCustomizerProvider;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -47,9 +46,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -57,40 +54,27 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author arsi
  */
-public class NbAndroidProjectImpl implements Project, LookupListener {
-
-    private final FileObject projectDirectory;
-    private final InstanceContent ic = new InstanceContent();
-    private final AbstractLookup lookup = new AbstractLookup(ic);
-    private final Lookup modelLookup;
-    private final Lookup.Result<Object> modelLookupResult;
+public class NbAndroidProjectImpl extends NbAndroidProject {
 
     @StaticResource()
     public static final String PROJECT_ICON = "org/netbeans/modules/android/api/android_project.png";
 
     public NbAndroidProjectImpl(FileObject projectDirectory, ProjectState ps) {
-        this.projectDirectory = projectDirectory;
-        modelLookup = GradleHandler.getDefault().getModelLookup(this);
-        modelLookupResult = modelLookup.lookupResult(Object.class);
-        modelLookupResult.addLookupListener(this);
+        super(projectDirectory, ps);
         ic.add(new Info());
-        ic.add(IOProvider.get("Terminal").getIO(projectDirectory.getName(), false));
+        ic.add(new NbAndroidProjectConfigurationProvider());
+        ic.add(new AndroidCustomizerProvider(this));
         ic.add(new CustomerProjectLogicalView());
-        GradleHandler.getDefault().refreshModelLookup(this, GradleBuild.class, AndroidProject.class);
     }
 
-    @Override
-    public FileObject getProjectDirectory() {
-        return projectDirectory;
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return lookup;
-    }
 
     @Override
     public void resultChanged(LookupEvent ev) {
+    }
+
+    @Override
+    protected Class[] getGradleModels() {
+        return new Class[]{GradleBuild.class, AndroidProject.class};
     }
 
     public final class CustomerProjectLogicalView implements LogicalViewProvider {
@@ -131,9 +115,14 @@ public class NbAndroidProjectImpl implements Project, LookupListener {
 
         @Override
         public Action[] getActions(boolean arg0) {
-            return new Action[]{
-                CommonProjectActions.closeProjectAction()
-            };
+            List<Action> projectActions = new ArrayList<>(32);
+            projectActions.add(CommonProjectActions.closeProjectAction());
+            projectActions.add(null);
+            projectActions.addAll(Utilities.actionsForPath("Projects/Actions"));
+            projectActions.add(null);
+            projectActions.add(CommonProjectActions.customizeProjectAction());
+            return projectActions.toArray(new Action[projectActions.size()]);
+
         }
 
         @Override
@@ -172,7 +161,6 @@ public class NbAndroidProjectImpl implements Project, LookupListener {
     }
 
     private final class Info implements ProjectInformation {
-
 
         @Override
         public Icon getIcon() {
