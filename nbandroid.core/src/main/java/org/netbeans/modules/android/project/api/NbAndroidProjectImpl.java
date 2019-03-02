@@ -33,6 +33,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.android.project.build.BuildVariant;
 import org.netbeans.modules.android.project.properties.AndroidCustomizerProvider;
+import org.netbeans.modules.android.project.run.AndroidTestRunConfiguration;
 import org.netbeans.modules.android.project.sources.SourceLevelQueryImpl;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -67,6 +68,7 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
         ic.add(new AndroidCustomizerProvider(this));
         ic.add(new CustomerProjectLogicalView());
         ic.add(new SourceLevelQueryImpl(this));
+        ic.add(new AndroidTestRunConfiguration(this));
         buildVariant = new BuildVariant(this);
         ic.add(buildVariant);
     }
