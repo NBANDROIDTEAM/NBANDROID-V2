@@ -34,6 +34,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author arsi
  */
+@Deprecated
 public class SourceLevelQueryImpl2 implements SourceLevelQueryImplementation2, SourceLevelQueryImplementation2.Result2 {
 
     private final AtomicReference<AndroidProject> androidProject = new AtomicReference<>(null);

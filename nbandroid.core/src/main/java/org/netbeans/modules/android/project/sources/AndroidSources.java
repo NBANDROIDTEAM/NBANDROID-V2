@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -16,7 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.query;
+
+package org.netbeans.modules.android.project.sources;
 
 import com.android.builder.model.AndroidArtifact;
 import com.android.builder.model.AndroidProject;
@@ -24,17 +25,16 @@ import com.android.builder.model.BuildTypeContainer;
 import com.android.builder.model.ProductFlavorContainer;
 import com.android.builder.model.SourceProviderContainer;
 import com.android.builder.model.Variant;
-import com.google.common.base.Preconditions;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.nbandroid.netbeans.gradle.api.AndroidConstants;
 import org.nbandroid.netbeans.gradle.config.AndroidBuildVariants;
-import org.nbandroid.netbeans.gradle.config.BuildVariant;
 import org.nbandroid.netbeans.gradle.config.ProductFlavors;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -44,34 +44,35 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.android.spi.AndroidModelAware;
+import org.netbeans.modules.android.project.build.BuildVariant;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.WeakListeners;
 
 /**
  *
- * @author radim
+ * @author arsi
  */
-@Deprecated
-public class GradleAndroidSources implements Sources, AndroidModelAware {
+public class AndroidSources implements Sources, ChangeListener, LookupListener {
 
     private final Project project;
-    private AndroidProject aProject;
+    private AndroidProject androidProjectModel;
     private final BuildVariant buildConfig;
     private final ChangeSupport cs = new ChangeSupport(this);
+    private final Lookup.Result<AndroidProject> lookupResult;
 
-    public GradleAndroidSources(Project project, BuildVariant buildConfig) {
-        this.project = Preconditions.checkNotNull(project);
-        this.buildConfig = Preconditions.checkNotNull(buildConfig);
-        buildConfig.addChangeListener(new ChangeListener() {
-
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                cs.fireChange();
-            }
-        });
+    public AndroidSources(Project project, BuildVariant buildConfig) {
+        this.project = project;
+        this.buildConfig = buildConfig;
+        buildConfig.addChangeListener(WeakListeners.change(this, buildConfig));
+        lookupResult = project.getLookup().lookupResult(AndroidProject.class);
+        lookupResult.addLookupListener(WeakListeners.create(LookupListener.class, this, lookupResult));
+        resultChanged(null);
     }
 
     @Override
@@ -154,8 +155,8 @@ public class GradleAndroidSources implements Sources, AndroidModelAware {
         // XXX listen to this being created/deleted
         List<SourceGroup> grps = new ArrayList<SourceGroup>();
         FileObject prjDir = project.getProjectDirectory();
-        if (aProject != null) {
-            for (File srcDir : aProject.getDefaultConfig().getSourceProvider().getJavaDirectories()) {
+        if (androidProjectModel != null) {
+            for (File srcDir : androidProjectModel.getDefaultConfig().getSourceProvider().getJavaDirectories()) {
                 if (!srcDir.exists()) {
                     continue;
                 }
@@ -168,7 +169,7 @@ public class GradleAndroidSources implements Sources, AndroidModelAware {
             Variant variant = buildConfig.getCurrentVariant();
             if (variant != null) {
                 for (String f : variant.getProductFlavors()) {
-                    final ProductFlavorContainer flavor = ProductFlavors.findFlavorByName(aProject.getProductFlavors(), f);
+                    final ProductFlavorContainer flavor = ProductFlavors.findFlavorByName(androidProjectModel.getProductFlavors(), f);
                     if (flavor != null) {
                         for (File srcDir : flavor.getSourceProvider().getJavaDirectories()) {
                             if (!srcDir.exists()) {
@@ -204,9 +205,9 @@ public class GradleAndroidSources implements Sources, AndroidModelAware {
         // XXX listen to this being created/deleted
         List<SourceGroup> grps = new ArrayList<SourceGroup>();
         FileObject prjDir = project.getProjectDirectory();
-        if (aProject != null) {
+        if (androidProjectModel != null) {
             SourceProviderContainer spc = ProductFlavors.getSourceProviderContainer(
-                    aProject.getDefaultConfig(), AndroidProject.ARTIFACT_ANDROID_TEST);
+                    androidProjectModel.getDefaultConfig(), AndroidProject.ARTIFACT_ANDROID_TEST);
             if (spc != null) {
                 for (File srcDir : spc.getSourceProvider().getJavaDirectories()) {
                     if (!srcDir.exists()) {
@@ -222,7 +223,7 @@ public class GradleAndroidSources implements Sources, AndroidModelAware {
             Variant variant = buildConfig.getCurrentVariant();
             if (variant != null) {
                 for (String f : variant.getProductFlavors()) {
-                    final ProductFlavorContainer flavor = ProductFlavors.findFlavorByName(aProject.getProductFlavors(), f);
+                    final ProductFlavorContainer flavor = ProductFlavors.findFlavorByName(androidProjectModel.getProductFlavors(), f);
                     if (flavor != null) {
                         SourceProviderContainer flavorSPC = ProductFlavors.getSourceProviderContainer(
                                 flavor, AndroidProject.ARTIFACT_ANDROID_TEST);
@@ -249,8 +250,8 @@ public class GradleAndroidSources implements Sources, AndroidModelAware {
         // XXX listen to this being created/deleted
         List<SourceGroup> grps = new ArrayList<SourceGroup>();
         FileObject prjDir = project.getProjectDirectory();
-        if (aProject != null) {
-            for (File srcDir : aProject.getDefaultConfig().getSourceProvider().getResourcesDirectories()) {
+        if (androidProjectModel != null) {
+            for (File srcDir : androidProjectModel.getDefaultConfig().getSourceProvider().getResourcesDirectories()) {
                 if (!srcDir.exists()) {
                     continue;
                 }
@@ -279,7 +280,7 @@ public class GradleAndroidSources implements Sources, AndroidModelAware {
 
     private SourceGroup[] groupManifest() {
         List<SourceGroup> grps = new ArrayList<>();
-        File manifestFile = aProject.getDefaultConfig().getSourceProvider().getManifestFile();
+        File manifestFile = androidProjectModel.getDefaultConfig().getSourceProvider().getManifestFile();
         if (manifestFile != null) {
             File rootFolder = manifestFile.getParentFile();
             FileObject rootFo = FileUtil.toFileObject(rootFolder);
@@ -291,8 +292,8 @@ public class GradleAndroidSources implements Sources, AndroidModelAware {
     private SourceGroup[] groupSrcMainRes() {
         List<SourceGroup> grps = new ArrayList<>();
         FileObject prjDir = project.getProjectDirectory();
-        if (aProject != null) {
-            for (File srcDir : aProject.getDefaultConfig().getSourceProvider().getResDirectories()) {
+        if (androidProjectModel != null) {
+            for (File srcDir : androidProjectModel.getDefaultConfig().getSourceProvider().getResDirectories()) {
                 if (!srcDir.exists()) {
                     continue;
                 }
@@ -302,7 +303,7 @@ public class GradleAndroidSources implements Sources, AndroidModelAware {
                         : srcDir.getAbsolutePath();
                 grps.add(GenericSources.group(project, src, srcName, "App resources " + srcName, null, null));
             }
-            for (File srcDir : aProject.getDefaultConfig().getSourceProvider().getAssetsDirectories()) {
+            for (File srcDir : androidProjectModel.getDefaultConfig().getSourceProvider().getAssetsDirectories()) {
                 if (!srcDir.exists()) {
                     continue;
                 }
@@ -350,8 +351,18 @@ public class GradleAndroidSources implements Sources, AndroidModelAware {
     }
 
     @Override
-    public void setAndroidProject(AndroidProject aPrj) {
-        aProject = aPrj;
+    public void stateChanged(ChangeEvent e) {
+        cs.fireChange();
+    }
+
+    @Override
+    public void resultChanged(LookupEvent ev) {
+        Collection<? extends AndroidProject> allInstances = lookupResult.allInstances();
+        if (!allInstances.isEmpty()) {
+            androidProjectModel = allInstances.iterator().next();
+        } else {
+            androidProjectModel = null;
+        }
         cs.fireChange();
     }
 

@@ -14,7 +14,7 @@
 package org.nbandroid.netbeans.gradle.launch;
 
 import com.android.ddmlib.IDevice;
-import org.nbandroid.netbeans.gradle.AndroidIO;
+import org.netbeans.modules.android.spi.AndroidIO;
 import org.netbeans.api.project.Project;
 
 /**

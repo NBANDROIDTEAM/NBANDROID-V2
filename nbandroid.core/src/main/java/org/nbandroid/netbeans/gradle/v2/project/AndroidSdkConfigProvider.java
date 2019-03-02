@@ -15,6 +15,7 @@ import org.openide.util.Lookup;
  *
  * @author arsi
  */
+@Deprecated
 public class AndroidSdkConfigProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
     private static final String CUSTOMIZER_SDKS = "androidsdks";

@@ -9,6 +9,7 @@ import org.nbandroid.netbeans.gradle.config.BuildVariant;
  *
  * @author radim
  */
+@Deprecated
 public class BuildCustomizerPanel extends javax.swing.JPanel {
 
     /**

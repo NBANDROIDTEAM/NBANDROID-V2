@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -16,7 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.query;
+
+package org.netbeans.modules.android.project.query;
 
 import com.android.builder.model.AndroidProject;
 import java.util.logging.Level;
@@ -28,9 +29,8 @@ import org.netbeans.api.project.Project;
 
 /**
  *
- * @author radim
+ * @author arsi
  */
-@Deprecated
 public class GradlePlatformResolver implements AndroidPlatformResolver {
 
     private static final Logger LOG = Logger.getLogger(GradlePlatformResolver.class.getName());

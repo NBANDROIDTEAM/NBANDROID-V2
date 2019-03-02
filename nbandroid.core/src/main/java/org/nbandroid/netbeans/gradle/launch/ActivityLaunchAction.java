@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.nbandroid.netbeans.gradle.AndroidIO;
+import org.netbeans.modules.android.spi.AndroidIO;
 import org.nbandroid.netbeans.gradle.launch.AndroidLauncherImpl.AMReceiver;
 import org.netbeans.api.project.Project;
 import org.openide.windows.InputOutput;

@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -16,7 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.query;
+
+package org.netbeans.modules.android.project.query;
 
 import java.io.File;
 import java.net.URL;
@@ -37,24 +38,23 @@ import org.openide.util.lookup.ServiceProviders;
  */
 @ServiceProviders({
     @ServiceProvider(service = JavadocForBinaryQueryImplementation.class),
-    @ServiceProvider(service = AutoAndroidGradleJavadocForBinaryQuery.class)})
-@Deprecated
-public class AutoAndroidGradleJavadocForBinaryQuery extends AbstractJavadocForBinaryQuery {
+    @ServiceProvider(service = AutoAndroidJavadocForBinaryQuery.class)})
+public class AutoAndroidJavadocForBinaryQuery extends AbstractJavadocForBinaryQuery {
 
     private static final URL[] NO_ROOTS = new URL[0];
-    private final Vector<GradleAndroidClassPathProvider> providers = new Vector<>();
+    private final Vector<AndroidClassPathProvider> providers = new Vector<>();
 
-    public void addClassPathProvider(GradleAndroidClassPathProvider classPathProvider) {
+    public void addClassPathProvider(AndroidClassPathProvider classPathProvider) {
         providers.add(classPathProvider);
     }
 
-    public void removeClassPathProvider(GradleAndroidClassPathProvider classPathProvider) {
+    public void removeClassPathProvider(AndroidClassPathProvider classPathProvider) {
         providers.remove(classPathProvider);
     }
 
     @Override
     protected JavadocForBinaryQuery.Result tryFindJavadoc(File binaryRoot) {
-        for (GradleAndroidClassPathProvider provider : providers) {
+        for (AndroidClassPathProvider provider : providers) {
             ArtifactData artifactData = provider.getArtifactData(FileUtil.urlForArchiveOrDir(binaryRoot));
             if (artifactData != null && artifactData.isJavadocLocal()) {
                 return new AndroidResult(artifactData);

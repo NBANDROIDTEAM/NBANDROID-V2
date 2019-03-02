@@ -1,4 +1,4 @@
-package org.nbandroid.netbeans.gradle;
+package org.netbeans.modules.android.spi;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;

@@ -23,6 +23,7 @@ import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -33,7 +34,14 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.android.project.build.BuildVariant;
 import org.netbeans.modules.android.project.properties.AndroidCustomizerProvider;
+import org.netbeans.modules.android.project.query.AndroidClassPathProvider;
+import org.netbeans.modules.android.project.query.AutoAndroidJavadocForBinaryQuery;
+import org.netbeans.modules.android.project.query.AutoAndroidSourceForBinaryQuery;
+import org.netbeans.modules.android.project.query.GradleAndroidManifest;
+import org.netbeans.modules.android.project.query.GradlePlatformResolver;
+import org.netbeans.modules.android.project.query.GradleSourceForBinaryQuery;
 import org.netbeans.modules.android.project.run.AndroidTestRunConfiguration;
+import org.netbeans.modules.android.project.sources.AndroidSources;
 import org.netbeans.modules.android.project.sources.SourceLevelQueryImpl;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -48,6 +56,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -61,16 +70,28 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
     @StaticResource()
     public static final String PROJECT_ICON = "org/netbeans/modules/android/api/android_project.png";
     private final BuildVariant buildVariant;
+    private final AndroidClassPathProvider androidClassPathProvider;
+    protected static final AutoAndroidSourceForBinaryQuery SOURCE_FOR_BINARY_QUERY = Lookup.getDefault().lookup(AutoAndroidSourceForBinaryQuery.class);
+    protected static final AutoAndroidJavadocForBinaryQuery JAVADOC_FOR_BINARY_QUERY = Lookup.getDefault().lookup(AutoAndroidJavadocForBinaryQuery.class);
+
     public NbAndroidProjectImpl(FileObject projectDirectory, ProjectState ps) {
         super(projectDirectory, ps);
         ic.add(new Info());
         ic.add(new NbAndroidProjectConfigurationProvider());
         ic.add(new AndroidCustomizerProvider(this));
-        ic.add(new CustomerProjectLogicalView());
+        ic.add(new AndroidProjectLogicalView());
         ic.add(new SourceLevelQueryImpl(this));
         ic.add(new AndroidTestRunConfiguration(this));
         buildVariant = new BuildVariant(this);
         ic.add(buildVariant);
+        ic.add(new GradleAndroidRepositoriesProvider(this));
+        ic.add(new GradlePlatformResolver());
+        ic.add(new AndroidSources(this, buildVariant));
+        ic.add(new GradleAndroidManifest(this, buildVariant));
+        ic.add(new GradleSourceForBinaryQuery(this, buildVariant));
+        androidClassPathProvider = new AndroidClassPathProvider(buildVariant, this);
+        ic.add(androidClassPathProvider);
+
     }
 
 
@@ -84,7 +105,7 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
     }
 
 
-    public final class CustomerProjectLogicalView implements LogicalViewProvider {
+    public final class AndroidProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public Node createLogicalView() {
@@ -200,5 +221,19 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
         }
 
     }
+
+    @Override
+    public void resultChanged(LookupEvent ev) {
+        super.resultChanged(ev);
+        SOURCE_FOR_BINARY_QUERY.removeClassPathProvider(androidClassPathProvider);
+        JAVADOC_FOR_BINARY_QUERY.removeClassPathProvider(androidClassPathProvider);
+        Set<Class<? extends Object>> allClasses = modelLookupResult.allClasses();
+        if (allClasses.contains(GradleBuild.class) && allClasses.contains(AndroidProject.class)) {
+            SOURCE_FOR_BINARY_QUERY.addClassPathProvider(androidClassPathProvider);
+            JAVADOC_FOR_BINARY_QUERY.addClassPathProvider(androidClassPathProvider);
+        }
+
+    }
+
 
 }

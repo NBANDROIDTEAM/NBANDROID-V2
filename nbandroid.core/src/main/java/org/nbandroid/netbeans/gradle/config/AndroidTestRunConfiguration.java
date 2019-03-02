@@ -7,7 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.swing.event.ChangeListener;
-import org.nbandroid.netbeans.gradle.AndroidModelAware;
+import org.netbeans.modules.android.spi.AndroidModelAware;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.util.ChangeSupport;
 import org.openide.util.RequestProcessor;
@@ -17,6 +17,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author radim
  */
+@Deprecated
 public class AndroidTestRunConfiguration implements AndroidModelAware {
 
     private static final Logger LOG = Logger.getLogger(AndroidTestRunConfiguration.class.getName());

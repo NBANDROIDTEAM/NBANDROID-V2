@@ -1,4 +1,4 @@
-package org.nbandroid.netbeans.gradle;
+package org.netbeans.modules.android.spi;
 
 import com.android.builder.model.AndroidProject;
 

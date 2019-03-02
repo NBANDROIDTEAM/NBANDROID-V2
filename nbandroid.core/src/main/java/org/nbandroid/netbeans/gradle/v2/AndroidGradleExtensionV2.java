@@ -45,7 +45,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.gradle.tooling.model.gradle.GradleBuild;
 import org.nbandroid.netbeans.ext.navigation.ProjectResourceLocator;
-import org.nbandroid.netbeans.gradle.*;
 import org.nbandroid.netbeans.gradle.api.TestOutputConsumer;
 import org.nbandroid.netbeans.gradle.config.AndroidBuildVariants;
 import org.nbandroid.netbeans.gradle.config.AndroidTestRunConfiguration;
@@ -84,6 +83,10 @@ import org.netbeans.gradle.project.api.task.DaemonTaskContext;
 import org.netbeans.gradle.project.properties.NbGradleConfigProvider;
 import org.netbeans.gradle.project.properties.NbGradleConfiguration;
 import org.netbeans.gradle.project.properties.NbGradleSingleProjectConfigProvider;
+import org.netbeans.modules.android.spi.AndroidGradleNodes;
+import org.netbeans.modules.android.spi.AndroidModelAware;
+import org.netbeans.modules.android.spi.GradleBuildAware;
+import org.netbeans.modules.android.spi.GradleProjectOpenedHook;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -143,11 +146,11 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Android
         items.add(testCfg);//DONE
         items.add(levelQuery);//DONE
         items.add(new AndroidSdkConfigProvider()); //DONE
-        items.add(new GradleAndroidRepositoriesProvider(project));
+        items.add(new GradleAndroidRepositoriesProvider(project));//DONE
         items.add(new GradlePlatformResolver());
-        items.add(new GradleAndroidSources(project, buildCfg));
-        items.add(new GradleAndroidManifest(project, buildCfg));
-        items.add(new GradleSourceForBinaryQuery(buildCfg));
+        items.add(new GradleAndroidSources(project, buildCfg));//DONE
+        items.add(new GradleAndroidManifest(project, buildCfg));//DONE
+        items.add(new GradleSourceForBinaryQuery(buildCfg));//DONE
         items.add(new AndroidGradleNodes(project));
         items.add(new ProjectResourceLocator(project));
         items.add(new AndroidTaskVariableQuery(buildCfg));

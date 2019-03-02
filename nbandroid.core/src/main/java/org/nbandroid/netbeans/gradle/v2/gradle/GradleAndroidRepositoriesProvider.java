@@ -18,7 +18,6 @@
  */
 package org.nbandroid.netbeans.gradle.v2.gradle;
 
-import sk.arsi.netbeans.gradle.android.maven.repository.Repository;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,11 +28,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.gradle.project.NbGradleProject;
 import org.netbeans.gradle.project.NbGradleProjectFactory;
 import org.netbeans.gradle.project.model.NbGradleModel;
+import sk.arsi.netbeans.gradle.android.maven.repository.Repository;
 
 /**
  *
  * @author arsi
  */
+@Deprecated
 public class GradleAndroidRepositoriesProvider {
 
     private final Project project;

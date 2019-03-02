@@ -12,6 +12,7 @@ import org.openide.util.Lookup;
  *
  * @author radim
  */
+@Deprecated
 public class BuildCustomizerProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
     private static final String CUSTOMIZER_BUILD_VARIANT = "BuildVariant";

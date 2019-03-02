@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -16,12 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.query;
 
-/**
- *
- * @author arsi
- */
+package org.netbeans.modules.android.project.query;
+
 import com.google.common.collect.MapMaker;
 import java.io.File;
 import java.util.List;
@@ -41,30 +38,33 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
+/**
+ *
+ * @author arsi
+ */
 @ServiceProviders({
     @ServiceProvider(service = SourceForBinaryQueryImplementation2.class),
     @ServiceProvider(service = SourceForBinaryQueryImplementation.class),
-    @ServiceProvider(service = AutoAndroidGradleSourceForBinaryQuery.class),
+    @ServiceProvider(service = AutoAndroidSourceForBinaryQuery.class),
     @ServiceProvider(service = ClassPathProvider.class, position = 100),})
-@Deprecated
-public final class AutoAndroidGradleSourceForBinaryQuery extends AbstractSourceForBinaryQuery implements ClassPathProvider {
+public class AutoAndroidSourceForBinaryQuery extends AbstractSourceForBinaryQuery implements ClassPathProvider {
 
     private static final FileObject[] NO_ROOTS = new FileObject[0];
-    private final List<GradleAndroidClassPathProvider> providers = new CopyOnWriteArrayList<>();
-    private static final ConcurrentMap<FileObject, GradleAndroidClassPathProvider> backReferenceMap = new MapMaker().weakKeys().weakValues().makeMap();
+    private final List<AndroidClassPathProvider> providers = new CopyOnWriteArrayList<>();
+    private static final ConcurrentMap<FileObject, AndroidClassPathProvider> backReferenceMap = new MapMaker().weakKeys().weakValues().makeMap();
     private static final ConcurrentMap<FileObject, ClassPath> cache = new MapMaker().weakKeys().makeMap();
 
-    public void addClassPathProvider(GradleAndroidClassPathProvider classPathProvider) {
+    public void addClassPathProvider(AndroidClassPathProvider classPathProvider) {
         providers.add(classPathProvider);
     }
 
-    public void removeClassPathProvider(GradleAndroidClassPathProvider classPathProvider) {
+    public void removeClassPathProvider(AndroidClassPathProvider classPathProvider) {
         providers.remove(classPathProvider);
     }
 
     @Override
     protected Result tryFindSourceRoot(File binaryRoot) {
-        for (GradleAndroidClassPathProvider provider : providers) {
+        for (AndroidClassPathProvider provider : providers) {
             ArtifactData artifactData = provider.getArtifactData(FileUtil.urlForArchiveOrDir(binaryRoot));
             if (artifactData != null && artifactData.isSrcLocal()) {
                 File src = new File(artifactData.getSrcPath());
@@ -87,7 +87,7 @@ public final class AutoAndroidGradleSourceForBinaryQuery extends AbstractSourceF
     public ClassPath findClassPath(FileObject file, String type) {
         FileObject srcRoot = FileUtil.getArchiveFile(file);
         if (srcRoot != null) {
-            GradleAndroidClassPathProvider provider = backReferenceMap.get(srcRoot);
+            AndroidClassPathProvider provider = backReferenceMap.get(srcRoot);
             if (provider != null) {
                 switch (type) {
                     case ClassPath.SOURCE:

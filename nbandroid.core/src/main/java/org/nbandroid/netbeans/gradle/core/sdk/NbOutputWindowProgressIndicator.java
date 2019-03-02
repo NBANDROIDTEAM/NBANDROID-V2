@@ -10,7 +10,7 @@ import com.android.annotations.Nullable;
 import com.android.repository.api.ProgressIndicatorAdapter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import org.nbandroid.netbeans.gradle.AndroidIO;
+import org.netbeans.modules.android.spi.AndroidIO;
 import org.openide.windows.InputOutput;
 
 /**

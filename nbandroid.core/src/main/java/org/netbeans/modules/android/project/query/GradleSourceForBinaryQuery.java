@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.query;
+package org.netbeans.modules.android.project.query;
 
 import com.android.builder.model.AndroidLibrary;
 import com.android.builder.model.AndroidProject;
@@ -36,78 +36,49 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import org.nbandroid.netbeans.gradle.config.BuildVariant;
 import org.nbandroid.netbeans.gradle.config.ProductFlavors;
-import org.netbeans.modules.android.spi.AndroidModelAware;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.android.project.build.BuildVariant;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.WeakListeners;
 
 /**
  * Source lookup for classes found in exploded-bundles directory containing
  * AndroidLibrary dependencies.
  *
  * @author radim
+ * @author arsi
  */
-@Deprecated
-public class GradleSourceForBinaryQuery implements SourceForBinaryQueryImplementation2, AndroidModelAware {
+public class GradleSourceForBinaryQuery implements SourceForBinaryQueryImplementation2, LookupListener {
 
     private static final Logger LOG = Logger.getLogger(GradleSourceForBinaryQuery.class.getName());
 
     private final BuildVariant buildConfig;
-    private AndroidProject project;
+    private AndroidProject androidProjectModel;
+    private final ChangeSupport cs = new ChangeSupport(this);
+    private final Lookup.Result<AndroidProject> lookupResult;
 
-    public GradleSourceForBinaryQuery(BuildVariant buildConfig) {
+    public GradleSourceForBinaryQuery(Project project, BuildVariant buildConfig) {
         this.buildConfig = buildConfig;
-    }
-
-    @Override
-    public void setAndroidProject(AndroidProject project) {
-        this.project = project;
+        lookupResult = project.getLookup().lookupResult(AndroidProject.class);
+        lookupResult.addLookupListener(WeakListeners.create(LookupListener.class, this, lookupResult));
+        resultChanged(null);
     }
 
     @Override
     public Result findSourceRoots2(final URL binaryRoot) {
-        Result r = findAarLibraryRoots(binaryRoot);
-        if (r != null) {
-            return r;
-        }
-        if (project == null) {
-            return null;
-        }
-        final File binRootDir = FileUtil.archiveOrDirForURL(binaryRoot);
-        if (binRootDir == null) {
-            return null;
-        }
-
-        Variant variant = Iterables.find(
-                project.getVariants(),
-                new Predicate<Variant>() {
-            @Override
-            public boolean apply(Variant input) {
-                return binRootDir.equals(input.getMainArtifact().getClassesFolder());
-            }
-        },
-                null);
-        if (variant != null) {
-            Iterable<FileObject> srcRoots = Iterables.filter(
-                    Iterables.transform(
-                            sourceRootsForVariant(variant),
-                            new Function<File, FileObject>() {
-                        @Override
-                        public FileObject apply(File f) {
-                            return FileUtil.toFileObject(f);
-                        }
-                    }),
-                    Predicates.notNull());
-            return new GradleSourceResult(srcRoots);
-        }
-        return null;
+        return new GradleSourceResult(binaryRoot);
     }
 
     private Iterable<? extends File> sourceRootsForVariant(Variant variant) {
-        Collection<File> javaDirs = project != null
-                ? project.getDefaultConfig().getSourceProvider().getJavaDirectories()
+        Collection<File> javaDirs = androidProjectModel != null
+                ? androidProjectModel.getDefaultConfig().getSourceProvider().getJavaDirectories()
                 : Collections.<File>emptySet();
         BuildTypeContainer buildTypeContainer = buildConfig.getCurrentBuildTypeContainer();
         Collection<File> typeJavaDirs = buildTypeContainer != null
@@ -120,11 +91,11 @@ public class GradleSourceForBinaryQuery implements SourceForBinaryQueryImplement
                                 new Function<String, Collection<File>>() {
                             @Override
                             public Collection<File> apply(String f) {
-                                if (project == null) {
+                                if (androidProjectModel == null) {
                                     return Collections.<File>emptySet();
                                 }
                                 final ProductFlavorContainer flavor
-                                        = ProductFlavors.findFlavorByName(project.getProductFlavors(), f);
+                                        = ProductFlavors.findFlavorByName(androidProjectModel.getProductFlavors(), f);
                                 if (flavor == null) {
                                     return Collections.<File>emptySet();
                                 }
@@ -176,27 +147,78 @@ public class GradleSourceForBinaryQuery implements SourceForBinaryQueryImplement
         return findSourceRoots2(binaryRoot);
     }
 
+    @Override
+    public void resultChanged(LookupEvent ev) {
+        Collection<? extends AndroidProject> allInstances = lookupResult.allInstances();
+        if (!allInstances.isEmpty()) {
+            androidProjectModel = allInstances.iterator().next();
+        } else {
+            androidProjectModel = null;
+        }
+        cs.fireChange();
+    }
+
     private class GradleSourceResult implements SourceForBinaryQueryImplementation2.Result {
 
-        private final Iterable<FileObject> sourceRoots;
+        private final URL binaryRoot;
 
-        public GradleSourceResult(Iterable<FileObject> sourceRoots) {
-            this.sourceRoots = sourceRoots;
+        public GradleSourceResult(final URL binaryRoot) {
+            this.binaryRoot = binaryRoot;
+        }
+
+        private List<FileObject> update() {
+            Result r = findAarLibraryRoots(binaryRoot);
+            if (r != null) {
+                return Collections.EMPTY_LIST;
+            }
+            if (androidProjectModel == null) {
+                return Collections.EMPTY_LIST;
+            }
+            final File binRootDir = FileUtil.archiveOrDirForURL(binaryRoot);
+            if (binRootDir == null) {
+                return null;
+            }
+
+            Variant variant = Iterables.find(
+                    androidProjectModel.getVariants(),
+                    new Predicate<Variant>() {
+                @Override
+                public boolean apply(Variant input) {
+                    return binRootDir.equals(input.getMainArtifact().getClassesFolder());
+                }
+            },
+                    null);
+            if (variant != null) {
+                Iterable<FileObject> srcRoots = Iterables.filter(
+                        Iterables.transform(
+                                sourceRootsForVariant(variant),
+                                new Function<File, FileObject>() {
+                            @Override
+                            public FileObject apply(File f) {
+                                return FileUtil.toFileObject(f);
+                            }
+                        }),
+                        Predicates.notNull());
+                return Lists.newArrayList(srcRoots);
+            }
+            return Collections.EMPTY_LIST;
         }
 
         public @Override
         FileObject[] getRoots() {
-            List<FileObject> roots = Lists.newArrayList(sourceRoots);
-            LOG.log(Level.FINE, "return sources for binary in root {0}: {1}", new Object[]{project, roots});
+            List<FileObject> roots = Lists.newArrayList(update());
+            LOG.log(Level.FINE, "return sources for binary in root {0}: {1}", new Object[]{androidProjectModel, roots});
             return roots.toArray(new FileObject[roots.size()]);
         }
 
         public @Override
         void addChangeListener(ChangeListener l) {
+            cs.addChangeListener(l);
         }
 
         public @Override
         void removeChangeListener(ChangeListener l) {
+            cs.removeChangeListener(l);
         }
 
         @Override

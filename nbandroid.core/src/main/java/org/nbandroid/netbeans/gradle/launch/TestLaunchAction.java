@@ -31,7 +31,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.nbandroid.netbeans.gradle.AndroidIO;
+import org.netbeans.modules.android.spi.AndroidIO;
 import org.nbandroid.netbeans.gradle.api.TestOutputConsumer;
 import org.nbandroid.netbeans.gradle.config.AndroidProjectProperties;
 import org.netbeans.api.project.Project;

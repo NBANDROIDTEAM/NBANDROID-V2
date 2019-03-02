@@ -24,6 +24,7 @@ import org.openide.util.WeakListeners;
  *
  * @author arsi
  */
+@Deprecated
 public class AndroidProjectSdkConfig extends javax.swing.JPanel implements PropertyChangeListener {
 
     private final ProjectCustomizer.Category category;
