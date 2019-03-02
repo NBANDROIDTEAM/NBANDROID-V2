@@ -31,7 +31,9 @@ import org.gradle.tooling.model.gradle.GradleBuild;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.android.project.build.BuildVariant;
 import org.netbeans.modules.android.project.properties.AndroidCustomizerProvider;
+import org.netbeans.modules.android.project.sources.SourceLevelQueryImpl;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -45,7 +47,6 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -58,24 +59,28 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
 
     @StaticResource()
     public static final String PROJECT_ICON = "org/netbeans/modules/android/api/android_project.png";
-
+    private final BuildVariant buildVariant;
     public NbAndroidProjectImpl(FileObject projectDirectory, ProjectState ps) {
         super(projectDirectory, ps);
         ic.add(new Info());
         ic.add(new NbAndroidProjectConfigurationProvider());
         ic.add(new AndroidCustomizerProvider(this));
         ic.add(new CustomerProjectLogicalView());
+        ic.add(new SourceLevelQueryImpl(this));
+        buildVariant = new BuildVariant(this);
+        ic.add(buildVariant);
     }
 
-
-    @Override
-    public void resultChanged(LookupEvent ev) {
-    }
 
     @Override
     protected Class[] getGradleModels() {
         return new Class[]{GradleBuild.class, AndroidProject.class};
     }
+
+    public BuildVariant getBuildVariant() {
+        return buildVariant;
+    }
+
 
     public final class CustomerProjectLogicalView implements LogicalViewProvider {
 

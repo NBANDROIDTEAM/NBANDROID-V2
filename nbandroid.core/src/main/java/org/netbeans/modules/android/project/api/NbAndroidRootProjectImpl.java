@@ -44,7 +44,6 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -63,13 +62,6 @@ public class NbAndroidRootProjectImpl extends NbAndroidProject {
         ic.add(new NbAndroidProjectConfigurationProvider());
         ic.add(new AndroidRootCustomizerProvider(this));
         ic.add(new CustomerProjectLogicalView());
-    }
-
-    @Override
-    public void resultChanged(LookupEvent ev) {
-        if (!modelLookupResult.allInstances().isEmpty()) {
-            System.out.println("org.netbeans.modules.android.api.NbAndroidRootProjectImpl.resultChanged()");
-        }
     }
 
     @Override

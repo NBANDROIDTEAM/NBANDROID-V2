@@ -100,7 +100,7 @@ public class AndroidProjectSdkConfig extends javax.swing.JPanel implements Prope
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(sdkList, 0, 272, Short.MAX_VALUE))
+                        .addComponent(sdkList, 0, 470, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(manage)))

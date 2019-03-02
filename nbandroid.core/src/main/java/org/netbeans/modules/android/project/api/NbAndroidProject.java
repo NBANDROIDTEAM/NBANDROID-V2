@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -40,6 +41,10 @@ import org.nbandroid.netbeans.gradle.v2.sdk.ui.SdksCustomizer;
 import org.netbeans.api.io.IOProvider;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.android.project.properties.AndroidProjectPropsImpl;
+import org.netbeans.modules.android.project.properties.AuxiliaryConfigImpl;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -51,6 +56,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -90,7 +96,9 @@ public abstract class NbAndroidProject implements Project, LookupListener, Runna
     private AndroidSdk projectSdk;
     private FileObject localPropertiesFo;
     private final Timer localPropertiesChangeTimer;
-
+    protected final AuxiliaryConfiguration auxiliaryConfig = new AuxiliaryConfigImpl(this);
+    protected final AuxiliaryProperties auxiliaryProperties = new AndroidProjectPropsImpl(auxiliaryConfig);
+    protected final CopyOnWriteArrayList lastModels = new CopyOnWriteArrayList();
 
     public NbAndroidProject(FileObject projectDirectory, ProjectState ps) {
         this.projectDirectory = projectDirectory;
@@ -98,6 +106,8 @@ public abstract class NbAndroidProject implements Project, LookupListener, Runna
         modelLookupResult = modelLookup.lookupResult(Object.class);
         modelLookupResult.addLookupListener(this);
         ic.add(this);
+        ic.add(auxiliaryConfig);
+        ic.add(auxiliaryProperties);
         ic.add(IOProvider.get("Terminal").getIO(projectDirectory.getName(), false));
         initSdk(projectDirectory);
         localPropertiesChangeTimer = new Timer(1000, new ActionListener() {
@@ -118,6 +128,29 @@ public abstract class NbAndroidProject implements Project, LookupListener, Runna
     public FileObject getProjectDirectory() {
         return projectDirectory;
     }
+
+    public AuxiliaryConfiguration getAuxiliaryConfig() {
+        return auxiliaryConfig;
+    }
+
+    public AuxiliaryProperties getAuxiliaryProperties() {
+        return auxiliaryProperties;
+    }
+
+    @Override
+    public void resultChanged(LookupEvent ev) {
+        for (Object lastModel : lastModels) {
+            ic.remove(lastModel);
+        }
+        lastModels.clear();
+        lastModels.addAll(modelLookupResult.allInstances());
+        for (Object lastModel : lastModels) {
+            ic.add(lastModel);
+        }
+    }
+
+
+
 
     @Override
     public Lookup getLookup() {

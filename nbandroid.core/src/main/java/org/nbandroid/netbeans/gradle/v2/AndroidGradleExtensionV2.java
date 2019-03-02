@@ -139,10 +139,10 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Android
         if (sdk == null || sdk.isDefaultSdk()) {
             AndroidSdkProvider.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, AndroidSdkProvider.PROP_DEFAULT_SDK, AndroidSdkProvider.getDefault()));
         }
-        items.add(buildCfg);
+        items.add(buildCfg);//DONE
         items.add(testCfg);
-        items.add(levelQuery);
-        items.add(new AndroidSdkConfigProvider());
+        items.add(levelQuery);//DONE
+        items.add(new AndroidSdkConfigProvider()); //DONE
         items.add(new GradleAndroidRepositoriesProvider(project));
         items.add(new GradlePlatformResolver());
         items.add(new GradleAndroidSources(project, buildCfg));
