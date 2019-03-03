@@ -327,6 +327,12 @@ public class AndroidClassPathProvider implements ClassPathProvider, AndroidClass
                     refresh();
                 }
             });
+            lookupResultProjectModel.addLookupListener(new LookupListener() {
+                @Override
+                public void resultChanged(LookupEvent ev) {
+                    refresh();
+                }
+            });
         }
 
         @Override
