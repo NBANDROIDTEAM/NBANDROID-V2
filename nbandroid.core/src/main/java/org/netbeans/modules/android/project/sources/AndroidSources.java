@@ -109,17 +109,19 @@ public class AndroidSources implements Sources, ChangeListener, LookupListener {
             List<SourceGroup> grps = new ArrayList<SourceGroup>();
             FileObject prjDir = project.getProjectDirectory();
             Variant variant = buildConfig.getCurrentVariant();
-            AndroidArtifact testArtifact = AndroidBuildVariants.instrumentTestArtifact(variant.getExtraAndroidArtifacts());
-            if (testArtifact != null) {
-                for (File srcDir : testArtifact.getGeneratedSourceFolders()) {
-                    if (!srcDir.exists()) {
-                        continue;
+            if (variant != null) {
+                AndroidArtifact testArtifact = AndroidBuildVariants.instrumentTestArtifact(variant.getExtraAndroidArtifacts());
+                if (testArtifact != null) {
+                    for (File srcDir : testArtifact.getGeneratedSourceFolders()) {
+                        if (!srcDir.exists()) {
+                            continue;
+                        }
+                        FileObject src = FileUtil.toFileObject(srcDir);
+                        String srcName = FileUtil.isParentOf(prjDir, src)
+                                ? FileUtil.getRelativePath(prjDir, src)
+                                : srcDir.getAbsolutePath();
+                        grps.add(new AnySourceGroup(project, src, srcName, "Generated Instrument Test Packages " + srcName, null, null));
                     }
-                    FileObject src = FileUtil.toFileObject(srcDir);
-                    String srcName = FileUtil.isParentOf(prjDir, src)
-                            ? FileUtil.getRelativePath(prjDir, src)
-                            : srcDir.getAbsolutePath();
-                    grps.add(new AnySourceGroup(project, src, srcName, "Generated Instrument Test Packages " + srcName, null, null));
                 }
             }
             return grps.toArray(new SourceGroup[grps.size()]);

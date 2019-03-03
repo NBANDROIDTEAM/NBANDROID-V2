@@ -22,12 +22,13 @@ package org.netbeans.modules.android.project.api.nodes;
 import org.nbandroid.netbeans.gradle.ui.InstrumentTestNode;
 import org.netbeans.api.project.Project;
 import org.openide.nodes.Node;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author arsi
  */
-//@ServiceProvider(service = NodeFactory.class, path = "Android/Project/NodeFactory", position = 800)
+@ServiceProvider(service = NodeFactory.class, path = "Android/Project/NodeFactory", position = 800)
 public class InstrumentTestNodeFactory implements NodeFactory {
 
     @Override
