@@ -158,6 +158,8 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
         @Override
         public Action[] getActions(boolean arg0) {
             List<Action> projectActions = new ArrayList<>(32);
+            List<? extends Action> actionsForPath = Utilities.actionsForPath("Android/Projects/Project");
+            projectActions.addAll(actionsForPath);
             projectActions.add(CommonProjectActions.closeProjectAction());
             projectActions.add(null);
             projectActions.addAll(Utilities.actionsForPath("Projects/Actions"));

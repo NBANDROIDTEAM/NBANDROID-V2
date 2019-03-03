@@ -24,10 +24,11 @@ import org.nbandroid.netbeans.gradle.v2.apk.ApkUtils;
 import org.nbandroid.netbeans.gradle.v2.apk.sign.keystore.KeystoreSelector;
 import org.netbeans.api.project.Project;
 import org.netbeans.gradle.project.NbGradleProject;
-import org.netbeans.gradle.project.api.nodes.GradleActionType;
-import org.netbeans.gradle.project.api.nodes.GradleProjectAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -38,7 +39,15 @@ import org.openide.util.actions.NodeAction;
  *
  * @author arsi
  */
-@GradleProjectAction(GradleActionType.BUILD_ACTION)
+@ActionID(
+        category = "Android/Projects/Project",
+        id = "org.nbandroid.netbeans.gradle.v2.apk.actions.SignApkAction"
+)
+@ActionRegistration(
+        displayName = "", lazy = false
+)
+
+@ActionReference(path = "Android/Projects/Project", position = 100)
 public class SignApkAction extends NodeAction {
 
     @Override

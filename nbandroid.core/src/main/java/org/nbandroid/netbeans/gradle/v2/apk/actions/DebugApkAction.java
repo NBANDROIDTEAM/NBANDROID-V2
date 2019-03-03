@@ -24,8 +24,9 @@ import java.util.List;
 import org.nbandroid.netbeans.gradle.v2.apk.ApkUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.gradle.project.NbGradleProject;
-import org.netbeans.gradle.project.api.nodes.GradleActionType;
-import org.netbeans.gradle.project.api.nodes.GradleProjectAction;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.NodeAction;
@@ -34,7 +35,15 @@ import org.openide.util.actions.NodeAction;
  *
  * @author arsi
  */
-@GradleProjectAction(GradleActionType.BUILD_ACTION)
+@ActionID(
+        category = "Android/Projects/Project",
+        id = "org.nbandroid.netbeans.gradle.v2.apk.actions.DebugApkAction"
+)
+@ActionRegistration(
+        displayName = "", lazy = false
+)
+
+@ActionReference(path = "Android/Projects/Project", position = 50, separatorBefore = 49)
 public class DebugApkAction extends NodeAction {
 
     @Override
