@@ -64,6 +64,8 @@ public class ExecuteGoal implements Runnable {
         }
 
     }
+    public static final String BLACK = "\033[0;30m";   // BLACK
+    public static final String BLUE = "\033[0;34m";    // BLUE
 
     @Override
     public void run() {
@@ -81,6 +83,13 @@ public class ExecuteGoal implements Runnable {
             InputOutput io = project.getLookup().lookup(InputOutput.class);
             if (io != null) {
                 io.show(ImmutableSet.of(ShowOperation.OPEN, ShowOperation.MAKE_VISIBLE));
+                io.getOut().print("\n\r");
+                io.getOut().print("\n\r");
+                io.getOut().print("\n\r");
+                io.getOut().print("\n\r");
+                io.getOut().println(BLUE + "Executing task: " + taskInfo.getName() + BLACK);
+                io.getOut().print("\n\r");
+                io.getOut().print("\n\r");
                 CustomWriterOutputStream cwos = new CustomWriterOutputStream(io.getOut(), "UTF-8");
                 buildLauncher.setStandardOutput(cwos);
                 buildLauncher.setStandardError(cwos);

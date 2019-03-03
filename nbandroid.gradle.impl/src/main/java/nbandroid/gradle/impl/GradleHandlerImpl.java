@@ -131,6 +131,9 @@ public class GradleHandlerImpl implements GradleHandler {
             return modelLookup;
         }
 
+        public static final String BLACK = "\033[0;30m";   // BLACK
+        public static final String BLUE = "\033[0;34m";    // BLUE
+
         @Override
         public void resultChanged(LookupEvent ev) {
             if (!lookupResult.allInstances().isEmpty()) {
@@ -156,7 +159,13 @@ public class GradleHandlerImpl implements GradleHandler {
                             InputOutput io = project.getLookup().lookup(InputOutput.class);
                             if (io != null) {
                                 io.show(ImmutableSet.of(ShowOperation.OPEN, ShowOperation.MAKE_VISIBLE));
-                                io.getOut().println("Deserializing model: " + model.getSimpleName());
+                                io.getOut().print("\n\r");
+                                io.getOut().print("\n\r");
+                                io.getOut().print("\n\r");
+                                io.getOut().print("\n\r");
+                                io.getOut().println(BLUE + "Deserializing model: " + model.getSimpleName() + BLACK);
+                                io.getOut().print("\n\r");
+                                io.getOut().print("\n\r");
                                 CustomWriterOutputStream cwos = new CustomWriterOutputStream(io.getOut(), "UTF-8");
                                 modelBuilder.setStandardOutput(cwos);
                                 modelBuilder.setStandardError(cwos);
