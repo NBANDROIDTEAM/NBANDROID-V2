@@ -24,7 +24,7 @@ import org.openide.util.lookup.Lookups;
  * Action provider of the Android project.
  */
 @LookupProvider.Registration(
-        projectTypes = @LookupProvider.Registration.ProjectType(id = "org-netbeans-modules-android-project", position = 400))
+        projectTypes = @LookupProvider.Registration.ProjectType(id = "android-project", position = 400))
 public class TestOutputConsumerLookupProvider implements LookupProvider {
 
     private static final Logger LOG = Logger.getLogger(TestOutputConsumerLookupProvider.class.getName());

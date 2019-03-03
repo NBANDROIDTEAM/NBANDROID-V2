@@ -1,17 +1,23 @@
 /*
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-package org.nbandroid.netbeans.gradle.spi;
+
+package org.netbeans.modules.android.project.query;
 
 import com.android.ide.common.xml.ManifestData;
 import com.google.common.base.Preconditions;
@@ -28,8 +34,10 @@ import org.nbandroid.netbeans.gradle.api.AndroidConstants;
 import org.nbandroid.netbeans.gradle.api.AndroidProjects;
 import org.nbandroid.netbeans.gradle.api.ReferenceResolver;
 import org.nbandroid.netbeans.gradle.api.ResourceRef;
-import org.netbeans.api.java.source.*;
-import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -37,10 +45,9 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author radim
+ * @author arsi
  */
-@Deprecated
-public final class ProjectRefResolver implements ReferenceResolver {
+public class ProjectRefResolver implements ReferenceResolver {
 
     public static final Logger LOG = Logger.getLogger(ProjectRefResolver.class.getName());
 
@@ -88,7 +95,7 @@ public final class ProjectRefResolver implements ReferenceResolver {
                 @Override
                 public void run(CompilationController parameter) throws IOException {
 
-                    parameter.toPhase(Phase.ELEMENTS_RESOLVED);
+                    parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
 
                     List<? extends TypeElement> topLevelElements = parameter.getTopLevelElements();
                     for (TypeElement el : topLevelElements) {

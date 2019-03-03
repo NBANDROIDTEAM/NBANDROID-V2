@@ -155,16 +155,16 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Android
         items.add(new ProjectResourceLocator(project));//DONE Not used
         items.add(new AndroidTaskVariableQuery(buildCfg));//DONE Not used, we really need it?
         items.add(new BuiltInCommands(project, buildCfg));//DONE Not used, we really need it?
-        items.add(new BuildCustomizerProvider());
+        items.add(new BuildCustomizerProvider());//DONE
         items.add(new AndroidTestsProvider());//DONE
-        items.add(new GradleDebugInfo(project));
-        items.add(new PrivilegedTemplatesImpl());
-        items.add(new ProjectRefResolver(project));
-        items.add(Launches.createLauncher());
+        items.add(new GradleDebugInfo(project));//DONE
+        items.add(new PrivilegedTemplatesImpl());//DONE
+        items.add(new ProjectRefResolver(project));//DONE
+        items.add(Launches.createLauncher());//DONE
         items.add(new TestOutputConsumerLookupProvider().createAdditionalLookup(
-                Lookups.singleton(project)).lookup(TestOutputConsumer.class));
+                Lookups.singleton(project)).lookup(TestOutputConsumer.class));//DONE
         final File prjDir = FileUtil.toFile(project.getProjectDirectory());
-        items.add(new AndroidProjectDirectory() {
+        items.add(new AndroidProjectDirectory() {//DONE Not used, we really need it?
             @Override
             public File get() {
                 return prjDir;

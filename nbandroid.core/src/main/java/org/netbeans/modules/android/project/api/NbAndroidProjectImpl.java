@@ -31,14 +31,17 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import nbandroid.gradle.spi.RootGoalsNavigatorHint;
 import org.gradle.tooling.model.gradle.GradleBuild;
+import org.nbandroid.netbeans.gradle.api.TestOutputConsumer;
+import org.nbandroid.netbeans.gradle.launch.Launches;
+import org.nbandroid.netbeans.gradle.testrunner.TestOutputConsumerLookupProvider;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.android.project.api.nodes.MultiNodeFactory;
 import org.netbeans.modules.android.project.api.nodes.MultiNodeFactoryProvider;
 import org.netbeans.modules.android.project.api.nodes.NodeFactory;
-import org.netbeans.modules.android.project.api.to.remove.AndroidGradleNodes;
 import org.netbeans.modules.android.project.build.BuildVariant;
+import org.netbeans.modules.android.project.debug.GradleDebugInfo;
 import org.netbeans.modules.android.project.properties.AndroidCustomizerProvider;
 import org.netbeans.modules.android.project.query.AndroidClassPathProvider;
 import org.netbeans.modules.android.project.query.AutoAndroidJavadocForBinaryQuery;
@@ -46,6 +49,7 @@ import org.netbeans.modules.android.project.query.AutoAndroidSourceForBinaryQuer
 import org.netbeans.modules.android.project.query.GradleAndroidManifest;
 import org.netbeans.modules.android.project.query.GradlePlatformResolver;
 import org.netbeans.modules.android.project.query.GradleSourceForBinaryQuery;
+import org.netbeans.modules.android.project.query.ProjectRefResolver;
 import org.netbeans.modules.android.project.run.AndroidTestRunConfiguration;
 import org.netbeans.modules.android.project.sources.AndroidSources;
 import org.netbeans.modules.android.project.sources.SourceLevelQueryImpl;
@@ -97,7 +101,12 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
         ic.add(new GradleSourceForBinaryQuery(this, buildVariant));
         androidClassPathProvider = new AndroidClassPathProvider(buildVariant, this);
         ic.add(androidClassPathProvider);
-        ic.add(new AndroidGradleNodes(this));
+        ic.add(new GradleDebugInfo(this));
+        ic.add(new PrivilegedTemplatesImpl());
+        ic.add(new ProjectRefResolver(this));
+        ic.add(Launches.createLauncher());
+        ic.add(new TestOutputConsumerLookupProvider().createAdditionalLookup(
+                Lookups.singleton(this)).lookup(TestOutputConsumer.class));
 
     }
 
