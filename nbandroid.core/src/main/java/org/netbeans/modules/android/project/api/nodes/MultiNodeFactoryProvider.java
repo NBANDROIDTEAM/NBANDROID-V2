@@ -19,20 +19,23 @@
 
 package org.netbeans.modules.android.project.api.nodes;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import org.netbeans.api.project.Project;
-import org.openide.nodes.Node;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author arsi
  */
-@ServiceProvider(service = NodeFactory.class, path = "Android/Project/NodeFactory", position = 600)
-public class ApkNodeFactory implements NodeFactory {
+public interface MultiNodeFactoryProvider {
 
-    @Override
-    public Node createNode(Project p) {
-        return new ApksFilterNode(p);
+    public static List<MultiNodeFactoryProvider> findAll() {
+        Collection<? extends MultiNodeFactoryProvider> lookupAll = Lookups.forPath("Android/Project/NodeFactory").lookupAll(MultiNodeFactoryProvider.class);
+        return new ArrayList<>(lookupAll);
     }
+
+    public MultiNodeFactory createMultiNodeFactory(Project p);
 
 }

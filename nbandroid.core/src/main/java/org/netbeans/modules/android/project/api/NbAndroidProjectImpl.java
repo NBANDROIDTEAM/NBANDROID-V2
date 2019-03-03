@@ -27,11 +27,15 @@ import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import nbandroid.gradle.spi.RootGoalsNavigatorHint;
 import org.gradle.tooling.model.gradle.GradleBuild;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.android.project.api.nodes.MultiNodeFactory;
+import org.netbeans.modules.android.project.api.nodes.MultiNodeFactoryProvider;
 import org.netbeans.modules.android.project.api.nodes.NodeFactory;
 import org.netbeans.modules.android.project.api.to.remove.AndroidGradleNodes;
 import org.netbeans.modules.android.project.build.BuildVariant;
@@ -97,7 +101,6 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
 
     }
 
-
     @Override
     protected Class[] getGradleModels() {
         return new Class[]{GradleBuild.class, AndroidProject.class};
@@ -106,7 +109,6 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
     public BuildVariant getBuildVariant() {
         return buildVariant;
     }
-
 
     public final class AndroidProjectLogicalView implements LogicalViewProvider {
 
@@ -173,25 +175,49 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
 
     }
 
-    public class ProjectNodes extends Children.Keys<Node> {
+    public class ProjectNodes extends Children.Keys<Node> implements ChangeListener {
+
+        private final List<MultiNodeFactory> multiNodeFactories = new ArrayList<>();
+        private final List<Node> staticNodes = new ArrayList<>();
 
         public ProjectNodes() {
             super(true);
+            List<MultiNodeFactoryProvider> factoryProviders = MultiNodeFactoryProvider.findAll();
+            for (MultiNodeFactoryProvider factoryProvider : factoryProviders) {
+                MultiNodeFactory createMultiNodeFactory = factoryProvider.createMultiNodeFactory(NbAndroidProjectImpl.this);
+                multiNodeFactories.add(createMultiNodeFactory);
+                createMultiNodeFactory.addChangeListener(this);
+            }
             List<NodeFactory> findAll = NodeFactory.findAll();
-            List<Node> childrens = new ArrayList<>();
             for (int i = 0; i < findAll.size(); i++) {
                 NodeFactory factory = findAll.get(i);
                 Node node = factory.createNode(NbAndroidProjectImpl.this);
                 if (node != null) {
-                    childrens.add(node);
+                    staticNodes.add(node);
                 }
             }
+            refreshNodes();
+        }
+
+        private void refreshNodes() {
+
+            List<Node> childrens = new ArrayList<>();
+            for (MultiNodeFactory multiNodeFactory : multiNodeFactories) {
+                childrens.addAll(multiNodeFactory.createNodes());
+            }
+            childrens.addAll(staticNodes);
+
             setKeys(childrens);
         }
 
         @Override
         protected Node[] createNodes(Node key) {
             return new Node[]{key};
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            refreshNodes();
         }
 
     }
@@ -242,6 +268,5 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
         }
 
     }
-
 
 }

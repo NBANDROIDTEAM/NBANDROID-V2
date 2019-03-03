@@ -19,20 +19,20 @@
 
 package org.netbeans.modules.android.project.api.nodes;
 
-import org.netbeans.api.project.Project;
+import java.util.List;
+import javax.swing.event.ChangeListener;
 import org.openide.nodes.Node;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author arsi
  */
-@ServiceProvider(service = NodeFactory.class, path = "Android/Project/NodeFactory", position = 600)
-public class ApkNodeFactory implements NodeFactory {
+public interface MultiNodeFactory {
 
-    @Override
-    public Node createNode(Project p) {
-        return new ApksFilterNode(p);
-    }
+    public List<Node> createNodes();
+
+    public void addChangeListener(ChangeListener l);
+
+    public void removeChangeListener(ChangeListener l);
 
 }
