@@ -113,7 +113,7 @@ public class AndroidClassPathProvider implements ClassPathProvider, AndroidClass
 
     private static final Logger LOG = Logger.getLogger(AndroidClassPathProvider.class.getName());
     private Map<URL, ArtifactData> artifactDatas = new HashMap<>();
-    private ClassPath source, compile, execute, test, testCompile;
+    private ClassPath source, compile, execute, test, testCompile, boot;
     private final BuildVariant buildConfig;
     private final Set<Refreshable> refreshables = Sets.newHashSet();
     private transient AndroidProject androidProjectModel;
@@ -174,24 +174,18 @@ public class AndroidClassPathProvider implements ClassPathProvider, AndroidClass
         source = createSource();
         test = createTest();
         compile = createCompile();
+        boot = createBoot();
         execute = createExecute(compile);
         testCompile = createTestCompile(execute);
+        register();
         resultChanged(null);
-
 
     }
 
     private void update() {
-        unregister();
-        source = createSource();
-        test = createTest();
-        compile = createCompile();
-        execute = createExecute(compile);
-        testCompile = createTestCompile(execute);
-        if (androidProjectModel != null && buildConfig.getCurrentVariant() != null) {
-            register();
+        for (Refreshable refreshable : refreshables) {
+            refreshable.refresh();
         }
-
     }
 
     public @Override
@@ -216,29 +210,54 @@ public class AndroidClassPathProvider implements ClassPathProvider, AndroidClass
 
     @Override
     public ClassPath getClassPath(String type) {
-        if (androidProjectModel != null) {
-            androidProjectModel.getCompileTarget();
-            if (type.equals(ClassPath.SOURCE)) {
-                return source;
-            } else if (type.equals(ClassPath.BOOT)) {
-                if (androidProjectModel.getBootClasspath().isEmpty()) {
-                    return ClassPath.EMPTY;
+        if (type.equals(ClassPath.SOURCE)) {
+            return source;
+        } else if (type.equals(ClassPath.BOOT)) {
+            return boot;
+        } else if (type.equals(ClassPath.COMPILE)) {
+            return compile;
+        } else if (type.equals(ClassPath.EXECUTE)) {
+            return execute;
+        } else {
+            return null;
+        }
+    }
+
+    private class BootPathResources extends AndroidPathResources {
+
+        public BootPathResources() {
+            buildConfig.addChangeListener(new ChangeListener() {
+
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    refresh();
                 }
+            });
+            lookupResultProjectModel.addLookupListener(new LookupListener() {
+                @Override
+                public void resultChanged(LookupEvent ev) {
+                    refresh();
+                }
+            });
+        }
+
+        @Override
+        public URL[] getRoots() {
+            List<URL> tmp = new ArrayList<>();
+            if (androidProjectModel != null && !androidProjectModel.getBootClasspath().isEmpty()) {
                 String next = androidProjectModel.getBootClasspath().iterator().next();
                 AndroidJavaPlatform findPlatform = AndroidJavaPlatformProvider.findPlatform(next, androidProjectModel.getCompileTarget());
                 if (findPlatform != null) {
-                    return findPlatform.getBootstrapLibraries();
+                    ClassPath bootstrapLibraries = findPlatform.getBootstrapLibraries();
+                    FileObject[] roots = bootstrapLibraries.getRoots();
+                    for (FileObject root : roots) {
+                        tmp.add(root.toURL());
+                    }
                 }
-                return ClassPath.EMPTY;
-            } else if (type.equals(ClassPath.COMPILE)) {
-                return compile;
-            } else if (type.equals(ClassPath.EXECUTE)) {
-                return execute;
-            } else {
-                return null;
             }
+            return tmp.toArray(new URL[tmp.size()]);
         }
-        return null;
+
     }
 
     @Override
@@ -450,6 +469,14 @@ public class AndroidClassPathProvider implements ClassPathProvider, AndroidClass
         CompilePathResources compilePathResources = new CompilePathResources();
         refreshables.add(compilePathResources);
         pathResources.add(compilePathResources);
+        return ClassPathSupport.createClassPath(pathResources);
+    }
+
+    private ClassPath createBoot() {
+        List<PathResourceBase> pathResources = Lists.newArrayList();
+        BootPathResources bootPathResources = new BootPathResources();
+        refreshables.add(bootPathResources);
+        pathResources.add(bootPathResources);
         return ClassPathSupport.createClassPath(pathResources);
     }
 

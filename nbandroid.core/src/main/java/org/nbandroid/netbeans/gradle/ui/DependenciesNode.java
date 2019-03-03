@@ -400,7 +400,7 @@ public final class DependenciesNode extends AbstractNode {
                 case TYPE_PROJECT:
                     return (this.project == null ? other.project == null : this.project.equals(other.project));
                 case TYPE_PLATFORM:
-                    return true;
+                    return false; //allow refresh of platform node after model refresh
                 default:
                     throw new IllegalStateException();
             }
