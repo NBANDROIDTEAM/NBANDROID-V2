@@ -106,11 +106,6 @@ public class AndroidClassPathProvider implements ClassPathProvider, AndroidClass
      *
      * @param e
      */
-    @Override
-    public void stateChanged(ChangeEvent e) {
-        update();
-    }
-
     private interface Refreshable {
 
         void refresh();
@@ -121,12 +116,11 @@ public class AndroidClassPathProvider implements ClassPathProvider, AndroidClass
     private ClassPath source, compile, execute, test, testCompile;
     private final BuildVariant buildConfig;
     private final Set<Refreshable> refreshables = Sets.newHashSet();
-    private AndroidProject androidProjectModel;
+    private transient AndroidProject androidProjectModel;
     private final Project project;
-    private GradleBuild gradleBuildModel;
+    private transient GradleBuild gradleBuildModel;
     private final ChangeSupport cs = new ChangeSupport(this);
     private final Lookup.Result<AndroidProject> lookupResultProjectModel;
-    private final Lookup.Result<GradleBuild> lookupResultBuildModel;
 
     //ARSI: Create virtual java package to override NB java 8 support check
     public static final File VIRTUALJAVA8ROOT_DIR = Places.getCacheSubdirectory("android_virtual_java8");
@@ -145,21 +139,22 @@ public class AndroidClassPathProvider implements ClassPathProvider, AndroidClass
 
     @Override
     public void resultChanged(LookupEvent ev) {
-        Collection<? extends GradleBuild> allInstancesBuildModel = lookupResultBuildModel.allInstances();
-        if (!allInstancesBuildModel.isEmpty()) {
-            gradleBuildModel = allInstancesBuildModel.iterator().next();
-        } else {
-            gradleBuildModel = null;
-        }
         Collection<? extends AndroidProject> allInstances = lookupResultProjectModel.allInstances();
         if (!allInstances.isEmpty()) {
+            gradleBuildModel = project.getLookup().lookup(GradleBuild.class);
             androidProjectModel = allInstances.iterator().next();
-        } else {
-            androidProjectModel = null;
+            if (buildConfig.getCurrentVariant() != null) {
+                update();
+            }
         }
-        update();
     }
 
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        if (buildConfig.getCurrentVariant() != null && androidProjectModel != null) {
+            update();
+        }
+    }
 
     @Override
     public ArtifactData getArtifactData(URL url) {
@@ -170,29 +165,33 @@ public class AndroidClassPathProvider implements ClassPathProvider, AndroidClass
         return artifactDatas;
     }
 
-
     public AndroidClassPathProvider(BuildVariant buildConfig, Project project) {
         this.buildConfig = Preconditions.checkNotNull(buildConfig);
         this.project = project;
         lookupResultProjectModel = project.getLookup().lookupResult(AndroidProject.class);
         lookupResultProjectModel.addLookupListener(WeakListeners.create(LookupListener.class, this, lookupResultProjectModel));
-        lookupResultBuildModel = project.getLookup().lookupResult(GradleBuild.class);
-        lookupResultBuildModel.addLookupListener(WeakListeners.create(LookupListener.class, this, lookupResultBuildModel));
         buildConfig.addChangeListener(WeakListeners.change(this, buildConfig));
-        resultChanged(null);
-
-    }
-
-    private void update() {
-        if (source != null) {
-            unregister();
-        }
         source = createSource();
         test = createTest();
         compile = createCompile();
         execute = createExecute(compile);
         testCompile = createTestCompile(execute);
-        register();
+        resultChanged(null);
+
+
+    }
+
+    private void update() {
+        unregister();
+        source = createSource();
+        test = createTest();
+        compile = createCompile();
+        execute = createExecute(compile);
+        testCompile = createTestCompile(execute);
+        if (androidProjectModel != null && buildConfig.getCurrentVariant() != null) {
+            register();
+        }
+
     }
 
     public @Override
@@ -217,26 +216,29 @@ public class AndroidClassPathProvider implements ClassPathProvider, AndroidClass
 
     @Override
     public ClassPath getClassPath(String type) {
-        androidProjectModel.getCompileTarget();
-        if (type.equals(ClassPath.SOURCE)) {
-            return source;
-        } else if (type.equals(ClassPath.BOOT)) {
-            if (androidProjectModel.getBootClasspath().isEmpty()) {
+        if (androidProjectModel != null) {
+            androidProjectModel.getCompileTarget();
+            if (type.equals(ClassPath.SOURCE)) {
+                return source;
+            } else if (type.equals(ClassPath.BOOT)) {
+                if (androidProjectModel.getBootClasspath().isEmpty()) {
+                    return ClassPath.EMPTY;
+                }
+                String next = androidProjectModel.getBootClasspath().iterator().next();
+                AndroidJavaPlatform findPlatform = AndroidJavaPlatformProvider.findPlatform(next, androidProjectModel.getCompileTarget());
+                if (findPlatform != null) {
+                    return findPlatform.getBootstrapLibraries();
+                }
                 return ClassPath.EMPTY;
+            } else if (type.equals(ClassPath.COMPILE)) {
+                return compile;
+            } else if (type.equals(ClassPath.EXECUTE)) {
+                return execute;
+            } else {
+                return null;
             }
-            String next = androidProjectModel.getBootClasspath().iterator().next();
-            AndroidJavaPlatform findPlatform = AndroidJavaPlatformProvider.findPlatform(next, androidProjectModel.getCompileTarget());
-            if (findPlatform != null) {
-                return findPlatform.getBootstrapLibraries();
-            }
-            return ClassPath.EMPTY;
-        } else if (type.equals(ClassPath.COMPILE)) {
-            return compile;
-        } else if (type.equals(ClassPath.EXECUTE)) {
-            return execute;
-        } else {
-            return null;
         }
+        return null;
     }
 
     @Override

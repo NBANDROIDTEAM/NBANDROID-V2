@@ -25,6 +25,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.io.File;
 import java.util.Collection;
+import javax.swing.event.ChangeListener;
 import org.nbandroid.netbeans.gradle.api.AndroidManifestSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.android.project.build.BuildVariant;
@@ -54,6 +55,13 @@ public class GradleAndroidManifest implements AndroidManifestSource, LookupListe
         resultChanged(null);
     }
 
+    public void addChangeListener(ChangeListener listener) {
+        cs.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        cs.removeChangeListener(listener);
+    }
     @Override
     public FileObject get() {
         if (androidProjectModel != null) {
@@ -76,9 +84,9 @@ public class GradleAndroidManifest implements AndroidManifestSource, LookupListe
         Collection<? extends AndroidProject> allInstances = lookupResult.allInstances();
         if (!allInstances.isEmpty()) {
             androidProjectModel = allInstances.iterator().next();
+            cs.fireChange();
         } else {
             androidProjectModel = null;
         }
-        cs.fireChange();
     }
 }

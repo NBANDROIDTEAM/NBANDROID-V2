@@ -43,6 +43,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.android.project.properties.AndroidProjectPropsImpl;
 import org.netbeans.modules.android.project.properties.AuxiliaryConfigImpl;
+import nbandroid.gradle.spi.ModelRefresh;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectState;
@@ -62,6 +63,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -87,7 +89,10 @@ public abstract class NbAndroidProject implements Project, LookupListener, Runna
 
     protected final FileObject projectDirectory;
     protected final InstanceContent ic = new InstanceContent();
+    protected final InstanceContent icModels = new InstanceContent();
     protected final AbstractLookup lookup = new AbstractLookup(ic);
+    protected final AbstractLookup lookupModels = new AbstractLookup(icModels);
+    protected final Lookup proxyLookup = new ProxyLookup(lookup, lookupModels);
     protected final Lookup modelLookup;
     protected final Lookup.Result<Object> modelLookupResult;
     public static final RequestProcessor RP = new RequestProcessor(NbAndroidProject.class.getName(), Runtime.getRuntime().availableProcessors());
@@ -109,6 +114,12 @@ public abstract class NbAndroidProject implements Project, LookupListener, Runna
         ic.add(auxiliaryConfig);
         ic.add(auxiliaryProperties);
         ic.add(IOProvider.get("Terminal").getIO(projectDirectory.getName(), false));
+        ic.add(new ModelRefresh() {
+            @Override
+            public void refreshModels() {
+                RP.execute(NbAndroidProject.this);
+            }
+        });
         initSdk(projectDirectory);
         localPropertiesChangeTimer = new Timer(1000, new ActionListener() {
             @Override
@@ -139,22 +150,16 @@ public abstract class NbAndroidProject implements Project, LookupListener, Runna
 
     @Override
     public void resultChanged(LookupEvent ev) {
-        for (Object lastModel : lastModels) {
-            ic.remove(lastModel);
-        }
-        lastModels.clear();
-        lastModels.addAll(modelLookupResult.allInstances());
-        for (Object lastModel : lastModels) {
-            ic.add(lastModel);
+        synchronized (lock) {
+            lastModels.clear();
+            lastModels.addAll(modelLookupResult.allInstances());
+            icModels.set(lastModels, null);
         }
     }
 
-
-
-
     @Override
     public Lookup getLookup() {
-        return lookup;
+        return proxyLookup;
     }
 
     protected abstract Class[] getGradleModels();

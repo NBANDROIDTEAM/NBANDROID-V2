@@ -25,6 +25,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.io.File;
+import javax.swing.event.ChangeListener;
 import org.nbandroid.netbeans.gradle.api.AndroidManifestSource;
 import org.nbandroid.netbeans.gradle.config.BuildVariant;
 import org.netbeans.api.project.Project;
@@ -69,5 +70,13 @@ public class GradleAndroidManifest implements AndroidManifestSource, AndroidMode
     public void setAndroidProject(AndroidProject aPrj) {
         aProject = aPrj;
         cs.fireChange();
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener listener) {
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
     }
 }

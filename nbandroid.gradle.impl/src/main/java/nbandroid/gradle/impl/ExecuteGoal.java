@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import nbandroid.gradle.spi.GradleHandler;
+import nbandroid.gradle.spi.ModelRefresh;
 import nbandroid.gradle.tooling.TaskInfo;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.gradle.internal.impldep.com.google.common.collect.ImmutableSet;
@@ -99,6 +100,10 @@ public class ExecuteGoal implements Runnable {
                 Exceptions.printStackTrace(gradleConnectionException);
             }
             progressHandle.finish();
+            ModelRefresh modelRefresh = project.getLookup().lookup(ModelRefresh.class);
+            if (modelRefresh != null) {
+                modelRefresh.refreshModels();
+            }
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
         }

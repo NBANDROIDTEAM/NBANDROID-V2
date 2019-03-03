@@ -83,7 +83,7 @@ import org.netbeans.gradle.project.api.task.DaemonTaskContext;
 import org.netbeans.gradle.project.properties.NbGradleConfigProvider;
 import org.netbeans.gradle.project.properties.NbGradleConfiguration;
 import org.netbeans.gradle.project.properties.NbGradleSingleProjectConfigProvider;
-import org.netbeans.modules.android.spi.AndroidGradleNodes;
+import org.netbeans.modules.android.project.api.to.remove.AndroidGradleNodes;
 import org.netbeans.modules.android.spi.AndroidModelAware;
 import org.netbeans.modules.android.spi.GradleBuildAware;
 import org.netbeans.modules.android.spi.GradleProjectOpenedHook;

@@ -1,4 +1,4 @@
-package org.netbeans.modules.android.spi;
+package org.netbeans.modules.android.project.api.to.remove;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
@@ -53,6 +53,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author radim
  */
+@Deprecated
 public class AndroidGradleNodes implements GradleProjectExtensionNodes {
 
     private final Project p;
@@ -147,6 +148,7 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
         }
     }
 
+    @Deprecated
     private class InstrumentTestNodeFactory implements SingleNodeFactory {
 
         public InstrumentTestNodeFactory() {
@@ -158,6 +160,7 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
         }
     }
 
+    @Deprecated
     private class DependenciesNodeFactory implements SingleNodeFactory {
 
         public DependenciesNodeFactory() {
@@ -170,6 +173,7 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
         }
     }
 
+    @Deprecated
     private class ApkNodeFactory implements SingleNodeFactory {
 
         @Override
@@ -181,6 +185,7 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
 
     private static final RequestProcessor RP = new RequestProcessor("Refresh APK Nodes", 1);
 
+    @Deprecated
     private class ApksFilterNodeChildrensV2 extends Children.Keys<DataObject> implements FileChangeListener {
 
         public ApksFilterNodeChildrensV2() {
@@ -296,6 +301,7 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
 
     }
 
+    @Deprecated
     private class ApksFilterNode extends AbstractNode {
 
         public ApksFilterNode() {
@@ -327,6 +333,7 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
 
     }
 
+    @Deprecated
     private class GeneratedSourcesNodeFactory implements SingleNodeFactory {
 
         public GeneratedSourcesNodeFactory() {
@@ -339,6 +346,7 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
         }
     }
 
+    @Deprecated
     private class ManifestNodeFactory implements SingleNodeFactory {
 
         @Override

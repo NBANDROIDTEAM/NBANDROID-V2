@@ -14,6 +14,7 @@
 package org.nbandroid.netbeans.gradle.api;
 
 import javax.annotation.Nullable;
+import javax.swing.event.ChangeListener;
 import org.openide.filesystems.FileObject;
 
 // TODO radim: should be a function: source fileobject -> manifest fileobject to allow for different AM.xml for flavors/configs
@@ -25,4 +26,8 @@ public interface AndroidManifestSource {
 
     @Nullable
     FileObject get();
+
+    public void addChangeListener(ChangeListener listener);
+
+    public void removeChangeListener(ChangeListener listener);
 }

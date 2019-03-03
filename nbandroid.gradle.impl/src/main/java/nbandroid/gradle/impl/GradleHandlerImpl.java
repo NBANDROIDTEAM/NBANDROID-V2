@@ -21,8 +21,9 @@ package nbandroid.gradle.impl;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import nbandroid.gradle.impl.GradleDownloader.GradleHome;
@@ -138,11 +139,12 @@ public class GradleHandlerImpl implements GradleHandler {
                     synchronized (gradleLocations) {
                         gradleLocations.put(project, gradleHome);
                     }
-                    modelContent.set(Collections.emptyList(), null);
+                    //      modelContent.set(Collections.emptyList(), null);
                     GradleConnector connector = GradleConnector.newConnector();
                     connector.useInstallation(gradleHome.getGradleHome());
                     connector.forProjectDirectory(FileUtil.toFile(project.getProjectDirectory()));
                     try (ProjectConnection connection = connector.connect()) {
+                        List<Object> modelList = new ArrayList<>();
                         for (Class model : models) {
                             ModelBuilder modelBuilder = connection.model(model);
                             //Emulate Android studio
@@ -154,6 +156,7 @@ public class GradleHandlerImpl implements GradleHandler {
                             InputOutput io = project.getLookup().lookup(InputOutput.class);
                             if (io != null) {
                                 io.show(ImmutableSet.of(ShowOperation.OPEN, ShowOperation.MAKE_VISIBLE));
+                                io.getOut().println("Deserializing model: " + model.getSimpleName());
                                 CustomWriterOutputStream cwos = new CustomWriterOutputStream(io.getOut(), "UTF-8");
                                 modelBuilder.setStandardOutput(cwos);
                                 modelBuilder.setStandardError(cwos);
@@ -168,12 +171,13 @@ public class GradleHandlerImpl implements GradleHandler {
                                 }
                             });
                             try {
-                                modelContent.add(modelBuilder.get());
+                                modelList.add(modelBuilder.get());
                             } catch (GradleConnectionException | IllegalStateException gradleConnectionException) {
                                 Exceptions.printStackTrace(gradleConnectionException);
                             }
                             progressHandle.finish();
                         }
+                        modelContent.set(modelList, null);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

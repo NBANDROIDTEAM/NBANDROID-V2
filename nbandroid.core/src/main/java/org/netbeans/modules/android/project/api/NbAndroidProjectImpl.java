@@ -32,6 +32,8 @@ import org.gradle.tooling.model.gradle.GradleBuild;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.android.project.api.nodes.NodeFactory;
+import org.netbeans.modules.android.project.api.to.remove.AndroidGradleNodes;
 import org.netbeans.modules.android.project.build.BuildVariant;
 import org.netbeans.modules.android.project.properties.AndroidCustomizerProvider;
 import org.netbeans.modules.android.project.query.AndroidClassPathProvider;
@@ -91,6 +93,7 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
         ic.add(new GradleSourceForBinaryQuery(this, buildVariant));
         androidClassPathProvider = new AndroidClassPathProvider(buildVariant, this);
         ic.add(androidClassPathProvider);
+        ic.add(new AndroidGradleNodes(this));
 
     }
 
@@ -132,7 +135,7 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
         public ProjectNode(Node node)
                 throws DataObjectNotFoundException {
             super(node,
-                    new FilterProjectChilden(node),
+                    new ProjectNodes(),
                     new ProxyLookup(
                             new Lookup[]{
                                 Lookups.singleton(NbAndroidProjectImpl.this),
@@ -170,20 +173,25 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
 
     }
 
-    public class FilterProjectChilden extends FilterNode.Children {
+    public class ProjectNodes extends Children.Keys<Node> {
 
-        private final Node orig;
-
-        public FilterProjectChilden(Node orig) {
-            super(orig);
-            this.orig = orig;
+        public ProjectNodes() {
+            super(true);
+            List<NodeFactory> findAll = NodeFactory.findAll();
+            List<Node> childrens = new ArrayList<>();
+            for (int i = 0; i < findAll.size(); i++) {
+                NodeFactory factory = findAll.get(i);
+                Node node = factory.createNode(NbAndroidProjectImpl.this);
+                if (node != null) {
+                    childrens.add(node);
+                }
+            }
+            setKeys(childrens);
         }
 
         @Override
         protected Node[] createNodes(Node key) {
-            Node[] nodes = super.createNodes(key);
-            List<Node> tmp = new ArrayList<>();
-            return tmp.toArray(new Node[tmp.size()]);
+            return new Node[]{key};
         }
 
     }
