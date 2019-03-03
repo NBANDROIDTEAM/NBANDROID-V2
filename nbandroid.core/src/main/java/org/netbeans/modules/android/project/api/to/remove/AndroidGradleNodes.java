@@ -114,6 +114,7 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
                         new ApkNodeFactory())));
     }
 
+    @Deprecated
     private class GradleNodeFactory implements SingleNodeFactory {
 
         private final SourceGroup sg;
@@ -128,6 +129,7 @@ public class AndroidGradleNodes implements GradleProjectExtensionNodes {
         }
     }
 
+    @Deprecated
     private class GradleResNodeFactory implements SingleNodeFactory {
 
         private final SourceGroup sg;

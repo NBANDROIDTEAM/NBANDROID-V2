@@ -39,6 +39,7 @@ import org.xml.sax.ext.DefaultHandler2;
  *
  * @author radim
  */
+@Deprecated
 public class ProjectResourceLocator implements ResourceLocator {
 
     private static final Logger LOG = Logger.getLogger(ProjectResourceLocator.class.getName());

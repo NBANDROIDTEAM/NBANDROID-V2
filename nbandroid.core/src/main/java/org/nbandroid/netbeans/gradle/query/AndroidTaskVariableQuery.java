@@ -10,6 +10,7 @@ import org.openide.util.Lookup;
  *
  * @author radim
  */
+@Deprecated
 public class AndroidTaskVariableQuery implements GradleTaskVariableQuery {
 
     public static final TaskVariable BUILD_VARIANT_VARIABLE = new TaskVariable("BuildVariant");

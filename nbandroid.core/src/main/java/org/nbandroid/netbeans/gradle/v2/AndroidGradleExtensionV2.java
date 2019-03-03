@@ -152,11 +152,11 @@ public class AndroidGradleExtensionV2 implements GradleProjectExtension2<Android
         items.add(new GradleAndroidManifest(project, buildCfg));//DONE
         items.add(new GradleSourceForBinaryQuery(buildCfg));//DONE
         items.add(new AndroidGradleNodes(project));
-        items.add(new ProjectResourceLocator(project));
-        items.add(new AndroidTaskVariableQuery(buildCfg));
-        items.add(new BuiltInCommands(project, buildCfg));
+        items.add(new ProjectResourceLocator(project));//DONE Not used
+        items.add(new AndroidTaskVariableQuery(buildCfg));//DONE Not used, we really need it?
+        items.add(new BuiltInCommands(project, buildCfg));//DONE Not used, we really need it?
         items.add(new BuildCustomizerProvider());
-        items.add(new AndroidTestsProvider());
+        items.add(new AndroidTestsProvider());//DONE
         items.add(new GradleDebugInfo(project));
         items.add(new PrivilegedTemplatesImpl());
         items.add(new ProjectRefResolver(project));

@@ -6,6 +6,7 @@ import org.nbandroid.netbeans.gradle.config.AndroidTestRunConfiguration;
  *
  * @author radim
  */
+@Deprecated
 public class AndroidTestsPanel extends javax.swing.JPanel {
 
     /**

@@ -49,6 +49,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author radim
  */
+@Deprecated
 public class BuiltInCommands implements BuiltInGradleCommandQuery {
 
     private static final Logger LOG = Logger.getLogger(BuiltInCommands.class.getName());
