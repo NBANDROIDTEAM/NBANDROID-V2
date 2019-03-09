@@ -26,6 +26,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import nbandroid.gradle.impl.GradleDownloader.GradleHome;
 import nbandroid.gradle.spi.BuildMutex;
 import nbandroid.gradle.spi.GradleArgsConfiguration;
@@ -33,13 +35,18 @@ import nbandroid.gradle.spi.GradleHandler;
 import nbandroid.gradle.spi.GradleJvmConfiguration;
 import nbandroid.gradle.tooling.AndroidProjectInfo;
 import org.apache.commons.io.output.WriterOutputStream;
+import org.gradle.initialization.BuildCancellationToken;
+import org.gradle.initialization.DefaultBuildCancellationToken;
 import org.gradle.internal.impldep.com.google.common.collect.ImmutableSet;
+import org.gradle.tooling.BuildCancelledException;
+import org.gradle.tooling.CancellationToken;
 import org.gradle.tooling.GradleConnectionException;
 import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ModelBuilder;
 import org.gradle.tooling.ProjectConnection;
 import org.gradle.tooling.events.ProgressEvent;
 import org.gradle.tooling.events.ProgressListener;
+import org.gradle.tooling.internal.consumer.CancellationTokenInternal;
 import org.netbeans.api.io.InputOutput;
 import org.netbeans.api.io.ShowOperation;
 import org.netbeans.api.progress.ProgressHandle;
@@ -47,6 +54,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -105,7 +113,7 @@ public class GradleHandlerImpl implements GradleHandler {
         return null;
     }
 
-    private static class GradleHandlerApi implements LookupListener, Runnable {
+    private static class GradleHandlerApi implements LookupListener, Runnable, CancellationToken, CancellationTokenInternal, Cancellable {
 
         private final Project project;
         private final InstanceContent modelContent = new InstanceContent();
@@ -116,6 +124,8 @@ public class GradleHandlerImpl implements GradleHandler {
         private final BuildMutex buildMutex;
         private final GradleJvmConfiguration jvmConfiguration;
         private final GradleArgsConfiguration argsConfiguration;
+        private final AtomicBoolean cancellation = new AtomicBoolean();
+        private final AtomicReference<DefaultBuildCancellationToken> cancellationReference = new AtomicReference<>();
 
         public GradleHandlerApi(Project project) {
             this.project = project;
@@ -151,6 +161,8 @@ public class GradleHandlerImpl implements GradleHandler {
         }
 
         private void deserializeModels() {
+            cancellation.set(false);
+            cancellationReference.set(new DefaultBuildCancellationToken());
             GradleHome gradleHome = lookupResult.allInstances().iterator().next();
             if (gradleHome.getStatus() == GradleDownloader.Status.OK) {
                 synchronized (gradleLocations) {
@@ -164,6 +176,7 @@ public class GradleHandlerImpl implements GradleHandler {
                     List<Object> modelList = new ArrayList<>();
                     for (Class model : models) {
                         ModelBuilder modelBuilder = connection.model(model);
+                        modelBuilder.withCancellationToken(this);
                         //Emulate Android studio
                         modelBuilder.addArguments("-Pandroid.injected.build.model.only.versioned=3");
                         //Prepare load of plugin to retreive tasks from Gradle
@@ -193,7 +206,7 @@ public class GradleHandlerImpl implements GradleHandler {
                             modelBuilder.setStandardError(cwos);
                             modelBuilder.setColorOutput(true);
                         }
-                        final ProgressHandle progressHandle = ProgressHandleFactory.createSystemHandle(project.getProjectDirectory().getName() + ": Loading Gradle model..");
+                        final ProgressHandle progressHandle = ProgressHandleFactory.createSystemHandle(project.getProjectDirectory().getName() + ": Loading Gradle model..", this);
                         progressHandle.start();
                         modelBuilder.addProgressListener(new ProgressListener() {
                             @Override
@@ -204,7 +217,9 @@ public class GradleHandlerImpl implements GradleHandler {
                         try {
                             modelList.add(modelBuilder.get());
                         } catch (GradleConnectionException | IllegalStateException gradleConnectionException) {
-                            Exceptions.printStackTrace(gradleConnectionException);
+                            if (!(gradleConnectionException instanceof BuildCancelledException)) {
+                                Exceptions.printStackTrace(gradleConnectionException);
+                            }
                         }
                         progressHandle.finish();
                     }
@@ -222,6 +237,23 @@ public class GradleHandlerImpl implements GradleHandler {
             } catch (Exception e) {
                 Exceptions.printStackTrace(e);
             }
+        }
+
+        @Override
+        public boolean isCancellationRequested() {
+            return cancellation.get();
+        }
+
+        @Override
+        public boolean cancel() {
+            cancellation.set(true);
+            cancellationReference.get().cancel();
+            return true;
+        }
+
+        @Override
+        public BuildCancellationToken getToken() {
+            return cancellationReference.get();
         }
 
     }

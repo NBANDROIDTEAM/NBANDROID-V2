@@ -21,6 +21,8 @@ package nbandroid.gradle.impl;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import nbandroid.gradle.spi.BuildMutex;
 import nbandroid.gradle.spi.GradleArgsConfiguration;
 import nbandroid.gradle.spi.GradleHandler;
@@ -28,13 +30,18 @@ import nbandroid.gradle.spi.GradleJvmConfiguration;
 import nbandroid.gradle.spi.ModelRefresh;
 import nbandroid.gradle.tooling.TaskInfo;
 import org.apache.commons.io.output.WriterOutputStream;
+import org.gradle.initialization.BuildCancellationToken;
+import org.gradle.initialization.DefaultBuildCancellationToken;
 import org.gradle.internal.impldep.com.google.common.collect.ImmutableSet;
+import org.gradle.tooling.BuildCancelledException;
 import org.gradle.tooling.BuildLauncher;
+import org.gradle.tooling.CancellationToken;
 import org.gradle.tooling.GradleConnectionException;
 import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ProjectConnection;
 import org.gradle.tooling.events.ProgressEvent;
 import org.gradle.tooling.events.ProgressListener;
+import org.gradle.tooling.internal.consumer.CancellationTokenInternal;
 import org.netbeans.api.io.InputOutput;
 import org.netbeans.api.io.ShowOperation;
 import org.netbeans.api.progress.ProgressHandle;
@@ -42,6 +49,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -49,7 +57,7 @@ import org.openide.util.Lookup;
  *
  * @author arsi
  */
-public class ExecuteGoal implements Runnable {
+public class ExecuteGoal implements Runnable, CancellationToken, CancellationTokenInternal, Cancellable {
 
     private final Project project;
     private final TaskInfo taskInfo;
@@ -57,6 +65,8 @@ public class ExecuteGoal implements Runnable {
     private final File gradleHome;
     private final GradleJvmConfiguration jvmConfiguration;
     private final GradleArgsConfiguration argsConfiguration;
+    private final AtomicBoolean cancellation = new AtomicBoolean();
+    private final AtomicReference<DefaultBuildCancellationToken> cancellationReference = new AtomicReference<>();
 
     public ExecuteGoal(Project project, TaskInfo taskInfo) {
         this.project = project;
@@ -77,12 +87,15 @@ public class ExecuteGoal implements Runnable {
 
     @Override
     public void run() {
+        cancellation.set(false);
+        cancellationReference.set(new DefaultBuildCancellationToken());
         GradleConnector connector = GradleConnector.newConnector();
         connector.useInstallation(gradleHome);
         connector.forProjectDirectory(FileUtil.toFile(project.getProjectDirectory()));
         try (ProjectConnection connection = connector.connect()) {
             BuildLauncher buildLauncher = connection.newBuild();
             buildLauncher.forTasks(taskInfo.getName());
+            buildLauncher.withCancellationToken(this);
             ProjectConfigurationProvider pcp = project.getLookup().lookup(ProjectConfigurationProvider.class);
             if (pcp != null && pcp.getActiveConfiguration() != null) {
                 buildLauncher.addArguments("-Pandroid.profile=" + pcp.getActiveConfiguration());
@@ -110,7 +123,7 @@ public class ExecuteGoal implements Runnable {
                 buildLauncher.setStandardError(cwos);
                 buildLauncher.setColorOutput(true);
             }
-            final ProgressHandle progressHandle = ProgressHandleFactory.createSystemHandle(project.getProjectDirectory().getName() + ": Loading Gradle model..");
+            final ProgressHandle progressHandle = ProgressHandleFactory.createSystemHandle(project.getProjectDirectory().getName() + ": Loading Gradle model..", this);
             progressHandle.start();
             buildLauncher.addProgressListener(new ProgressListener() {
                 @Override
@@ -121,7 +134,9 @@ public class ExecuteGoal implements Runnable {
             try {
                 buildLauncher.run();
             } catch (GradleConnectionException | IllegalStateException gradleConnectionException) {
-                Exceptions.printStackTrace(gradleConnectionException);
+                if (!(gradleConnectionException instanceof BuildCancelledException)) {
+                    Exceptions.printStackTrace(gradleConnectionException);
+                }
             }
             progressHandle.finish();
             ModelRefresh modelRefresh = project.getLookup().lookup(ModelRefresh.class);
@@ -131,6 +146,23 @@ public class ExecuteGoal implements Runnable {
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
         }
+    }
+
+    @Override
+    public boolean isCancellationRequested() {
+        return cancellation.get();
+    }
+
+    @Override
+    public boolean cancel() {
+        cancellation.set(true);
+        cancellationReference.get().cancel();
+        return true;
+    }
+
+    @Override
+    public BuildCancellationToken getToken() {
+        return cancellationReference.get();
     }
 
     private static class CustomWriterOutputStream extends WriterOutputStream {
