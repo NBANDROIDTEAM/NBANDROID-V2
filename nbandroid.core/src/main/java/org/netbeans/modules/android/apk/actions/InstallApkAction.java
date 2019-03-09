@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.apk.actions;
+package org.netbeans.modules.android.apk.actions;
 
 import com.android.ddmlib.InstallException;
 import org.nbandroid.netbeans.gradle.avd.AvdSelector;

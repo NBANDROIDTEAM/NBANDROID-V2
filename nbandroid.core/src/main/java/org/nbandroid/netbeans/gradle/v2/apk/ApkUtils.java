@@ -46,6 +46,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import javax.security.auth.x500.X500Principal;
+import nbandroid.gradle.spi.GradleCommandExecutor;
+import nbandroid.gradle.spi.GradleCommandTemplate;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
@@ -57,9 +59,7 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.nbandroid.netbeans.gradle.v2.apk.sign.keystore.KeystoreSelector;
-import org.netbeans.gradle.project.NbGradleProject;
-import org.netbeans.gradle.project.api.task.CustomCommandActions;
-import org.netbeans.gradle.project.api.task.GradleCommandTemplate;
+import org.netbeans.api.project.Project;
 import sun.nio.ch.FileChannelImpl;
 
 /**
@@ -85,7 +85,7 @@ public class ApkUtils {
         return ARGUMENT + key + "=" + value;
     }
 
-    public static void gradleSignApk(NbGradleProject project, String displayName, List<String> tasks, KeystoreSelector keystoreSelector, File out) {
+    public static void gradleSignApk(Project project, String displayName, List<String> tasks, KeystoreSelector keystoreSelector, File out) {
 
         GradleCommandTemplate.Builder builder = new GradleCommandTemplate.Builder(
                 displayName != null ? displayName : "", tasks);
@@ -102,26 +102,24 @@ public class ApkUtils {
 
         builder.setArguments(arguments);
         builder.setJvmArguments(Collections.EMPTY_LIST);
-        builder.setBlocking(true);
         executeCommandTemplate(project, builder.create());
     }
 
-    public static void gradleBuild(NbGradleProject project, String displayName, List<String> tasks, List<String> arguments, List<String> jvmArguments, boolean blocking) {
+    public static void gradleBuild(Project project, String displayName, List<String> tasks, List<String> arguments, List<String> jvmArguments, boolean blocking) {
 
         GradleCommandTemplate.Builder builder = new GradleCommandTemplate.Builder(
                 displayName != null ? displayName : "", tasks);
 
         builder.setArguments(arguments);
         builder.setJvmArguments(jvmArguments);
-        builder.setBlocking(blocking);
         executeCommandTemplate(project, builder.create());
     }
 
-    private static void executeCommandTemplate(NbGradleProject project, GradleCommandTemplate command) {
-        CustomCommandActions actions = command.isBlocking()
-                ? CustomCommandActions.OTHER
-                : CustomCommandActions.BUILD;
-        project.getGradleCommandExecutor().executeCommand(command, actions);
+    private static void executeCommandTemplate(Project project, GradleCommandTemplate command) {
+        GradleCommandExecutor executor = project.getLookup().lookup(GradleCommandExecutor.class);
+        if (executor != null) {
+            executor.executeCommand(command);
+        }
     }
 
     private static String encodeDN(DN dn) {

@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.apk.actions;
+package org.netbeans.modules.android.apk.actions;
 
+import com.android.builder.model.AndroidProject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.nbandroid.netbeans.gradle.v2.apk.ApkUtils;
 import org.netbeans.api.project.Project;
-import org.netbeans.gradle.project.NbGradleProject;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -37,7 +37,7 @@ import org.openide.util.actions.NodeAction;
  */
 @ActionID(
         category = "Android/Projects/Project",
-        id = "org.nbandroid.netbeans.gradle.v2.apk.actions.ReleaseUnsignedApkAction"
+        id = "org.netbeans.modules.android.apk.actions.ReleaseUnsignedApkAction"
 )
 @ActionRegistration(
         displayName = "", lazy = false
@@ -53,10 +53,9 @@ public class ReleaseUnsignedApkAction extends NodeAction {
         }
         Project owner = activatedNodes[0].getLookup().lookup(Project.class);
         if (owner != null) {
-            NbGradleProject gradleProject = owner.getLookup().lookup(NbGradleProject.class);
             List<String> tasks = new ArrayList<>();
             tasks.add("assembleRelease");
-            ApkUtils.gradleBuild(gradleProject, "Build Release APK.. (unsigned)", tasks, Collections.EMPTY_LIST, Collections.EMPTY_LIST, true);
+            ApkUtils.gradleBuild(owner, "Build Release APK.. (unsigned)", tasks, Collections.EMPTY_LIST, Collections.EMPTY_LIST, true);
         }
 
     }
@@ -66,7 +65,8 @@ public class ReleaseUnsignedApkAction extends NodeAction {
         if (activatedNodes.length != 1) {
             return false;
         }
-        return true;
+        Project owner = activatedNodes[0].getLookup().lookup(Project.class);
+        return owner != null && owner.getLookup().lookup(AndroidProject.class) != null;
     }
 
     @Override

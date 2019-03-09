@@ -16,22 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.apk.actions;
+package org.netbeans.modules.android.apk.actions;
 
+import com.android.builder.model.AndroidProject;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.nbandroid.netbeans.gradle.v2.apk.ApkUtils;
-import org.nbandroid.netbeans.gradle.v2.apk.sign.keystore.KeystoreSelector;
 import org.netbeans.api.project.Project;
-import org.netbeans.gradle.project.NbGradleProject;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
-import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.NodeAction;
 
@@ -41,14 +37,14 @@ import org.openide.util.actions.NodeAction;
  */
 @ActionID(
         category = "Android/Projects/Project",
-        id = "org.nbandroid.netbeans.gradle.v2.apk.actions.SignApkAction"
+        id = "org.netbeans.modules.android.apk.actions.DebugApkAction"
 )
 @ActionRegistration(
         displayName = "", lazy = false
 )
 
-@ActionReference(path = "Android/Projects/Project", position = 100)
-public class SignApkAction extends NodeAction {
+@ActionReference(path = "Android/Projects/Project", position = 50, separatorBefore = 49)
+public class DebugApkAction extends NodeAction {
 
     @Override
     protected void performAction(Node[] activatedNodes) {
@@ -57,25 +53,9 @@ public class SignApkAction extends NodeAction {
         }
         Project owner = activatedNodes[0].getLookup().lookup(Project.class);
         if (owner != null) {
-            NbGradleProject gradleProject = owner.getLookup().lookup(NbGradleProject.class);
-            KeystoreSelector selector = new KeystoreSelector(owner);
-            DialogDescriptor dd = new DialogDescriptor(selector, "Generate Signed APK", true, selector);
-            selector.setDescriptor(dd);
-            Object notify = DialogDisplayer.getDefault().notify(dd);
-            if (DialogDescriptor.OK_OPTION.equals(notify)) {
-                try {
-                    List<String> tasks = new ArrayList<>();
-                    if (selector.isRelease()) {
-                        tasks.add("assembleRelease");
-                    }
-                    if (selector.isDebug()) {
-                        tasks.add("assembleDebug");
-                    }
-                    ApkUtils.gradleSignApk(gradleProject, "", tasks, selector, FileUtil.toFile(owner.getProjectDirectory()));
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+            List<String> tasks = new ArrayList<>();
+            tasks.add("assembleDebug");
+            ApkUtils.gradleBuild(owner, "Build Debug APK..", tasks, Collections.EMPTY_LIST, Collections.EMPTY_LIST, true);
         }
 
     }
@@ -85,12 +65,13 @@ public class SignApkAction extends NodeAction {
         if (activatedNodes.length != 1) {
             return false;
         }
-        return true;
+        Project owner = activatedNodes[0].getLookup().lookup(Project.class);
+        return owner != null && owner.getLookup().lookup(AndroidProject.class) != null;
     }
 
     @Override
     public String getName() {
-        return "Build Signed APK..";
+        return "Build Debug APK..";
     }
 
     @Override

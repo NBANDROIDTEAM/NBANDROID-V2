@@ -21,9 +21,9 @@ package org.nbandroid.netbeans.gradle.v2;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
-import org.nbandroid.netbeans.gradle.v2.apk.actions.DebugApkAction;
-import org.nbandroid.netbeans.gradle.v2.apk.actions.ReleaseUnsignedApkAction;
-import org.nbandroid.netbeans.gradle.v2.apk.actions.SignApkAction;
+import org.netbeans.modules.android.apk.actions.DebugApkAction;
+import org.netbeans.modules.android.apk.actions.ReleaseUnsignedApkAction;
+import org.netbeans.modules.android.apk.actions.SignApkAction;
 import org.netbeans.gradle.project.api.nodes.GradleProjectContextActions;
 import org.openide.util.actions.SystemAction;
 
