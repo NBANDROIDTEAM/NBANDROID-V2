@@ -80,5 +80,10 @@
             <artifactId>Gradle-Android-support-gradle-tooling</artifactId>
             <version>01.00-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util</artifactId>
+            <version>${version.nb}</version>
+        </dependency>
     </dependencies>
 </project>

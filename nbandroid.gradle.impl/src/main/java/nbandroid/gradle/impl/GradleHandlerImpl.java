@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import nbandroid.gradle.impl.GradleDownloader.GradleHome;
+import nbandroid.gradle.spi.BuildMutex;
 import nbandroid.gradle.spi.GradleHandler;
 import nbandroid.gradle.tooling.AndroidProjectInfo;
 import org.apache.commons.io.output.WriterOutputStream;
@@ -102,7 +103,7 @@ public class GradleHandlerImpl implements GradleHandler {
         return null;
     }
 
-    private static class GradleHandlerApi implements LookupListener {
+    private static class GradleHandlerApi implements LookupListener, Runnable {
 
         private final Project project;
         private final InstanceContent modelContent = new InstanceContent();
@@ -110,9 +111,11 @@ public class GradleHandlerImpl implements GradleHandler {
         private final GradleDownloader downloader;
         private final Lookup.Result<GradleHome> lookupResult;
         private Class models[] = new Class[0];
+        private final BuildMutex buildMutex;
 
         public GradleHandlerApi(Project project) {
             this.project = project;
+            buildMutex = project.getLookup().lookup(BuildMutex.class);
             downloader = new GradleDownloader(project);
             lookupResult = downloader.getLookup().lookupResult(GradleHome.class);
             lookupResult.addLookupListener(this);
@@ -137,60 +140,73 @@ public class GradleHandlerImpl implements GradleHandler {
         @Override
         public void resultChanged(LookupEvent ev) {
             if (!lookupResult.allInstances().isEmpty()) {
-                GradleHome gradleHome = lookupResult.allInstances().iterator().next();
-                if (gradleHome.getStatus() == GradleDownloader.Status.OK) {
-                    synchronized (gradleLocations) {
-                        gradleLocations.put(project, gradleHome);
-                    }
-                    //      modelContent.set(Collections.emptyList(), null);
-                    GradleConnector connector = GradleConnector.newConnector();
-                    connector.useInstallation(gradleHome.getGradleHome());
-                    connector.forProjectDirectory(FileUtil.toFile(project.getProjectDirectory()));
-                    try (ProjectConnection connection = connector.connect()) {
-                        List<Object> modelList = new ArrayList<>();
-                        for (Class model : models) {
-                            ModelBuilder modelBuilder = connection.model(model);
-                            //Emulate Android studio
-                            modelBuilder.addArguments("-Pandroid.injected.build.model.only.versioned=3");
-                            //Prepare load of plugin to retreive tasks from Gradle
-                            modelBuilder.addJvmArguments("-DANDROID_TOOLING_JAR=" + TOOLING_JAR);
-                            modelBuilder.addArguments("-I");
-                            modelBuilder.addArguments(INIT_SCRIPT);
-                            InputOutput io = project.getLookup().lookup(InputOutput.class);
-                            if (io != null) {
-                                io.show(ImmutableSet.of(ShowOperation.OPEN, ShowOperation.MAKE_VISIBLE));
-                                io.getOut().print("\n\r");
-                                io.getOut().print("\n\r");
-                                io.getOut().print("\n\r");
-                                io.getOut().print("\n\r");
-                                io.getOut().println(BLUE + "Deserializing model: " + model.getSimpleName() + BLACK);
-                                io.getOut().print("\n\r");
-                                io.getOut().print("\n\r");
-                                CustomWriterOutputStream cwos = new CustomWriterOutputStream(io.getOut(), "UTF-8");
-                                modelBuilder.setStandardOutput(cwos);
-                                modelBuilder.setStandardError(cwos);
-                                modelBuilder.setColorOutput(true);
-                            }
-                            final ProgressHandle progressHandle = ProgressHandleFactory.createSystemHandle(project.getProjectDirectory().getName() + ": Loading Gradle model..");
-                            progressHandle.start();
-                            modelBuilder.addProgressListener(new ProgressListener() {
-                                @Override
-                                public void statusChanged(ProgressEvent event) {
-                                    progressHandle.progress(event.getDisplayName());
-                                }
-                            });
-                            try {
-                                modelList.add(modelBuilder.get());
-                            } catch (GradleConnectionException | IllegalStateException gradleConnectionException) {
-                                Exceptions.printStackTrace(gradleConnectionException);
-                            }
-                            progressHandle.finish();
-                        }
-                        modelContent.set(modelList, null);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                buildMutex.mutex().postWriteRequest(this);
+            }
+        }
+
+        private void deserializeModels() {
+            GradleHome gradleHome = lookupResult.allInstances().iterator().next();
+            if (gradleHome.getStatus() == GradleDownloader.Status.OK) {
+                synchronized (gradleLocations) {
+                    gradleLocations.put(project, gradleHome);
                 }
+                //      modelContent.set(Collections.emptyList(), null);
+                GradleConnector connector = GradleConnector.newConnector();
+                connector.useInstallation(gradleHome.getGradleHome());
+                connector.forProjectDirectory(FileUtil.toFile(project.getProjectDirectory()));
+                try (ProjectConnection connection = connector.connect()) {
+                    List<Object> modelList = new ArrayList<>();
+                    for (Class model : models) {
+                        ModelBuilder modelBuilder = connection.model(model);
+                        //Emulate Android studio
+                        modelBuilder.addArguments("-Pandroid.injected.build.model.only.versioned=3");
+                        //Prepare load of plugin to retreive tasks from Gradle
+                        modelBuilder.addJvmArguments("-DANDROID_TOOLING_JAR=" + TOOLING_JAR);
+                        modelBuilder.addArguments("-I");
+                        modelBuilder.addArguments(INIT_SCRIPT);
+                        InputOutput io = project.getLookup().lookup(InputOutput.class);
+                        if (io != null) {
+                            io.show(ImmutableSet.of(ShowOperation.OPEN, ShowOperation.MAKE_VISIBLE));
+                            io.getOut().print("\n\r");
+                            io.getOut().print("\n\r");
+                            io.getOut().print("\n\r");
+                            io.getOut().print("\n\r");
+                            io.getOut().println(BLUE + "Deserializing model: " + model.getSimpleName() + BLACK);
+                            io.getOut().print("\n\r");
+                            io.getOut().print("\n\r");
+                            CustomWriterOutputStream cwos = new CustomWriterOutputStream(io.getOut(), "UTF-8");
+                            modelBuilder.setStandardOutput(cwos);
+                            modelBuilder.setStandardError(cwos);
+                            modelBuilder.setColorOutput(true);
+                        }
+                        final ProgressHandle progressHandle = ProgressHandleFactory.createSystemHandle(project.getProjectDirectory().getName() + ": Loading Gradle model..");
+                        progressHandle.start();
+                        modelBuilder.addProgressListener(new ProgressListener() {
+                            @Override
+                            public void statusChanged(ProgressEvent event) {
+                                progressHandle.progress(event.getDisplayName());
+                            }
+                        });
+                        try {
+                            modelList.add(modelBuilder.get());
+                        } catch (GradleConnectionException | IllegalStateException gradleConnectionException) {
+                            Exceptions.printStackTrace(gradleConnectionException);
+                        }
+                        progressHandle.finish();
+                    }
+                    modelContent.set(modelList, null);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        @Override
+        public void run() {
+            try {
+                deserializeModels();
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
             }
         }
 

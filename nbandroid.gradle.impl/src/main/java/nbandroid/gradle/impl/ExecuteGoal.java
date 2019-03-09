@@ -21,6 +21,7 @@ package nbandroid.gradle.impl;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import nbandroid.gradle.spi.BuildMutex;
 import nbandroid.gradle.spi.GradleHandler;
 import nbandroid.gradle.spi.ModelRefresh;
 import nbandroid.gradle.tooling.TaskInfo;
@@ -41,7 +42,6 @@ import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -52,7 +52,6 @@ public class ExecuteGoal implements Runnable {
     private final Project project;
     private final TaskInfo taskInfo;
     private static final GradleHandler gradleHandler = Lookup.getDefault().lookup(GradleHandler.class);
-    private static final RequestProcessor RP = new RequestProcessor(ExecuteGoal.class);
     private final File gradleHome;
 
     public ExecuteGoal(Project project, TaskInfo taskInfo) {
@@ -60,7 +59,10 @@ public class ExecuteGoal implements Runnable {
         this.taskInfo = taskInfo;
         gradleHome = gradleHandler.getGradleHome(project);
         if (gradleHome != null) {
-            RP.execute(this);
+            BuildMutex buildMutex = project.getLookup().lookup(BuildMutex.class);
+            if (buildMutex != null) {
+                buildMutex.mutex().postWriteRequest(this);
+            }
         }
 
     }

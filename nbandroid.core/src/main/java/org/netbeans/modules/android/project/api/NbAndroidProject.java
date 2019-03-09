@@ -31,7 +31,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.swing.Timer;
+import nbandroid.gradle.spi.BuildMutex;
+import nbandroid.gradle.spi.BuildMutexProvider;
 import nbandroid.gradle.spi.GradleHandler;
+import nbandroid.gradle.spi.ModelRefresh;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkImpl;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
@@ -43,7 +46,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.android.project.properties.AndroidProjectPropsImpl;
 import org.netbeans.modules.android.project.properties.AuxiliaryConfigImpl;
-import nbandroid.gradle.spi.ModelRefresh;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectState;
@@ -104,9 +106,10 @@ public abstract class NbAndroidProject implements Project, LookupListener, Runna
     protected final AuxiliaryConfiguration auxiliaryConfig = new AuxiliaryConfigImpl(this);
     protected final AuxiliaryProperties auxiliaryProperties = new AndroidProjectPropsImpl(auxiliaryConfig);
     protected final CopyOnWriteArrayList lastModels = new CopyOnWriteArrayList();
-
+    protected final BuildMutex buildMutex = Lookup.getDefault().lookup(BuildMutexProvider.class).create();
     public NbAndroidProject(FileObject projectDirectory, ProjectState ps) {
         this.projectDirectory = projectDirectory;
+        ic.add(buildMutex);
         modelLookup = GradleHandler.getDefault().getModelLookup(this);
         modelLookupResult = modelLookup.lookupResult(Object.class);
         modelLookupResult.addLookupListener(this);
