@@ -33,7 +33,11 @@ import java.util.concurrent.Future;
 import javax.swing.Timer;
 import nbandroid.gradle.spi.BuildMutex;
 import nbandroid.gradle.spi.BuildMutexProvider;
+import nbandroid.gradle.spi.GradleArgsConfiguration;
+import nbandroid.gradle.spi.GradleCommandExecutor;
+import nbandroid.gradle.spi.GradleCommandExecutorProvider;
 import nbandroid.gradle.spi.GradleHandler;
+import nbandroid.gradle.spi.GradleJvmConfiguration;
 import nbandroid.gradle.spi.ModelRefresh;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkImpl;
@@ -107,15 +111,23 @@ public abstract class NbAndroidProject implements Project, LookupListener, Runna
     protected final AuxiliaryProperties auxiliaryProperties = new AndroidProjectPropsImpl(auxiliaryConfig);
     protected final CopyOnWriteArrayList lastModels = new CopyOnWriteArrayList();
     protected final BuildMutex buildMutex = Lookup.getDefault().lookup(BuildMutexProvider.class).create();
+    protected final GradleCommandExecutor gradleCommandExecutor;
+    protected final GradleJvmConfiguration gradleJvmConfiguration;
+    protected final GradleArgsConfiguration gradleArgsConfiguration;
+
     public NbAndroidProject(FileObject projectDirectory, ProjectState ps) {
         this.projectDirectory = projectDirectory;
         ic.add(buildMutex);
-        modelLookup = GradleHandler.getDefault().getModelLookup(this);
-        modelLookupResult = modelLookup.lookupResult(Object.class);
-        modelLookupResult.addLookupListener(this);
         ic.add(this);
         ic.add(auxiliaryConfig);
         ic.add(auxiliaryProperties);
+        gradleJvmConfiguration = new GradleJvmConfiguration(this);
+        gradleArgsConfiguration = new GradleArgsConfiguration(this);
+        ic.add(gradleJvmConfiguration);
+        ic.add(gradleArgsConfiguration);
+        modelLookup = GradleHandler.getDefault().getModelLookup(this);
+        modelLookupResult = modelLookup.lookupResult(Object.class);
+        modelLookupResult.addLookupListener(this);
         ic.add(IOProvider.get("Terminal").getIO(projectDirectory.getName(), false));
         ic.add(new ModelRefresh() {
             @Override
@@ -135,6 +147,8 @@ public abstract class NbAndroidProject implements Project, LookupListener, Runna
             ic.add(projectSdk);
             localPropertiesFo.addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, localPropertiesFo));
         }
+        gradleCommandExecutor = Lookup.getDefault().lookup(GradleCommandExecutorProvider.class).create(this);
+        ic.add(gradleCommandExecutor);
         RP.execute(this);
     }
 

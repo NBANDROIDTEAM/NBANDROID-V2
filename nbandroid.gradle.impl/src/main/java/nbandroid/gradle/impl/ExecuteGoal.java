@@ -22,7 +22,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import nbandroid.gradle.spi.BuildMutex;
+import nbandroid.gradle.spi.GradleArgsConfiguration;
 import nbandroid.gradle.spi.GradleHandler;
+import nbandroid.gradle.spi.GradleJvmConfiguration;
 import nbandroid.gradle.spi.ModelRefresh;
 import nbandroid.gradle.tooling.TaskInfo;
 import org.apache.commons.io.output.WriterOutputStream;
@@ -53,10 +55,14 @@ public class ExecuteGoal implements Runnable {
     private final TaskInfo taskInfo;
     private static final GradleHandler gradleHandler = Lookup.getDefault().lookup(GradleHandler.class);
     private final File gradleHome;
+    private final GradleJvmConfiguration jvmConfiguration;
+    private final GradleArgsConfiguration argsConfiguration;
 
     public ExecuteGoal(Project project, TaskInfo taskInfo) {
         this.project = project;
         this.taskInfo = taskInfo;
+        jvmConfiguration = project.getLookup().lookup(GradleJvmConfiguration.class);
+        argsConfiguration = project.getLookup().lookup(GradleArgsConfiguration.class);
         gradleHome = gradleHandler.getGradleHome(project);
         if (gradleHome != null) {
             BuildMutex buildMutex = project.getLookup().lookup(BuildMutex.class);
@@ -81,7 +87,14 @@ public class ExecuteGoal implements Runnable {
             if (pcp != null && pcp.getActiveConfiguration() != null) {
                 buildLauncher.addArguments("-Pandroid.profile=" + pcp.getActiveConfiguration());
             }
-            buildLauncher.addJvmArguments("-Xms3000m", "-Xmx5000m");
+            if (argsConfiguration != null) {
+                buildLauncher.addArguments(argsConfiguration.getJvmArguments());
+            }
+            if (jvmConfiguration == null) {
+                buildLauncher.addJvmArguments("-Xms800m", "-Xmx2000m");
+            } else {
+                buildLauncher.addJvmArguments(jvmConfiguration.getJvmArguments());
+            }
             InputOutput io = project.getLookup().lookup(InputOutput.class);
             if (io != null) {
                 io.show(ImmutableSet.of(ShowOperation.OPEN, ShowOperation.MAKE_VISIBLE));

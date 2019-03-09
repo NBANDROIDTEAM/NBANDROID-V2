@@ -28,7 +28,9 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import nbandroid.gradle.impl.GradleDownloader.GradleHome;
 import nbandroid.gradle.spi.BuildMutex;
+import nbandroid.gradle.spi.GradleArgsConfiguration;
 import nbandroid.gradle.spi.GradleHandler;
+import nbandroid.gradle.spi.GradleJvmConfiguration;
 import nbandroid.gradle.tooling.AndroidProjectInfo;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.gradle.internal.impldep.com.google.common.collect.ImmutableSet;
@@ -112,9 +114,13 @@ public class GradleHandlerImpl implements GradleHandler {
         private final Lookup.Result<GradleHome> lookupResult;
         private Class models[] = new Class[0];
         private final BuildMutex buildMutex;
+        private final GradleJvmConfiguration jvmConfiguration;
+        private final GradleArgsConfiguration argsConfiguration;
 
         public GradleHandlerApi(Project project) {
             this.project = project;
+            jvmConfiguration = project.getLookup().lookup(GradleJvmConfiguration.class);
+            argsConfiguration = project.getLookup().lookup(GradleArgsConfiguration.class);
             buildMutex = project.getLookup().lookup(BuildMutex.class);
             downloader = new GradleDownloader(project);
             lookupResult = downloader.getLookup().lookupResult(GradleHome.class);
@@ -164,6 +170,14 @@ public class GradleHandlerImpl implements GradleHandler {
                         modelBuilder.addJvmArguments("-DANDROID_TOOLING_JAR=" + TOOLING_JAR);
                         modelBuilder.addArguments("-I");
                         modelBuilder.addArguments(INIT_SCRIPT);
+                        if (argsConfiguration != null) {
+                            modelBuilder.addArguments(argsConfiguration.getJvmArguments());
+                        }
+                        if (jvmConfiguration == null) {
+                            modelBuilder.addJvmArguments("-Xms800m", "-Xmx2000m");
+                        } else {
+                            modelBuilder.addJvmArguments(jvmConfiguration.getJvmArguments());
+                        }
                         InputOutput io = project.getLookup().lookup(InputOutput.class);
                         if (io != null) {
                             io.show(ImmutableSet.of(ShowOperation.OPEN, ShowOperation.MAKE_VISIBLE));
