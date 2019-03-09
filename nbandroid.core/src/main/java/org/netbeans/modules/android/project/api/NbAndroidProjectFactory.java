@@ -21,6 +21,8 @@ package org.netbeans.modules.android.project.api;
 import java.awt.Image;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.ImageIcon;
 import org.nbandroid.netbeans.gradle.v2.gradle.FindAndroidVisitor;
 import org.netbeans.api.annotations.common.StaticResource;
@@ -46,6 +48,12 @@ public class NbAndroidProjectFactory implements ProjectFactory2 {
     public static final Image IMG_PROJECT_ICON = ImageUtilities.loadImage(PROJECT_ICON);
 
     public static final String BUILD_GRADLE = "build.gradle";
+    public static final String re1 = "(v)";	// Any Single Character 1
+    public static final String re2 = "(c)";	// Any Single Character 2
+    public static final String re3 = "(s)";	// Any Single Character 3
+    public static final String re4 = "(-)";	// Any Single Character 4
+    public static final String re5 = "(\\d+)";	// Integer Number 1
+    private static final Pattern p = Pattern.compile(re1 + re2 + re3 + re4 + re5, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     @Override
     public ProjectManager.Result isProject2(FileObject fo) {
@@ -57,6 +65,14 @@ public class NbAndroidProjectFactory implements ProjectFactory2 {
 
     @Override
     public boolean isProject(FileObject fo) {
+        return isSubProject(fo);
+    }
+
+    public static boolean isSubProject(FileObject fo) {
+        Matcher m = p.matcher(fo.getPath());
+        if (m.find()) {
+            return false;
+        }
         if (fo.isFolder()) {
             FileObject buildScript = fo.getFileObject(BUILD_GRADLE);
             if (buildScript != null) {
@@ -69,14 +85,18 @@ public class NbAndroidProjectFactory implements ProjectFactory2 {
         return false;
     }
 
-    private boolean isRootProject(FileObject fo) {
+    public static boolean isRootProject(FileObject fo) {
+        Matcher m = p.matcher(fo.getPath());
+        if (m.find()) {
+            return false;
+        }
         if (fo.isFolder()) {
             FileObject buildScript = fo.getFileObject(BUILD_GRADLE);
             if (buildScript != null) {
                 Enumeration<? extends FileObject> children = fo.getChildren(false);
                 while (children.hasMoreElements()) {
                     FileObject nextFo = children.nextElement();
-                    if (nextFo.isFolder() && isProject(nextFo)) {
+                    if (nextFo.isFolder() && isSubProject(nextFo)) {
                         return true;
                     }
                 }
