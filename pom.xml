@@ -20,7 +20,7 @@
         <module>nbandroid.layout.spi</module>
         <module>nbandroid.layout.impl</module>
         <module>nbandroid.core</module>
-        
+        <module>nbandroid.proguard</module>
     </modules>
     <build>
         <extensions>

@@ -23,3 +23,4 @@
 /nbandroid.gradle.impl/target/
 /nbandroid.gradle.tooling/target/
 /nbandroid.gradle.libs/src/main/gradle/android-gradle-tooling.jar
+/nbandroid.proguard/target/

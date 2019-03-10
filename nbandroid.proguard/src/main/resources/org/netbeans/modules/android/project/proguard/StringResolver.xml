@@ -1,0 +1,8 @@
+<!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.1//EN" "http://www.netbeans.org/dtds/mime-resolver-1_1.dtd">
+<MIME-resolver>
+    <file>
+        <name name="proguard-rules" ignorecase="true" substring="true"/>
+        <ext name="pro"/>
+        <resolver mime="text/x-proguard"/>
+    </file>
+</MIME-resolver>
