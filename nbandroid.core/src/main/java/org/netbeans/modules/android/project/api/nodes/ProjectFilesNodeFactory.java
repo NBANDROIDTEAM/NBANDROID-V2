@@ -36,23 +36,23 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author arsi
  */
-@ServiceProvider(service = NodeFactory.class, path = "Android/Project/NodeFactory", position = 10000)
-public class ImportantNodeFactory implements NodeFactory {
+@ServiceProvider(service = NodeFactory.class, path = "Android/Project/NodeFactory", position = 20000)
+public class ProjectFilesNodeFactory implements NodeFactory {
 
     @StaticResource
     private static final String ICON_IMPORTANT = "org/netbeans/modules/android/project/api/nodes/config-badge.gif";
 
     @Override
     public Node createNode(Project p) {
-        return new ImportantFilesNode(p);
+        return new ProjectFilesNode(p);
     }
 
-    public static class ImportantFilesNode extends AbstractNode {
+    public static class ProjectFilesNode extends AbstractNode {
 
-        @NbBundle.Messages("LBL_Important=Important Files")
-        public ImportantFilesNode(Project p) {
-            super(new ImportantFilesChildFactory2(p), p.getLookup());
-            setDisplayName(Bundle.LBL_Important());
+        @NbBundle.Messages("LBL_ProjectFiles=Project Files")
+        public ProjectFilesNode(Project p) {
+            super(new ProjectFilesChildFactory2(p), p.getLookup());
+            setDisplayName(Bundle.LBL_ProjectFiles());
         }
 
         private Image getIcon(boolean opened) {
@@ -72,14 +72,14 @@ public class ImportantNodeFactory implements NodeFactory {
 
     }
 
-    public static class ImportantFilesChildFactory2 extends Children.Keys<Node> implements ChangeListener {
+    public static class ProjectFilesChildFactory2 extends Children.Keys<Node> implements ChangeListener {
 
         private final Project project;
         private final List<MultiNodeFactory> factories = new ArrayList<>();
 
-        public ImportantFilesChildFactory2(Project project) {
+        public ProjectFilesChildFactory2(Project project) {
             this.project = project;
-            List<MultiNodeFactoryProvider> providers = MultiNodeFactoryProvider.findAll("importantFiles");
+            List<MultiNodeFactoryProvider> providers = MultiNodeFactoryProvider.findAll("ProjectFiles");
             for (MultiNodeFactoryProvider provider : providers) {
                 MultiNodeFactory multiNodeFactory = provider.createMultiNodeFactory(project);
                 factories.add(multiNodeFactory);
@@ -96,7 +96,7 @@ public class ImportantNodeFactory implements NodeFactory {
         @Override
         public void stateChanged(ChangeEvent e) {
             List<Node> toPopulate = new ArrayList<>();
-            List<NodeFactory> findAll = NodeFactory.findAll("importantFiles");
+            List<NodeFactory> findAll = NodeFactory.findAll("ProjectFiles");
             for (NodeFactory nodeFactory : findAll) {
                 Node node = nodeFactory.createNode(project);
                 if (node != null) {
@@ -108,5 +108,7 @@ public class ImportantNodeFactory implements NodeFactory {
             }
             setKeys(toPopulate);
         }
+
     }
+
 }
