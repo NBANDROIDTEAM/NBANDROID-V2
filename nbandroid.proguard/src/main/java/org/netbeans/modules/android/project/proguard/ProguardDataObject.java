@@ -66,7 +66,7 @@ public class ProguardDataObject extends MultiDataObject {
             displayName = "&Source",
             iconBase = "org/netbeans/modules/android/project/proguard/proguard.png",
             mimeType = "text/x-proguard",
-            persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+            persistenceType = TopComponent.PERSISTENCE_NEVER,
             preferredID = "source",
             position = 1
     )

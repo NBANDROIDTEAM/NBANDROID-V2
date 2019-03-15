@@ -37,6 +37,11 @@ public interface NodeFactory {
         return new ArrayList<>(lookupAll);
     }
 
+    public static List<NodeFactory> findAll(String path) {
+        Collection<? extends NodeFactory> lookupAll = Lookups.forPath("Android/Project/" + path).lookupAll(NodeFactory.class);
+        return new ArrayList<>(lookupAll);
+    }
+
     public Node createNode(Project p);
 
 }

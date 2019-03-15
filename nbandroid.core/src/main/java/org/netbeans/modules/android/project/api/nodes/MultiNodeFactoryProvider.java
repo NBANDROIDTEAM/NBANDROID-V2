@@ -36,6 +36,11 @@ public interface MultiNodeFactoryProvider {
         return new ArrayList<>(lookupAll);
     }
 
+    public static List<MultiNodeFactoryProvider> findAll(String path) {
+        Collection<? extends MultiNodeFactoryProvider> lookupAll = Lookups.forPath("Android/Project/" + path).lookupAll(MultiNodeFactoryProvider.class);
+        return new ArrayList<>(lookupAll);
+    }
+
     public MultiNodeFactory createMultiNodeFactory(Project p);
 
 }

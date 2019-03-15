@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.android.project.api.nodes;
 
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.nbandroid.netbeans.gradle.api.AndroidConstants;
@@ -25,6 +27,7 @@ import org.nbandroid.netbeans.gradle.api.AndroidManifestSource;
 import org.nbandroid.netbeans.gradle.api.ui.AndroidResourceNode;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.WeakListeners;
@@ -34,7 +37,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author arsi
  */
-@ServiceProvider(service = NodeFactory.class, path = "Android/Project/NodeFactory", position = 1000)
+@ServiceProvider(service = NodeFactory.class, path = "Android/Project/importantFiles", position = 100)
 public class ManifestNodeFactory implements NodeFactory {
 
     @Override
@@ -68,6 +71,42 @@ public class ManifestNodeFactory implements NodeFactory {
             }
             changeOriginal(node, true);
         }
+
+
+        @Override
+        public String getHtmlDisplayName() {
+            FileObject fo = ams.get();
+            if (fo != null) {
+                Set<FileObject> files = new HashSet<FileObject>();
+                files.add(fo);
+                try {
+                    if (super.getDisplayName() != null) {
+                        return fo.getFileSystem().getDecorator().annotateNameHtml(super.getDisplayName(), files);
+                    }
+                } catch (FileStateInvalidException ex) {
+                }
+            }
+            return super.getHtmlDisplayName(); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public String getDisplayName() {
+            FileObject fo = ams.get();
+            if (fo != null) {
+                Set<FileObject> files = new HashSet<FileObject>();
+                files.add(fo);
+                try {
+                    if (super.getDisplayName() != null) {
+                        return fo.getFileSystem().getDecorator().annotateName(super.getDisplayName(), files);
+                    }
+                } catch (FileStateInvalidException ex) {
+                }
+            }
+            return super.getDisplayName(); //To change body of generated methods, choose Tools | Templates.
+        }
+
+
+
 
     }
 }

@@ -53,7 +53,7 @@ public class GradleDownloader extends BootstrapMainStarter implements DownloadPr
     private final InstanceContent instanceContent = new InstanceContent();
     private final Project project;
     private final Lookup lookup;
-    private static final RequestProcessor RP = new RequestProcessor(GradleDownloader.class.getName(), 4);
+    private static final RequestProcessor RP = new RequestProcessor(GradleDownloader.class.getName(), 1);
 
     public GradleDownloader(Project project) {
         this.project = project;
