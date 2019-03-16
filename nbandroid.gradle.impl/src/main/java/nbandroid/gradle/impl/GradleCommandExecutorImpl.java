@@ -122,7 +122,7 @@ public class GradleCommandExecutorImpl implements GradleCommandExecutor, Cancell
                             buildLauncher.setStandardError(cwos);
                             buildLauncher.setColorOutput(true);
                         }
-                        final ProgressHandle progressHandle = ProgressHandleFactory.createSystemHandle(project.getProjectDirectory().getName() + ": Loading Gradle model..", GradleCommandExecutorImpl.this);
+                        final ProgressHandle progressHandle = ProgressHandleFactory.createSystemHandle(project.getProjectDirectory().getName() + ": " + command.getSafeDisplayName(), GradleCommandExecutorImpl.this);
                         progressHandle.start();
                         buildLauncher.addProgressListener(new ProgressListener() {
                             @Override

@@ -19,9 +19,14 @@
 package org.netbeans.modules.android.project.actions;
 
 import com.android.builder.model.AndroidProject;
+import com.google.common.collect.Lists;
+import nbandroid.gradle.spi.GradleCommandExecutor;
+import nbandroid.gradle.spi.GradleCommandTemplate;
+import org.gradle.internal.impldep.org.apache.commons.lang.StringUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.android.project.api.AndroidConstants;
 import org.netbeans.modules.android.project.api.NbAndroidProjectImpl;
+import org.netbeans.modules.android.project.build.BuildVariant;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
@@ -56,6 +61,64 @@ public class AndroidProjectActionProvider implements ActionProvider, LookupListe
 
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+        if (project.getLookup().lookup(AndroidProject.class) != null) {
+            switch (command) {
+                case ActionProvider.COMMAND_REBUILD:
+                    callGradleRebuild();
+                    break;
+                case ActionProvider.COMMAND_BUILD:
+                    callGradleBuild();
+                    break;
+                case ActionProvider.COMMAND_CLEAN:
+                    callGradleClean();
+                    break;
+                case AndroidConstants.COMMAND_BUILD_TEST:
+                    callAndroidTest();
+                    break;
+            }
+        }
+    }
+
+    private void callGradleRebuild() {
+        GradleCommandExecutor executor = project.getLookup().lookup(GradleCommandExecutor.class);
+        if (executor != null) {
+            BuildVariant buildVariant = project.getLookup().lookup(BuildVariant.class);
+            GradleCommandTemplate.Builder builder = null;
+            if (buildVariant != null && buildVariant.getCurrentVariant() != null) {
+                String name = StringUtils.capitalize(buildVariant.getCurrentVariant().getName());
+                builder = new GradleCommandTemplate.Builder("Clean and Build project (" + name + ")", Lists.newArrayList("clean", "assemble" + name));
+            } else {
+                builder = new GradleCommandTemplate.Builder("Clean and Build project", Lists.newArrayList("clean", "assemble"));
+            }
+            executor.executeCommand(builder.create());
+        }
+    }
+
+    private void callGradleBuild() {
+        GradleCommandExecutor executor = project.getLookup().lookup(GradleCommandExecutor.class);
+        if (executor != null) {
+            BuildVariant buildVariant = project.getLookup().lookup(BuildVariant.class);
+            GradleCommandTemplate.Builder builder = null;
+            if (buildVariant != null && buildVariant.getCurrentVariant() != null) {
+                String name = StringUtils.capitalize(buildVariant.getCurrentVariant().getName());
+                builder = new GradleCommandTemplate.Builder("Build project (" + name + ")", Lists.newArrayList("assemble" + name));
+            } else {
+                builder = new GradleCommandTemplate.Builder("Build project", Lists.newArrayList("assemble"));
+            }
+            executor.executeCommand(builder.create());
+        }
+    }
+
+    private void callGradleClean() {
+        GradleCommandExecutor executor = project.getLookup().lookup(GradleCommandExecutor.class);
+        if (executor != null) {
+            GradleCommandTemplate.Builder builder = new GradleCommandTemplate.Builder("Clean project", Lists.newArrayList("clean"));
+            executor.executeCommand(builder.create());
+        }
+    }
+
+    private void callAndroidTest() {
+        GradleCommandExecutor executor = project.getLookup().lookup(GradleCommandExecutor.class);
     }
 
     @Override

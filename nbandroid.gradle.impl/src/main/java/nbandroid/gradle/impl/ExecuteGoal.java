@@ -123,7 +123,7 @@ public class ExecuteGoal implements Runnable, CancellationToken, CancellationTok
                 buildLauncher.setStandardError(cwos);
                 buildLauncher.setColorOutput(true);
             }
-            final ProgressHandle progressHandle = ProgressHandleFactory.createSystemHandle(project.getProjectDirectory().getName() + ": Loading Gradle model..", this);
+            final ProgressHandle progressHandle = ProgressHandleFactory.createSystemHandle(project.getProjectDirectory().getName() + " : " + taskInfo.getDescription(), this);
             progressHandle.start();
             buildLauncher.addProgressListener(new ProgressListener() {
                 @Override

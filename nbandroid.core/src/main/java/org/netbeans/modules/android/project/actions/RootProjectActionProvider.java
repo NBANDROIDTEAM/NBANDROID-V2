@@ -18,7 +18,10 @@
  */
 package org.netbeans.modules.android.project.actions;
 
-import com.android.builder.model.AndroidProject;
+import com.google.common.collect.Lists;
+import nbandroid.gradle.spi.GradleCommandExecutor;
+import nbandroid.gradle.spi.GradleCommandTemplate;
+import org.gradle.tooling.model.gradle.GradleBuild;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.android.project.api.AndroidConstants;
 import org.netbeans.modules.android.project.api.NbAndroidRootProjectImpl;
@@ -36,11 +39,11 @@ import org.openide.util.WeakListeners;
 public class RootProjectActionProvider implements ActionProvider, LookupListener {
 
     private final NbAndroidRootProjectImpl project;
-    private final Lookup.Result<AndroidProject> modelLookupResult;
+    private final Lookup.Result<GradleBuild> modelLookupResult;
 
     public RootProjectActionProvider(NbAndroidRootProjectImpl project) {
         this.project = project;
-        modelLookupResult = project.getLookup().lookupResult(AndroidProject.class);
+        modelLookupResult = project.getLookup().lookupResult(GradleBuild.class);
         modelLookupResult.addLookupListener(WeakListeners.create(LookupListener.class, this, project.getLookup()));
     }
 
@@ -53,11 +56,28 @@ public class RootProjectActionProvider implements ActionProvider, LookupListener
 
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+        if (project.getLookup().lookup(GradleBuild.class) != null) {
+            switch (command) {
+                case ActionProvider.COMMAND_REBUILD:
+                    callGradleRebuild();
+                    break;
+                case ActionProvider.COMMAND_BUILD:
+                    callGradleBuild();
+                    break;
+                case ActionProvider.COMMAND_CLEAN:
+                    callGradleClean();
+                    break;
+                case AndroidConstants.COMMAND_BUILD_TEST:
+                    callAndroidTest();
+                    break;
+            }
+        }
+
     }
 
     @Override
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-        return true;
+        return project.getLookup().lookup(GradleBuild.class) != null;
     }
 
     @Override
@@ -68,6 +88,34 @@ public class RootProjectActionProvider implements ActionProvider, LookupListener
         if (project.equals(mainProject)) {
             OpenProjectList.getDefault().setMainProject(project);
         }
+    }
+
+    private void callGradleRebuild() {
+        GradleCommandExecutor executor = project.getLookup().lookup(GradleCommandExecutor.class);
+        if (executor != null) {
+            GradleCommandTemplate.Builder builder = new GradleCommandTemplate.Builder("Clean and Build project", Lists.newArrayList("clean", "assemble"));
+            executor.executeCommand(builder.create());
+        }
+    }
+
+    private void callGradleBuild() {
+        GradleCommandExecutor executor = project.getLookup().lookup(GradleCommandExecutor.class);
+        if (executor != null) {
+            GradleCommandTemplate.Builder builder = new GradleCommandTemplate.Builder("Build project", Lists.newArrayList("assemble"));
+            executor.executeCommand(builder.create());
+        }
+    }
+
+    private void callGradleClean() {
+        GradleCommandExecutor executor = project.getLookup().lookup(GradleCommandExecutor.class);
+        if (executor != null) {
+            GradleCommandTemplate.Builder builder = new GradleCommandTemplate.Builder("Clean project", Lists.newArrayList("clean"));
+            executor.executeCommand(builder.create());
+        }
+    }
+
+    private void callAndroidTest() {
+        GradleCommandExecutor executor = project.getLookup().lookup(GradleCommandExecutor.class);
     }
 
 }
