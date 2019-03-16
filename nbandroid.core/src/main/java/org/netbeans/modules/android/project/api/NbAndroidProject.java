@@ -129,12 +129,7 @@ public abstract class NbAndroidProject implements Project, LookupListener, Runna
         modelLookupResult = modelLookup.lookupResult(Object.class);
         modelLookupResult.addLookupListener(this);
         ic.add(IOProvider.get("Terminal").getIO(projectDirectory.getName(), false));
-        ic.add(new ModelRefresh() {
-            @Override
-            public void refreshModels() {
-                RP.execute(NbAndroidProject.this);
-            }
-        });
+        ic.add(getModelRefresh());
         initSdk(projectDirectory);
         localPropertiesChangeTimer = new Timer(1000, new ActionListener() {
             @Override
@@ -151,6 +146,8 @@ public abstract class NbAndroidProject implements Project, LookupListener, Runna
         ic.add(gradleCommandExecutor);
         RP.execute(this);
     }
+
+    public abstract ModelRefresh getModelRefresh();
 
     @Override
     public FileObject getProjectDirectory() {

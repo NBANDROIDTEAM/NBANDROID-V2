@@ -29,6 +29,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import nbandroid.gradle.spi.ModelRefresh;
 import nbandroid.gradle.spi.RootGoalsNavigatorHint;
 import org.gradle.tooling.model.gradle.GradleBuild;
 import org.nbandroid.netbeans.gradle.api.TestOutputConsumer;
@@ -38,6 +39,7 @@ import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.android.project.actions.AndroidProjectActionProvider;
+import static org.netbeans.modules.android.project.api.NbAndroidProject.RP;
 import org.netbeans.modules.android.project.api.nodes.MultiNodeFactory;
 import org.netbeans.modules.android.project.api.nodes.MultiNodeFactoryProvider;
 import org.netbeans.modules.android.project.api.nodes.NodeFactory;
@@ -117,6 +119,16 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
     @Override
     protected Class[] getGradleModels() {
         return new Class[]{GradleBuild.class, AndroidProject.class};
+    }
+
+    @Override
+    public ModelRefresh getModelRefresh() {
+        return new ModelRefresh() {
+            @Override
+            public void refreshModels() {
+                RP.execute(NbAndroidProjectImpl.this);
+            }
+        };
     }
 
     public BuildVariant getBuildVariant() {

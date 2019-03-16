@@ -21,18 +21,22 @@ package org.netbeans.modules.android.project.api;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import nbandroid.gradle.spi.ModelRefresh;
 import nbandroid.gradle.spi.RootGoalsNavigatorHint;
 import org.gradle.tooling.model.gradle.GradleBuild;
 import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.android.project.actions.RootProjectActionProvider;
+import static org.netbeans.modules.android.project.api.NbAndroidProject.RP;
 import org.netbeans.modules.android.project.api.nodes.MultiNodeFactory;
 import org.netbeans.modules.android.project.api.nodes.MultiNodeFactoryProvider;
 import org.netbeans.modules.android.project.api.nodes.NodeFactory;
@@ -76,6 +80,31 @@ public class NbAndroidRootProjectImpl extends NbAndroidProject {
     @Override
     protected Class[] getGradleModels() {
         return new Class[]{GradleBuild.class};
+    }
+
+    @Override
+    public ModelRefresh getModelRefresh() {
+        return new ModelRefresh() {
+            @Override
+            public void refreshModels() {
+                RP.execute(NbAndroidRootProjectImpl.this);
+                RP.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        Enumeration<? extends FileObject> children = getProjectDirectory().getChildren(false);
+                        while (children.hasMoreElements()) {
+                            FileObject fo = children.nextElement();
+                            if (fo.isFolder()) {
+                                Project owner = FileOwnerQuery.getOwner(fo);
+                                if (owner instanceof NbAndroidProjectImpl) {
+                                    RP.execute((NbAndroidProjectImpl) owner);
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        };
     }
 
     public final class CustomerProjectLogicalView implements LogicalViewProvider {
