@@ -45,7 +45,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.gradle.project.NbGradleProject;
+import org.netbeans.modules.android.project.api.NbAndroidProject;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 import org.netbeans.modules.xml.schema.completion.util.CompletionContextImpl;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
@@ -94,8 +94,8 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
         String mimeType = (String) ((BaseDocument) doc).getProperty(BaseDocument.MIME_TYPE_PROP);
         if (!support.noCompletion(component) && CompletionUtil.canProvideCompletion((BaseDocument) doc) && mimeType != null && !MenuDataObject.SETTINGS_MIME_TYPE.equals(mimeType)) {
             Project owner = FileOwnerQuery.getOwner(primaryFile);
-            if (owner instanceof NbGradleProject) {
-                AndroidProject androidProject = ((NbGradleProject) owner).getLookup().lookup(AndroidProject.class);
+            if (owner instanceof NbAndroidProject) {
+                AndroidProject androidProject = owner.getLookup().lookup(AndroidProject.class);
                 if (androidProject != null) {
                     String next = androidProject.getBootClasspath().iterator().next();
                     AndroidJavaPlatform findPlatform = AndroidJavaPlatformProvider.findPlatform(next, androidProject.getCompileTarget());

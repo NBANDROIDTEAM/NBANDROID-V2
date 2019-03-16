@@ -5,6 +5,7 @@ import org.nbandroid.netbeans.gradle.api.AndroidClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 
+@Deprecated
 public final class GradleProjectOpenedHook extends ProjectOpenedHook implements AndroidModelAware {
 
     private final Project project;

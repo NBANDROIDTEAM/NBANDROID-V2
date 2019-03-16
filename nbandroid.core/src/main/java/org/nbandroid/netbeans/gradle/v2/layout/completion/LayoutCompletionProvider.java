@@ -27,7 +27,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.gradle.project.NbGradleProject;
+import org.netbeans.modules.android.project.api.NbAndroidProject;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -62,8 +62,8 @@ public class LayoutCompletionProvider implements CompletionProvider {
         }
         FileObject primaryFile = CompletionUtil.getPrimaryFile(component.getDocument());
         Project owner = FileOwnerQuery.getOwner(primaryFile);
-        if (owner instanceof NbGradleProject) {
-            AndroidProject androidProject = ((NbGradleProject) owner).getLookup().lookup(AndroidProject.class);
+        if (owner instanceof NbAndroidProject) {
+            AndroidProject androidProject = owner.getLookup().lookup(AndroidProject.class);
             if (androidProject != null) {
                 String next = androidProject.getBootClasspath().iterator().next();
                 AndroidJavaPlatform findPlatform = AndroidJavaPlatformProvider.findPlatform(next, androidProject.getCompileTarget());

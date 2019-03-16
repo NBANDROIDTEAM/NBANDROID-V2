@@ -394,4 +394,12 @@ public abstract class NbAndroidProject implements Project, LookupListener, Runna
     public void fileAttributeChanged(FileAttributeEvent fe) {
     }
 
+    public File getProjectDirectoryAsFile() {
+        return FileUtil.toFile(getProjectDirectory());
+    }
+
+    public void reloadProject() {
+        RP.execute(this);
+    }
+
 }

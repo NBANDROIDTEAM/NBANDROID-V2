@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.nbandroid.netbeans.gradle.api.AndroidClassPath;
-import org.nbandroid.netbeans.gradle.v2.gradle.GradleAndroidRepositoriesProvider;
 import org.nbandroid.netbeans.gradle.v2.gradle.build.parser.AndroidGradleDependencyUpdater;
 import org.nbandroid.netbeans.gradle.v2.maven.ArtifactData;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -37,7 +36,8 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.gradle.project.NbGradleProject;
+import org.netbeans.modules.android.project.api.GradleAndroidRepositoriesProvider;
+import org.netbeans.modules.android.project.api.NbAndroidProject;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.ActionID;
@@ -67,7 +67,7 @@ public class AddGoogleDependencyAction extends NodeAction {
     protected void performAction(Node[] activatedNodes) {
         if (activatedNodes.length == 1) {
             AddDependecyDialogProvider dialogProvider = Lookup.getDefault().lookup(AddDependecyDialogProvider.class);
-            NbGradleProject project = activatedNodes[0].getLookup().lookup(NbGradleProject.class);
+            NbAndroidProject project = activatedNodes[0].getLookup().lookup(NbAndroidProject.class);
             if (project != null && dialogProvider != null) {
                 GradleAndroidRepositoriesProvider repositoriesProvider = project.getLookup().lookup(GradleAndroidRepositoriesProvider.class);
                 if (repositoriesProvider != null) {
@@ -106,7 +106,7 @@ public class AddGoogleDependencyAction extends NodeAction {
         }
     }
 
-    private void findCompileTimeDependencies(NbGradleProject project, List<ArtifactData> compileDependecies) {
+    private void findCompileTimeDependencies(NbAndroidProject project, List<ArtifactData> compileDependecies) {
         final ClassPathProvider cpProvider = project.getLookup().lookup(ClassPathProvider.class);
         if (cpProvider != null) {
             Sources srcs = ProjectUtils.getSources(project);

@@ -51,11 +51,6 @@
                         </dependency>
                         <dependency>
                             <!--Private Package Reference-->
-                            <id>com.github.kelemen:netbeans-gradle-plugin</id>
-                            <type>impl</type>
-                        </dependency>
-                        <dependency>
-                            <!--Private Package Reference-->
                             <id>org.netbeans.modules:org-netbeans-modules-masterfs</id>
                             <type>impl</type>
                         </dependency>
@@ -139,13 +134,6 @@
             <artifactId>org-netbeans-modules-projectuiapi-base</artifactId>
             <version>${version.nb}</version>
             <type>jar</type>
-        </dependency>
-        
-        <dependency>
-            <groupId>com.github.kelemen</groupId> 
-            <artifactId>netbeans-gradle-plugin</artifactId> 
-            <version>${version.nb.gradle}</version> 
-            <type>jar</type> 
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -358,11 +346,6 @@
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-options-api</artifactId>
             <version>${version.nb}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.kelemen</groupId>
-            <artifactId>netbeans-gradle-default-models</artifactId>
-            <version>${version.nb.gradle}</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>

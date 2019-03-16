@@ -21,6 +21,7 @@
                     <defaultCluster>${cluster}</defaultCluster>
                     <cluster>${cluster}</cluster>
                     <publicPackages>
+                        <publicPackage>org.slf4j.*</publicPackage>
                         <publicPackage>org.codehaus.groovy.*</publicPackage>
                         <publicPackage>org.codehaus.jackson.*</publicPackage>
                         <publicPackage>org.bouncycastle.*</publicPackage>
