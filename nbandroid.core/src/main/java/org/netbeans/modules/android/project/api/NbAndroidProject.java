@@ -165,6 +165,11 @@ public abstract class NbAndroidProject implements Project, LookupListener, Runna
         return auxiliaryProperties;
     }
 
+    public InstanceContent getProjectInstanceContent() {
+        return ic;
+    }
+
+
     @Override
     public void resultChanged(LookupEvent ev) {
         synchronized (lock) {

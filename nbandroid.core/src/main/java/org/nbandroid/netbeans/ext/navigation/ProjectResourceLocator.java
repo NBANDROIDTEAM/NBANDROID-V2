@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.nbandroid.netbeans.gradle.api.AndroidConstants;
+import org.netbeans.modules.android.project.api.AndroidConstants;
 import org.nbandroid.netbeans.gradle.api.ResourceRef;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;

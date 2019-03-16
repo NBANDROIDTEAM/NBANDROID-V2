@@ -30,10 +30,13 @@ import org.gradle.tooling.model.gradle.GradleBuild;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.android.project.actions.RootProjectActionProvider;
 import org.netbeans.modules.android.project.properties.AndroidRootCustomizerProvider;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -62,6 +65,7 @@ public class NbAndroidRootProjectImpl extends NbAndroidProject {
         ic.add(new NbAndroidProjectConfigurationProvider());
         ic.add(new AndroidRootCustomizerProvider(this));
         ic.add(new CustomerProjectLogicalView());
+        ic.add(new RootProjectActionProvider(this));
     }
 
     @Override
@@ -108,6 +112,10 @@ public class NbAndroidRootProjectImpl extends NbAndroidProject {
         @Override
         public Action[] getActions(boolean arg0) {
             return new Action[]{
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, "Clean and Build", null),
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, "Clean", null),
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, "Buld", null),
+                CommonProjectActions.setAsMainProjectAction(),
                 CommonProjectActions.customizeProjectAction(),
                 CommonProjectActions.closeProjectAction()
             };

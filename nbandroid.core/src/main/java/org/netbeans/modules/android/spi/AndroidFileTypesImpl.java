@@ -18,7 +18,7 @@ import com.google.common.collect.Iterables;
 import java.util.Arrays;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
-import org.nbandroid.netbeans.gradle.api.AndroidConstants;
+import org.netbeans.modules.android.project.api.AndroidConstants;
 import org.nbandroid.netbeans.gradle.api.AndroidFileTypes;
 import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
 import org.netbeans.api.project.FileOwnerQuery;

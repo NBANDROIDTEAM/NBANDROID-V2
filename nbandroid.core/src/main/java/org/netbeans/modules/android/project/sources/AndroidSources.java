@@ -33,7 +33,7 @@ import java.util.List;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.nbandroid.netbeans.gradle.api.AndroidConstants;
+import org.netbeans.modules.android.project.api.AndroidConstants;
 import org.nbandroid.netbeans.gradle.config.AndroidBuildVariants;
 import org.nbandroid.netbeans.gradle.config.ProductFlavors;
 import org.netbeans.api.java.project.JavaProjectConstants;

@@ -20,7 +20,7 @@
 package org.netbeans.modules.android.project.api.nodes;
 
 import com.google.common.collect.Lists;
-import org.nbandroid.netbeans.gradle.api.AndroidConstants;
+import org.netbeans.modules.android.project.api.AndroidConstants;
 import org.nbandroid.netbeans.gradle.ui.GeneratedSourcesNode;
 import org.netbeans.api.project.Project;
 import org.openide.nodes.Node;

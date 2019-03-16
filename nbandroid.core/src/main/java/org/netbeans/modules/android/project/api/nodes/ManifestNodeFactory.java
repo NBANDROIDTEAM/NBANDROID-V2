@@ -22,7 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.nbandroid.netbeans.gradle.api.AndroidConstants;
+import org.netbeans.modules.android.project.api.AndroidConstants;
 import org.nbandroid.netbeans.gradle.api.AndroidManifestSource;
 import org.nbandroid.netbeans.gradle.api.ui.AndroidResourceNode;
 import org.netbeans.api.project.Project;

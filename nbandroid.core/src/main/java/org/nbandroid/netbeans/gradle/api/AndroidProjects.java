@@ -13,6 +13,7 @@
  */
 package org.nbandroid.netbeans.gradle.api;
 
+import org.netbeans.modules.android.project.api.AndroidConstants;
 import static com.android.SdkConstants.ANDROID_URI;
 import com.android.ide.common.xml.AndroidManifestParser;
 import com.android.ide.common.xml.ManifestData;

@@ -37,6 +37,7 @@ import org.nbandroid.netbeans.gradle.testrunner.TestOutputConsumerLookupProvider
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.android.project.actions.AndroidProjectActionProvider;
 import org.netbeans.modules.android.project.api.nodes.MultiNodeFactory;
 import org.netbeans.modules.android.project.api.nodes.MultiNodeFactoryProvider;
 import org.netbeans.modules.android.project.api.nodes.NodeFactory;
@@ -53,9 +54,11 @@ import org.netbeans.modules.android.project.query.ProjectRefResolver;
 import org.netbeans.modules.android.project.run.AndroidTestRunConfiguration;
 import org.netbeans.modules.android.project.sources.AndroidSources;
 import org.netbeans.modules.android.project.sources.SourceLevelQueryImpl;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -107,6 +110,7 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
         ic.add(Launches.createLauncher());
         ic.add(new TestOutputConsumerLookupProvider().createAdditionalLookup(
                 Lookups.singleton(this)).lookup(TestOutputConsumer.class));
+        ic.add(new AndroidProjectActionProvider(this));
 
     }
 
@@ -158,9 +162,17 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
         @Override
         public Action[] getActions(boolean arg0) {
             List<Action> projectActions = new ArrayList<>(32);
+            projectActions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, "Clean and Build", null));
+            projectActions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, "Clean", null));
+            projectActions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, "Buld", null));
+            projectActions.add(null);
+            projectActions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, "Run", null));
+            projectActions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, "Debug", null));
+            projectActions.add(null);
             List<? extends Action> actionsForPath = Utilities.actionsForPath("Android/Projects/Project");
             projectActions.addAll(actionsForPath);
             projectActions.add(CommonProjectActions.closeProjectAction());
+            projectActions.add(CommonProjectActions.setAsMainProjectAction());
             projectActions.add(null);
             projectActions.addAll(Utilities.actionsForPath("Projects/Actions"));
             projectActions.add(null);

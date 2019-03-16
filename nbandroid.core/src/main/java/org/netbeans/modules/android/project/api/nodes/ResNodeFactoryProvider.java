@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.nbandroid.netbeans.gradle.api.AndroidConstants;
+import org.netbeans.modules.android.project.api.AndroidConstants;
 import org.nbandroid.netbeans.gradle.api.ui.AndroidResourceNode;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;

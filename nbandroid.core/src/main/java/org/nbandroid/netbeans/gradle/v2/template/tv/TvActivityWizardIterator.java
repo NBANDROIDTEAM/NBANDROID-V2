@@ -41,7 +41,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import javax.xml.bind.JAXBException;
-import org.nbandroid.netbeans.gradle.api.AndroidConstants;
+import org.netbeans.modules.android.project.api.AndroidConstants;
 import org.nbandroid.netbeans.gradle.api.AndroidProjects;
 import org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelConfigureActivityAndroidSettings;
 import org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelTvActivityAndroidSettings;
