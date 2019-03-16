@@ -16,13 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.netbeans.modules.android.project.api.nodes;
+package org.netbeans.modules.android.project.api.nodes.root;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.android.project.api.nodes.*;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -39,7 +40,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author arsi
  */
-@ServiceProvider(service = MultiNodeFactoryProvider.class, path = "Android/Project/ProjectFiles", position = 500)
+@ServiceProvider(service = MultiNodeFactoryProvider.class, path = "Android/RootProject/ProjectFiles", position = 1000)
 public class GradleFilesMultiNodeFactoryProvider implements MultiNodeFactoryProvider {
 
     @Override
@@ -54,13 +55,13 @@ public class GradleFilesMultiNodeFactoryProvider implements MultiNodeFactoryProv
 
         public GradleNodeFactory(Project project) {
             this.project = project;
-            project.getProjectDirectory().addRecursiveListener(WeakListeners.create(FileChangeListener.class, this, project.getProjectDirectory()));
+            project.getProjectDirectory().addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, project.getProjectDirectory()));
 
         }
 
         @Override
         public List<Node> createNodes() {
-            Enumeration<? extends FileObject> fileObjects = project.getProjectDirectory().getChildren(true);
+            Enumeration<? extends FileObject> fileObjects = project.getProjectDirectory().getChildren(false);
             List<Node> tmp = new ArrayList<>();
             while (fileObjects.hasMoreElements()) {
                 FileObject fileObject = fileObjects.nextElement();
@@ -68,7 +69,6 @@ public class GradleFilesMultiNodeFactoryProvider implements MultiNodeFactoryProv
                     try {
                         DataObject dataObject = DataObject.find(fileObject);
                         if (dataObject != null) {
-
                             tmp.add(dataObject.getNodeDelegate());
                         }
                     } catch (DataObjectNotFoundException ex) {

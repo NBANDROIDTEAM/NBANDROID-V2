@@ -43,9 +43,12 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = ProjectFactory.class, position = 0)
 public class NbAndroidProjectFactory implements ProjectFactory2 {
 
-    @StaticResource
-    private static final String PROJECT_ICON = "org/netbeans/modules/android/project/ui/resources/androidProject.png";    //NOI18N
+    @StaticResource()
+    public static final String PROJECT_ICON = "org/netbeans/modules/android/api/android_project.png";
     public static final Image IMG_PROJECT_ICON = ImageUtilities.loadImage(PROJECT_ICON);
+    @StaticResource()
+    public static final String PROJECT_ROOT_ICON = "org/netbeans/modules/android/api/root_project.png";
+    public static final Image IMG_PROJECT_ROOT_ICON = ImageUtilities.loadImage(PROJECT_ROOT_ICON);
 
     public static final String BUILD_GRADLE = "build.gradle";
     public static final String re1 = "(v)";	// Any Single Character 1
@@ -59,6 +62,8 @@ public class NbAndroidProjectFactory implements ProjectFactory2 {
     public ProjectManager.Result isProject2(FileObject fo) {
         if (isProject(fo)) {
             return new ProjectManager.Result(new ImageIcon(IMG_PROJECT_ICON));
+        } else if (isRootProject(fo)) {
+            return new ProjectManager.Result(new ImageIcon(IMG_PROJECT_ROOT_ICON));
         }
         return null;
     }

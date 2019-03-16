@@ -42,6 +42,16 @@ public interface NodeFactory {
         return new ArrayList<>(lookupAll);
     }
 
+    public static List<NodeFactory> findAllForRoot() {
+        Collection<? extends NodeFactory> lookupAll = Lookups.forPath("Android/RootProject/NodeFactory").lookupAll(NodeFactory.class);
+        return new ArrayList<>(lookupAll);
+    }
+
+    public static List<NodeFactory> findAllForRoot(String path) {
+        Collection<? extends NodeFactory> lookupAll = Lookups.forPath("Android/RootProject/" + path).lookupAll(NodeFactory.class);
+        return new ArrayList<>(lookupAll);
+    }
+
     public Node createNode(Project p);
 
 }

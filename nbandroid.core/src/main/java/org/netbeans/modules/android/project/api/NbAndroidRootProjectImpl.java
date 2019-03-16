@@ -25,12 +25,17 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import nbandroid.gradle.spi.RootGoalsNavigatorHint;
 import org.gradle.tooling.model.gradle.GradleBuild;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.android.project.actions.RootProjectActionProvider;
+import org.netbeans.modules.android.project.api.nodes.MultiNodeFactory;
+import org.netbeans.modules.android.project.api.nodes.MultiNodeFactoryProvider;
+import org.netbeans.modules.android.project.api.nodes.NodeFactory;
 import org.netbeans.modules.android.project.properties.AndroidRootCustomizerProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectState;
@@ -100,7 +105,7 @@ public class NbAndroidRootProjectImpl extends NbAndroidProject {
         public ProjectNode(Node node)
                 throws DataObjectNotFoundException {
             super(node,
-                    new FilterProjectChilden(node),
+                    new ProjectNodes(),
                     new ProxyLookup(
                             new Lookup[]{
                                 Lookups.singleton(NbAndroidRootProjectImpl.this),
@@ -138,20 +143,49 @@ public class NbAndroidRootProjectImpl extends NbAndroidProject {
 
     }
 
-    public class FilterProjectChilden extends FilterNode.Children {
+    public class ProjectNodes extends Children.Keys<Node> implements ChangeListener {
 
-        private final Node orig;
+        private final List<MultiNodeFactory> multiNodeFactories = new ArrayList<>();
+        private final List<Node> staticNodes = new ArrayList<>();
 
-        public FilterProjectChilden(Node orig) {
-            super(orig);
-            this.orig = orig;
+        public ProjectNodes() {
+            super(true);
+            List<MultiNodeFactoryProvider> factoryProviders = MultiNodeFactoryProvider.findAllForRoot();
+            for (MultiNodeFactoryProvider factoryProvider : factoryProviders) {
+                MultiNodeFactory createMultiNodeFactory = factoryProvider.createMultiNodeFactory(NbAndroidRootProjectImpl.this);
+                multiNodeFactories.add(createMultiNodeFactory);
+                createMultiNodeFactory.addChangeListener(this);
+            }
+            List<NodeFactory> findAll = NodeFactory.findAllForRoot();
+            for (int i = 0; i < findAll.size(); i++) {
+                NodeFactory factory = findAll.get(i);
+                Node node = factory.createNode(NbAndroidRootProjectImpl.this);
+                if (node != null) {
+                    staticNodes.add(node);
+                }
+            }
+            refreshNodes();
+        }
+
+        private void refreshNodes() {
+
+            List<Node> childrens = new ArrayList<>();
+            for (MultiNodeFactory multiNodeFactory : multiNodeFactories) {
+                childrens.addAll(multiNodeFactory.createNodes());
+            }
+            childrens.addAll(staticNodes);
+
+            setKeys(childrens);
         }
 
         @Override
         protected Node[] createNodes(Node key) {
-            Node[] nodes = super.createNodes(key);
-            List<Node> tmp = new ArrayList<>();
-            return tmp.toArray(new Node[tmp.size()]);
+            return new Node[]{key};
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            refreshNodes();
         }
 
     }
