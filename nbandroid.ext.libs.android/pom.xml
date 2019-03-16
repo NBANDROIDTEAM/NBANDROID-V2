@@ -31,6 +31,7 @@
                     <defaultCluster>${cluster}</defaultCluster>
                     <cluster>${cluster}</cluster>
                     <publicPackages>
+                        <publicPackage>org.netbeans.modules.android.ext.libs.*</publicPackage>
                         <publicPackage>com.android.*</publicPackage>
                         <publicPackage>javax.xml.bind.*</publicPackage>
                         <publicPackage>org.jetbrains.annotations.*</publicPackage>

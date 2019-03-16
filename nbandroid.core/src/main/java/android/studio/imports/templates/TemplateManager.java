@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
+import org.netbeans.modules.android.ext.libs.AndroidTemplateLocator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -24,7 +25,7 @@ public class TemplateManager {
 
     public static List<Template> findTemplates(String subFolder) {
         List<Template> tmp = new ArrayList<>();
-        URL location = TemplateManager.class.getProtectionDomain().getCodeSource().getLocation();
+        URL location = AndroidTemplateLocator.class.getProtectionDomain().getCodeSource().getLocation();
         FileObject fo = URLMapper.findFileObject(location);
         FileObject archiveFile = FileUtil.getArchiveRoot(fo);
         if (archiveFile == null && fo.isRoot()) {
@@ -44,7 +45,7 @@ public class TemplateManager {
     }
 
     public static FileObject getRootFolder() {
-        URL location = TemplateManager.class.getProtectionDomain().getCodeSource().getLocation();
+        URL location = AndroidTemplateLocator.class.getProtectionDomain().getCodeSource().getLocation();
         FileObject fo = URLMapper.findFileObject(location);
         FileObject archiveFile = FileUtil.getArchiveRoot(fo);
         if (archiveFile == null && fo.isRoot()) {
