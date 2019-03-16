@@ -149,7 +149,7 @@ public class AndroidExtensionDef implements GradleProjectExtensionDef<AndroidNbM
             } catch (Exception exception) {
             }
             if (localProperties == null) {
-                Project rootProject = AndroidProjects.findRootProject(project.getProjectDirectory(), project);
+                Project rootProject = AndroidProjects.findRootProject(project);
                 localProperties = rootProject.getProjectDirectory().createData(LOCAL_PROPERTIES);
             }
         }

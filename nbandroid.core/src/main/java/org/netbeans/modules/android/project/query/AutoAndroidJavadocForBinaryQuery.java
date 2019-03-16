@@ -25,7 +25,6 @@ import java.util.Vector;
 import javax.swing.event.ChangeListener;
 import org.nbandroid.netbeans.gradle.v2.maven.ArtifactData;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
-import org.netbeans.gradle.project.query.AbstractJavadocForBinaryQuery;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

@@ -225,7 +225,7 @@ public final class MobileActivityWizardIterator implements WizardDescriptor.Inst
                     wizard.putProperty(PROP_PHONE_TABLET_PLATFORM, projectPlatform);
                     wizard.putProperty(PROP_PHONE_TABLET_ENABLED, true);
                 }
-                Project rootProject = AndroidProjects.findRootProject(project.getProjectDirectory(), project);
+                Project rootProject = AndroidProjects.findRootProject(project);
                 if (rootProject != null) {
                     wizard.putProperty(AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_DIR, FileUtil.toFile(rootProject.getProjectDirectory()));
                     String folderName = project.getProjectDirectory().getPath().replace(rootProject.getProjectDirectory().getPath(), "").substring(1);

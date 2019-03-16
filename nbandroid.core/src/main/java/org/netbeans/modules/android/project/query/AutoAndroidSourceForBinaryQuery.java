@@ -28,7 +28,6 @@ import javax.swing.event.ChangeListener;
 import org.nbandroid.netbeans.gradle.v2.maven.ArtifactData;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.gradle.project.query.AbstractSourceForBinaryQuery;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;

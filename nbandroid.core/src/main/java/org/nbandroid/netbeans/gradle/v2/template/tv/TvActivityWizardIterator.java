@@ -18,7 +18,6 @@
  */
 package org.nbandroid.netbeans.gradle.v2.template.tv;
 
-import org.nbandroid.netbeans.gradle.v2.template.ProjectWizardSummaryPanel;
 import android.studio.imports.templates.Parameter;
 import android.studio.imports.templates.Template;
 import android.studio.imports.templates.TemplateManager;
@@ -60,7 +59,7 @@ import org.nbandroid.netbeans.gradle.v2.project.template.parameters.Globals;
 import org.nbandroid.netbeans.gradle.v2.project.template.parameters.TemplateValueInjector;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
-import org.nbandroid.netbeans.gradle.v2.template.mobile.*;
+import org.nbandroid.netbeans.gradle.v2.template.ProjectWizardSummaryPanel;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -220,7 +219,7 @@ public final class TvActivityWizardIterator implements WizardDescriptor.Instanti
                     wizard.putProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_PLATFORM, projectPlatform);
                     wizard.putProperty(AndroidProjectTemplatePanelVisualAndroidSettings.PROP_TV_ENABLED, true);
                 }
-                Project rootProject = AndroidProjects.findRootProject(project.getProjectDirectory(), project);
+                Project rootProject = AndroidProjects.findRootProject(project);
                 if (rootProject != null) {
                     wizard.putProperty(AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_DIR, FileUtil.toFile(rootProject.getProjectDirectory()));
                     String folderName = project.getProjectDirectory().getPath().replace(rootProject.getProjectDirectory().getPath(), "").substring(1);
