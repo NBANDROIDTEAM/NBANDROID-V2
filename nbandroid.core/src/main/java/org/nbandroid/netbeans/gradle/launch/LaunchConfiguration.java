@@ -39,11 +39,13 @@ public interface LaunchConfiguration {
         MANUAL;
     }
 
+    @Deprecated
     Action getLaunchAction();
 
     /**
      * A class name of executed activity or {@code null} if not applicable.
      */
+    @Deprecated
     @Nullable
     String getActivityName();
 

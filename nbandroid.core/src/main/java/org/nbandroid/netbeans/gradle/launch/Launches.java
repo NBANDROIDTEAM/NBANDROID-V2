@@ -21,6 +21,9 @@ import org.nbandroid.netbeans.gradle.launch.LaunchConfiguration.Action;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.android.spi.DebugActivityConfiguration;
+import org.netbeans.modules.android.spi.MainActivityConfiguration;
+import org.netbeans.modules.android.spi.RunActivityConfiguration;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
@@ -73,6 +76,17 @@ public class Launches {
                 || ActionProvider.COMMAND_TEST.equals(command)
                 || ActionProvider.COMMAND_TEST_SINGLE.equals(command)
                 || ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(command);
+    }
+
+    public static MainActivityConfiguration getActivityConfiguration(String command, Project project) {
+        switch (command) {
+            case ActionProvider.COMMAND_RUN:
+            case ActionProvider.COMMAND_TEST:
+            case ActionProvider.COMMAND_TEST_SINGLE:
+                return project.getLookup().lookup(RunActivityConfiguration.class);
+            default:
+                return project.getLookup().lookup(DebugActivityConfiguration.class);
+        }
     }
 
     /**

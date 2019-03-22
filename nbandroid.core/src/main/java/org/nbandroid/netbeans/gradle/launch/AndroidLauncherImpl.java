@@ -36,7 +36,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.android.spi.AndroidIO;
 import org.nbandroid.netbeans.gradle.avd.AvdSelector;
 import org.nbandroid.netbeans.gradle.core.sdk.SdkLogProvider;
 import org.nbandroid.netbeans.gradle.core.ui.DeviceChooserImpl;
@@ -44,6 +43,8 @@ import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.android.spi.AndroidIO;
+import org.netbeans.modules.android.spi.MainActivityConfiguration;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -109,7 +110,7 @@ public class AndroidLauncherImpl implements AndroidLauncher {
         }
         LaunchAction launchAction = Preconditions.checkNotNull(context.lookup(LaunchAction.class));
 
-        if (!launchAction.doLaunch(info, launchData.getDevice(), project)) {
+        if (!launchAction.doLaunch(info, launchData.getDevice(), project, context.lookup(MainActivityConfiguration.class))) {
             return null;
         }
         final RunnableFuture<Client> futureClient = new ClientFuture(launchData.getDevice(), info);

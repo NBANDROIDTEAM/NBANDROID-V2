@@ -31,13 +31,16 @@ public final class GradleCommandTemplate {
         private final List<String> tasks;
         private List<String> arguments;
         private List<String> jvmArguments;
+        private Runnable executeAfterBuild;
 
         public Builder(GradleCommandTemplate command) {
             this.displayName = command.getDisplayName();
             this.tasks = command.getTasks();
             this.arguments = command.getArguments();
             this.jvmArguments = command.getJvmArguments();
+            this.executeAfterBuild = command.getExecuteAfterBuild();
         }
+
 
         public Builder(
                 String displayName,
@@ -51,6 +54,30 @@ public final class GradleCommandTemplate {
             if (this.tasks.isEmpty()) {
                 throw new IllegalArgumentException("Must have at least a single task specified.");
             }
+            this.executeAfterBuild = null;
+        }
+
+        public Builder(
+                String displayName,
+                List<String> tasks, Runnable executeAfterBuild) {
+
+            this.displayName = displayName;
+            this.tasks = copyNullSafeList(tasks);
+            this.arguments = Collections.emptyList();
+            this.jvmArguments = Collections.emptyList();
+
+            if (this.tasks.isEmpty()) {
+                throw new IllegalArgumentException("Must have at least a single task specified.");
+            }
+            this.executeAfterBuild = executeAfterBuild;
+        }
+
+        public Runnable getExecuteAfterBuild() {
+            return executeAfterBuild;
+        }
+
+        public void setExecuteAfterBuild(Runnable executeAfterBuild) {
+            this.executeAfterBuild = executeAfterBuild;
         }
 
         public void setArguments(List<String> arguments) {
@@ -70,12 +97,18 @@ public final class GradleCommandTemplate {
     private final List<String> tasks;
     private final List<String> arguments;
     private final List<String> jvmArguments;
+    private final Runnable executeAfterBuild;
 
     private GradleCommandTemplate(Builder builder) {
         this.displayName = builder.displayName;
         this.tasks = builder.tasks;
         this.arguments = builder.arguments;
         this.jvmArguments = builder.jvmArguments;
+        this.executeAfterBuild = builder.executeAfterBuild;
+    }
+
+    public Runnable getExecuteAfterBuild() {
+        return executeAfterBuild;
     }
 
     public String getDisplayName() {

@@ -55,6 +55,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -69,6 +70,7 @@ public class GradleCommandExecutorImpl implements GradleCommandExecutor, Cancell
     private final GradleArgsConfiguration argsConfiguration;
     private final AtomicBoolean cancellation = new AtomicBoolean();
     private final AtomicReference<DefaultBuildCancellationToken> cancellationReference = new AtomicReference<>();
+    private final RequestProcessor rp = new RequestProcessor(GradleCommandExecutor.class);
 
     public GradleCommandExecutorImpl(Project project) {
         this.project = project;
@@ -141,6 +143,9 @@ public class GradleCommandExecutorImpl implements GradleCommandExecutor, Cancell
                         ModelRefresh modelRefresh = project.getLookup().lookup(ModelRefresh.class);
                         if (modelRefresh != null) {
                             modelRefresh.refreshModels();
+                        }
+                        if (command.getExecuteAfterBuild() != null) {
+                            rp.execute(command.getExecuteAfterBuild());
                         }
                     } catch (Exception e) {
                         Exceptions.printStackTrace(e);

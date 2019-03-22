@@ -18,8 +18,14 @@
  */
 package org.netbeans.modules.android.project.actions;
 
+import com.android.build.OutputFile;
+import com.android.build.VariantOutput;
 import com.android.builder.model.AndroidProject;
+import com.android.builder.model.ProjectBuildOutput;
+import com.android.builder.model.VariantBuildOutput;
 import com.google.common.collect.Lists;
+import java.io.File;
+import java.util.Collection;
 import nbandroid.gradle.spi.GradleCommandExecutor;
 import nbandroid.gradle.spi.GradleCommandTemplate;
 import org.gradle.internal.impldep.org.apache.commons.lang.StringUtils;
@@ -27,8 +33,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.android.project.api.AndroidConstants;
 import org.netbeans.modules.android.project.api.NbAndroidProjectImpl;
 import org.netbeans.modules.android.project.build.BuildVariant;
+import org.netbeans.modules.android.project.launch.GradleLaunchExecutor;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -75,6 +85,9 @@ public class AndroidProjectActionProvider implements ActionProvider, LookupListe
                 case AndroidConstants.COMMAND_BUILD_TEST:
                     callAndroidTest();
                     break;
+                case ActionProvider.COMMAND_RUN:
+                    callBuildAndRun();
+                    break;
             }
         }
     }
@@ -104,6 +117,67 @@ public class AndroidProjectActionProvider implements ActionProvider, LookupListe
                 builder = new GradleCommandTemplate.Builder("Build project (" + name + ")", Lists.newArrayList("assemble" + name));
             } else {
                 builder = new GradleCommandTemplate.Builder("Build project", Lists.newArrayList("assemble"));
+            }
+            executor.executeCommand(builder.create());
+        }
+    }
+
+    private void callBuildAndRun() {
+        GradleCommandExecutor executor = project.getLookup().lookup(GradleCommandExecutor.class);
+        if (executor != null) {
+            final BuildVariant buildVariant = project.getLookup().lookup(BuildVariant.class);
+            GradleCommandTemplate.Builder builder = null;
+            if (buildVariant != null && buildVariant.getCurrentVariant() != null) {
+                String name = StringUtils.capitalize(buildVariant.getCurrentVariant().getName());
+                final Lookup.Result<ProjectBuildOutput> lookupResult = project.getLookup().lookupResult(ProjectBuildOutput.class);
+                //wait for model reload after build command
+                lookupResult.addLookupListener(new LookupListener() {
+                    @Override
+                    public void resultChanged(LookupEvent ev) {
+                        lookupResult.removeLookupListener(this);
+                        Collection<? extends ProjectBuildOutput> allInstances = lookupResult.allInstances();
+                        if (!allInstances.isEmpty()) {
+                            ProjectBuildOutput buildOutput = allInstances.iterator().next();
+                            Collection<VariantBuildOutput> variantsBuildOutput = buildOutput.getVariantsBuildOutput();
+                            if (!variantsBuildOutput.isEmpty()) {
+                                for (VariantBuildOutput vbo : variantsBuildOutput) {
+                                    String variantName = vbo.getName();
+                                    if ("debug".equalsIgnoreCase(variantName)) {
+                                        Collection<OutputFile> outputs = vbo.getOutputs();
+                                        for (OutputFile outputFile : outputs) {
+                                            String outputType = outputFile.getOutputType();
+                                            if (VariantOutput.MAIN.equals(outputType)) {
+                                                File output = outputFile.getOutputFile();
+                                                AndroidProject androidProject = project.getLookup().lookup(AndroidProject.class);
+                                                if (androidProject != null) {
+                                                    File manifestFile = androidProject.getDefaultConfig().getSourceProvider().getManifestFile();
+                                                    GradleLaunchExecutor launchExecutor = project.getLookup().lookup(GradleLaunchExecutor.class);
+                                                    if (manifestFile != null && launchExecutor != null) {
+                                                        try {
+                                                            launchExecutor.doLaunchAfterBuild(COMMAND_RUN, output, manifestFile);
+                                                        } catch (Exception e) {
+                                                            Exceptions.printStackTrace(e);
+                                                        }
+                                                    }
+                                                }
+                                                return;
+                                            }
+
+                                        }
+
+                                    }
+                                }
+                            }
+                        }
+                        NotifyDescriptor nd = new NotifyDescriptor.Message("APK not found in returned Android model!", NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notifyLater(nd);
+
+                    }
+                });
+                builder = new GradleCommandTemplate.Builder("Build project (" + name + ")", Lists.newArrayList("assemble" + name));
+            } else {
+                NotifyDescriptor nd = new NotifyDescriptor.Message("Unable to find Build variant!", NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(nd);
             }
             executor.executeCommand(builder.create());
         }

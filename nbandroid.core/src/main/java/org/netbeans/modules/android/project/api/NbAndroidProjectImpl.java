@@ -19,6 +19,7 @@
 package org.netbeans.modules.android.project.api;
 
 import com.android.builder.model.AndroidProject;
+import com.android.builder.model.ProjectBuildOutput;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -45,6 +46,7 @@ import org.netbeans.modules.android.project.api.nodes.MultiNodeFactoryProvider;
 import org.netbeans.modules.android.project.api.nodes.NodeFactory;
 import org.netbeans.modules.android.project.build.BuildVariant;
 import org.netbeans.modules.android.project.debug.GradleDebugInfo;
+import org.netbeans.modules.android.project.launch.GradleLaunchExecutor;
 import org.netbeans.modules.android.project.properties.AndroidCustomizerProvider;
 import org.netbeans.modules.android.project.query.AndroidClassPathProvider;
 import org.netbeans.modules.android.project.query.AutoAndroidJavadocForBinaryQuery;
@@ -56,6 +58,8 @@ import org.netbeans.modules.android.project.query.ProjectRefResolver;
 import org.netbeans.modules.android.project.run.AndroidTestRunConfiguration;
 import org.netbeans.modules.android.project.sources.AndroidSources;
 import org.netbeans.modules.android.project.sources.SourceLevelQueryImpl;
+import org.netbeans.modules.android.spi.DebugActivityConfiguration;
+import org.netbeans.modules.android.spi.RunActivityConfiguration;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -88,10 +92,13 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
     private final AndroidClassPathProvider androidClassPathProvider;
     protected static final AutoAndroidSourceForBinaryQuery SOURCE_FOR_BINARY_QUERY = Lookup.getDefault().lookup(AutoAndroidSourceForBinaryQuery.class);
     protected static final AutoAndroidJavadocForBinaryQuery JAVADOC_FOR_BINARY_QUERY = Lookup.getDefault().lookup(AutoAndroidJavadocForBinaryQuery.class);
-
+    protected final GradleLaunchExecutor launchExecutor = new GradleLaunchExecutor(this);
     public NbAndroidProjectImpl(FileObject projectDirectory, ProjectState ps) {
         super(projectDirectory, ps);
         ic.add(new Info());
+        ic.add(launchExecutor);
+        ic.add(new RunActivityConfiguration(this));
+        ic.add(new DebugActivityConfiguration(this));
         ic.add(new NbAndroidProjectConfigurationProvider());
         ic.add(new AndroidCustomizerProvider(this));
         ic.add(new AndroidProjectLogicalView());
@@ -118,7 +125,7 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
 
     @Override
     protected Class[] getGradleModels() {
-        return new Class[]{GradleBuild.class, AndroidProject.class};
+        return new Class[]{GradleBuild.class, ProjectBuildOutput.class, AndroidProject.class};
     }
 
     @Override
