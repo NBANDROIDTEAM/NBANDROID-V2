@@ -176,18 +176,18 @@ public class ApkDataObject extends MultiDataObject implements Deployable {
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
-                    int fastSignInfo = org.nbandroid.netbeans.gradle.v2.apk.ApkUtils.fastSignInfo(FileUtil.toFile(pf));
+                    int fastSignInfo = org.netbeans.modules.android.apk.ApkUtils.fastSignInfo(FileUtil.toFile(pf));
                     switch (fastSignInfo) {
-                        case org.nbandroid.netbeans.gradle.v2.apk.ApkUtils.SIGNED_NOT:
+                        case org.netbeans.modules.android.apk.ApkUtils.SIGNED_NOT:
                             signInfo = SignInfo.SIGNED_NOT;
                             break;
-                        case org.nbandroid.netbeans.gradle.v2.apk.ApkUtils.SIGNED_V1:
+                        case org.netbeans.modules.android.apk.ApkUtils.SIGNED_V1:
                             signInfo = SignInfo.SIGNED_V1;
                             break;
-                        case org.nbandroid.netbeans.gradle.v2.apk.ApkUtils.SIGNED_V2:
+                        case org.netbeans.modules.android.apk.ApkUtils.SIGNED_V2:
                             signInfo = SignInfo.SIGNED_V2;
                             break;
-                        case org.nbandroid.netbeans.gradle.v2.apk.ApkUtils.SIGNED_V1V2:
+                        case org.netbeans.modules.android.apk.ApkUtils.SIGNED_V1V2:
                             signInfo = SignInfo.SIGNED_V1V2;
                             break;
                         default:

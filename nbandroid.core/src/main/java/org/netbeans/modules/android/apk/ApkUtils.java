@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.apk;
+package org.netbeans.modules.android.apk;
 
 import com.android.builder.model.AndroidProject;
 import com.android.utils.Pair;
@@ -58,7 +58,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.nbandroid.netbeans.gradle.v2.apk.sign.keystore.KeystoreSelector;
+import org.netbeans.modules.android.apk.keystore.KeystoreSelector;
 import org.netbeans.api.project.Project;
 import sun.nio.ch.FileChannelImpl;
 

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.apk.sign.keystore;
+package org.netbeans.modules.android.apk.keystore;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -25,7 +25,7 @@ import java.security.KeyStoreException;
 import java.util.ArrayList;
 import java.util.Collections;
 import javax.swing.DefaultComboBoxModel;
-import org.nbandroid.netbeans.gradle.v2.apk.ApkUtils;
+import org.netbeans.modules.android.apk.ApkUtils;
 import org.openide.DialogDescriptor;
 import org.openide.util.Exceptions;
 
@@ -85,7 +85,7 @@ public class EditKeyStore extends javax.swing.JPanel implements ActionListener {
         useExisting = new javax.swing.JRadioButton();
         aliases = new javax.swing.JComboBox<>();
         createNew = new javax.swing.JRadioButton();
-        keyEditor = new org.nbandroid.netbeans.gradle.v2.apk.sign.keystore.KeyEditor();
+        keyEditor = new org.netbeans.modules.android.apk.keystore.KeyEditor();
 
         buttonGroup1.add(useExisting);
         useExisting.setSelected(true);
@@ -137,7 +137,7 @@ public class EditKeyStore extends javax.swing.JPanel implements ActionListener {
     private javax.swing.JComboBox<String> aliases;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JRadioButton createNew;
-    private org.nbandroid.netbeans.gradle.v2.apk.sign.keystore.KeyEditor keyEditor;
+    private org.netbeans.modules.android.apk.keystore.KeyEditor keyEditor;
     private javax.swing.JRadioButton useExisting;
     // End of variables declaration//GEN-END:variables
 

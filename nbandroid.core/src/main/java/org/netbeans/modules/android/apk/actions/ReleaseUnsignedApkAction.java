@@ -22,7 +22,7 @@ import com.android.builder.model.AndroidProject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.nbandroid.netbeans.gradle.v2.apk.ApkUtils;
+import org.netbeans.modules.android.apk.ApkUtils;
 import org.netbeans.api.project.Project;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;

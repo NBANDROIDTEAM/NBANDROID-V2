@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.apk.sign.keystore;
+package org.netbeans.modules.android.apk.keystore;
 
 import java.awt.Component;
 import java.awt.Frame;
@@ -28,7 +28,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import org.nbandroid.netbeans.gradle.v2.apk.ApkUtils;
+import org.netbeans.modules.android.apk.ApkUtils;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
 
@@ -194,7 +194,7 @@ public class NewKeyStore extends javax.swing.JPanel implements KeyListener {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private org.nbandroid.netbeans.gradle.v2.apk.sign.keystore.KeyEditor keyEditor1;
+    private org.netbeans.modules.android.apk.keystore.KeyEditor keyEditor1;
     private javax.swing.JPasswordField passwd1;
     private javax.swing.JPasswordField passwd2;
     private javax.swing.JTextField path;

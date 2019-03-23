@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.nbandroid.netbeans.gradle.v2.apk.sign.keystore;
+package org.netbeans.modules.android.apk.keystore;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Arrays;
-import org.nbandroid.netbeans.gradle.v2.apk.ApkUtils;
+import org.netbeans.modules.android.apk.ApkUtils;
 import org.openide.DialogDescriptor;
 
 /**
