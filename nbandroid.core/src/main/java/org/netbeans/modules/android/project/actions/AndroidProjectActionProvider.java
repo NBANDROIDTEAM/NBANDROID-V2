@@ -86,7 +86,10 @@ public class AndroidProjectActionProvider implements ActionProvider, LookupListe
                     callAndroidTest();
                     break;
                 case ActionProvider.COMMAND_RUN:
-                    callBuildAndRun();
+                    callLaunch(COMMAND_RUN);
+                    break;
+                case ActionProvider.COMMAND_DEBUG:
+                    callLaunch(COMMAND_DEBUG);
                     break;
             }
         }
@@ -122,7 +125,7 @@ public class AndroidProjectActionProvider implements ActionProvider, LookupListe
         }
     }
 
-    private void callBuildAndRun() {
+    private void callLaunch(String command) {
         GradleCommandExecutor executor = project.getLookup().lookup(GradleCommandExecutor.class);
         if (executor != null) {
             final BuildVariant buildVariant = project.getLookup().lookup(BuildVariant.class);
@@ -154,7 +157,7 @@ public class AndroidProjectActionProvider implements ActionProvider, LookupListe
                                                     GradleLaunchExecutor launchExecutor = project.getLookup().lookup(GradleLaunchExecutor.class);
                                                     if (manifestFile != null && launchExecutor != null) {
                                                         try {
-                                                            launchExecutor.doLaunchAfterBuild(COMMAND_RUN, output, manifestFile);
+                                                            launchExecutor.doLaunchAfterBuild(command, output, manifestFile);
                                                         } catch (Exception e) {
                                                             Exceptions.printStackTrace(e);
                                                         }
