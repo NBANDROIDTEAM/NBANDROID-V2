@@ -48,15 +48,14 @@ import org.openide.util.NbPreferences;
  */
 public class KeystoreOptionsSubPanel extends AndroidOptionsSubPanel implements ActionListener, KeyListener {
 
-    private static final String KEY_STORE_PATH = "_KEY_STORE_PATH";
-    private static final String KEY_STORE_PASSWORD = "_KEY_STORE_PASSWORD";
-    private static final String KEY_ALIAS = "_KEY_ALIAS";
-    private static final String KEY_PASSWORD = "_KEY_PASSWORD";
-    private static final String APK_V1 = "_APK_V1";
-    private static final String APK_V2 = "_APK_V2";
-    private static final String APK_RELEASE = "APK_RELEASE";
-    private static final String APK_DEBUG = "APK_DEBUG";
-    private static final String REMEMBER_PASSWORDS = "_REMEMBER_PASSWORDS";
+    public static final String KEY_STORE_PATH = "GLOBAL_KEY_STORE_PATH";
+    public static final String KEY_STORE_PASSWORD = "GLOBAL_KEY_STORE_PASSWORD";
+    public static final String KEY_ALIAS = "GLOBAL_KEY_ALIAS";
+    public static final String KEY_PASSWORD = "GLOBAL_KEY_PASSWORD";
+    public static final String APK_V1 = "GLOBAL_APK_V1";
+    public static final String APK_V2 = "GLOBAL_APK_V2";
+    public static final String REMEMBER_PASSWORDS = "GLOBAL_REMEMBER_PASSWORDS";
+
     /**
      * Creates new form KeystoreSelector
      */
@@ -94,8 +93,8 @@ public class KeystoreOptionsSubPanel extends AndroidOptionsSubPanel implements A
     @Override
     public void store() {
         if (rememberPasswd.isSelected()) {
-            Keyring.save(KEY_STORE_PASSWORD, keystorePassword.getPassword(), "NBANDROID Project Keystore Password");
-            Keyring.save(KEY_PASSWORD, keyPassword.getPassword(), "NBANDROID Project Keystore Key Password");
+            Keyring.save(KEY_STORE_PASSWORD, keystorePassword.getPassword(), "NBANDROID Global Keystore Password");
+            Keyring.save(KEY_PASSWORD, keyPassword.getPassword(), "NBANDROID Global Keystore Key Password");
         } else {
             Keyring.delete(KEY_STORE_PASSWORD);
             Keyring.delete(KEY_PASSWORD);

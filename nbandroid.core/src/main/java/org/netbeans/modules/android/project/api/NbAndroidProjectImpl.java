@@ -46,6 +46,7 @@ import org.netbeans.modules.android.project.api.nodes.MultiNodeFactoryProvider;
 import org.netbeans.modules.android.project.api.nodes.NodeFactory;
 import org.netbeans.modules.android.project.build.BuildVariant;
 import org.netbeans.modules.android.project.debug.GradleDebugInfo;
+import org.netbeans.modules.android.project.keystore.KeystoreConfiguration;
 import org.netbeans.modules.android.project.launch.GradleLaunchExecutor;
 import org.netbeans.modules.android.project.properties.AndroidCustomizerProvider;
 import org.netbeans.modules.android.project.query.AndroidClassPathProvider;
@@ -99,6 +100,7 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
         ic.add(launchExecutor);
         ic.add(new RunActivityConfiguration(this));
         ic.add(new DebugActivityConfiguration(this));
+        ic.add(new KeystoreConfiguration(this));
         ic.add(new NbAndroidProjectConfigurationProvider());
         ic.add(new AndroidCustomizerProvider(this));
         ic.add(new AndroidProjectLogicalView());
