@@ -21,9 +21,13 @@ package org.netbeans.modules.android.apk.actions;
 import com.android.builder.model.AndroidProject;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.android.apk.ApkUtils;
-import org.netbeans.modules.android.apk.keystore.KeystoreSelector;
+import org.gradle.internal.impldep.com.google.common.collect.ImmutableSet;
+import org.netbeans.api.io.InputOutput;
+import org.netbeans.api.io.ShowOperation;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.android.apk.ApkUtils;
+import org.netbeans.modules.android.project.keystore.KeystoreConfiguration;
+import org.netbeans.modules.android.project.properties.ui.ApkSigningConfigPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.ActionID;
@@ -57,22 +61,34 @@ public class SignApkAction extends NodeAction {
         }
         Project owner = activatedNodes[0].getLookup().lookup(Project.class);
         if (owner != null) {
-            KeystoreSelector selector = new KeystoreSelector(owner);
-            DialogDescriptor dd = new DialogDescriptor(selector, "Generate Signed APK", true, selector);
-            selector.setDescriptor(dd);
-            Object notify = DialogDisplayer.getDefault().notify(dd);
-            if (DialogDescriptor.OK_OPTION.equals(notify)) {
-                try {
-                    List<String> tasks = new ArrayList<>();
-                    if (selector.isRelease()) {
-                        tasks.add("assembleRelease");
+            KeystoreConfiguration keystoreConfiguration = owner.getLookup().lookup(KeystoreConfiguration.class);
+            if (keystoreConfiguration != null) {
+                if (keystoreConfiguration.getCurrentKeystoreConfiguration().isAsk() || !keystoreConfiguration.getCurrentKeystoreConfiguration().isValid()) {
+                    ApkSigningConfigPanel signingConfigPanel = new ApkSigningConfigPanel(null, owner.getLookup());
+                    DialogDescriptor dialogDescriptor = new DialogDescriptor(signingConfigPanel, "Generate Signed APK", true, signingConfigPanel);
+                    DialogDisplayer.getDefault().notify(dialogDescriptor);
+                }
+                if (keystoreConfiguration.getCurrentKeystoreConfiguration().isValid()) {
+                    try {
+                        List<String> tasks = new ArrayList<>();
+                        if (keystoreConfiguration.getCurrentKeystoreConfiguration().isApkRelease()) {
+                            tasks.add("assembleRelease");
+                        }
+                        if (keystoreConfiguration.getCurrentKeystoreConfiguration().isApkDebug()) {
+                            tasks.add("assembleDebug");
+                        }
+                        ApkUtils.gradleSignApk(owner, "", tasks, keystoreConfiguration, FileUtil.toFile(owner.getProjectDirectory()));
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
                     }
-                    if (selector.isDebug()) {
-                        tasks.add("assembleDebug");
+                } else {
+                    InputOutput io = owner.getLookup().lookup(InputOutput.class);
+                    if (io != null) {
+                        io.show(ImmutableSet.of(ShowOperation.OPEN, ShowOperation.MAKE_VISIBLE));
+                        io.getOut().print("\n\r");
+                        io.getOut().print("\u001B[31mKeystore setting is not valid!\u001B[30m\n\r");
+                        io.getOut().print("\n\r");
                     }
-                    ApkUtils.gradleSignApk(owner, "", tasks, selector, FileUtil.toFile(owner.getProjectDirectory()));
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
                 }
             }
         }

@@ -58,8 +58,8 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.netbeans.modules.android.apk.keystore.KeystoreSelector;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.android.project.keystore.KeystoreConfiguration;
 import sun.nio.ch.FileChannelImpl;
 
 /**
@@ -85,20 +85,20 @@ public class ApkUtils {
         return ARGUMENT + key + "=" + value;
     }
 
-    public static void gradleSignApk(Project project, String displayName, List<String> tasks, KeystoreSelector keystoreSelector, File out) {
+    public static void gradleSignApk(Project project, String displayName, List<String> tasks, KeystoreConfiguration keystoreConfiguration, File out) {
 
         GradleCommandTemplate.Builder builder = new GradleCommandTemplate.Builder(
                 displayName != null ? displayName : "", tasks);
         List<String> arguments = new ArrayList<>();
-        arguments.add(createArgument(AndroidProject.PROPERTY_SIGNING_STORE_FILE, keystoreSelector.getStoreFile().getAbsolutePath()));
-        arguments.add(createArgument(AndroidProject.PROPERTY_SIGNING_STORE_PASSWORD, keystoreSelector.getStorePassword()));
-        arguments.add(createArgument(AndroidProject.PROPERTY_SIGNING_KEY_ALIAS, keystoreSelector.getKeyAlias()));
-        arguments.add(createArgument(AndroidProject.PROPERTY_SIGNING_KEY_PASSWORD, keystoreSelector.getKeyPassword()));
+        arguments.add(createArgument(AndroidProject.PROPERTY_SIGNING_STORE_FILE, keystoreConfiguration.getCurrentKeystoreConfiguration().getKeystorePath()));
+        arguments.add(createArgument(AndroidProject.PROPERTY_SIGNING_STORE_PASSWORD, keystoreConfiguration.getCurrentKeystoreConfiguration().getKeystorePassword()));
+        arguments.add(createArgument(AndroidProject.PROPERTY_SIGNING_KEY_ALIAS, keystoreConfiguration.getCurrentKeystoreConfiguration().getKeyAlias()));
+        arguments.add(createArgument(AndroidProject.PROPERTY_SIGNING_KEY_PASSWORD, keystoreConfiguration.getCurrentKeystoreConfiguration().getKeyPassword()));
         arguments.add(createArgument(AndroidProject.PROPERTY_APK_LOCATION, out.getAbsolutePath()));
 
         // These were introduced in 2.3, but gradle doesn't care if it doesn't know the properties and so they don't affect older versions.
-        arguments.add(createArgument(AndroidProject.PROPERTY_SIGNING_V1_ENABLED, Boolean.toString(keystoreSelector.isV1SigningEnabled())));
-        arguments.add(createArgument(AndroidProject.PROPERTY_SIGNING_V2_ENABLED, Boolean.toString(keystoreSelector.isV2SigningEnabled())));
+        arguments.add(createArgument(AndroidProject.PROPERTY_SIGNING_V1_ENABLED, Boolean.toString(keystoreConfiguration.getCurrentKeystoreConfiguration().isApkV1())));
+        arguments.add(createArgument(AndroidProject.PROPERTY_SIGNING_V2_ENABLED, Boolean.toString(keystoreConfiguration.getCurrentKeystoreConfiguration().isApkV2())));
 
         builder.setArguments(arguments);
         builder.setJvmArguments(Collections.EMPTY_LIST);

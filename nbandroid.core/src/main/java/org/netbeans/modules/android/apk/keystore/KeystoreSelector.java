@@ -35,6 +35,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.android.apk.ApkUtils;
+import org.netbeans.modules.android.project.keystore.KeystoreConfiguration;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -64,6 +65,7 @@ public class KeystoreSelector extends javax.swing.JPanel implements ActionListen
      */
     public KeystoreSelector(Project project) {
         initComponents();
+        KeystoreConfiguration keystoreConfiguration = project.getLookup().lookup(KeystoreConfiguration.class);
         hash = "ANDROID_" + project.getProjectDirectory().getPath().hashCode();
         char[] keystorePasswd = Keyring.read(hash + KEY_STORE_PASSWORD);
         char[] keyPasswd = Keyring.read(hash + KEY_PASSWORD);

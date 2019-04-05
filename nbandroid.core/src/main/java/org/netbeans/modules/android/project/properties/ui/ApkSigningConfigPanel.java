@@ -52,7 +52,6 @@ public class ApkSigningConfigPanel extends javax.swing.JPanel implements ActionL
 
     private DialogDescriptor descriptor = null;
     private final KeyEmulatorListener keyEmulatorListener = new KeyEmulatorListener();
-    private final ProjectCustomizer.Category category;
     private final NbAndroidProject androidProjectImpl;
     private final KeystoreConfiguration keystoreConfiguration;
     private final KeystoreConfiguration.CurrentKeystoreConfiguration currentKeystoreConfiguration;
@@ -64,7 +63,6 @@ public class ApkSigningConfigPanel extends javax.swing.JPanel implements ActionL
      */
     public ApkSigningConfigPanel(ProjectCustomizer.Category category, Lookup context) {
         initComponents();
-        this.category = category;
         androidProjectImpl = context.lookup(NbAndroidProject.class);
         if (androidProjectImpl != null) {
             keystoreConfiguration = androidProjectImpl.getLookup().lookup(KeystoreConfiguration.class);
@@ -91,21 +89,14 @@ public class ApkSigningConfigPanel extends javax.swing.JPanel implements ActionL
             localKeystoreConfiguration = null;
         }
 
-        category.setStoreListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                CurrentKeystoreConfiguration tmp = null;
-                if (!globalKeystore.isSelected()) {
-                    tmp = new CurrentKeystoreConfiguration(false, askBeforeSigningApk.isSelected(), path.getText(), new String(keyPassword.getPassword()), alias.getText(), new String(keyPassword.getPassword()), v1.isSelected(), v2.isSelected(), release.isSelected(), debug.isSelected(), rememberPasswd.isSelected());
-                } else {
-                    tmp = new CurrentKeystoreConfiguration(true, askBeforeSigningApk.isSelected(), "", "", "", "", v1.isSelected(), v2.isSelected(), release.isSelected(), debug.isSelected(), rememberPasswd.isSelected());
+        if (category != null) {
+            category.setStoreListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    save();
                 }
-                keystoreConfiguration.saveToProject(tmp);
-                if (saveAsGlobal.isSelected()) {
-                    keystoreConfiguration.saveToGlobal(tmp);
-                }
-            }
-        });
+            });
+        }
 
         path.addKeyListener(this);
         alias.addKeyListener(this);
@@ -116,6 +107,19 @@ public class ApkSigningConfigPanel extends javax.swing.JPanel implements ActionL
         debug.addActionListener(keyEmulatorListener);
         release.addActionListener(keyEmulatorListener);
         keyReleased(null);
+    }
+
+    public void save() {
+        CurrentKeystoreConfiguration tmp = null;
+        if (!globalKeystore.isSelected()) {
+            tmp = new CurrentKeystoreConfiguration(false, askBeforeSigningApk.isSelected(), path.getText(), new String(keyPassword.getPassword()), alias.getText(), new String(keyPassword.getPassword()), v1.isSelected(), v2.isSelected(), release.isSelected(), debug.isSelected(), rememberPasswd.isSelected());
+        } else {
+            tmp = new CurrentKeystoreConfiguration(true, askBeforeSigningApk.isSelected(), "", "", "", "", v1.isSelected(), v2.isSelected(), release.isSelected(), debug.isSelected(), rememberPasswd.isSelected());
+        }
+        keystoreConfiguration.saveToProject(tmp);
+        if (saveAsGlobal.isSelected()) {
+            keystoreConfiguration.saveToGlobal(tmp);
+        }
     }
 
     private void setupGlobalNotFound() {
@@ -637,6 +641,7 @@ public class ApkSigningConfigPanel extends javax.swing.JPanel implements ActionL
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        save();
     }
 
     private Component findDialogParent() {
