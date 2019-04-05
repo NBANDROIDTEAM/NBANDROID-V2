@@ -59,6 +59,7 @@ import org.netbeans.modules.android.project.query.ProjectRefResolver;
 import org.netbeans.modules.android.project.run.AndroidTestRunConfiguration;
 import org.netbeans.modules.android.project.sources.AndroidSources;
 import org.netbeans.modules.android.project.sources.SourceLevelQueryImpl;
+import org.netbeans.modules.android.project.tasks.UserTasksConfiguration;
 import org.netbeans.modules.android.spi.DebugActivityConfiguration;
 import org.netbeans.modules.android.spi.RunActivityConfiguration;
 import org.netbeans.spi.project.ActionProvider;
@@ -122,6 +123,7 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
         ic.add(new TestOutputConsumerLookupProvider().createAdditionalLookup(
                 Lookups.singleton(this)).lookup(TestOutputConsumer.class));
         ic.add(new AndroidProjectActionProvider(this));
+        ic.add(new UserTasksConfiguration(this));
 
     }
 

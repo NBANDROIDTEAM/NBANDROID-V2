@@ -27,6 +27,8 @@ import nbandroid.gradle.spi.GradleJvmConfiguration;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.android.project.properties.ui.GradleArgumentsConfigPanel;
 import org.netbeans.modules.android.project.properties.ui.GradleJvmConfigPanel;
+import org.netbeans.modules.android.project.properties.ui.GradleUserTasksPanel;
+import org.netbeans.modules.android.project.tasks.UserTasksConfiguration;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 
@@ -39,6 +41,7 @@ public class GradleCustomizerProvider implements ProjectCustomizer.CompositeCate
     private static final String CUSTOMIZER_GRADLE = "Gradle";
     private static final String CUSTOMIZER_GRADLE_JVM = "GradleJVM";
     private static final String CUSTOMIZER_GRADLE_ARGS = "GradleArgs";
+    private static final String CUSTOMIZER_GRADLE_USER_TASKS = "GradleUserTasks";
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = "android-project", position = 20)
@@ -50,7 +53,8 @@ public class GradleCustomizerProvider implements ProjectCustomizer.CompositeCate
     public ProjectCustomizer.Category createCategory(Lookup context) {
         return ProjectCustomizer.Category.create(CUSTOMIZER_GRADLE, "Gradle", null,
                 ProjectCustomizer.Category.create(CUSTOMIZER_GRADLE_JVM, "JVM", null),
-                ProjectCustomizer.Category.create(CUSTOMIZER_GRADLE_ARGS, "Arguments", null));
+                ProjectCustomizer.Category.create(CUSTOMIZER_GRADLE_ARGS, "Arguments", null),
+                ProjectCustomizer.Category.create(CUSTOMIZER_GRADLE_USER_TASKS, "Custom Tasks", null));
     }
 
     @Override
@@ -78,7 +82,18 @@ public class GradleCustomizerProvider implements ProjectCustomizer.CompositeCate
                     }
                 });
                 return argsConfigPanel;
+            case CUSTOMIZER_GRADLE_USER_TASKS:
+                UserTasksConfiguration userTasksConfiguration = context.lookup(Project.class).getLookup().lookup(UserTasksConfiguration.class);
+                final GradleUserTasksPanel gradleUserTasks = new GradleUserTasksPanel(userTasksConfiguration);
+                category.setStoreListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        gradleUserTasks.store();
+                    }
+                });
+                return gradleUserTasks;
         }
+
         return null;
     }
 
