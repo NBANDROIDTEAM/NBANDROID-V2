@@ -29,6 +29,9 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import static nbandroid.gradle.impl.Bundle.ACT_Execute;
+import nbandroid.gradle.spi.GradleCommandExecutor;
+import nbandroid.gradle.spi.GradleCommandTemplate;
+import nbandroid.gradle.spi.GradleUserTaskProvider;
 import nbandroid.gradle.tooling.AndroidProjectInfo;
 import nbandroid.gradle.tooling.TaskInfo;
 import nbandroid.gradle.tooling.TaskInfoImpl;
@@ -55,6 +58,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
     private final transient ExplorerManager explorerManager = new ExplorerManager();
     private final BeanTreeView treeView;
     private AndroidProjectInfo gradleProject;
+    private GradleUserTaskProvider gradleUserTaskProvider;
 
     /**
      * Creates new form GoalsPanel
@@ -97,8 +101,9 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
         });
     }
 
-    void navigate(AndroidProjectInfo gradleProject) {
+    void navigate(AndroidProjectInfo gradleProject, GradleUserTaskProvider gradleUserTaskProvider) {
         this.gradleProject = gradleProject;
+        this.gradleUserTaskProvider = gradleUserTaskProvider;
         RequestProcessor.getDefault().execute(this);
     }
 
@@ -120,7 +125,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
 
     @Override
     public void run() {
-        final Children ch = Children.create(new PluginChildren(gradleProject), true);
+        final Children ch = Children.create(new PluginChildren(gradleProject, gradleUserTaskProvider), true);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -131,16 +136,18 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
         });
     }
 
-    private class PluginChildren extends ChildFactory<TaskInfo> {
+    private class PluginChildren extends ChildFactory<Object> {
 
         private final AndroidProjectInfo gradleProject;
+        private final GradleUserTaskProvider gradleUserTaskProvider;
 
-        public PluginChildren(AndroidProjectInfo gradleProject) {
+        public PluginChildren(AndroidProjectInfo gradleProject, GradleUserTaskProvider gradleUserTaskProvider) {
             this.gradleProject = gradleProject;
+            this.gradleUserTaskProvider = gradleUserTaskProvider;
         }
 
         @Override
-        protected boolean createKeys(List<TaskInfo> list) {
+        protected boolean createKeys(List<Object> list) {
             List<String> groups = new ArrayList<>();
             groups.addAll(gradleProject.getProjectTasks().keySet());
             groups.remove("default");
@@ -178,10 +185,17 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
                 }
             }
             makeDefaultTasks(list);
+            if (gradleUserTaskProvider != null) {
+                List<GradleCommandTemplate> gradleUserTasks = new ArrayList<>(gradleUserTaskProvider.getGradleUserTasks());
+                Collections.reverse(gradleUserTasks);
+                for (GradleCommandTemplate gradleUserTask : gradleUserTasks) {
+                    list.add(0, gradleUserTask);
+                }
+            }
             return true;
         }
 
-        private void makeDefaultTasks(List<TaskInfo> list) {
+        private void makeDefaultTasks(List<Object> list) {
             TaskInfo clean = new TaskInfoImpl(true, "default", "clean", "clean", ":clean");
             if (!list.contains(clean)) {
                 list.add(0, clean);
@@ -189,10 +203,70 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
         }
 
         protected @Override
-        Node createNodeForKey(TaskInfo mdl) {
-            return new MojoNode(mdl, gradleProject);
+        Node createNodeForKey(Object mdl) {
+            if (mdl instanceof TaskInfo) {
+                return new MojoNode((TaskInfo) mdl, gradleProject);
+            } else if (mdl instanceof GradleCommandTemplate) {
+                return new UserTaskNode((GradleCommandTemplate) mdl, gradleProject);
+            } else {
+                return Node.EMPTY;
+            }
         }
 
+    }
+
+    private static class UserTaskNode extends AbstractNode {
+
+        private final AndroidProjectInfo gradleProject;
+        private final GradleCommandTemplate gradleTask;
+
+        public UserTaskNode(GradleCommandTemplate gradleTask, AndroidProjectInfo gradleProject) {
+            super(Children.LEAF);
+            this.gradleProject = gradleProject;
+            this.gradleTask = gradleTask;
+            this.setShortDescription(getHtmlDescription());
+        }
+
+        private String getHtmlDescription() {
+            String tmp = "<html><b>" + gradleTask.getDisplayName() + "</b><br>";
+            tmp += "Tasks: <b>";
+            for (String task : gradleTask.getTasks()) {
+                tmp += task + " ";
+            }
+            tmp += "</b><br>";
+            tmp += "GradleArguments: <b>";
+            for (String task : gradleTask.getArguments()) {
+                tmp += task + " ";
+            }
+            tmp += "</b><br>";
+            tmp += "JVM Arguments: <b>";
+            for (String task : gradleTask.getJvmArguments()) {
+                tmp += task + " ";
+            }
+            tmp += "</b><br>";
+            tmp += "</html>";
+            return tmp;
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            return gradleTask.getDisplayName();
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[]{new RunUserGoalAction(gradleTask, gradleProject)};
+        }
+
+        @Override
+        public Action getPreferredAction() {
+            return new RunUserGoalAction(gradleTask, gradleProject);
+        }
+
+        @Override
+        public Image getIcon(int type) {
+            return ImageUtilities.loadImage(MOJO_USER_PNG);
+        }
     }
 
     private static class MojoNode extends AbstractNode {
@@ -217,7 +291,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
             }
             return "<html>" + group + "<b>" + gradleTask.getName() + "</b></html>";
         }
-        
+
         @Override
         public Action[] getActions(boolean context) {
             return new Action[]{new RunGoalAction(gradleTask, gradleProject)};
@@ -235,6 +309,30 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
     }
 
     @Messages("ACT_Execute=Execute Task")
+    private static class RunUserGoalAction extends AbstractAction {
+
+        private final GradleCommandTemplate gradleTask;
+        private final AndroidProjectInfo gradleProject;
+
+        public RunUserGoalAction(GradleCommandTemplate gradleTask, AndroidProjectInfo gradleProject) {
+            this.gradleTask = gradleTask;
+            this.gradleProject = gradleProject;
+            putValue(Action.NAME, ACT_Execute());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Project project = FileOwnerQuery.getOwner(Utilities.toURI(new File(gradleProject.getProjectPath())));
+            if (project != null) {
+                GradleCommandExecutor executor = project.getLookup().lookup(GradleCommandExecutor.class);
+                if (executor != null) {
+                    executor.executeCommand(gradleTask);
+                }
+            }
+        }
+
+    }
+
     private static class RunGoalAction extends AbstractAction {
 
         private final TaskInfo gradleTask;
@@ -249,7 +347,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
         @Override
         public void actionPerformed(ActionEvent e) {
             Project project = FileOwnerQuery.getOwner(Utilities.toURI(new File(gradleProject.getProjectPath())));
-            if(project!=null){
+            if (project != null) {
                 new ExecuteGoal(project, gradleTask);
             }
         }
@@ -261,6 +359,9 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
 
     private static final @StaticResource
     String MOJO_PNG = "nbandroid/gradle/impl/mojo.png";
+
+    private static final @StaticResource
+    String MOJO_USER_PNG = "nbandroid/gradle/impl/mojo_user.png";
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane scrollPane;

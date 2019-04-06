@@ -20,7 +20,9 @@ package nbandroid.gradle.impl;
 
 import java.util.Collection;
 import javax.swing.JComponent;
+import nbandroid.gradle.spi.GradleUserTaskProvider;
 import nbandroid.gradle.tooling.AndroidProjectInfo;
+import org.netbeans.api.project.Project;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -39,6 +41,7 @@ public class GoalsNavigationPanel implements NavigatorPanel {
     private GoalsPanel component;
 
     protected Lookup.Result<AndroidProjectInfo> selection;
+    protected Lookup.Result<GradleUserTaskProvider> selectionUserTasks;
 
     protected final LookupListener selectionListener = new LookupListener() {
         @Override
@@ -46,7 +49,13 @@ public class GoalsNavigationPanel implements NavigatorPanel {
             if (selection == null) {
                 return;
             }
-            navigate(selection.allInstances());
+            GradleUserTaskProvider gradleUserTaskProvider = null;
+            Collection<? extends GradleUserTaskProvider> allInstances = selectionUserTasks.allInstances();
+            if (!allInstances.isEmpty()) {
+                gradleUserTaskProvider = allInstances.iterator().next();
+            }
+
+            navigate(selection.allInstances(), gradleUserTaskProvider);
         }
     };
 
@@ -78,6 +87,11 @@ public class GoalsNavigationPanel implements NavigatorPanel {
         getNavigatorUI().showWaitNode();
         selection = context.lookupResult(AndroidProjectInfo.class);
         selection.addLookupListener(selectionListener);
+        Project project = context.lookup(Project.class);
+        if (project != null) {
+            selectionUserTasks = project.getLookup().lookupResult(GradleUserTaskProvider.class);
+            selectionUserTasks.addLookupListener(selectionListener);
+        }
         selectionListener.resultChanged(null);
     }
 
@@ -88,6 +102,10 @@ public class GoalsNavigationPanel implements NavigatorPanel {
             selection.removeLookupListener(selectionListener);
             selection = null;
         }
+        if (selectionUserTasks != null) {
+            selectionUserTasks.removeLookupListener(selectionListener);
+            selectionUserTasks = null;
+        }
         getNavigatorUI().release();
     }
 
@@ -96,10 +114,10 @@ public class GoalsNavigationPanel implements NavigatorPanel {
         return Lookup.EMPTY;
     }
 
-    public void navigate(Collection<? extends AndroidProjectInfo> selectedFiles) {
+    public void navigate(Collection<? extends AndroidProjectInfo> selectedFiles, GradleUserTaskProvider gradleUserTaskProvider) {
         if (selectedFiles.size() == 1) {
             AndroidProjectInfo d = (AndroidProjectInfo) selectedFiles.iterator().next();
-            getNavigatorUI().navigate(d);
+            getNavigatorUI().navigate(d, gradleUserTaskProvider);
         } else {
             getNavigatorUI().release();
         }

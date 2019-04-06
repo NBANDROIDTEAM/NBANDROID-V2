@@ -21,19 +21,24 @@ package org.netbeans.modules.android.project.tasks;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.event.ChangeListener;
+import nbandroid.gradle.spi.GradleCommandTemplate;
+import nbandroid.gradle.spi.GradleUserTaskProvider;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.AuxiliaryProperties;
+import org.openide.util.ChangeSupport;
 
 /**
  *
  * @author arsi
  */
-public class UserTasksConfiguration {
+public class UserTasksConfiguration implements GradleUserTaskProvider {
 
     private final Project project;
     private final AuxiliaryProperties auxProps;
     private final List<UserTask> userTasks = new ArrayList<>();
     public static final String GRADLE_PROJECT_USER_TASKS = "GRADLE_PROJECT_USER_TASKS";
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     public UserTasksConfiguration(Project project) {
         this.project = project;
@@ -47,14 +52,33 @@ public class UserTasksConfiguration {
         if (s != null) {
             userTasks.addAll(UserTask.stringToList(s));
         }
+        changeSupport.fireChange();
     }
 
     public final void store() {
         auxProps.put(GRADLE_PROJECT_USER_TASKS, UserTask.listToString(userTasks), false);
+        changeSupport.fireChange();
     }
 
     public List<UserTask> getUserTasks() {
         return userTasks;
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
+    @Override
+    public List<GradleCommandTemplate> getGradleUserTasks() {
+        List<GradleCommandTemplate> tmp = new ArrayList<>();
+        for (UserTask userTask : userTasks) {
+            tmp.add(userTask.getCommandTemplate());
+        }
+        return tmp;
     }
 
 }

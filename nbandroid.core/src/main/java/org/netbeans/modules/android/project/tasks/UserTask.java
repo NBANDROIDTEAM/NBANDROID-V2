@@ -21,6 +21,7 @@ package org.netbeans.modules.android.project.tasks;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import nbandroid.gradle.spi.GradleCommandTemplate;
 
 /**
  *
@@ -32,6 +33,13 @@ public class UserTask {
     private final List<String> tasks = new ArrayList<>();
     private final List<String> gradleArguments = new ArrayList<>();
     private final List<String> jvmArguments = new ArrayList<>();
+
+    public GradleCommandTemplate getCommandTemplate() {
+        GradleCommandTemplate.Builder builder = new GradleCommandTemplate.Builder(taskName, tasks);
+        builder.setArguments(gradleArguments);
+        builder.setJvmArguments(jvmArguments);
+        return builder.create();
+    }
 
     public UserTask(String taskName) {
         this.taskName = taskName;
