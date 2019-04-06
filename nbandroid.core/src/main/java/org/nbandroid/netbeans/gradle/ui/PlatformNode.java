@@ -25,11 +25,11 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.nbandroid.netbeans.gradle.api.AndroidClassPath;
-import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.android.project.query.AndroidClassPathProvider;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
@@ -150,7 +150,7 @@ public final class PlatformNode extends AbstractNode {
             FileObject[] roots = cpProvider.getClassPath(ClassPath.BOOT).getRoots();
             List<SourceGroup> result = new ArrayList<>(roots.length);
             for (FileObject root : roots) {
-                if (GradleAndroidClassPathProvider.VIRTUALJAVA8ROOT_DIR.getPath().equals(root.getPath())) {
+                if (AndroidClassPathProvider.VIRTUALJAVA8ROOT_DIR.getPath().equals(root.getPath())) {
                     continue;
                 }
                 FileObject file;

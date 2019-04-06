@@ -18,13 +18,13 @@ import com.google.common.collect.Iterables;
 import java.util.Arrays;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
-import org.netbeans.modules.android.project.api.AndroidConstants;
 import org.nbandroid.netbeans.gradle.api.AndroidFileTypes;
-import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.android.project.api.AndroidConstants;
+import org.netbeans.modules.android.project.query.AndroidClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.ServiceProvider;
@@ -49,7 +49,7 @@ public final class AndroidFileTypesImpl implements AndroidFileTypes {
             return false;
         }
         Project p = FileOwnerQuery.getOwner(fo);
-        if (p.getLookup().lookup(GradleAndroidClassPathProvider.class) == null) {
+        if (p.getLookup().lookup(AndroidClassPathProvider.class) == null) {
             return false;
         }
         return Iterables.any(
