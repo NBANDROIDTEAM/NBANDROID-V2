@@ -38,10 +38,10 @@ import javax.swing.JProgressBar;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.gradle.internal.impldep.org.apache.commons.io.IOUtils;
-import org.nbandroid.netbeans.gradle.v2.gradle.GradleAndroidRepositoriesProvider;
-import sk.arsi.netbeans.gradle.android.maven.repository.Repository;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.android.project.api.GradleAndroidRepositoriesProvider;
 import org.openide.util.Exceptions;
+import sk.arsi.netbeans.gradle.android.maven.repository.Repository;
 
 /**
  *

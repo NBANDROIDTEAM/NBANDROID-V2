@@ -13,6 +13,7 @@
  */
 package org.nbandroid.netbeans.gradle.api;
 
+import org.netbeans.modules.android.project.api.AndroidConstants;
 import static com.android.SdkConstants.ANDROID_URI;
 import com.android.ide.common.xml.AndroidManifestParser;
 import com.android.ide.common.xml.ManifestData;
@@ -34,7 +35,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.gradle.project.NbGradleProject;
+import org.netbeans.modules.android.project.api.NbAndroidRootProjectImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -181,12 +182,15 @@ public class AndroidProjects {
         return new NullRefResolver();
     }
 
-    public static final Project findRootProject(FileObject root, Project current) {
-        Project owner = FileOwnerQuery.getOwner(root.getParent());
-        if ((owner instanceof NbGradleProject) && !owner.equals(current)) {
-            return findRootProject(root.getParent(), owner);
-        } else {
+    public static final Project findRootProject(Project current) {
+        if (current instanceof NbAndroidRootProjectImpl) {
             return current;
+        }
+        Project owner = FileOwnerQuery.getOwner(current.getProjectDirectory().getParent());
+        if (owner instanceof NbAndroidRootProjectImpl) {
+            return owner;
+        } else {
+            throw new IllegalStateException("Gradle root projec not found!");
         }
     }
 }

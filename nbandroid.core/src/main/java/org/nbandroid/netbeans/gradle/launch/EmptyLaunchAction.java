@@ -14,8 +14,9 @@
 package org.nbandroid.netbeans.gradle.launch;
 
 import com.android.ddmlib.IDevice;
-import org.nbandroid.netbeans.gradle.AndroidIO;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.android.spi.AndroidIO;
+import org.netbeans.modules.android.spi.MainActivityConfiguration;
 
 /**
  * No-op launch strategy.
@@ -25,7 +26,7 @@ import org.netbeans.api.project.Project;
 class EmptyLaunchAction implements LaunchAction {
 
     @Override
-    public boolean doLaunch(LaunchInfo launchInfo, IDevice device, Project project) {
+    public boolean doLaunch(LaunchInfo launchInfo, IDevice device, Project project, MainActivityConfiguration mainActivityConfiguration) {
         AndroidIO.getDefaultIO().getOut().println("No launch action requested.");
         return true;
     }

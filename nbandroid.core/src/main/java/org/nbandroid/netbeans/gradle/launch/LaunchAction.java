@@ -15,6 +15,7 @@ package org.nbandroid.netbeans.gradle.launch;
 
 import com.android.ddmlib.IDevice;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.android.spi.MainActivityConfiguration;
 
 /**
  * Strategy used to launch code on device. Examples are: no launch, activity
@@ -24,5 +25,5 @@ import org.netbeans.api.project.Project;
  */
 public interface LaunchAction {
 
-    boolean doLaunch(LaunchInfo launchInfo, IDevice device, Project project);
+    boolean doLaunch(LaunchInfo launchInfo, IDevice device, Project project, MainActivityConfiguration mainActivityConfiguration);
 }

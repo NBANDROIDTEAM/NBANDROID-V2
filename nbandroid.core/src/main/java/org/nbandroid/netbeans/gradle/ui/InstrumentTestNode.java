@@ -5,7 +5,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.awt.Image;
 import java.util.Arrays;
-import org.nbandroid.netbeans.gradle.api.AndroidConstants;
+import org.netbeans.modules.android.project.api.AndroidConstants;
 import org.nbandroid.netbeans.gradle.api.ui.AndroidPackagesNode;
 import org.nbandroid.netbeans.gradle.api.ui.UiUtils;
 import org.netbeans.api.project.Project;

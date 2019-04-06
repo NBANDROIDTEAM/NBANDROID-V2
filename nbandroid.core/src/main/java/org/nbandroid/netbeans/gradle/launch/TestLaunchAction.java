@@ -31,10 +31,11 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.nbandroid.netbeans.gradle.AndroidIO;
 import org.nbandroid.netbeans.gradle.api.TestOutputConsumer;
 import org.nbandroid.netbeans.gradle.config.AndroidProjectProperties;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.android.spi.AndroidIO;
+import org.netbeans.modules.android.spi.MainActivityConfiguration;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
@@ -48,7 +49,7 @@ class TestLaunchAction implements LaunchAction {
     private static final Logger LOG = Logger.getLogger(TestLaunchAction.class.getName());
 
     @Override
-    public boolean doLaunch(LaunchInfo launchInfo, final IDevice device, final Project project) {
+    public boolean doLaunch(LaunchInfo launchInfo, final IDevice device, final Project project, MainActivityConfiguration mainActivityConfiguration) {
         Preconditions.checkNotNull(project);
         String runnerClass = launchInfo.launchConfig.getInstrumentationRunner();
         final RemoteAndroidTestRunner runner = new RemoteAndroidTestRunner(

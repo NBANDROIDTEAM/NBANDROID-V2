@@ -41,10 +41,8 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import javax.xml.bind.JAXBException;
-import org.nbandroid.netbeans.gradle.api.AndroidConstants;
+import org.netbeans.modules.android.project.api.AndroidConstants;
 import org.nbandroid.netbeans.gradle.api.AndroidProjects;
-import org.nbandroid.netbeans.gradle.config.BuildVariant;
-import org.nbandroid.netbeans.gradle.query.GradleAndroidSources;
 import org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_PACKAGE;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_SDK;
@@ -59,7 +57,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.api.templates.TemplateRegistrations;
-import org.netbeans.gradle.project.NbGradleProject;
+import org.netbeans.modules.android.project.api.NbAndroidProjectImpl;
+import org.netbeans.modules.android.project.build.BuildVariant;
+import org.netbeans.modules.android.project.sources.AndroidSources;
 import org.netbeans.modules.project.ui.NewFileWizard;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -238,13 +238,13 @@ public final class FileWizardIterator implements WizardDescriptor.InstantiatingI
         NewFileWizard fileWizard = (NewFileWizard) wizard;
         try {
             Project project = (Project) wizard.getProperty("project");
-            if (AndroidProjects.isAndroidMavenProject(project) && (project instanceof NbGradleProject)) {
-                NbGradleProject gradleProject = (NbGradleProject) project;
+            if (AndroidProjects.isAndroidMavenProject(project) && (project instanceof NbAndroidProjectImpl)) {
+                NbAndroidProjectImpl gradleProject = (NbAndroidProjectImpl) project;
                 File projectDirectory = gradleProject.getProjectDirectoryAsFile();
                 DataFolder targetFolder = fileWizard.getTargetFolder();
                 String targetPath = targetFolder.getPrimaryFile().getPath();
                 BuildVariant buildVariant = project.getLookup().lookup(BuildVariant.class);
-                GradleAndroidSources androidSources = project.getLookup().lookup(GradleAndroidSources.class);
+                AndroidSources androidSources = project.getLookup().lookup(AndroidSources.class);
                 SourceGroup[] sourceGroups = androidSources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                 FileObject srcRootFolder = null;
                 for (SourceGroup sourceGroup : sourceGroups) {
@@ -272,7 +272,7 @@ public final class FileWizardIterator implements WizardDescriptor.InstantiatingI
                     wizard.putProperty(PROP_PROJECT_SDK, sdk);
                     wizard.putProperty(PROP_PLATFORM, projectPlatform);
                 }
-                Project rootProject = AndroidProjects.findRootProject(project.getProjectDirectory(), project);
+                Project rootProject = AndroidProjects.findRootProject(project);
                 if (rootProject != null) {
                     wizard.putProperty(AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_DIR, FileUtil.toFile(rootProject.getProjectDirectory()));
                     String folderName = project.getProjectDirectory().getPath().replace(rootProject.getProjectDirectory().getPath(), "").substring(1);

@@ -1,0 +1,16 @@
+package org.netbeans.modules.android.spi;
+
+import com.android.builder.model.AndroidProject;
+
+/**
+ *
+ * @author radim
+ */
+public interface AndroidModelAware {
+
+    /**
+     * Called to update the object with new version of AndroidProject.
+     */
+    void setAndroidProject(AndroidProject aPrj);
+
+}

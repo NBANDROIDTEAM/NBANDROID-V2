@@ -35,7 +35,7 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.nbandroid.netbeans.gradle.api.AndroidClassPath;
-import org.nbandroid.netbeans.gradle.api.AndroidConstants;
+import org.netbeans.modules.android.project.api.AndroidConstants;
 import org.nbandroid.netbeans.gradle.api.ui.AndroidNodes;
 import org.nbandroid.netbeans.gradle.api.ui.UiUtils;
 import org.nbandroid.netbeans.gradle.v2.maven.ArtifactData;
@@ -400,7 +400,7 @@ public final class DependenciesNode extends AbstractNode {
                 case TYPE_PROJECT:
                     return (this.project == null ? other.project == null : this.project.equals(other.project));
                 case TYPE_PLATFORM:
-                    return true;
+                    return false; //allow refresh of platform node after model refresh
                 default:
                     throw new IllegalStateException();
             }

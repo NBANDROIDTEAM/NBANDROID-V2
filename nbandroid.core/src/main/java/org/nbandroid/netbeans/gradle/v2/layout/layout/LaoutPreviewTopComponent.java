@@ -78,6 +78,14 @@ public final class LaoutPreviewTopComponent extends TopComponent {
 
     }
 
+    static void refresh() {
+        WindowManager wm = WindowManager.getDefault();
+        TopComponent topComponent = wm.findTopComponent("LaoutPreviewTopComponent"); // NOI18N
+        topComponent.invalidate();
+        topComponent.repaint();
+
+    }
+
     static void hideLaoutPreview() {
         WindowManager wm = WindowManager.getDefault();
         TopComponent topComponent = wm.findTopComponent("LaoutPreviewTopComponent"); // NOI18N

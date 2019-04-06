@@ -36,7 +36,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
-import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
 import org.nbandroid.netbeans.gradle.v2.layout.completion.analyzer.StyleableResultCollector;
 import org.nbandroid.netbeans.gradle.v2.layout.parsers.StyleableXmlParser;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatform;
@@ -45,7 +44,8 @@ import static org.nbandroid.netbeans.gradle.v2.sdk.ui.SDKVisualPanel2Download.NB
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.gradle.project.NbGradleProject;
+import org.netbeans.modules.android.project.api.NbAndroidProject;
+import org.netbeans.modules.android.project.query.AndroidClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
@@ -91,9 +91,9 @@ public class AndroidStyleableStore {
 //            LIBS_STYLEABLE_NAMESPACES_MAP.clear();
             Map<String, AndroidStyleableNamespace> namespaces = new HashMap<>();
             Project owner = FileOwnerQuery.getOwner(primaryFile);
-            if (owner instanceof NbGradleProject) {
+            if (owner instanceof NbAndroidProject) {
                 AndroidStyleableNamespace platformNamespace = null;
-                AndroidProject androidProject = ((NbGradleProject) owner).getLookup().lookup(AndroidProject.class);
+                AndroidProject androidProject = owner.getLookup().lookup(AndroidProject.class);
                 if (androidProject != null) {
                     String next = androidProject.getBootClasspath().iterator().next();
                     AndroidJavaPlatform platform = AndroidJavaPlatformProvider.findPlatform(next, androidProject.getCompileTarget());
@@ -105,7 +105,7 @@ public class AndroidStyleableStore {
                         }
                     }
                 }
-                GradleAndroidClassPathProvider classPathProvider = owner.getLookup().lookup(GradleAndroidClassPathProvider.class);
+                AndroidClassPathProvider classPathProvider = owner.getLookup().lookup(AndroidClassPathProvider.class);
                 if (classPathProvider != null && platformNamespace != null) {
                     AndroidStyleableNamespace namespace = new AndroidStyleableNamespace(RES_AUTO_NAMESPACE, null);
                     namespaces.put(namespace.getNamespace(), namespace);

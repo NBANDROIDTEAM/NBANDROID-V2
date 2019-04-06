@@ -18,3 +18,9 @@
 /nbandroid.layoutlib/target/
 /nbandroid.layout.lib/target/
 /nbandroid.layout.impl/target/
+/nbandroid.gradle.libs/target/
+/nbandroid.gradle.spi/target/
+/nbandroid.gradle.impl/target/
+/nbandroid.gradle.tooling/target/
+/nbandroid.gradle.libs/src/main/gradle/android-gradle-tooling.jar
+/nbandroid.proguard/target/

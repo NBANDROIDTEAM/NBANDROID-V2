@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.annotation.Nullable;
-import org.nbandroid.netbeans.gradle.api.AndroidConstants;
+import org.netbeans.modules.android.project.api.AndroidConstants;
 import org.nbandroid.netbeans.gradle.api.AndroidProjects;
 
 public class ApkUtils {
