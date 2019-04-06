@@ -50,9 +50,11 @@ public class GoalsNavigationPanel implements NavigatorPanel {
                 return;
             }
             GradleUserTaskProvider gradleUserTaskProvider = null;
-            Collection<? extends GradleUserTaskProvider> allInstances = selectionUserTasks.allInstances();
-            if (!allInstances.isEmpty()) {
-                gradleUserTaskProvider = allInstances.iterator().next();
+            if (selectionUserTasks != null) {
+                Collection<? extends GradleUserTaskProvider> allInstances = selectionUserTasks.allInstances();
+                if (!allInstances.isEmpty()) {
+                    gradleUserTaskProvider = allInstances.iterator().next();
+                }
             }
 
             navigate(selection.allInstances(), gradleUserTaskProvider);
