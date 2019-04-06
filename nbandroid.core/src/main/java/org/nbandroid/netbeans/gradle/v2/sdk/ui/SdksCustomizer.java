@@ -32,6 +32,7 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -114,7 +115,22 @@ public class SdksCustomizer extends javax.swing.JPanel implements PropertyChange
      */
     public SdksCustomizer() {
         this.initialPlatform = null;
-        initComponents();
+        Runnable runnable = new Runnable() {
+            public void run() {
+                initComponents();
+            }
+        };
+        try {
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeAndWait(runnable);
+            } else {
+                initComponents();
+            }
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     @Override

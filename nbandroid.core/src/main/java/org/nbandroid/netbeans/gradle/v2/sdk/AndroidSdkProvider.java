@@ -30,6 +30,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.XMLDataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -81,7 +82,7 @@ public class AndroidSdkProvider implements FileChangeListener {
 
     public static final AndroidSdkProvider getDefault() {
         if (instance == null) {
-            instance = new AndroidSdkProvider();
+            instance = Lookup.getDefault().lookup(AndroidSdkProvider.class);
         }
         return instance;
     }
@@ -236,7 +237,7 @@ public class AndroidSdkProvider implements FileChangeListener {
         AndroidSdk[] last = sdks.getAndSet(updateSDKs);
         if (updateSDKs.length == 1 && defaultSdk.get() == null) {
             makeFirstSdkDefault(updateSDKs);
-        } else if (updateSDKs.length > 1) {//more SDKs find default
+        } else if (updateSDKs.length > 1 && defaultSdk.get() == null) {//more SDKs find default
             boolean err = true;
             for (AndroidSdk updateSDK : updateSDKs) {
                 if (updateSDK.isDefaultSdk()) {
@@ -251,7 +252,7 @@ public class AndroidSdkProvider implements FileChangeListener {
                 makeFirstSdkDefault(updateSDKs);
             }
 
-        } else {
+        } else if (updateSDKs.length == 0) {
             AndroidSdk lastDef = defaultSdk.getAndSet(null);
             updateAdb();
             pcs.firePropertyChange(PROP_DEFAULT_SDK, lastDef, null);
