@@ -60,7 +60,7 @@ public class BuildVariant implements LookupListener {
     private final ChangeSupport cs = new ChangeSupport(this);
     private final Object lock = new Object();
     private final AuxiliaryProperties auxProps;
-    private AndroidProject androidProjectModel;
+    private transient AndroidProject androidProjectModel;
     private String variant;
     private final Lookup.Result<AndroidProject> lookupResult;
 
@@ -71,6 +71,10 @@ public class BuildVariant implements LookupListener {
         lookupResult = androidProject.getLookup().lookupResult(AndroidProject.class);
         lookupResult.addLookupListener(WeakListeners.create(LookupListener.class, this, androidProject));
         resultChanged(null);
+    }
+
+    public boolean isValid() {
+        return androidProjectModel != null;
     }
 
     @Nullable

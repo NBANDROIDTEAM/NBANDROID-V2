@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -19,6 +19,9 @@
 package org.nbandroid.netbeans.gradle.v2.layout.layout;
 
 import com.android.SdkConstants;
+import com.android.builder.model.AndroidProject;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,13 +34,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.xml.parsers.ParserConfigurationException;
-import org.nbandroid.netbeans.gradle.api.AndroidProjects;
 import org.nbandroid.netbeans.gradle.v2.manifest.AndroidManifestParser;
 import org.nbandroid.netbeans.gradle.v2.manifest.ManifestData;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.AssetNameConverter;
@@ -45,17 +48,20 @@ import org.nbandroid.netbeans.gradle.v2.tools.DelayedDocumentChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.android.project.build.BuildVariant;
 import org.netbeans.modules.android.project.query.AndroidClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.WeakListeners;
 import org.openide.windows.WindowManager;
 import org.xml.sax.SAXException;
 import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewPanel;
@@ -65,21 +71,45 @@ import sk.arsi.netbeans.gradle.android.layout.spi.LayoutPreviewProvider;
  *
  * @author arsi
  */
-public class LayoutMultiViewEditorElement extends MultiViewEditorElement implements ChangeListener, LookupListener {
+public class LayoutMultiViewEditorElement extends MultiViewEditorElement implements ChangeListener, LookupListener, PropertyChangeListener {
 
-    private final Lookup lookup;
     private LayoutDataObject dataObject;
     private LayoutPreviewPanel panel;
     private Document document;
     private DocumentListener documentListener;
-    private Lookup.Result<LayoutDataObject> lookupResult;
+    private Project project;
+    private Lookup.Result<AndroidProject> lookupResultAndroidProject;
+    private Lookup.Result<AndroidClassPathProvider> lookupResulClassPathProvider;
+    private Lookup.Result<BuildVariant> lookupResulBuildVariant;
+    private Loader loader = null;
+    private volatile AndroidClassPathProvider androidClassPathProvider = null;
+    private volatile BuildVariant buildVariant;
+    private volatile File projectClassesFolder;
+    private volatile ClassPath classPath;
+    private volatile FileObject[] roots;
+    private volatile File resFolderFile;
 
     public LayoutMultiViewEditorElement(Lookup lookup) {
         super(lookup);
-        this.lookup = lookup;
-        lookupResult = lookup.lookupResult(LayoutDataObject.class);
-        lookupResult.addLookupListener(this);
-        resultChanged(null);
+        dataObject = lookup.lookup(LayoutDataObject.class);
+        start();
+    }
+
+    private void start() {
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                project = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
+                lookupResultAndroidProject = project.getLookup().lookupResult(AndroidProject.class);
+                lookupResulClassPathProvider = project.getLookup().lookupResult(AndroidClassPathProvider.class);
+                lookupResulBuildVariant = project.getLookup().lookupResult(BuildVariant.class);
+                lookupResultAndroidProject.addLookupListener(WeakListeners.create(LookupListener.class, LayoutMultiViewEditorElement.this, lookupResultAndroidProject));
+                lookupResulClassPathProvider.addLookupListener(WeakListeners.create(LookupListener.class, LayoutMultiViewEditorElement.this, lookupResulClassPathProvider));
+                lookupResulBuildVariant.addLookupListener(WeakListeners.create(LookupListener.class, LayoutMultiViewEditorElement.this, lookupResulBuildVariant));
+                resultChanged(null);
+            }
+        };
+        ProjectManager.mutex().postWriteRequest(runnable);
     }
 
     protected void stopPanel() {
@@ -88,51 +118,14 @@ public class LayoutMultiViewEditorElement extends MultiViewEditorElement impleme
         }
         document = null;
         documentListener = null;
-        if (lookupResult != null) {
-            lookupResult.removeLookupListener(this);
-        }
     }
 
     private void initLayoutEditor() {
-        Project project = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
         //find aars folders from classpath
-        AndroidClassPathProvider androidClassPathProvider = project.getLookup().lookup(AndroidClassPathProvider.class);;
-        if (androidClassPathProvider == null) {
-            //restored from serialized TopComponent wait for NBAndroid to come up
-            int safetyCounter = 1200;
-            do {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ex) {
-                }
-                safetyCounter--;
-                androidClassPathProvider = project.getLookup().lookup(AndroidClassPathProvider.class);
-            } while (androidClassPathProvider == null && safetyCounter > 0);
-        }
-        //****
-        BuildVariant buildVariant = project.getLookup().lookup(BuildVariant.class);
-        File projectClassesFolder = buildVariant.getCurrentVariant().getMainArtifact().getClassesFolder();
         String variant = projectClassesFolder.getName();
         File buildRoot = projectClassesFolder.getParentFile().getParentFile();
         File projectR = new File(buildRoot, SdkConstants.FD_SYMBOLS + File.separator + variant + File.separator + "R.txt");
-        System.out.println("org.nbandroid.netbeans.gradle.v2.layout.layout.LayoutMultiViewEditorElement.initLayoutEditor()");
-        //****
         final List<File> aars = new ArrayList<>();
-        ClassPath classPath = androidClassPathProvider.getCompilePath();
-        FileObject[] roots = classPath.getRoots();
-        if (roots.length == 0) {
-            //restored from serialized TopComponent wait for NBAndroid to come up
-            int safetyCounter = 1200;
-            do {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ex) {
-                }
-                classPath = androidClassPathProvider.getCompilePath();
-                safetyCounter--;
-                roots = classPath.getRoots();
-            } while (roots.length == 0 && safetyCounter > 0);
-        }
         final List<File> jars = new ArrayList<>();
         for (FileObject root : roots) {
             if ("classes.jar".equals(FileUtil.getArchiveFile(root).getNameExt())) {
@@ -140,20 +133,6 @@ public class LayoutMultiViewEditorElement extends MultiViewEditorElement impleme
             } else {
                 jars.add(FileUtil.toFile(FileUtil.getArchiveFile(root)));
             }
-        }
-        //find res folder
-        File resFolderFile = AndroidProjects.findResFolderAsFile(project, dataObject.getPrimaryFile());
-        if (resFolderFile == null) {
-            //restored from serialized TopComponent wait for NBAndroid to come up
-            int safetyCounter = 1200;
-            do {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ex) {
-                }
-                safetyCounter--;
-                resFolderFile = AndroidProjects.findResFolderAsFile(project, dataObject.getPrimaryFile());
-            } while (resFolderFile == null && safetyCounter > 0);
         }
         //find activity theme
         String appPackage = null;
@@ -200,6 +179,9 @@ public class LayoutMultiViewEditorElement extends MultiViewEditorElement impleme
                 if (editorPane != null) {
                     document = getEditorPane().getDocument();
                     documentListener = DelayedDocumentChangeListener.create(getEditorPane().getDocument(), LayoutMultiViewEditorElement.this, 2000);
+                    LaoutPreviewTopComponent.hideLaoutPreview();
+                    LaoutPreviewTopComponent.showLaoutPreview(panel, dataObject.getPrimaryFile().getNameExt());
+                    //updateUI dont works, close and reopen
                 }
 
             }
@@ -251,15 +233,78 @@ public class LayoutMultiViewEditorElement extends MultiViewEditorElement impleme
             panel.showTypingIndicator();
         }
     }
+    private transient boolean done = false;
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (roots.length == 0) {
+            roots = classPath.getRoots();
+        }
+        if (roots.length > 0 && projectClassesFolder != null && !done) {
+            initLayoutEditor();
+            done = true;
+        }
+    }
+
+    private class Loader implements ChangeListener {
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            if (buildVariant.isValid() && projectClassesFolder == null) {
+                projectClassesFolder = buildVariant.getCurrentVariant().getMainArtifact().getClassesFolder();
+            }
+            if (roots.length > 0 && projectClassesFolder != null && !done) {
+                initLayoutEditor();
+                done = true;
+            }
+        }
+
+    }
 
     @Override
     public void resultChanged(LookupEvent ev) {
-        Collection<? extends LayoutDataObject> allInstances = lookupResult.allInstances();
-        if (!allInstances.isEmpty()) {
-            dataObject = allInstances.iterator().next();
-            if (dataObject != null) {
-                initLayoutEditor();
-            }
+        Collection<? extends AndroidClassPathProvider> allInstances = lookupResulClassPathProvider.allInstances();
+        Collection<? extends BuildVariant> allInstances1 = lookupResulBuildVariant.allInstances();
+        Collection<? extends AndroidProject> allInstances2 = lookupResultAndroidProject.allInstances();
+        if (!allInstances2.isEmpty() && !allInstances.isEmpty() && androidClassPathProvider == null && !allInstances1.isEmpty()) {
+            AndroidProject androidProject = allInstances2.iterator().next();
+            Collection<File> resDirectories = androidProject.getDefaultConfig().getSourceProvider().getResDirectories();
+            resFolderFile = resDirectories.iterator().next();
+            androidClassPathProvider = allInstances.iterator().next();
+            classPath = androidClassPathProvider.getCompilePath();
+            classPath.addPropertyChangeListener(WeakListeners.create(PropertyChangeListener.class, this, classPath));
+            roots = classPath.getRoots();
+            buildVariant = allInstances1.iterator().next();
+            loader = new Loader();
+            buildVariant.addChangeListener(WeakListeners.change(loader, buildVariant));
+            loader.stateChanged(null);
+        }
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+        out.writeObject(dataObject.getPrimaryFile().getPath());
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        Object readObject = in.readObject();
+        if (readObject instanceof String) {
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    FileObject fo = FileUtil.toFileObject(new File((String) readObject));
+                    if (fo != null) {
+                        try {
+                            dataObject = (LayoutDataObject) DataObject.find(fo);
+                            start();
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            };
+            SwingUtilities.invokeLater(runnable);
+        } else {
+            throw new IOException("Error restore layout component");
         }
     }
 

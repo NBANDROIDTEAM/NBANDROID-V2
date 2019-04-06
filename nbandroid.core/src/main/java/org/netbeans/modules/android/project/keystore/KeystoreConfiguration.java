@@ -73,8 +73,15 @@ public class KeystoreConfiguration {
         this.project = project;
         auxProps = project.getLookup().lookup(AuxiliaryProperties.class);
         hash = "ANDROID_" + project.getProjectDirectory().getPath().hashCode();
-        loadGlobalOptions();
-        loadProjectOptions();
+//        Runnable runnable = new Runnable() {
+//            public void run() {
+//                loadGlobalOptions();
+//                loadProjectOptions();
+//            }
+//        };
+//        WindowManager.getDefault().invokeWhenUIReady(runnable);
+        //call it outside project init loop, we got ilegal access exception from project manager
+        //TODO call init Keystore only if needed
     }
 
     private void loadProjectOptions() {
