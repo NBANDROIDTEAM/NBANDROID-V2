@@ -10,7 +10,7 @@ The current version supports NetBeans 8.1 and 8.2
 
 ## How to install NBANDROID-V2
 
-**Please update your Gradle Support plugin to 1.4.4**
+**Gradle Support plugin is no longer needed**
 
 The compiled version of the last commit is here:<br>
 
@@ -24,6 +24,14 @@ Or add an update center
 NetBeans 8.1 http://server.arsi.sk/nbandroid81/updates.xml
 
 NetBeans 8.2 http://server.arsi.sk/nbandroid82/updates.xml
+
+Last plugin version which needs Gradle Support plugin is here:<br>
+
+
+NetBeans 8.1 http://server.arsi.sk/nbandroid81_last_ext_gradle/
+
+NetBeans 8.2 http://server.arsi.sk/nbandroid82_last_ext_gradle/
+
 
 ![Install](https://user-images.githubusercontent.com/22594510/50820918-2fa0c700-132e-11e9-9cc3-dbdf49bb17b4.png)
 ![Install](https://user-images.githubusercontent.com/22594510/50820932-39c2c580-132e-11e9-8450-77c5bd669536.png)
