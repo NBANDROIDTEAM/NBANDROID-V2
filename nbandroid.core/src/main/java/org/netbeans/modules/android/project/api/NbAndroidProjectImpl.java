@@ -36,6 +36,7 @@ import org.gradle.tooling.model.gradle.GradleBuild;
 import org.nbandroid.netbeans.gradle.api.TestOutputConsumer;
 import org.nbandroid.netbeans.gradle.launch.Launches;
 import org.nbandroid.netbeans.gradle.testrunner.TestOutputConsumerLookupProvider;
+import org.nbandroid.netbeans.gradle.v2.layout.parsers.AndroidResValuesProvider;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -124,6 +125,7 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
                 Lookups.singleton(this)).lookup(TestOutputConsumer.class));
         ic.add(new AndroidProjectActionProvider(this));
         ic.add(new UserTasksConfiguration(this));
+        ic.add(new AndroidResValuesProvider(this));
 
     }
 

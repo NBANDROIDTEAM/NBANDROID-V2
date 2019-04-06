@@ -38,8 +38,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.xml.parsers.ParserConfigurationException;
 import org.nbandroid.netbeans.gradle.api.AndroidProjects;
-import org.nbandroid.netbeans.gradle.config.BuildVariant;
-import org.nbandroid.netbeans.gradle.query.GradleAndroidClassPathProvider;
 import org.nbandroid.netbeans.gradle.v2.manifest.AndroidManifestParser;
 import org.nbandroid.netbeans.gradle.v2.manifest.ManifestData;
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.AssetNameConverter;
@@ -49,6 +47,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.android.project.build.BuildVariant;
+import org.netbeans.modules.android.project.query.AndroidClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -96,7 +96,7 @@ public class LayoutMultiViewEditorElement extends MultiViewEditorElement impleme
     private void initLayoutEditor() {
         Project project = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
         //find aars folders from classpath
-        GradleAndroidClassPathProvider androidClassPathProvider = project.getLookup().lookup(GradleAndroidClassPathProvider.class);;
+        AndroidClassPathProvider androidClassPathProvider = project.getLookup().lookup(AndroidClassPathProvider.class);;
         if (androidClassPathProvider == null) {
             //restored from serialized TopComponent wait for NBAndroid to come up
             int safetyCounter = 1200;
@@ -106,7 +106,7 @@ public class LayoutMultiViewEditorElement extends MultiViewEditorElement impleme
                 } catch (InterruptedException ex) {
                 }
                 safetyCounter--;
-                androidClassPathProvider = project.getLookup().lookup(GradleAndroidClassPathProvider.class);
+                androidClassPathProvider = project.getLookup().lookup(AndroidClassPathProvider.class);
             } while (androidClassPathProvider == null && safetyCounter > 0);
         }
         //****

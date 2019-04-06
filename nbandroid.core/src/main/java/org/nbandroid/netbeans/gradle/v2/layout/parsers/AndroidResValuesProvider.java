@@ -12,6 +12,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -39,6 +40,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.DOMException;
@@ -51,19 +55,20 @@ import org.xml.sax.SAXException;
  *
  * @author arsi
  */
-public class AndroidResValuesProvider implements FileChangeListener {
+public class AndroidResValuesProvider implements FileChangeListener, LookupListener {
 
-    private final AndroidProject androidProject;
+    private AndroidProject androidProject = null;
     private final Project nbProject;
     private final Map<FileObject, List<BasicValuesCompletionItem>> completions = new ConcurrentHashMap<>();
     private final Map<FileObject, AtomicBoolean> statuses = new ConcurrentHashMap<>();
     private final RequestProcessor RP = new RequestProcessor("RES VALUES PARSER", 1);
     private final List<BasicColorValuesCompletionItem> colors = new ArrayList<>();
+    private final Lookup.Result<AndroidProject> lookupResult;
 
-    public AndroidResValuesProvider(AndroidProject androidProject, Project nbProject) {
-        this.androidProject = androidProject;
+    public AndroidResValuesProvider(Project nbProject) {
         this.nbProject = nbProject;
-        init();
+        lookupResult = nbProject.getLookup().lookupResult(AndroidProject.class);
+        lookupResult.addLookupListener(WeakListeners.create(LookupListener.class, this, lookupResult));
         initBasicColors();
     }
 
@@ -317,6 +322,16 @@ public class AndroidResValuesProvider implements FileChangeListener {
             });
         }
         return tmp;
+    }
+
+    @Override
+    public void resultChanged(LookupEvent ev) {
+        Collection<? extends AndroidProject> allInstances = lookupResult.allInstances();
+        //TODO implement refresh on model reload
+        if (!allInstances.isEmpty() && androidProject == null) {
+            androidProject = allInstances.iterator().next();
+            init();
+        }
     }
 
     private class ProcessFile implements Runnable {
