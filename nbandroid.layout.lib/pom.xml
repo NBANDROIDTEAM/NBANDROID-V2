@@ -23,7 +23,7 @@
         <dependency>
             <groupId>com.android.tools.layoutlib</groupId>
             <artifactId>layoutlib</artifactId>
-            <version>01.02</version>
+            <version>01.03</version>
             <type>jar</type>
         </dependency>
         <dependency>
