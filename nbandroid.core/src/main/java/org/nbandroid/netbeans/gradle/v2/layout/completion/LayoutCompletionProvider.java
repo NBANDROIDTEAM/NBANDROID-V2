@@ -29,7 +29,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.android.project.api.NbAndroidProject;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
-import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import static org.netbeans.spi.editor.completion.CompletionProvider.COMPLETION_QUERY_TYPE;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -56,8 +56,9 @@ public class LayoutCompletionProvider implements CompletionProvider {
         if (doc == null) {
             return 0;
         }
-        XMLSyntaxSupport support = ((XMLSyntaxSupport) doc.getSyntaxSupport());
-        if (support.noCompletion(component) || !CompletionUtil.canProvideCompletion(doc)) {
+        XMLSyntaxSupport support = XMLSyntaxSupport.getSyntaxSupport(doc);
+        if (support != null && CompletionUtil.noCompletion(component)
+                || !CompletionUtil.canProvideCompletion(doc)) {
             return 0;
         }
         FileObject primaryFile = CompletionUtil.getPrimaryFile(component.getDocument());

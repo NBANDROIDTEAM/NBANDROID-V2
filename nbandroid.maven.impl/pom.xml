@@ -49,11 +49,13 @@
                             <!--Private Package Reference-->
                             <id>org.netbeans.modules:org-netbeans-modules-maven-indexer</id>
                             <type>impl</type>
+                            <explicitValue>org.netbeans.modules.maven.indexer/2 = ${nb.impl}</explicitValue>
                         </dependency>
                         <dependency>
                             <!--Private Package Reference-->
                             <id>org.netbeans.modules:org-netbeans-modules-maven-embedder</id>
                             <type>impl</type>
+                            <explicitValue>org.netbeans.modules.maven.embedder/2 = ${nb.impl}</explicitValue>
                         </dependency>
                         <dependency>
                             <!--Private Package Reference-->

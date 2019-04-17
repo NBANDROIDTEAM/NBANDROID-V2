@@ -132,6 +132,37 @@
             </properties>
         </profile>
         <profile>
+            <id>TravisNB100</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>wagon-maven-plugin</artifactId>
+                        <version>1.0</version>
+                        <configuration>
+                            <fromDir>target/netbeans_site/</fromDir>
+                            <includes>*</includes>
+                            <url>scp://server.arsi.sk/</url>
+                            <toDir>/var/www/html/nbandroid100</toDir>
+                            <serverId>nbandroid</serverId>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>nbm-maven-plugin</artifactId>
+                        <version>${version.nb.plugin}</version>
+                        <extensions>true</extensions>
+                    </plugin>
+                </plugins>
+            </build>
+            <properties>
+                <version.nb>RELEASE100</version.nb>
+                <asm.nb>asm-all-5.0.1</asm.nb>
+                <!--<nb.impl>incubator-netbeans-release-380-on-20181217</nb.impl>-->
+                <nb.impl>20181225-62d11a22fd18</nb.impl>
+            </properties>
+        </profile>
+        <profile>
             <id>Arsi-NB81</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
@@ -179,6 +210,31 @@
                 <asm.nb>asm-all-5.0.1</asm.nb>
             </properties>
         </profile>
+        <profile>
+            <id>Arsi-NB100</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>nbm-maven-plugin</artifactId>
+                        <version>${version.nb.plugin}</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <netbeansInstallation>/hdd/nb10/netbeans/</netbeansInstallation>
+                            <netbeansUserdir>/jetty/netbeans/user_nb_android_100</netbeansUserdir>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+            <properties>
+                <version.nb>RELEASE100</version.nb>
+                <asm.nb>asm-all-5.0.1</asm.nb>
+                <nb.impl>20181225-62d11a22fd18</nb.impl>
+            </properties>
+        </profile>
     </profiles>
     <pluginRepositories>
         <pluginRepository>
@@ -191,6 +247,14 @@
         </pluginRepository>
     </pluginRepositories>
     <repositories>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>Apache Netbeans</id>
+            <name>Apache Netbeans</name>
+            <url>https://repository.apache.org/content/repositories/orgapachenetbeans-1012</url>
+        </repository>
         <repository>
             <snapshots>
                 <enabled>false</enabled>

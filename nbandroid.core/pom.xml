@@ -38,16 +38,19 @@
                             <!--Private Package Reference-->
                             <id>org.netbeans.modules:org-netbeans-bootstrap</id>
                             <type>impl</type>
+                            <explicitValue>org.netbeans.bootstrap/1 = ${nb.impl}</explicitValue>
                         </dependency>
                         <dependency>
                             <!--Private Package Reference-->
                             <id>org.netbeans.modules:org-netbeans-core-startup</id>
                             <type>impl</type>
+                            <explicitValue>org.netbeans.core.startup/1 = ${nb.impl}</explicitValue>
                         </dependency>
                         <dependency>
                             <!--Private Package Reference-->
                             <id>org.netbeans.modules:org-netbeans-modules-gsf-testrunner</id>
                             <type>impl</type>
+                            <explicitValue>org.netbeans.modules.gsf.testrunner/2 = ${nb.impl}</explicitValue>
                         </dependency>
                         <dependency>
                             <!--Private Package Reference-->
@@ -68,6 +71,7 @@
                             <!--Private Package Reference-->
                             <id>org.netbeans.api:org-netbeans-modules-keyring</id>
                             <type>impl</type>
+                            <explicitValue>org.netbeans.modules.keyring = ${nb.impl}</explicitValue>
                         </dependency>
                         <dependency>
                             <!--Private Package Reference-->
@@ -78,6 +82,7 @@
                             <!--Private Package Reference-->
                             <id>org.netbeans.api:org-netbeans-modules-xml-schema-completion</id>
                             <type>impl</type>
+                            <explicitValue>org.netbeans.modules.xml.schema.completion = ${nb.impl}</explicitValue>
                         </dependency>
                         <dependency>
                             <!--Private Package Reference-->
@@ -88,6 +93,7 @@
                             <!--Private Package Reference-->
                             <id>org.netbeans.modules:org-netbeans-modules-projectui</id>
                             <type>impl</type>
+                            <explicitValue>org.netbeans.modules.projectui = ${nb.impl}</explicitValue>
                         </dependency>
                     </moduleDependencies>
                 </configuration>
@@ -481,6 +487,11 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-api-io</artifactId>
+            <version>${version.nb}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-xml-jaxb-api</artifactId>
             <version>${version.nb}</version>
         </dependency>
     </dependencies>

@@ -21,11 +21,11 @@ package org.netbeans.modules.android.project.api.nodes;
 
 import java.awt.Image;
 import javax.swing.Action;
+import org.nbandroid.netbeans.gradle.v2.ui.IconProvider;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.android.apk.actions.DebugApkAction;
 import org.netbeans.modules.android.apk.actions.ReleaseUnsignedApkAction;
 import org.netbeans.modules.android.apk.actions.SignApkAction;
-import org.nbandroid.netbeans.gradle.v2.ui.IconProvider;
-import org.netbeans.api.project.Project;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
