@@ -91,14 +91,18 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
 
     @StaticResource()
     public static final String PROJECT_ICON = "org/netbeans/modules/android/api/android_project.png";
-    private final BuildVariant buildVariant;
-    private final AndroidClassPathProvider androidClassPathProvider;
+    private  BuildVariant buildVariant;
+    private  AndroidClassPathProvider androidClassPathProvider;
     protected static final AutoAndroidSourceForBinaryQuery SOURCE_FOR_BINARY_QUERY = Lookup.getDefault().lookup(AutoAndroidSourceForBinaryQuery.class);
     protected static final AutoAndroidJavadocForBinaryQuery JAVADOC_FOR_BINARY_QUERY = Lookup.getDefault().lookup(AutoAndroidJavadocForBinaryQuery.class);
     protected final GradleLaunchExecutor launchExecutor = new GradleLaunchExecutor(this);
     public NbAndroidProjectImpl(FileObject projectDirectory, ProjectState ps) {
         super(projectDirectory, ps);
         ic.add(new Info());
+    }
+
+    @Override
+    protected void registerLookup() {
         ic.add(launchExecutor);
         ic.add(new RunActivityConfiguration(this));
         ic.add(new DebugActivityConfiguration(this));
@@ -126,8 +130,9 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
         ic.add(new AndroidProjectActionProvider(this));
         ic.add(new UserTasksConfiguration(this));
         ic.add(new AndroidResValuesProvider(this));
-
     }
+    
+    
 
     @Override
     protected Class[] getGradleModels() {

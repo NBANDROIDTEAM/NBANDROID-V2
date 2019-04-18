@@ -71,6 +71,10 @@ public class NbAndroidRootProjectImpl extends NbAndroidProject {
     public NbAndroidRootProjectImpl(FileObject projectDirectory, ProjectState ps) {
         super(projectDirectory, ps);
         ic.add((ProjectInformation) new Info());
+    }
+
+    @Override
+    protected void registerLookup() {
         ic.add(new NbAndroidProjectConfigurationProvider());
         ic.add(new AndroidRootCustomizerProvider(this));
         ic.add(new CustomerProjectLogicalView());

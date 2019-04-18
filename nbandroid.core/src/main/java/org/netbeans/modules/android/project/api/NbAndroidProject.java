@@ -53,6 +53,7 @@ import org.netbeans.modules.android.project.properties.AuxiliaryConfigImpl;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectState;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
@@ -75,7 +76,7 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author arsi
  */
-public abstract class NbAndroidProject implements Project, LookupListener, Runnable, FileChangeListener {
+public abstract class NbAndroidProject extends ProjectOpenedHook implements Project, LookupListener, Runnable, FileChangeListener {
 
     public static final String EXTENSION_NAME = "org.nbandroid.netbeans.gradle.v2.AndroidExtensionDef";
     public static final String LOCAL_PROPERTIES = "local.properties";
@@ -99,26 +100,31 @@ public abstract class NbAndroidProject implements Project, LookupListener, Runna
     protected final AbstractLookup lookup = new AbstractLookup(ic);
     protected final AbstractLookup lookupModels = new AbstractLookup(icModels);
     protected final Lookup proxyLookup = new ProxyLookup(lookup, lookupModels);
-    protected final Lookup modelLookup;
-    protected final Lookup.Result<Object> modelLookupResult;
+    protected Lookup modelLookup;
+    protected Lookup.Result<Object> modelLookupResult;
     public static final RequestProcessor RP = new RequestProcessor(NbAndroidProject.class.getName(), Runtime.getRuntime().availableProcessors());
 
     protected final Object lock = new Object();
     private AndroidSdk projectSdk;
     private FileObject localPropertiesFo;
-    private final Timer localPropertiesChangeTimer;
+    private Timer localPropertiesChangeTimer;
     protected final AuxiliaryConfiguration auxiliaryConfig = new AuxiliaryConfigImpl(this);
     protected final AuxiliaryProperties auxiliaryProperties = new AndroidProjectPropsImpl(auxiliaryConfig);
     protected final CopyOnWriteArrayList lastModels = new CopyOnWriteArrayList();
     protected final BuildMutex buildMutex = Lookup.getDefault().lookup(BuildMutexProvider.class).create();
-    protected final GradleCommandExecutor gradleCommandExecutor;
-    protected final GradleJvmConfiguration gradleJvmConfiguration;
-    protected final GradleArgsConfiguration gradleArgsConfiguration;
+    protected GradleCommandExecutor gradleCommandExecutor;
+    protected GradleJvmConfiguration gradleJvmConfiguration;
+    protected GradleArgsConfiguration gradleArgsConfiguration;
 
     public NbAndroidProject(FileObject projectDirectory, ProjectState ps) {
         this.projectDirectory = projectDirectory;
         ic.add(buildMutex);
         ic.add(this);
+
+    }
+
+    @Override
+    protected void projectOpened() {
         ic.add(auxiliaryConfig);
         ic.add(auxiliaryProperties);
         gradleJvmConfiguration = new GradleJvmConfiguration(this);
@@ -145,6 +151,13 @@ public abstract class NbAndroidProject implements Project, LookupListener, Runna
         gradleCommandExecutor = Lookup.getDefault().lookup(GradleCommandExecutorProvider.class).create(this);
         ic.add(gradleCommandExecutor);
         RP.execute(this);
+        registerLookup();
+    }
+    
+    protected abstract void registerLookup();
+
+    @Override
+    protected void projectClosed() {
     }
 
     public abstract ModelRefresh getModelRefresh();
@@ -165,7 +178,6 @@ public abstract class NbAndroidProject implements Project, LookupListener, Runna
     public InstanceContent getProjectInstanceContent() {
         return ic;
     }
-
 
     @Override
     public void resultChanged(LookupEvent ev) {
