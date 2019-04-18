@@ -172,7 +172,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
     }
 
     public AndroidSdkImpl(String displayName, String sdkPath) {
-        this(displayName, sdkPath, Collections.EMPTY_MAP, Collections.EMPTY_MAP, Collections.EMPTY_LIST, false);
+        this(displayName, sdkPath, new HashMap<String, String>(), new HashMap<String, String>(), new ArrayList<AndroidPlatformInfo>(), false);
     }
 
     public List<AndroidPlatformInfo> getPlatforms() {
