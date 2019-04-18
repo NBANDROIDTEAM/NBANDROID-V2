@@ -125,6 +125,7 @@ public abstract class NbAndroidProject extends ProjectOpenedHook implements Proj
 
     @Override
     protected void projectOpened() {
+        ic.add(IOProvider.get("Terminal").getIO(projectDirectory.getName(), false));
         ic.add(auxiliaryConfig);
         ic.add(auxiliaryProperties);
         gradleJvmConfiguration = new GradleJvmConfiguration(this);
@@ -134,7 +135,6 @@ public abstract class NbAndroidProject extends ProjectOpenedHook implements Proj
         modelLookup = GradleHandler.getDefault().getModelLookup(this);
         modelLookupResult = modelLookup.lookupResult(Object.class);
         modelLookupResult.addLookupListener(this);
-        ic.add(IOProvider.get("Terminal").getIO(projectDirectory.getName(), false));
         ic.add(getModelRefresh());
         initSdk(projectDirectory);
         localPropertiesChangeTimer = new Timer(1000, new ActionListener() {

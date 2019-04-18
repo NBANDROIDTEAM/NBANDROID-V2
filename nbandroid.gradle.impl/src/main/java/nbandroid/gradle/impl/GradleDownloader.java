@@ -36,6 +36,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
@@ -95,6 +96,8 @@ public class GradleDownloader extends BootstrapMainStarter implements DownloadPr
                     progressHandle.start();
                     wrapperExecutor.execute(null, new Install(logger, new Download(logger, this, "lll", "llll"), new PathAssembler(gradleUserHome)), this);
                 } catch (Exception e) {
+                    progressHandle.finish();
+                    Exceptions.printStackTrace(e);
                     instanceContent.add(new GradleHome(Status.ERROR, null));
                 }
 
@@ -150,8 +153,12 @@ public class GradleDownloader extends BootstrapMainStarter implements DownloadPr
 
         @Override
         public void log(String message) {
+            String s = message.replaceAll("\u001B(\\[)((\\d+)(;))+(\\d+)m", "");
+                if (!s.contains("\n\r") && s.contains("\n")) {
+                    s = s.replace("\n", "\n\r");
+                }
             io.show(ImmutableSet.of(ShowOperation.OPEN, ShowOperation.MAKE_VISIBLE));
-            io.getOut().println(message);
+            io.getOut().println(s);
         }
 
         @Override
