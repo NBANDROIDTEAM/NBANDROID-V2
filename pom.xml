@@ -147,7 +147,7 @@
             </snapshots>
             <id>Apache Netbeans</id>
             <name>Apache Netbeans</name>
-            <url>https://repository.apache.org/content/repositories/orgapachenetbeans-1020</url>
+            <url>http://repository.apache.org/content/repositories/orgapachenetbeans-1023</url>
         </repository>
         <repository>
             <snapshots>

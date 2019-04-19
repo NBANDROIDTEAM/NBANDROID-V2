@@ -34,24 +34,26 @@ import org.openide.filesystems.FileUtil;
  */
 public class RTools {
     public static  PluginVersionResult handlePluginVersion(AndroidProject androidProject,Variant variant, FileObject prjDir) {
-        File buildFolder = androidProject.getBuildFolder();
-        String modelVersion = androidProject.getModelVersion();
-        PluginVersion pluginVersion = pluginVersionFromString(modelVersion);
-        if (pluginVersion.compareTo(new PluginVersion(3, 3, 0)) >= 0) {
-            String variantName = variant.getName();
-            String rFolderPath = buildFolder.getAbsolutePath() + File.separator + "generated" + File.separator + "not_namespaced_r_class_sources" + File.separator + variantName+File.separator+"process"+StringUtils.capitalize(variantName)+"Resources"+File.separator+"r";
-            File rFolder = new File(rFolderPath);
-            if (rFolder.exists() && rFolder.isDirectory()) {
-                FileObject src = FileUtil.toFileObject(rFolder);
-                String srcName = null;
-                if (prjDir!=null) {
-                    srcName = FileUtil.isParentOf(prjDir, src)
-                            ? FileUtil.getRelativePath(prjDir, src)
-                            : rFolder.getAbsolutePath();
-                }else{
-                    srcName = rFolder.getAbsolutePath();
+        if (androidProject!=null && variant!=null) {
+            File buildFolder = androidProject.getBuildFolder();
+            String modelVersion = androidProject.getModelVersion();
+            PluginVersion pluginVersion = pluginVersionFromString(modelVersion);
+            if (pluginVersion.compareTo(new PluginVersion(3, 3, 0)) >= 0) {
+                String variantName = variant.getName();
+                String rFolderPath = buildFolder.getAbsolutePath() + File.separator + "generated" + File.separator + "not_namespaced_r_class_sources" + File.separator + variantName + File.separator + "process" + StringUtils.capitalize(variantName) + "Resources" + File.separator + "r";
+                File rFolder = new File(rFolderPath);
+                if (rFolder.exists() && rFolder.isDirectory()) {
+                    FileObject src = FileUtil.toFileObject(rFolder);
+                    String srcName = null;
+                    if (prjDir != null) {
+                        srcName = FileUtil.isParentOf(prjDir, src)
+                                ? FileUtil.getRelativePath(prjDir, src)
+                                : rFolder.getAbsolutePath();
+                    } else {
+                        srcName = rFolder.getAbsolutePath();
+                    }
+                    return new PluginVersionResult(src, srcName);
                 }
-                return new PluginVersionResult(src, srcName);
             }
         }
         return null;
