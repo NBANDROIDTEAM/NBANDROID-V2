@@ -23,11 +23,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import nbandroid.gradle.impl.update.CurrentGradleVersion;
 import nbandroid.gradle.impl.update.GradleUpdateHandler;
+import org.apache.commons.io.FileUtils;
 import org.gradle.internal.impldep.com.google.common.collect.ImmutableSet;
 import org.gradle.wrapper.BootstrapMainStarter;
 import org.gradle.wrapper.Download;
@@ -101,6 +103,13 @@ public class GradleDownloader extends BootstrapMainStarter implements DownloadPr
             }
         } while (wrapperFolder == null && parents > 0);
         if (wrapperFolder != null) {
+            boolean handleAndroidPluginVersion = handleAndroidPluginVersion(wrapperFolder);
+            if (!handleAndroidPluginVersion) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message("Unsupported Gradle plugin Version", NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(nd);
+                instanceContent.add(new GradleHome(Status.ERROR, null));
+                return;
+            }
             FileObject propertiesFo = wrapperFolder.getFileObject("gradle-wrapper", "properties");
             if (propertiesFo != null) {
                 Properties properties = new Properties();
@@ -212,6 +221,74 @@ public class GradleDownloader extends BootstrapMainStarter implements DownloadPr
         }
     }
 
+    private static final String are1 = "(classpath)";	// Word 1
+    private static final String are2 = ".*?";	// Non-greedy match on filler
+    private static final String are3 = "(')";	// Any Single Character 1
+    private static final String are4 = "(com\\.android\\.tools\\.build)";	// Fully Qualified Domain Name 1
+    private static final String are5 = "(:)";	// Any Single Character 2
+    private static final String are6 = "((?:[a-z][a-z]+))";	// Word 2
+    private static final String are7 = "(:)";	// Any Single Character 3
+    private static final String major = "(\\d+)";	// Integer Number 1
+    private static final String are9 = "(\\.)";	// Any Single Character 4
+    private static final String minor = "(\\d+)";	// Integer Number 2
+    private static final String are11 = "(\\.)";	// Any Single Character 5
+    private static final String rev1 = "(\\d+)";	// Integer Number 3
+    private static final String are13 = "(')";	// Any Single Character 6
+    private static final Pattern patternPlugin = Pattern.compile(are1 + are2 + are3 + are4 + are5 + are6 + are7 + major + are9 + minor + are11 + rev1 + are13, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+
+    private boolean handleAndroidPluginVersion(FileObject wrapperFolder) {
+        FileObject parent = wrapperFolder.getParent();
+        if (parent != null) {
+            parent = parent.getParent();
+            if (parent != null) {
+                FileObject buildGradle = parent.getFileObject("build", "gradle");
+                if (buildGradle != null) {
+                    int majorVersion = 0;
+                    int minorVersion = 0;
+                    int revision = 0;
+                    try {
+                        List<String> lines = buildGradle.asLines("UTF-8");
+                        String pluginLine = null;
+                        for (String line : lines) {
+                            Matcher m = patternPlugin.matcher(line);
+                            if (m.find()) {
+                                pluginLine = line;
+                                try {
+                                    majorVersion = Integer.parseInt(m.group(7));
+                                    minorVersion = Integer.parseInt(m.group(9));
+                                    revision = Integer.parseInt(m.group(11));
+                                } catch (NumberFormatException numberFormatException) {
+                                }
+                                break;
+
+                            }
+                        }
+                        if (pluginLine != null) {
+                            PluginVersion current = new PluginVersion(majorVersion, minorVersion, revision);
+                            PluginVersion wanted = new PluginVersion(3, 4, 0);
+                            if (current.compareTo(wanted) != 0) {
+                                NotifyDescriptor nd = new NotifyDescriptor.Confirmation("<html>This project currently uses Gradle Android plugin " + current.toString() + "<br>"
+                                        + "NBANDROID-V2 needs " + wanted.toString() + " version for proper functionality.<br>"
+                                        + "Do you want to change the configuration of the project and use the version " + wanted.toString() + "?</hmml>", NotifyDescriptor.YES_NO_OPTION);
+                                Object notify = DialogDisplayer.getDefault().notify(nd);
+                                if (NotifyDescriptor.YES_OPTION.equals(notify)) {
+                                    String content = buildGradle.asText("UTF-8");
+                                    content = content.replace(pluginLine, "        classpath 'com.android.tools.build:gradle:"+wanted.toString()+"'");
+                                    FileUtils.writeStringToFile(FileUtil.toFile(buildGradle), content, "UTF-8");
+                                } else {
+                                    return false;
+                                }
+                            }
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
     public static enum Status {
         OK, ERROR;
     }
@@ -308,11 +385,41 @@ public class GradleDownloader extends BootstrapMainStarter implements DownloadPr
 
         @Override
         public String toString() {
-            return major+"."+minor;
+            return major + "." + minor;
         }
-        
-        
 
+    }
+
+    static class PluginVersion implements Comparable<PluginVersion> {
+
+        final int major;
+        final int minor;
+        final int rev;
+
+        public PluginVersion(int major, int minor, int rev) {
+            this.major = major;
+            this.minor = minor;
+            this.rev = rev;
+        }
+
+        @Override
+        public int compareTo(PluginVersion o) {
+            if (this.major != o.major) {
+                return Integer.compare(this.major, o.major);
+            }
+            if (this.minor != o.minor) {
+                return Integer.compare(this.minor, o.minor);
+            }
+            if (this.rev != o.rev) {
+                return Integer.compare(this.rev, o.rev);
+            }
+            return 0;
+        }
+
+        @Override
+        public String toString() {
+            return major + "." + minor + "." + rev;
+        }
     }
 
 }

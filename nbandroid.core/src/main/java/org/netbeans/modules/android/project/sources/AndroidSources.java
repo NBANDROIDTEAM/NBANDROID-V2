@@ -22,7 +22,6 @@ import com.android.builder.model.AndroidArtifact;
 import com.android.builder.model.AndroidProject;
 import com.android.builder.model.BuildTypeContainer;
 import com.android.builder.model.ProductFlavorContainer;
-import com.android.builder.model.SourceProvider;
 import com.android.builder.model.SourceProviderContainer;
 import com.android.builder.model.Variant;
 import java.beans.PropertyChangeListener;
@@ -30,7 +29,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.StringTokenizer;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -94,7 +92,7 @@ public class AndroidSources implements Sources, ChangeListener, LookupListener {
             FileObject prjDir = project.getProjectDirectory();
             Variant variant = buildConfig.getCurrentVariant();
             if (variant != null) {
-                Collection<File> generatedSourceFolders = variant.getMainArtifact().getGeneratedSourceFolders();
+                Collection<File> generatedSourceFolders = new ArrayList<>(variant.getMainArtifact().getGeneratedSourceFolders());
                 for (File srcDir : generatedSourceFolders) {
                     if (!srcDir.exists()) {
                         continue;
