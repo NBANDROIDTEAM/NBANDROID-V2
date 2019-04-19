@@ -268,7 +268,7 @@ public class GradleDownloader extends BootstrapMainStarter implements DownloadPr
                             PluginVersion wanted = new PluginVersion(3, 4, 0);
                             if (current.compareTo(wanted) != 0) {
                                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation("<html>This project currently uses Gradle Android plugin " + current.toString() + "<br>"
-                                        + "NBANDROID-V2 needs " + wanted.toString() + " version for proper functionality.<br>"
+                                        + "NBANDROID-V2 needs version " + wanted.toString() + " for proper functionality.<br>"
                                         + "Do you want to change the configuration of the project and use the version " + wanted.toString() + "?</hmml>", NotifyDescriptor.YES_NO_OPTION);
                                 Object notify = DialogDisplayer.getDefault().notify(nd);
                                 if (NotifyDescriptor.YES_OPTION.equals(notify)) {
