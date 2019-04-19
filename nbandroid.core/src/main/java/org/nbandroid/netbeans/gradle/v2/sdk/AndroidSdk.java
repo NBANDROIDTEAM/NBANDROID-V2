@@ -27,6 +27,7 @@ import com.android.repository.api.UpdatablePackage;
 import com.android.sdklib.devices.Device;
 import com.android.sdklib.devices.DeviceManager;
 import com.android.sdklib.repository.AndroidSdkHandler;
+import com.android.sdklib.repository.targets.SystemImageManager;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
@@ -76,6 +77,8 @@ public abstract class AndroidSdk {
      * @return RepoManager or null if no SDK location is set
      */
     public abstract RepoManager getRepoManager();
+    
+    public abstract SystemImageManager getSystemImageManager();
 
     public abstract void store();
 

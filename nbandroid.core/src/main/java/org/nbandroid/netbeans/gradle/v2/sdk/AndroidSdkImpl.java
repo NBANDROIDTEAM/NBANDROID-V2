@@ -40,6 +40,7 @@ import com.android.sdklib.repository.AndroidSdkHandler;
 import com.android.sdklib.repository.installer.MavenInstallListener;
 import com.android.sdklib.repository.meta.DetailsTypes;
 import com.android.sdklib.repository.targets.AndroidTargetManager;
+import com.android.sdklib.repository.targets.SystemImageManager;
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -95,6 +96,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
     private AndroidSdkHandler androidSdkHandler;
     private AndroidTargetManager androidTargetManager;
     private RepoManager repoManager;
+    private SystemImageManager systemImageManager;
     //max 3 paralel downloads
     public static final ExecutorService DOWNLOAD_POOL = Executors.newFixedThreadPool(3);
     private final List<SdkManagerPlatformChangeListener> listeners = new CopyOnWriteArrayList<>();
@@ -146,6 +148,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
                 androidSdkHandler = AndroidSdkHandler.getInstance(sdkRoot);
                 if (androidSdkHandler != null) {
                     repoManager = androidSdkHandler.getSdkManager(new NbOutputWindowProgressIndicator());
+                    systemImageManager = androidSdkHandler.getSystemImageManager(new NbOutputWindowProgressIndicator());
                     repoManager.registerLocalChangeListener(AndroidSdkImpl.this);
                     repoManager.registerRemoteChangeListener(AndroidSdkImpl.this);
                     androidTargetManager = androidSdkHandler.getAndroidTargetManager(new NbOutputWindowProgressIndicator() {
@@ -232,6 +235,12 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
         return repoManager;
     }
 
+    @Override
+    public SystemImageManager getSystemImageManager() {
+        return systemImageManager;
+    }
+
+    
     /**
      * Add addSdkToolsChangeListener to listen of SDK tools pakages list changes
      * On add is listener called with actual package list
