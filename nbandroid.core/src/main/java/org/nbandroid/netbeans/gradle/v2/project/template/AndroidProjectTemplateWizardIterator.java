@@ -418,11 +418,8 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
     }
 
     private static void writeFile(ZipInputStream str, FileObject fo) throws IOException {
-        OutputStream out = fo.getOutputStream();
-        try {
+        try (OutputStream out = fo.getOutputStream()) {
             FileUtil.copy(str, out);
-        } finally {
-            out.close();
         }
     }
 
@@ -444,11 +441,8 @@ public class AndroidProjectTemplateWizardIterator implements WizardDescriptor./*
                     }
                 }
             }
-            OutputStream out = fo.getOutputStream();
-            try {
+            try (OutputStream out = fo.getOutputStream()) {
                 XMLUtil.write(doc, out, "UTF-8");
-            } finally {
-                out.close();
             }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
