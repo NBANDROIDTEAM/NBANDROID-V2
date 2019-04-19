@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.netbeans.modules.android.project.sources;
 
 import com.android.builder.model.AndroidArtifact;
 import com.android.builder.model.AndroidProject;
 import com.android.builder.model.BuildTypeContainer;
 import com.android.builder.model.ProductFlavorContainer;
+import com.android.builder.model.SourceProvider;
 import com.android.builder.model.SourceProviderContainer;
 import com.android.builder.model.Variant;
 import java.beans.PropertyChangeListener;
@@ -30,6 +30,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.StringTokenizer;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -45,6 +46,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.android.project.build.BuildVariant;
+import org.netbeans.modules.android.project.sources.generated.RTools;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -92,7 +94,8 @@ public class AndroidSources implements Sources, ChangeListener, LookupListener {
             FileObject prjDir = project.getProjectDirectory();
             Variant variant = buildConfig.getCurrentVariant();
             if (variant != null) {
-                for (File srcDir : variant.getMainArtifact().getGeneratedSourceFolders()) {
+                Collection<File> generatedSourceFolders = variant.getMainArtifact().getGeneratedSourceFolders();
+                for (File srcDir : generatedSourceFolders) {
                     if (!srcDir.exists()) {
                         continue;
                     }
@@ -101,6 +104,10 @@ public class AndroidSources implements Sources, ChangeListener, LookupListener {
                             ? FileUtil.getRelativePath(prjDir, src)
                             : srcDir.getAbsolutePath();
                     grps.add(new AnySourceGroup(project, src, srcName, "Generated Source Packages " + srcName, null, null));
+                }
+                RTools.PluginVersionResult result = RTools.handlePluginVersion(androidProjectModel,variant, prjDir);
+                if(result!=null){
+                    grps.add(new AnySourceGroup(project, result.getSrc(), result.getSrcName(), "Generated Source Packages " + result.getSrcName(), null, null));
                 }
             }
             return grps.toArray(new SourceGroup[grps.size()]);
@@ -152,6 +159,10 @@ public class AndroidSources implements Sources, ChangeListener, LookupListener {
             return new SourceGroup[0];
         }
     }
+
+    
+
+    
 
     private SourceGroup[] groupSrcMainJava() {
         // XXX listen to this being created/deleted
