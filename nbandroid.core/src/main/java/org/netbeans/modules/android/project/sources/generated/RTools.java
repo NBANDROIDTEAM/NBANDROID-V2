@@ -23,6 +23,7 @@ import com.android.builder.model.Variant;
 import java.io.File;
 import java.util.List;
 import java.util.StringTokenizer;
+import org.gradle.internal.impldep.org.apache.commons.lang.StringUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -38,7 +39,7 @@ public class RTools {
         PluginVersion pluginVersion = pluginVersionFromString(modelVersion);
         if (pluginVersion.compareTo(new PluginVersion(3, 3, 0)) >= 0) {
             String variantName = variant.getName();
-            String rFolderPath = buildFolder.getAbsolutePath() + File.separator + "generated" + File.separator + "not_namespaced_r_class_sources" + File.separator + variantName+File.separator+"processDebugResources"+File.separator+"r";
+            String rFolderPath = buildFolder.getAbsolutePath() + File.separator + "generated" + File.separator + "not_namespaced_r_class_sources" + File.separator + variantName+File.separator+"process"+StringUtils.capitalize(variantName)+"Resources"+File.separator+"r";
             File rFolder = new File(rFolderPath);
             if (rFolder.exists() && rFolder.isDirectory()) {
                 FileObject src = FileUtil.toFileObject(rFolder);
