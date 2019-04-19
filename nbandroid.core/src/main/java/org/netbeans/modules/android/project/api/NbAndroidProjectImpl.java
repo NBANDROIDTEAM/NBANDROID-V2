@@ -80,6 +80,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -91,14 +92,25 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
 
     @StaticResource()
     public static final String PROJECT_ICON = "org/netbeans/modules/android/api/android_project.png";
-    private  BuildVariant buildVariant;
-    private  AndroidClassPathProvider androidClassPathProvider;
+    private BuildVariant buildVariant;
+    private AndroidClassPathProvider androidClassPathProvider;
     protected static final AutoAndroidSourceForBinaryQuery SOURCE_FOR_BINARY_QUERY = Lookup.getDefault().lookup(AutoAndroidSourceForBinaryQuery.class);
     protected static final AutoAndroidJavadocForBinaryQuery JAVADOC_FOR_BINARY_QUERY = Lookup.getDefault().lookup(AutoAndroidJavadocForBinaryQuery.class);
     protected final GradleLaunchExecutor launchExecutor = new GradleLaunchExecutor(this);
+
     public NbAndroidProjectImpl(FileObject projectDirectory, ProjectState ps) {
         super(projectDirectory, ps);
         ic.add(new Info());
+    }
+
+    @Override
+    protected LogicalViewProvider getLogicalViewProvider() {
+        return new AndroidProjectLogicalView();
+    }
+
+    @Override
+    protected ActionProvider getProjectActionProvider() {
+        return new AndroidProjectActionProvider(this);
     }
 
     @Override
@@ -109,7 +121,6 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
         ic.add(new KeystoreConfiguration(this));
         ic.add(new NbAndroidProjectConfigurationProvider());
         ic.add(new AndroidCustomizerProvider(this));
-        ic.add(new AndroidProjectLogicalView());
         ic.add(new SourceLevelQueryImpl(this));
         ic.add(new AndroidTestRunConfiguration(this));
         buildVariant = new BuildVariant(this);
@@ -127,12 +138,9 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
         ic.add(Launches.createLauncher());
         ic.add(new TestOutputConsumerLookupProvider().createAdditionalLookup(
                 Lookups.singleton(this)).lookup(TestOutputConsumer.class));
-        ic.add(new AndroidProjectActionProvider(this));
         ic.add(new UserTasksConfiguration(this));
         ic.add(new AndroidResValuesProvider(this));
     }
-    
-    
 
     @Override
     protected Class[] getGradleModels() {
@@ -185,7 +193,7 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
                             new Lookup[]{
                                 Lookups.singleton(NbAndroidProjectImpl.this),
                                 node.getLookup(), Lookups.singleton(new RootGoalsNavigatorHint()),
-                                modelLookup
+                                lookupModels
                             }));
         }
 

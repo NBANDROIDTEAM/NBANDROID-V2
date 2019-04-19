@@ -56,6 +56,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -77,8 +78,16 @@ public class NbAndroidRootProjectImpl extends NbAndroidProject {
     protected void registerLookup() {
         ic.add(new NbAndroidProjectConfigurationProvider());
         ic.add(new AndroidRootCustomizerProvider(this));
-        ic.add(new CustomerProjectLogicalView());
-        ic.add(new RootProjectActionProvider(this));
+    }
+
+    @Override
+    protected LogicalViewProvider getLogicalViewProvider() {
+        return new CustomerProjectLogicalView();
+    }
+
+    @Override
+    protected ActionProvider getProjectActionProvider() {
+        return new RootProjectActionProvider(this);
     }
 
     @Override
@@ -143,7 +152,7 @@ public class NbAndroidRootProjectImpl extends NbAndroidProject {
                             new Lookup[]{
                                 Lookups.singleton(NbAndroidRootProjectImpl.this),
                                 node.getLookup(), Lookups.singleton(new RootGoalsNavigatorHint()),
-                                modelLookup
+                                lookupModels
                             }));
         }
 

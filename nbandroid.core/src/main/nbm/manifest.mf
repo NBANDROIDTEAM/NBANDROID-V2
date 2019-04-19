@@ -2,5 +2,5 @@ Manifest-Version: 1.0
 OpenIDE-Module-Install: org/nbandroid/netbeans/gradle/v2/Installer.class
 OpenIDE-Module-Layer: sk/arsi/netbeans/gradle/android/gradle/android/support/layer.xml
 OpenIDE-Module-Localizing-Bundle: sk/arsi/netbeans/gradle/android/gradle/android/support/Bundle.properties
-OpenIDE-Module-Requires: org.openide.windows.WindowManager, cnb.org.netbeans.modules.groovy.kit, org.netbeans.api.javahelp.Help, org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceUtilImpl
+OpenIDE-Module-Requires: org.openide.windows.WindowManager, cnb.org.netbeans.modules.groovy.kit, cnb.org.netbeans.modules.java.j2seproject, cnb.org.netbeans.modules.projectapi.nb, cnb.org.netbeans.modules.projectui
 

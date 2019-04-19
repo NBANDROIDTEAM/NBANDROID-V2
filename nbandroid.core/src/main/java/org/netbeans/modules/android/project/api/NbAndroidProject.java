@@ -48,11 +48,14 @@ import org.nbandroid.netbeans.gradle.v2.sdk.ui.SdksCustomizer;
 import org.netbeans.api.io.IOProvider;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.android.project.actions.RootProjectActionProvider;
 import org.netbeans.modules.android.project.properties.AndroidProjectPropsImpl;
 import org.netbeans.modules.android.project.properties.AuxiliaryConfigImpl;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectState;
+import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -120,8 +123,15 @@ public abstract class NbAndroidProject extends ProjectOpenedHook implements Proj
         this.projectDirectory = projectDirectory;
         ic.add(buildMutex);
         ic.add(this);
+        ic.add(getProjectActionProvider());
+        ic.add(getLogicalViewProvider());
+        
 
     }
+
+    protected abstract LogicalViewProvider getLogicalViewProvider();
+
+    protected abstract ActionProvider getProjectActionProvider();
 
     @Override
     protected void projectOpened() {
@@ -151,9 +161,13 @@ public abstract class NbAndroidProject extends ProjectOpenedHook implements Proj
         gradleCommandExecutor = Lookup.getDefault().lookup(GradleCommandExecutorProvider.class).create(this);
         ic.add(gradleCommandExecutor);
         RP.execute(this);
-        registerLookup();
+        try {
+            registerLookup();
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
+        }
     }
-    
+
     protected abstract void registerLookup();
 
     @Override
