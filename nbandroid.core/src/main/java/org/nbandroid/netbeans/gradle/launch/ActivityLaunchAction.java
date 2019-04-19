@@ -30,6 +30,7 @@ import org.netbeans.modules.android.project.launch.ActivitySelectorPanel;
 import org.netbeans.modules.android.spi.MainActivityConfiguration;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 
 /**
  * Launch strategy to start an activity.
@@ -39,10 +40,11 @@ import org.openide.NotifyDescriptor;
 class ActivityLaunchAction implements LaunchAction {
 
     private static final Logger LOG = Logger.getLogger(ActivityLaunchAction.class.getName());
+    private InputOutput io;
 
     @Override
     public boolean doLaunch(LaunchInfo launchInfo, IDevice device, Project project, MainActivityConfiguration mainActivityConfiguration) {
-        InputOutput io = project.getLookup().lookup(InputOutput.class);
+        io = project.getLookup().lookup(InputOutput.class);
         io.getOut().println("============================ RUN ===================================\r\n");
 
         String activity = null;
@@ -51,7 +53,13 @@ class ActivityLaunchAction implements LaunchAction {
             if (launchActivity != null && launchActivity.getName() != null) {
                 activity = launchActivity.getName();
             } else {
-                NotifyDescriptor nd = new NotifyDescriptor.Message(new ActivitySelectorPanel(mainActivityConfiguration, project), NotifyDescriptor.QUESTION_MESSAGE);
+                boolean root = true;
+                try {
+                    root = device.isRoot();
+                } catch (TimeoutException | AdbCommandRejectedException | IOException | ShellCommandUnresponsiveException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                NotifyDescriptor nd = new NotifyDescriptor.Message(new ActivitySelectorPanel(mainActivityConfiguration, project, root), NotifyDescriptor.QUESTION_MESSAGE);
                 Object notify = DialogDisplayer.getDefault().notify(nd);
                 if (NotifyDescriptor.OK_OPTION.equals(notify)) {
                     activity = mainActivityConfiguration.getMainActivity();
@@ -71,7 +79,13 @@ class ActivityLaunchAction implements LaunchAction {
                 return false;
             }
         } else {
-            NotifyDescriptor nd = new NotifyDescriptor.Message(new ActivitySelectorPanel(mainActivityConfiguration, project), NotifyDescriptor.QUESTION_MESSAGE);
+            boolean root = true;
+            try {
+                root = device.isRoot();
+            } catch (TimeoutException | AdbCommandRejectedException | IOException | ShellCommandUnresponsiveException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            NotifyDescriptor nd = new NotifyDescriptor.Message(new ActivitySelectorPanel(mainActivityConfiguration, project, root), NotifyDescriptor.QUESTION_MESSAGE);
             Object notify = DialogDisplayer.getDefault().notify(nd);
             if (NotifyDescriptor.OK_OPTION.equals(notify)) {
                 activity = mainActivityConfiguration.getMainActivity();
@@ -95,7 +109,7 @@ class ActivityLaunchAction implements LaunchAction {
             LOG.log(Level.FINE, command);
             io.getOut().println("Starting activity " + activity + " on device " + device + "\r\n");
 
-            device.executeShellCommand(command, new AMReceiver(launchInfo, device));
+            device.executeShellCommand(command, new AMReceiver(launchInfo, device, io));
         } catch (TimeoutException ex) {
             io.getErr().println("Launch error: timeout\r\n");
             LOG.log(Level.INFO, null, ex);

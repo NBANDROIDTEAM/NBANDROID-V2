@@ -42,13 +42,16 @@ public class ActivitySelectorPanel extends javax.swing.JPanel implements ItemLis
 
     private final MainActivityConfiguration activityConfiguration;
     private final Project project;
+
     /**
      * Creates new form ActivitySelectorPanel
      */
-    public ActivitySelectorPanel(MainActivityConfiguration activityConfiguration, Project project) {
+    public ActivitySelectorPanel(MainActivityConfiguration activityConfiguration, Project project, boolean root) {
         initComponents();
         this.activityConfiguration = activityConfiguration;
         this.project = project;
+        //TODO Show root panel only if selected activity has no export true parameter
+        rootPanel.setVisible(!root);
         AndroidProject androidProject = project.getLookup().lookup(AndroidProject.class);
         if (androidProject != null) {
             File manifestFile = androidProject.getDefaultConfig().getSourceProvider().getManifestFile();
@@ -104,6 +107,14 @@ public class ActivitySelectorPanel extends javax.swing.JPanel implements ItemLis
         l7 = new javax.swing.JLabel();
         copy = new javax.swing.JButton();
         dontAsk = new javax.swing.JCheckBox();
+        rootPanel = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ActivitySelectorPanel.class, "ActivitySelectorPanel.jLabel1.text")); // NOI18N
 
@@ -147,6 +158,76 @@ public class ActivitySelectorPanel extends javax.swing.JPanel implements ItemLis
 
         org.openide.awt.Mnemonics.setLocalizedText(dontAsk, org.openide.util.NbBundle.getMessage(ActivitySelectorPanel.class, "ActivitySelectorPanel.dontAsk.text")); // NOI18N
 
+        jLabel2.setForeground(new java.awt.Color(204, 0, 51));
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ActivitySelectorPanel.class, "ActivitySelectorPanel.jLabel2.text")); // NOI18N
+
+        jLabel3.setForeground(new java.awt.Color(204, 0, 51));
+        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ActivitySelectorPanel.class, "ActivitySelectorPanel.jLabel3.text")); // NOI18N
+
+        jLabel4.setFont(new java.awt.Font("Dialog", 3, 12)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(ActivitySelectorPanel.class, "ActivitySelectorPanel.jLabel4.text")); // NOI18N
+
+        jLabel5.setFont(new java.awt.Font("Dialog", 3, 12)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(ActivitySelectorPanel.class, "ActivitySelectorPanel.jLabel5.text")); // NOI18N
+
+        jLabel6.setFont(new java.awt.Font("Dialog", 3, 12)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(ActivitySelectorPanel.class, "ActivitySelectorPanel.jLabel6.text")); // NOI18N
+
+        jLabel7.setForeground(new java.awt.Color(204, 0, 51));
+        jLabel7.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(ActivitySelectorPanel.class, "ActivitySelectorPanel.jLabel7.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(ActivitySelectorPanel.class, "ActivitySelectorPanel.jButton1.text")); // NOI18N
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout rootPanelLayout = new javax.swing.GroupLayout(rootPanel);
+        rootPanel.setLayout(rootPanelLayout);
+        rootPanelLayout.setHorizontalGroup(
+            rootPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(rootPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(rootPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(rootPanelLayout.createSequentialGroup()
+                        .addGroup(rootPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel4)
+                            .addGroup(rootPanelLayout.createSequentialGroup()
+                                .addGap(12, 12, 12)
+                                .addGroup(rootPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel6)
+                                    .addComponent(jLabel5)))
+                            .addComponent(jButton1))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        rootPanelLayout.setVerticalGroup(
+            rootPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(rootPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel6)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel7)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton1)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -158,6 +239,18 @@ public class ActivitySelectorPanel extends javax.swing.JPanel implements ItemLis
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(l6)
+                            .addComponent(l5))
+                        .addContainerGap(330, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(l7)
+                            .addComponent(copy)
+                            .addComponent(dontAsk))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel1)
@@ -166,19 +259,8 @@ public class ActivitySelectorPanel extends javax.swing.JPanel implements ItemLis
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(l4)
                                 .addGap(0, 0, Short.MAX_VALUE)))
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(12, 12, 12)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(l6)
-                            .addComponent(l5))
-                        .addContainerGap(80, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(l7)
-                            .addComponent(copy)
-                            .addComponent(dontAsk))
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                        .addContainerGap())))
+            .addComponent(rootPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -203,9 +285,10 @@ public class ActivitySelectorPanel extends javax.swing.JPanel implements ItemLis
                 .addComponent(l7)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(copy)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
-                .addComponent(dontAsk)
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(rootPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(dontAsk))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -223,17 +306,31 @@ public class ActivitySelectorPanel extends javax.swing.JPanel implements ItemLis
     private void activityToLaunchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_activityToLaunchActionPerformed
         // TODO add your handling code here:
         Object selectedItem = activityToLaunch.getSelectedItem();
-        if(selectedItem instanceof String){
+        if (selectedItem instanceof String) {
             activityConfiguration.setMainActivity((String) selectedItem);
         }
     }//GEN-LAST:event_activityToLaunchActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        StringSelection stringSelection = new StringSelection("android:exported=\"true\"");
+        clipboard.setContents(stringSelection, null);
+    }//GEN-LAST:event_jButton1ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox<String> activityToLaunch;
     private javax.swing.JButton copy;
     private javax.swing.JCheckBox dontAsk;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel l1;
     private javax.swing.JLabel l2;
     private javax.swing.JLabel l3;
@@ -241,6 +338,7 @@ public class ActivitySelectorPanel extends javax.swing.JPanel implements ItemLis
     private javax.swing.JLabel l5;
     private javax.swing.JLabel l6;
     private javax.swing.JLabel l7;
+    private javax.swing.JPanel rootPanel;
     // End of variables declaration//GEN-END:variables
 
     @Override

@@ -76,9 +76,8 @@ public class GradleLaunchExecutor {
                 Client c = null;
                 try {
                     c = future.get(20, TimeUnit.SECONDS);
-                } catch (InterruptedException interruptedException) {
-                } catch (ExecutionException executionException) {
-                } catch (TimeoutException timeoutException) {
+                } catch (InterruptedException | ExecutionException | TimeoutException interruptedException) {
+                    Exceptions.printStackTrace(interruptedException);
                 }
                 if (c != null) {
                     final int port = c.getDebuggerListenPort();
