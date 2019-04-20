@@ -25,6 +25,8 @@ import com.android.repository.api.RepoManager;
 import com.android.repository.api.RepoPackage;
 import com.android.repository.impl.meta.RepositoryPackages;
 import com.android.repository.impl.meta.TypeDetails;
+import com.android.repository.io.FileOp;
+import com.android.repository.io.FileOpUtils;
 import com.android.repository.io.FileUtilKt;
 import com.android.resources.Density;
 import com.android.sdklib.SdkVersionInfo;
@@ -146,6 +148,7 @@ public class AvdManager extends javax.swing.JPanel {
     private final JPopupMenu popupMenu = new JPopupMenu();
     private final JMenuItem runMenu = new JMenuItem("Run");
     private final JMenuItem stopMenu = new JMenuItem("Stop");
+    private final JMenuItem wipeMenu = new JMenuItem("Wipe");
     private ExistingDevicesTableModel model;
     private EmulatorLauncher emulatorLauncher;
     private final AndroidSdk defaultSdk;
@@ -221,6 +224,21 @@ public class AvdManager extends javax.swing.JPanel {
                 }
             }
         });
+        //Wipe
+        popupMenu.add(wipeMenu);
+        wipeMenu.setAction(new AbstractAction("Wipe Data") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = table.getSelectedRow();
+                if (selectedRow != -1) {
+                    AvdInfo avdInfo = model.getAvdInfos()[selectedRow];
+                    wipeUserData(avdInfo);
+                     RP.schedule(() -> {
+                        model.refresh();
+                    }, 5, TimeUnit.SECONDS);
+                }
+            }
+        });
         //
         table.setComponentPopupMenu(popupMenu);
         popupMenu.addPopupMenuListener(new PopupMenuListener() {
@@ -241,10 +259,13 @@ public class AvdManager extends javax.swing.JPanel {
                                 }
                             }
                             runMenu.setEnabled(!running);
-                            stopMenu.setEnabled(avdManager.isAvdRunning(model.avdInfos[rowAtPoint], new NullLogger()));
+                            boolean avdRunning = avdManager.isAvdRunning(model.avdInfos[rowAtPoint], new NullLogger());
+                            stopMenu.setEnabled(avdRunning);
+                            wipeMenu.setEnabled(!avdRunning);
                         } else {
                             runMenu.setEnabled(false);
                             stopMenu.setEnabled(false);
+                            wipeMenu.setEnabled(false);
                         }
 
                     }
@@ -443,6 +464,23 @@ public class AvdManager extends javax.swing.JPanel {
             return String.format(Locale.getDefault(), "%1$.1f %2$s", value, unitString);
         }
     }
+    
+    private final FileOp myFileOp = FileOpUtils.create() ;
+    
+    public boolean wipeUserData( AvdInfo avdInfo) {
+    // Delete the current user data file
+    File userdataImage = new File(avdInfo.getDataFolderPath(), com.android.sdklib.internal.avd.AvdManager.USERDATA_QEMU_IMG);
+    if (myFileOp.exists(userdataImage)) {
+      if (!myFileOp.delete(userdataImage)) {
+        return false;
+      }
+    }
+    // Delete the snapshots directory
+    File snapshotDirectory = new File(avdInfo.getDataFolderPath(), com.android.sdklib.internal.avd.AvdManager.SNAPSHOTS_DIRECTORY);
+    myFileOp.deleteFileOrFolder(snapshotDirectory);
+
+    return true;
+}
 
     /**
      * This method is called from within the constructor to initialize the form.
