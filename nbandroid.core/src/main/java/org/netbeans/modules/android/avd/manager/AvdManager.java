@@ -70,9 +70,12 @@ import org.nbandroid.netbeans.gradle.launch.EmulatorLauncher;
 import org.nbandroid.netbeans.gradle.launch.LaunchConfiguration;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
+import org.netbeans.modules.android.avd.manager.pojo.Devices;
+import org.netbeans.modules.android.avd.manager.ui.CreateAvdWizardIterator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -155,6 +158,7 @@ public class AvdManager extends javax.swing.JPanel {
     private final SystemImageManager systemImageManager;
     private final RepoManager repoManager;
     private final RequestProcessor RP = new RequestProcessor("AVD Manager", 1);
+    private Devices deviceDefs;
 
     private EmulatorLauncher getEmulatorLauncher() {
         if (emulatorLauncher == null) {
@@ -174,7 +178,6 @@ public class AvdManager extends javax.swing.JPanel {
         this.deviceManager = deviceManager;
         this.systemImageManager = systemImageManager;
         this.repoManager = repoManager;
-
         AvdInfo[] validAvds = avdManager.getValidAvds();
         Collection<SystemImage> images = systemImageManager.getImages();
         model = new ExistingDevicesTableModel(validAvds);
@@ -188,7 +191,7 @@ public class AvdManager extends javax.swing.JPanel {
                 System.out.println("org.netbeans.modules.android.avd.manager.AvdManager.<init>()");
             }
         }
-
+        deviceDefs = AndroidAvdDevicesLocator.getDeviceDefs();
     }
 
     private void initTableActions() {
@@ -218,7 +221,7 @@ public class AvdManager extends javax.swing.JPanel {
                 if (selectedRow != -1) {
                     AvdInfo avdInfo = model.getAvdInfos()[selectedRow];
                     avdManager.stopAvd(avdInfo);
-                     RP.schedule(() -> {
+                    RP.schedule(() -> {
                         model.refresh();
                     }, 5, TimeUnit.SECONDS);
                 }
@@ -233,7 +236,7 @@ public class AvdManager extends javax.swing.JPanel {
                 if (selectedRow != -1) {
                     AvdInfo avdInfo = model.getAvdInfos()[selectedRow];
                     wipeUserData(avdInfo);
-                     RP.schedule(() -> {
+                    RP.schedule(() -> {
                         model.refresh();
                     }, 5, TimeUnit.SECONDS);
                 }
@@ -419,8 +422,8 @@ public class AvdManager extends javax.swing.JPanel {
                     return "Err";
             }
         }
-        
-        public void refresh(){
+
+        public void refresh() {
             fireTableDataChanged();
         }
 
@@ -464,23 +467,23 @@ public class AvdManager extends javax.swing.JPanel {
             return String.format(Locale.getDefault(), "%1$.1f %2$s", value, unitString);
         }
     }
-    
-    private final FileOp myFileOp = FileOpUtils.create() ;
-    
-    public boolean wipeUserData( AvdInfo avdInfo) {
-    // Delete the current user data file
-    File userdataImage = new File(avdInfo.getDataFolderPath(), com.android.sdklib.internal.avd.AvdManager.USERDATA_QEMU_IMG);
-    if (myFileOp.exists(userdataImage)) {
-      if (!myFileOp.delete(userdataImage)) {
-        return false;
-      }
-    }
-    // Delete the snapshots directory
-    File snapshotDirectory = new File(avdInfo.getDataFolderPath(), com.android.sdklib.internal.avd.AvdManager.SNAPSHOTS_DIRECTORY);
-    myFileOp.deleteFileOrFolder(snapshotDirectory);
 
-    return true;
-}
+    private final FileOp myFileOp = FileOpUtils.create();
+
+    public boolean wipeUserData(AvdInfo avdInfo) {
+        // Delete the current user data file
+        File userdataImage = new File(avdInfo.getDataFolderPath(), com.android.sdklib.internal.avd.AvdManager.USERDATA_QEMU_IMG);
+        if (myFileOp.exists(userdataImage)) {
+            if (!myFileOp.delete(userdataImage)) {
+                return false;
+            }
+        }
+        // Delete the snapshots directory
+        File snapshotDirectory = new File(avdInfo.getDataFolderPath(), com.android.sdklib.internal.avd.AvdManager.SNAPSHOTS_DIRECTORY);
+        myFileOp.deleteFileOrFolder(snapshotDirectory);
+
+        return true;
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -493,6 +496,7 @@ public class AvdManager extends javax.swing.JPanel {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         table = new javax.swing.JTable();
+        createDevice = new javax.swing.JButton();
 
         table.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -510,22 +514,58 @@ public class AvdManager extends javax.swing.JPanel {
         table.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(table);
 
+        org.openide.awt.Mnemonics.setLocalizedText(createDevice, org.openide.util.NbBundle.getMessage(AvdManager.class, "AvdManager.createDevice.text")); // NOI18N
+        createDevice.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createDeviceActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1083, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1083, Short.MAX_VALUE)
-                .addGap(0, 0, 0))
+                .addContainerGap()
+                .addComponent(createDevice)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(createDevice)
+                .addGap(0, 12, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void createDeviceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createDeviceActionPerformed
+        // TODO add your handling code here:
+        WizardDescriptor wiz = new WizardDescriptor(new CreateAvdWizardIterator());
+        wiz.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
+        wiz.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
+        wiz.putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
+        wiz.putProperty(CreateAvdWizardIterator.DEVICE_MANAGER, deviceManager);
+        wiz.setTitle("Create Virtual Device");
+        wiz.setTitleFormat(new java.text.MessageFormat("{0}")); // NOI18N
+        Dialog dlg = DialogDisplayer.getDefault().createDialog(wiz);
+        try {
+            dlg.setVisible(true);
+            if (wiz.getValue() == WizardDescriptor.FINISH_OPTION) {
+//                Set result = wiz.getInstantiatedObjects();
+                model.fireTableStructureChanged();
+            }
+        } finally {
+            dlg.dispose();
+            wiz.getInstantiatedObjects();
+        }
+    }//GEN-LAST:event_createDeviceActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton createDevice;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable table;
     // End of variables declaration//GEN-END:variables
