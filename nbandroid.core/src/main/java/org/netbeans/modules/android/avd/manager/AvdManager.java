@@ -32,14 +32,18 @@ import com.android.sdklib.devices.Device;
 import com.android.sdklib.devices.DeviceManager;
 import com.android.sdklib.devices.Storage;
 import com.android.sdklib.internal.avd.AvdInfo;
+import com.android.sdklib.repository.AndroidSdkHandler;
 import com.android.sdklib.repository.IdDisplay;
 import com.android.sdklib.repository.meta.DetailsTypes;
 import com.android.sdklib.repository.targets.SystemImage;
 import com.android.sdklib.repository.targets.SystemImageManager;
 import com.android.utils.ILogger;
+import com.android.utils.NullLogger;
 import com.google.common.collect.Multimap;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -47,18 +51,30 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.table.AbstractTableModel;
 import org.gradle.internal.impldep.com.google.common.collect.ImmutableList;
+import org.nbandroid.netbeans.gradle.configs.LaunchConfigurationBean;
 import org.nbandroid.netbeans.gradle.core.sdk.SdkLogProvider;
+import org.nbandroid.netbeans.gradle.launch.EmulatorLauncher;
+import org.nbandroid.netbeans.gradle.launch.LaunchConfiguration;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -67,57 +83,182 @@ import org.openide.util.ImageUtilities;
 public class AvdManager extends javax.swing.JPanel {
 
     public static boolean showCustomizer() {
-        AvdManager customizer
-                = new AvdManager();
-        javax.swing.JButton close = new javax.swing.JButton("Close");
-        close.getAccessibleContext().setAccessibleDescription("N/A");
-        DialogDescriptor descriptor = new DialogDescriptor(customizer, "Android AVD Manager", true, new Object[]{close}, close, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx("org.netbeans.modules.android.avd.manager.AvdManager"), null); // NOI18N
-        Dialog dlg = null;
-        try {
-            dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-            dlg.setVisible(true);
-        } finally {
-            if (dlg != null) {
-                dlg.dispose();
+        AndroidSdk defaultSdk = AndroidSdkProvider.getDefaultSdk();
+        if (defaultSdk != null) {
+            final ILogger sdkLog = SdkLogProvider.createLogger(false);
+            AndroidSdkHandler androidSdkHandler = null;
+            com.android.sdklib.internal.avd.AvdManager avdManager = null;
+            DeviceManager deviceManager = null;
+            SystemImageManager systemImageManager = null;
+            RepoManager repoManager = null;
+            try {
+                androidSdkHandler = defaultSdk.getAndroidSdkHandler();
+                avdManager = com.android.sdklib.internal.avd.AvdManager.getInstance(androidSdkHandler, sdkLog);
+                deviceManager = DeviceManager.createInstance(androidSdkHandler, sdkLog);
+                systemImageManager = defaultSdk.getSystemImageManager();
+                repoManager = defaultSdk.getRepoManager();
+            } catch (AndroidLocation.AndroidLocationException ex) {
+                Exceptions.printStackTrace(ex);
             }
+
+            if (avdManager != null && deviceManager != null && systemImageManager != null && repoManager != null) {
+                AvdManager customizer
+                        = new AvdManager(defaultSdk, avdManager, deviceManager, systemImageManager, repoManager);
+                javax.swing.JButton close = new javax.swing.JButton("Close");
+                close.getAccessibleContext().setAccessibleDescription("N/A");
+                DialogDescriptor descriptor = new DialogDescriptor(customizer, "Android AVD Manager", true, new Object[]{close}, close, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx("org.netbeans.modules.android.avd.manager.AvdManager"), null); // NOI18N
+                Dialog dlg = null;
+                try {
+                    dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+                    dlg.setVisible(true);
+                } finally {
+                    if (dlg != null) {
+                        dlg.dispose();
+                    }
+                }
+            } else if (avdManager == null) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(""
+                        + "Unable to create AVD Manager instance!", NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(nd);
+            } else if (deviceManager == null) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(""
+                        + "Unable to create Device Manager instance!", NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(nd);
+            } else if (systemImageManager == null) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(""
+                        + "Unable to create System Image Manager instance!", NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(nd);
+            } else if (repoManager == null) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(""
+                        + "Unable to create Repository Manager instance!", NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(nd);
+            }
+        } else {
+            //sdk not found
+            NotifyDescriptor nd = new NotifyDescriptor.Message(""
+                    + "Default Android SDK not found! Please install at least one  Android SDK..", NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(nd);
         }
         return true;
     }
-    private com.android.sdklib.internal.avd.AvdManager avdManager;
-    private DeviceManager deviceManager;
+    private final com.android.sdklib.internal.avd.AvdManager avdManager;
+    private final DeviceManager deviceManager;
+    private final JPopupMenu popupMenu = new JPopupMenu();
+    private final JMenuItem runMenu = new JMenuItem("Run");
+    private final JMenuItem stopMenu = new JMenuItem("Stop");
+    private ExistingDevicesTableModel model;
+    private EmulatorLauncher emulatorLauncher;
+    private final AndroidSdk defaultSdk;
+    private final SystemImageManager systemImageManager;
+    private final RepoManager repoManager;
+    private final RequestProcessor RP = new RequestProcessor("AVD Manager", 1);
+
+    private EmulatorLauncher getEmulatorLauncher() {
+        if (emulatorLauncher == null) {
+            emulatorLauncher = new EmulatorLauncher(defaultSdk);
+        }
+        return emulatorLauncher;
+    }
 
     /**
      * Creates new form AvdManager
      */
-    public AvdManager() {
+    public AvdManager(AndroidSdk defaultSdk, com.android.sdklib.internal.avd.AvdManager avdManager, DeviceManager deviceManager, SystemImageManager systemImageManager, RepoManager repoManager) {
         initComponents();
-        AndroidSdk defaultSdk = AndroidSdkProvider.getDefaultSdk();
-        if (defaultSdk != null) {
-            final ILogger sdkLog = SdkLogProvider.createLogger(false);
-            try {
-                avdManager = com.android.sdklib.internal.avd.AvdManager.getInstance(defaultSdk.getAndroidSdkHandler(), sdkLog);
-                deviceManager = DeviceManager.createInstance(defaultSdk.getAndroidSdkHandler(), sdkLog);
-            } catch (AndroidLocation.AndroidLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            SystemImageManager systemImageManager = defaultSdk.getSystemImageManager();
-            RepoManager repoManager = defaultSdk.getRepoManager();
-            if (systemImageManager != null && repoManager != null && avdManager != null) {
-                AvdInfo[] validAvds = avdManager.getValidAvds();
-                Collection<SystemImage> images = systemImageManager.getImages();
-                table.setModel(new ExistingDevicesTableModel(validAvds));
-                Multimap<LocalPackage, SystemImage> imageMap = systemImageManager.getImageMap();
-                RepositoryPackages packages = repoManager.getPackages();
-                Set<RemotePackage> newPkgs = packages.getNewPkgs();
-                for (RemotePackage info : newPkgs) {
-                    if (hasSystemImage(info)) {
-                        String path = info.getPath();
-                        System.out.println("org.netbeans.modules.android.avd.manager.AvdManager.<init>()");
-                    }
-                }
+        initTableActions();
+        this.defaultSdk = defaultSdk;
+        this.avdManager = avdManager;
+        this.deviceManager = deviceManager;
+        this.systemImageManager = systemImageManager;
+        this.repoManager = repoManager;
 
+        AvdInfo[] validAvds = avdManager.getValidAvds();
+        Collection<SystemImage> images = systemImageManager.getImages();
+        model = new ExistingDevicesTableModel(validAvds);
+        table.setModel(model);
+        Multimap<LocalPackage, SystemImage> imageMap = systemImageManager.getImageMap();
+        RepositoryPackages packages = repoManager.getPackages();
+        Set<RemotePackage> newPkgs = packages.getNewPkgs();
+        for (RemotePackage info : newPkgs) {
+            if (hasSystemImage(info)) {
+                String path = info.getPath();
+                System.out.println("org.netbeans.modules.android.avd.manager.AvdManager.<init>()");
             }
         }
+
+    }
+
+    private void initTableActions() {
+        //RUN
+        popupMenu.add(runMenu);
+        runMenu.setAction(new AbstractAction("Run Emulator") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = table.getSelectedRow();
+                if (selectedRow != -1) {
+                    AvdInfo avdInfo = model.getAvdInfos()[selectedRow];
+                    LaunchConfigurationBean lcb = new LaunchConfigurationBean();
+                    lcb.setLaunchAction(LaunchConfiguration.Action.DO_NOTHING);
+                    getEmulatorLauncher().launchEmulator(avdInfo, lcb);
+                    RP.schedule(() -> {
+                        model.refresh();
+                    }, 5, TimeUnit.SECONDS);
+                }
+            }
+        });
+        //Stop
+        popupMenu.add(stopMenu);
+        stopMenu.setAction(new AbstractAction("Stop Emulator") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = table.getSelectedRow();
+                if (selectedRow != -1) {
+                    AvdInfo avdInfo = model.getAvdInfos()[selectedRow];
+                    avdManager.stopAvd(avdInfo);
+                     RP.schedule(() -> {
+                        model.refresh();
+                    }, 5, TimeUnit.SECONDS);
+                }
+            }
+        });
+        //
+        table.setComponentPopupMenu(popupMenu);
+        popupMenu.addPopupMenuListener(new PopupMenuListener() {
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        int rowAtPoint = table.rowAtPoint(SwingUtilities.convertPoint(popupMenu, new Point(0, 0), table));
+                        if (rowAtPoint > -1) {
+                            table.setRowSelectionInterval(rowAtPoint, rowAtPoint);
+                            //Only one instance can run
+                            boolean running = false;
+                            for (int i = 0; i < model.avdInfos.length; i++) {
+                                boolean avdRunning = avdManager.isAvdRunning(model.avdInfos[i], new NullLogger());
+                                if (avdRunning) {
+                                    running = true;
+                                }
+                            }
+                            runMenu.setEnabled(!running);
+                            stopMenu.setEnabled(avdManager.isAvdRunning(model.avdInfos[rowAtPoint], new NullLogger()));
+                        } else {
+                            runMenu.setEnabled(false);
+                            stopMenu.setEnabled(false);
+                        }
+
+                    }
+                });
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+            }
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {
+            }
+        });
     }
 
     String getResolution(AvdInfo info) {
@@ -167,6 +308,10 @@ public class AvdManager extends javax.swing.JPanel {
 
         private final AvdInfo[] avdInfos;
 
+        public AvdInfo[] getAvdInfos() {
+            return avdInfos;
+        }
+
         public ExistingDevicesTableModel(AvdInfo[] avdInfos) {
             this.avdInfos = avdInfos;
         }
@@ -178,7 +323,7 @@ public class AvdManager extends javax.swing.JPanel {
 
         @Override
         public int getColumnCount() {
-            return 8;
+            return 9;
         }
 
         @Override
@@ -200,6 +345,8 @@ public class AvdManager extends javax.swing.JPanel {
                     return "CPU/ABI";
                 case 7:
                     return "Size on Disk";
+                case 8:
+                    return "Status";
                 default:
                     return "err";
             }
@@ -230,7 +377,7 @@ public class AvdManager extends javax.swing.JPanel {
                         return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/android/avd/manager/device-play-store.png"));
                     }
                     return null;
-                case 3: 
+                case 3:
                     return getResolution(avdInfo);
                 case 4:
                     return avdInfo.getAndroidVersion().getApiString();
@@ -240,25 +387,36 @@ public class AvdManager extends javax.swing.JPanel {
                     return avdInfo.getAbiType();
                 case 7:
                     return storageSizeDisplayString(getSize(avdInfo));
+                case 8:
+                    boolean avdRunning = avdManager.isAvdRunning(avdInfo, new NullLogger());
+                    if (avdRunning) {
+                        return "Running";
+                    }
+                    return "Turned off";
+
                 default:
                     return "Err";
             }
         }
+        
+        public void refresh(){
+            fireTableDataChanged();
+        }
 
     }
-    
+
     private Storage getSize(AvdInfo avdInfo) {
-      long sizeInBytes = 0;
-      if (avdInfo != null) {
-        File avdDir = new File(avdInfo.getDataFolderPath());
-        try {
-          sizeInBytes = FileUtilKt.recursiveSize(avdDir.toPath());
-        } catch (IOException ee) {
-          // Just leave the size as zero
+        long sizeInBytes = 0;
+        if (avdInfo != null) {
+            File avdDir = new File(avdInfo.getDataFolderPath());
+            try {
+                sizeInBytes = FileUtilKt.recursiveSize(avdDir.toPath());
+            } catch (IOException ee) {
+                // Just leave the size as zero
+            }
         }
-      }
-      return new Storage(sizeInBytes);
-}
+        return new Storage(sizeInBytes);
+    }
 
     static String getDeviceClassIcon(AvdInfo info) {
         String id = info.getTag().getId();
@@ -297,7 +455,6 @@ public class AvdManager extends javax.swing.JPanel {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         table = new javax.swing.JTable();
-        jPanel1 = new javax.swing.JPanel();
 
         table.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -311,38 +468,26 @@ public class AvdManager extends javax.swing.JPanel {
             }
         ));
         table.setRowHeight(30);
+        table.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        table.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(table);
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 123, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 954, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1083, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable table;
     // End of variables declaration//GEN-END:variables
