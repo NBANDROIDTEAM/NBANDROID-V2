@@ -316,7 +316,7 @@ public final class CreateAvdVisualPanel2 extends JPanel implements ListSelection
 
     }
 
-    static String releaseDisplayName(SystemImageDescription systemImage) {
+    public static String releaseDisplayName(SystemImageDescription systemImage) {
         AndroidVersion version = systemImage.getVersion();
         String codeName = version.isPreview() ? version.getCodename()
                 : SdkVersionInfo.getCodeName(version.getApiLevel());

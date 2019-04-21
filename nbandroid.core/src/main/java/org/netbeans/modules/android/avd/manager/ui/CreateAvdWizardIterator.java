@@ -34,8 +34,8 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.openide.WizardDescriptor;
-import org.openide.util.Exceptions;
 
 // TODO define position attribute
 public final class CreateAvdWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
@@ -51,6 +51,17 @@ public final class CreateAvdWizardIterator implements WizardDescriptor.Instantia
     public static final String ANDROID_SDK = "ANDROID_SDK";
     public static final String SYSTEM_IMAGE = "SYSTEM_IMAGE";
     public static final String AVD_MANAGER = "AVD_MANAGER";
+    public static final String AVD_DISPLAY_NAME = "AVD_DISPLAY_NAME";
+    public static final String AVD_ID_NAME = "AVD_ID_NAME";
+    public static final String AVD_USER_HW_CONFIG = "AVD_USER_HW_CONFIG";
+    public static final String AVD_SDCARD = "AVD_SDCARD";
+    private final ChangeListener changeListener;
+
+    public CreateAvdWizardIterator(ChangeListener changeListener) {
+        this.changeListener = changeListener;
+    }
+    
+    
 
     private List<WizardDescriptor.Panel<WizardDescriptor>> getPanels() {
         if (panels == null) {
@@ -83,18 +94,73 @@ public final class CreateAvdWizardIterator implements WizardDescriptor.Instantia
     @Override
     public Set<?> instantiate() throws IOException {
         // TODO return set of FileObject (or DataObject) you have created
+
+        //path /home/arsi/.android/avd/Nexus_5_API_27.avd
+        //avd name Nexus_5_API_27
+        //skinFolder /jetty/android-studio-sdk/skins/nexus_5
+        //skinname null
+        //sdcard 512M
+        //
+        //hw.dPad => no  x
+        //hw.lcd.height => 1920 x
+        //fastboot.chosenSnapshotFile => 
+        //runtime.network.speed => full
+        //hw.accelerometer => yes x
+        //hw.device.name => Nexus 5 x
+        //vm.heapSize => 128
+        //skin.dynamic => yes
+        //hw.device.manufacturer => Google x
+        //hw.lcd.width => 1080 x
+        //skin.path => /jetty/android-studio-sdk/skins/nexus_5
+        //hw.gps => yes x
+        //hw.initialOrientation => Portrait
+        //hw.audioInput => yes x
+        //showDeviceFrame => yes
+        //hw.camera.back => emulated
+        //hw.mainKeys => no x
+        //AvdId => Nexus_5_API_27
+        //hw.lcd.density => 480 x
+        //hw.camera.front => emulated
+        //avd.ini.displayname => Nexus 5 API 27
+        //hw.gpu.mode => auto
+        //hw.device.hash2 => MD5:1c925b9117dd9f33c5128dac289a0d68 x
+        //fastboot.forceChosenSnapshotBoot => no
+        //fastboot.forceFastBoot => yes
+        //hw.trackBall => no x
+        //hw.ramSize => 1536
+        //hw.battery => yes x
+        //fastboot.forceColdBoot => no
+        //hw.cpu.ncore => 4
+        //hw.sdCard => yes xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        //runtime.network.latency => none
+        //hw.keyboard => yes
+        //hw.sensors.proximity => yes x
+        //hw.sensors.orientation => yesx
+        //disk.dataPartition.size => 2G
+        //hw.gpu.enabled => yes
+        //
+        //dev has playstore true
+        //create snapshot false
+        //removeprev false
+        //editExisting true
+        AndroidSdk defaultSdk = (AndroidSdk) wizard.getProperty(ANDROID_SDK);
         AvdManager avdManager = (AvdManager) wizard.getProperty(AVD_MANAGER);
         Device selectedDevice = (Device) wizard.getProperty(DEVICE_SELECTED);
         SystemImageDescription selectedImage = (SystemImageDescription) wizard.getProperty(SYSTEM_IMAGE);
-        File skinFile = selectedDevice.getDefaultHardware().getSkinFile();
+        String displayName = (String) wizard.getProperty(AVD_DISPLAY_NAME);
+        String avdId = (String) wizard.getProperty(AVD_ID_NAME);
         Map<String, String> hardwareProperties = DeviceManager.getHardwareProperties(selectedDevice);
+        Map<String, String> userHardwareProperties = (Map<String, String>) wizard.getProperty(AVD_USER_HW_CONFIG);
+        hardwareProperties.putAll(userHardwareProperties);
+        String skinPath = hardwareProperties.get("skin.path");
+        String sdcard = (String) wizard.getProperty(AVD_SDCARD);
         try {
-            avdManager.createAvd(avdManager.getBaseAvdFolder().getAbsoluteFile(), "Test1", selectedImage.getSystemImage(),
-                    null, null, null, hardwareProperties, selectedDevice.getBootProps(), selectedDevice.hasPlayStore(), false, false, true, new StdLogger(StdLogger.Level.INFO));
-        } catch (AndroidLocation.AndroidLocationException ex) {
-            Exceptions.printStackTrace(ex);
+            String avdPath = avdManager.getBaseAvdFolder().getAbsoluteFile().getAbsolutePath() + File.separator + avdId + ".avd";
+            avdManager.createAvd(new File(avdPath), avdId, selectedImage.getSystemImage(),
+                    new File(skinPath), null, sdcard, hardwareProperties, selectedDevice.getBootProps(), selectedDevice.hasPlayStore()&&selectedImage.getSystemImage().hasPlayStore(), false, false, true, new StdLogger(StdLogger.Level.INFO));
+        } catch (AndroidLocation.AndroidLocationException androidLocationException) {
         }
-
+        changeListener.stateChanged(null);
         return Collections.emptySet();
     }
 

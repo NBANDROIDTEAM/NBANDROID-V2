@@ -63,10 +63,10 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
     private DevicesTableModel modelTv;
     private DevicesTableModel modelWear;
     private Device selectedDevice;
-    private static final Icon ICON_MOBILE = new javax.swing.ImageIcon(CreateAvdVisualPanel1.class.getResource("/org/netbeans/modules/android/avd/manager/device-phone.png"));
-    private static final Icon ICON_TABLET = new javax.swing.ImageIcon(CreateAvdVisualPanel1.class.getResource("/org/netbeans/modules/android/avd/manager/device-tablet.png"));
-    private static final Icon ICON_TV = new javax.swing.ImageIcon(CreateAvdVisualPanel1.class.getResource("/org/netbeans/modules/android/avd/manager/device-tv_large.png"));
-    private static final Icon ICON_WEAR = new javax.swing.ImageIcon(CreateAvdVisualPanel1.class.getResource("/org/netbeans/modules/android/avd/manager/device-wear_large.png"));
+    public static final Icon ICON_MOBILE = new javax.swing.ImageIcon(CreateAvdVisualPanel1.class.getResource("/org/netbeans/modules/android/avd/manager/device-phone.png"));
+    public static final Icon ICON_TABLET = new javax.swing.ImageIcon(CreateAvdVisualPanel1.class.getResource("/org/netbeans/modules/android/avd/manager/device-tablet.png"));
+    public static final Icon ICON_TV = new javax.swing.ImageIcon(CreateAvdVisualPanel1.class.getResource("/org/netbeans/modules/android/avd/manager/device-tv_large.png"));
+    public static final Icon ICON_WEAR = new javax.swing.ImageIcon(CreateAvdVisualPanel1.class.getResource("/org/netbeans/modules/android/avd/manager/device-wear_large.png"));
     private final JPopupMenu popupMenu = new JPopupMenu();
     private final JMenuItem unimplementedMenu = new JMenuItem("Run");
     private final CreateAvdWizardPanel1 wizPanel;
@@ -123,15 +123,15 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
         tableWear.setModel(modelWear);
     }
 
-    private static boolean isPhone(Device d) {
+    public static boolean isPhone(Device d) {
         return d.getDefaultHardware().getScreen().getDiagonalLength() < PHONE_SIZE_CUTOFF;
     }
 
-    private static boolean isTablet(Device d) {
+    public static boolean isTablet(Device d) {
         return d.getDefaultHardware().getScreen().getDiagonalLength() >= PHONE_SIZE_CUTOFF;
     }
 
-    private static boolean isTv(Device d) {
+    public  static boolean isTv(Device d) {
         return HardwareConfigHelper.isTv(d) || d.getDefaultHardware().getScreen().getDiagonalLength() >= TV_SIZE_CUTOFF;
     }
 

@@ -38,6 +38,7 @@ import com.android.sdklib.repository.targets.SystemImage;
 import com.android.sdklib.repository.targets.SystemImageManager;
 import com.android.utils.ILogger;
 import com.android.utils.NullLogger;
+import com.android.utils.StdLogger;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -54,6 +55,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.table.AbstractTableModel;
@@ -73,12 +76,13 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.WindowManager;
 
 /**
  *
  * @author arsi
  */
-public class AvdManager extends javax.swing.JPanel {
+public class AvdManager extends javax.swing.JPanel implements ChangeListener {
 
     public static boolean showCustomizer() {
         AndroidSdk defaultSdk = AndroidSdkProvider.getDefaultSdk();
@@ -145,12 +149,13 @@ public class AvdManager extends javax.swing.JPanel {
     private final JMenuItem runMenu = new JMenuItem("Run");
     private final JMenuItem stopMenu = new JMenuItem("Stop");
     private final JMenuItem wipeMenu = new JMenuItem("Wipe");
+    private final JMenuItem removeMenu = new JMenuItem("Remove");
     private ExistingDevicesTableModel model;
     private EmulatorLauncher emulatorLauncher;
     private final AndroidSdk defaultSdk;
     private final SystemImageManager systemImageManager;
     private final RepoManager repoManager;
-    public static  final RequestProcessor RP = new RequestProcessor("AVD Manager", 1);
+    public static final RequestProcessor RP = new RequestProcessor("AVD Manager", 1);
 
     private EmulatorLauncher getEmulatorLauncher() {
         if (emulatorLauncher == null) {
@@ -174,6 +179,11 @@ public class AvdManager extends javax.swing.JPanel {
     }
 
     private void refreshAvds() {
+        try {
+            avdManager.reloadAvds(new NullLogger());
+        } catch (AndroidLocation.AndroidLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         AvdInfo[] validAvds = avdManager.getValidAvds();
         model = new ExistingDevicesTableModel(validAvds);
         table.setModel(model);
@@ -227,6 +237,21 @@ public class AvdManager extends javax.swing.JPanel {
                 }
             }
         });
+        //Remove
+        popupMenu.add(removeMenu);
+        removeMenu.setAction(new AbstractAction("Delete AVD") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = table.getSelectedRow();
+                if (selectedRow != -1) {
+                    AvdInfo avdInfo = model.getAvdInfos()[selectedRow];
+                    avdManager.deleteAvd(avdInfo,new StdLogger(StdLogger.Level.INFO));
+                    WindowManager.getDefault().invokeWhenUIReady(() -> {
+                        refreshAvds();
+                    });
+                }
+            }
+        });
         //
         table.setComponentPopupMenu(popupMenu);
         popupMenu.addPopupMenuListener(new PopupMenuListener() {
@@ -250,10 +275,12 @@ public class AvdManager extends javax.swing.JPanel {
                             boolean avdRunning = avdManager.isAvdRunning(model.avdInfos[rowAtPoint], new NullLogger());
                             stopMenu.setEnabled(avdRunning);
                             wipeMenu.setEnabled(!avdRunning);
+                            removeMenu.setEnabled(!avdRunning);
                         } else {
                             runMenu.setEnabled(false);
                             stopMenu.setEnabled(false);
                             wipeMenu.setEnabled(false);
+                            removeMenu.setEnabled(false);
                         }
 
                     }
@@ -311,6 +338,13 @@ public class AvdManager extends javax.swing.JPanel {
         }
 
         return false;
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        WindowManager.getDefault().invokeWhenUIReady(() -> {
+            refreshAvds();
+        });
     }
 
     private class ExistingDevicesTableModel extends AbstractTableModel {
@@ -528,7 +562,7 @@ public class AvdManager extends javax.swing.JPanel {
 
     private void createDeviceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createDeviceActionPerformed
         // TODO add your handling code here:
-        WizardDescriptor wiz = new WizardDescriptor(new CreateAvdWizardIterator());
+        WizardDescriptor wiz = new WizardDescriptor(new CreateAvdWizardIterator(this));
         wiz.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
         wiz.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
         wiz.putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
@@ -548,7 +582,7 @@ public class AvdManager extends javax.swing.JPanel {
             }
         } finally {
             dlg.dispose();
-          //  wiz.getInstantiatedObjects();
+            //  wiz.getInstantiatedObjects();
         }
     }//GEN-LAST:event_createDeviceActionPerformed
 
