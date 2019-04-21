@@ -86,6 +86,7 @@ public class CreateAvdWizardPanel1 implements WizardDescriptor.Panel<WizardDescr
     @Override
     public void readSettings(WizardDescriptor wiz) {
         // use wiz.getProperty to retrieve previous panel state
+        component.readSettings();
     }
 
     @Override

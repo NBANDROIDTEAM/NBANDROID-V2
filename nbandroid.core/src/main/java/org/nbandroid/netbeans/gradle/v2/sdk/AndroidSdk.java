@@ -21,6 +21,7 @@ package org.nbandroid.netbeans.gradle.v2.sdk;
 import com.android.repository.api.Channel;
 import com.android.repository.api.LocalPackage;
 import com.android.repository.api.ProgressRunner;
+import com.android.repository.api.RemotePackage;
 import com.android.repository.api.RepoManager;
 import com.android.repository.api.SettingsController;
 import com.android.repository.api.UpdatablePackage;
@@ -132,7 +133,9 @@ public abstract class AndroidSdk {
      * @param aPackage UpdatablePackage
      */
     public abstract void installPackage(final UpdatablePackage aPackage);
-
+    
+    public abstract void installPackage(final RemotePackage aPackage);
+    
     public abstract String getSdkPath();
 
     public abstract void addLocalPlatformChangeListener(LocalPlatformChangeListener l);

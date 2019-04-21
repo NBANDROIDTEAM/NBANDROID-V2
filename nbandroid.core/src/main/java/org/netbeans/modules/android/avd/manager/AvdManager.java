@@ -157,7 +157,7 @@ public class AvdManager extends javax.swing.JPanel {
     private final AndroidSdk defaultSdk;
     private final SystemImageManager systemImageManager;
     private final RepoManager repoManager;
-    private final RequestProcessor RP = new RequestProcessor("AVD Manager", 1);
+    public static  final RequestProcessor RP = new RequestProcessor("AVD Manager", 1);
     private Devices deviceDefs;
 
     private EmulatorLauncher getEmulatorLauncher() {
@@ -548,6 +548,9 @@ public class AvdManager extends javax.swing.JPanel {
         wiz.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
         wiz.putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
         wiz.putProperty(CreateAvdWizardIterator.DEVICE_MANAGER, deviceManager);
+        wiz.putProperty(CreateAvdWizardIterator.IMAGE_MANAGER, systemImageManager);
+        wiz.putProperty(CreateAvdWizardIterator.REPO_MANAGER, repoManager);
+        wiz.putProperty(CreateAvdWizardIterator.ANDROID_SDK, defaultSdk);
         wiz.setTitle("Create Virtual Device");
         wiz.setTitleFormat(new java.text.MessageFormat("{0}")); // NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(wiz);
@@ -559,7 +562,7 @@ public class AvdManager extends javax.swing.JPanel {
             }
         } finally {
             dlg.dispose();
-            wiz.getInstantiatedObjects();
+          //  wiz.getInstantiatedObjects();
         }
     }//GEN-LAST:event_createDeviceActionPerformed
 

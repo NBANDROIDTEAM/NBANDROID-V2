@@ -37,7 +37,11 @@ public final class CreateAvdWizardIterator implements WizardDescriptor.Instantia
     private WizardDescriptor wizard;
     private List<WizardDescriptor.Panel<WizardDescriptor>> panels;
     public static final String DEVICE_MANAGER = "DEVICE_MANAGER";
+    public static final String REPO_MANAGER = "REPO_MANAGER";
+    public static final String IMAGE_MANAGER = "IMAGE_MANAGER";
     public static final String DEVICE_SELECTED = "DEVICE_SELECTED";
+    public static final String ANDROID_SDK = "ANDROID_SDK";
+    public static final String SYSTEM_IMAGE = "SYSTEM_IMAGE";
 
     private List<WizardDescriptor.Panel<WizardDescriptor>> getPanels() {
         if (panels == null) {

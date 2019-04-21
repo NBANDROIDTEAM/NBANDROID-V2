@@ -97,6 +97,14 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
 
     private void refreshDevices() {
         List<Device> allDevices = new ArrayList<>(deviceManager.getDevices(EnumSet.of(DeviceManager.DeviceFilter.DEFAULT, DeviceManager.DeviceFilter.USER, DeviceManager.DeviceFilter.VENDOR, DeviceManager.DeviceFilter.SYSTEM_IMAGES)));
+        tvDevices = allDevices.stream().filter((t) -> {
+            return isTv(t);
+        }).collect(Collectors.toList());
+        allDevices.removeAll(tvDevices);
+        wearDevices = allDevices.stream().filter((t) -> {
+            return HardwareConfigHelper.isWear(t);
+        }).collect(Collectors.toList());
+        allDevices.removeAll(wearDevices);
         mobileDevices = allDevices.stream().filter((t) -> {
             return isPhone(t);
         }).collect(Collectors.toList());
@@ -105,11 +113,6 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
             return isTablet(t);
         }).collect(Collectors.toList());
         allDevices.removeAll(tabletDevices);
-        tvDevices = allDevices.stream().filter((t) -> {
-            return isTv(t);
-        }).collect(Collectors.toList());
-        allDevices.removeAll(tvDevices);
-        wearDevices = new ArrayList<>(allDevices);
         modelMobile = new DevicesTableModel(mobileDevices);
         modelTablet = new DevicesTableModel(tabletDevices);
         modelTv = new DevicesTableModel(tvDevices);
@@ -156,7 +159,7 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
             Object source = e.getSource();
             if (tableMobile.getSelectionModel().equals(source)) {
                 if (tableMobile.getSelectedRow() > -1) {
-                    selectedDevice = modelMobile.getDevices().get(tableMobile.getSelectedRow());
+                    selectedDevice = modelMobile.getDevices().get(tableMobile.getRowSorter().convertRowIndexToModel(tableMobile.getSelectedRow()));
                     devName.setIcon(ICON_MOBILE);
                     tableTablet.clearSelection();
                     tableTv.clearSelection();
@@ -165,7 +168,7 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
 
             } else if (tableTablet.getSelectionModel().equals(source)) {
                 if (tableTablet.getSelectedRow() > -1) {
-                    selectedDevice = modelTablet.getDevices().get(tableTablet.getSelectedRow());
+                    selectedDevice = modelTablet.getDevices().get(tableTablet.getRowSorter().convertRowIndexToModel(tableTablet.getSelectedRow()));
                     devName.setIcon(ICON_TABLET);
                     tableMobile.clearSelection();
                     tableTv.clearSelection();
@@ -174,7 +177,7 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
 
             } else if (tableTv.getSelectionModel().equals(source)) {
                 if (tableTv.getSelectedRow() > -1) {
-                    selectedDevice = modelTv.getDevices().get(tableTv.getSelectedRow());
+                    selectedDevice = modelTv.getDevices().get(tableTv.getRowSorter().convertRowIndexToModel(tableTv.getSelectedRow()));
                     devName.setIcon(ICON_TV);
                     tableTablet.clearSelection();
                     tableMobile.clearSelection();
@@ -183,7 +186,7 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
 
             } else if (tableWear.getSelectionModel().equals(source)) {
                 if (tableWear.getSelectedRow() > -1) {
-                    selectedDevice = modelWear.getDevices().get(tableWear.getSelectedRow());
+                    selectedDevice = modelWear.getDevices().get(tableWear.getRowSorter().convertRowIndexToModel(tableWear.getSelectedRow()));
                     devName.setIcon(ICON_WEAR);
                     tableTablet.clearSelection();
                     tableTv.clearSelection();
@@ -267,6 +270,9 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
 
     void storeSettings() {
         wiz.putProperty(CreateAvdWizardIterator.DEVICE_SELECTED, selectedDevice);
+    }
+
+    void readSettings() {
     }
 
     private static class DevicesTableModel extends AbstractTableModel {
@@ -384,6 +390,7 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
 
         jTabbedPane1.setTabPlacement(javax.swing.JTabbedPane.LEFT);
 
+        tableMobile.setAutoCreateRowSorter(true);
         tableMobile.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
@@ -412,6 +419,7 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(CreateAvdVisualPanel1.class, "CreateAvdVisualPanel1.jPanel2.TabConstraints.tabTitle"), new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/android/avd/manager/device-phone.png")), jPanel2); // NOI18N
 
+        tableTablet.setAutoCreateRowSorter(true);
         tableTablet.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
@@ -440,6 +448,7 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(CreateAvdVisualPanel1.class, "CreateAvdVisualPanel1.jPanel3.TabConstraints.tabTitle"), new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/android/avd/manager/device-tablet.png")), jPanel3); // NOI18N
 
+        tableTv.setAutoCreateRowSorter(true);
         tableTv.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
@@ -468,6 +477,7 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(CreateAvdVisualPanel1.class, "CreateAvdVisualPanel1.jPanel4.TabConstraints.tabTitle"), new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/android/avd/manager/device-tv_large.png")), jPanel4); // NOI18N
 
+        tableWear.setAutoCreateRowSorter(true);
         tableWear.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},

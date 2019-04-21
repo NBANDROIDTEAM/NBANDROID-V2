@@ -667,7 +667,28 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
 
         DOWNLOAD_POOL.execute(runnable);
     }
+    
+     @Override
+    public void installPackage(final RemotePackage aPackage) {
+        if (aPackage == null) {
+            return;
+        }
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                BasicInstallerFactory installerFactory = new BasicInstallerFactory();
+                Installer installer = installerFactory.createInstaller(aPackage, getRepoManager(), new NbDownloader(), FileOpUtils.create());
+                NbOutputWindowProgressIndicator indicator = new NbOutputWindowProgressIndicator();
+                if (installer.prepare(indicator)) {
+                    installer.complete(indicator);
+                }
+                updateSdkPlatformPackages();
+            }
+        };
 
+        DOWNLOAD_POOL.execute(runnable);
+    }
+    
     @Override
     public boolean isBroken() {
         return !AndroidSdkTools.isSdkFolder(FileUtil.toFile(getInstallFolder()));

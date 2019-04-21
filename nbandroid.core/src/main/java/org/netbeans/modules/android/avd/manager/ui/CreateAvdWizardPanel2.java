@@ -20,6 +20,7 @@ package org.netbeans.modules.android.avd.manager.ui;
 
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
 public class CreateAvdWizardPanel2 implements WizardDescriptor.Panel<WizardDescriptor> {
@@ -30,6 +31,7 @@ public class CreateAvdWizardPanel2 implements WizardDescriptor.Panel<WizardDescr
      */
     private CreateAvdVisualPanel2 component;
     private final WizardDescriptor wiz;
+    private final ChangeSupport support = new ChangeSupport(this);
 
     public CreateAvdWizardPanel2(WizardDescriptor wiz) {
         this.wiz = wiz;
@@ -44,7 +46,7 @@ public class CreateAvdWizardPanel2 implements WizardDescriptor.Panel<WizardDescr
     @Override
     public CreateAvdVisualPanel2 getComponent() {
         if (component == null) {
-            component = new CreateAvdVisualPanel2(wiz);
+            component = new CreateAvdVisualPanel2(wiz,this);
         }
         return component;
     }
@@ -60,7 +62,7 @@ public class CreateAvdWizardPanel2 implements WizardDescriptor.Panel<WizardDescr
     @Override
     public boolean isValid() {
         // If it is always OK to press Next or Finish, then:
-        return true;
+        return component.valid();
         // If it depends on some condition (form filled out...) and
         // this condition changes (last form field filled in...) then
         // use ChangeSupport to implement add/removeChangeListener below.
@@ -69,20 +71,28 @@ public class CreateAvdWizardPanel2 implements WizardDescriptor.Panel<WizardDescr
 
     @Override
     public void addChangeListener(ChangeListener l) {
+        support.addChangeListener(l);
     }
 
     @Override
     public void removeChangeListener(ChangeListener l) {
+        support.removeChangeListener(l);
     }
 
     @Override
     public void readSettings(WizardDescriptor wiz) {
         // use wiz.getProperty to retrieve previous panel state
+        component.readSettings();
     }
 
     @Override
     public void storeSettings(WizardDescriptor wiz) {
         // use wiz.putProperty to remember current panel state
+        component.storeSettings();
+    }
+
+    void refreshValid() {
+        support.fireChange();
     }
 
 }
