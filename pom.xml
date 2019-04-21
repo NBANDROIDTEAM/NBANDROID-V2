@@ -89,7 +89,7 @@
                 </plugins>
             </build>
             <properties>
-                <version.nb>RELEASE82</version.nb>
+                <version.nb>RELEASE100</version.nb>
                 <asm.nb>asm-all-5.0.1</asm.nb>
             </properties>
         </profile>
