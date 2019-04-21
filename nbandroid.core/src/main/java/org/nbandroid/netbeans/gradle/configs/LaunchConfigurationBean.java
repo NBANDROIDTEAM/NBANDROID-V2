@@ -20,7 +20,7 @@ import org.nbandroid.netbeans.gradle.launch.LaunchConfiguration;
  *
  * @author radim
  */
-class LaunchConfigurationBean implements LaunchConfiguration {
+public class LaunchConfigurationBean implements LaunchConfiguration {
 
     private Action launchAction = Action.MAIN;
     /**

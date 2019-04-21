@@ -8,6 +8,7 @@
     </parent>
     <artifactId>Gradle-Android-support-models</artifactId>
     <packaging>jar</packaging>
+    <name>NbAndroid-Models</name>
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>

@@ -9,6 +9,7 @@
     <artifactId>Gradle-Android-support-maven-impl</artifactId>
     <version>01.00-SNAPSHOT</version>
     <packaging>nbm</packaging>
+    <name>NbAndroid-Maven-Impl</name>
     <build>
         <plugins>
             <plugin>
@@ -17,6 +18,12 @@
                 <version>${version.nb.plugin}</version>
                 <extensions>true</extensions>
                 <configuration>
+                    <licenseName>Apache 2.0</licenseName>
+                    <homePageUrl>https://github.com/NBANDROIDTEAM/NBANDROID-V2</homePageUrl>
+                    <licenseFile>../LICENSE.txt</licenseFile>
+                    <installerLicenseFile>../LICENSE.txt</installerLicenseFile>
+                    <author>ArSi</author>
+                    <authorEmail>arsi@arsi.sk</authorEmail>
                     <requiresRestart>true</requiresRestart>
                     <defaultCluster>${cluster}</defaultCluster>
                     <cluster>${cluster}</cluster>
@@ -49,11 +56,13 @@
                             <!--Private Package Reference-->
                             <id>org.netbeans.modules:org-netbeans-modules-maven-indexer</id>
                             <type>impl</type>
+                            <explicitValue>org.netbeans.modules.maven.indexer/2 = ${nb.impl}</explicitValue>
                         </dependency>
                         <dependency>
                             <!--Private Package Reference-->
                             <id>org.netbeans.modules:org-netbeans-modules-maven-embedder</id>
                             <type>impl</type>
+                            <explicitValue>org.netbeans.modules.maven.embedder/2 = ${nb.impl}</explicitValue>
                         </dependency>
                         <dependency>
                             <!--Private Package Reference-->

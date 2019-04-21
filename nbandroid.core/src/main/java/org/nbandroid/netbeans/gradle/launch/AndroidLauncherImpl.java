@@ -42,13 +42,12 @@ import org.nbandroid.netbeans.gradle.core.ui.DeviceChooserImpl;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
+import org.netbeans.api.io.InputOutput;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.android.spi.AndroidIO;
 import org.netbeans.modules.android.spi.MainActivityConfiguration;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.InputOutput;
 import org.xml.sax.SAXParseException;
 
 /**
@@ -60,23 +59,18 @@ public class AndroidLauncherImpl implements AndroidLauncher {
     private static final Logger LOG = Logger.getLogger(AndroidLauncherImpl.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(AndroidLauncherImpl.class);
 
-    private static InputOutput io;
+    private InputOutput io;
 
     public AndroidLauncherImpl() {
     }
 
-    private static void initIO() {
-        if (io == null) {
-            io = AndroidIO.getDefaultIO();
-        }
-    }
-
     @Override
     public Future<Client> launch(AndroidPlatformInfo platform, Lookup context, String mode) {
-        initIO();
+        
         LaunchConfiguration launchCfg = context.lookup(LaunchConfiguration.class);
         AvdSelector.LaunchData launchData = context.lookup(AvdSelector.LaunchData.class);
         Project project = Preconditions.checkNotNull(context.lookup(Project.class));
+        io = project.getLookup().lookup(InputOutput.class);
         AndroidSdk sdk = Preconditions.checkNotNull(project.getLookup().lookup(AndroidSdk.class));
         if (launchData == null) {
             if (platform != null) {
@@ -276,7 +270,6 @@ public class AndroidLauncherImpl implements AndroidLauncher {
     }
 
     boolean installPackage(LaunchInfo launchInfo, String remotePackagePath, IDevice device) {
-        initIO();
         try {
             device.installRemotePackage(remotePackagePath, launchInfo.reinstall);
             io.getOut().println("Package " + launchInfo.packageFile.getNameExt() + " deployed");
@@ -308,7 +301,7 @@ public class AndroidLauncherImpl implements AndroidLauncher {
 
         private final LaunchInfo launchInfo;
         private final IDevice device;
-
+        private final InputOutput io;
         /**
          * Basic constructor.
          *
@@ -316,9 +309,10 @@ public class AndroidLauncherImpl implements AndroidLauncher {
          * am process.
          * @param device the Android device on which the launch is done.
          */
-        public AMReceiver(LaunchInfo launchInfo, IDevice device) {
+        public AMReceiver(LaunchInfo launchInfo, IDevice device,InputOutput io) {
             this.launchInfo = launchInfo;
             this.device = device;
+            this.io=io;
         }
 
         /**

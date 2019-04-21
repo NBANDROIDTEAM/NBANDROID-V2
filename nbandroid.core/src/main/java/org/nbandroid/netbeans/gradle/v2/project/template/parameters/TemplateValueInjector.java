@@ -58,7 +58,7 @@ public class TemplateValueInjector {
         parameters.put(ATTR_BUILD_API_REVISION, maxBuildLevel);
         parameters.put(ATTR_BUILD_TOOLS_VERSION, wiz.getProperty(BUILD_TOOL_VERSION));
 
-        parameters.put(ATTR_GRADLE_PLUGIN_VERSION, SdkConstants.GRADLE_PLUGIN_LATEST_VERSION);
+        parameters.put(ATTR_GRADLE_PLUGIN_VERSION, "3.4.0");
         parameters.put(ATTR_GRADLE_VERSION, SdkConstants.GRADLE_LATEST_VERSION);
         parameters.put(ATTR_IS_INSTANT_APP, false);
         parameters.put(ATTR_JAVA_VERSION, "1.7");

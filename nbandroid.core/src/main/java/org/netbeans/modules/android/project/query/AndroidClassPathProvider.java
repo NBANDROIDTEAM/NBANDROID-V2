@@ -72,6 +72,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.android.project.build.BuildVariant;
+import org.netbeans.modules.android.project.sources.generated.RTools;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import static org.netbeans.spi.java.classpath.ClassPathImplementation.PROP_RESOURCES;
@@ -530,6 +531,12 @@ public class AndroidClassPathProvider implements ClassPathProvider, AndroidClass
             Collection<File> generatedJavaDirs = variant != null
                     ? variant.getMainArtifact().getGeneratedSourceFolders()
                     : Collections.<File>emptyList();
+            if (variant != null) {
+                RTools.PluginVersionResult result = RTools.handlePluginVersion(androidProjectModel, variant, null);
+                if (result != null) {
+                    generatedJavaDirs.add(FileUtil.toFile(result.getSrc()));
+                }
+            }
             return Iterables.concat(
                     javaDirs,
                     typeJavaDirs,

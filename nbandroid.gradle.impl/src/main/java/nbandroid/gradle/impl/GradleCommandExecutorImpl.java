@@ -39,7 +39,6 @@ import org.gradle.internal.impldep.com.google.common.collect.ImmutableSet;
 import org.gradle.tooling.BuildCancelledException;
 import org.gradle.tooling.BuildLauncher;
 import org.gradle.tooling.CancellationToken;
-import org.gradle.tooling.GradleConnectionException;
 import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ProjectConnection;
 import org.gradle.tooling.events.ProgressEvent;
@@ -134,9 +133,9 @@ public class GradleCommandExecutorImpl implements GradleCommandExecutor, Cancell
                         });
                         try {
                             buildLauncher.run();
-                        } catch (GradleConnectionException | IllegalStateException gradleConnectionException) {
-                            if (!(gradleConnectionException instanceof BuildCancelledException)) {
-                                Exceptions.printStackTrace(gradleConnectionException);
+                        } catch (Exception e) {
+                            if (!(e instanceof BuildCancelledException)) {
+                                Exceptions.printStackTrace(e);
                             }
                         }
                         progressHandle.finish();

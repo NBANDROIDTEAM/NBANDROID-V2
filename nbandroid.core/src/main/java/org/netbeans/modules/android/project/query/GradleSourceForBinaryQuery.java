@@ -39,6 +39,7 @@ import javax.swing.event.ChangeListener;
 import org.nbandroid.netbeans.gradle.config.ProductFlavors;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.android.project.build.BuildVariant;
+import org.netbeans.modules.android.project.sources.generated.RTools;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -106,6 +107,12 @@ public class GradleSourceForBinaryQuery implements SourceForBinaryQueryImplement
         Collection<File> generatedJavaDirs = variant != null
                 ? variant.getMainArtifact().getGeneratedSourceFolders()
                 : Collections.<File>emptyList();
+        if (variant!=null) {
+            RTools.PluginVersionResult result = RTools.handlePluginVersion(androidProjectModel, variant, null);
+            if(result!=null){
+                generatedJavaDirs.add(FileUtil.toFile(result.getSrc()));
+            }
+        }
         return Iterables.concat(
                 javaDirs,
                 typeJavaDirs,

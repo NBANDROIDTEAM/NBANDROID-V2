@@ -22,6 +22,14 @@
                     <snapshots>
                         <enabled>false</enabled>
                     </snapshots>
+                    <id>Apache Netbeans</id>
+                    <name>Apache Netbeans</name>
+                    <url>http://repository.apache.org/content/repositories/orgapachenetbeans-1022</url>
+                </repository>
+                <repository>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
                     <id>bintray-kelemen-maven</id>
                     <name>bintray</name>
                     <url>https://dl.bintray.com/kelemen/maven</url>
@@ -33,6 +41,14 @@
                     <id>bintray-nbandroidteam-netbeans-color-codes-preview</id>
                     <name>bintray</name>
                     <url>https://dl.bintray.com/nbandroidteam/netbeans-color-codes-preview</url>
+                </repository>
+                <repository>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                    <id>bintray-nbandroidteam-repository</id>
+                    <name>bintray</name>
+                    <url>https://dl.bintray.com/nbandroidteam/repository</url>
                 </repository>
                 <repository>
                     <snapshots>

@@ -10,12 +10,9 @@ before_install:
  - cp .travis.maven.settings.xml $HOME/.m2/settings.xml
  
 script:
-  - mvn -PTravisNB81 clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V 
-  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then mvn -PTravisNB81 nbm:autoupdate wagon:upload ; fi'
-  - mvn -PTravisNB81 test -B
-  - mvn -PTravisNB82 clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V 
-  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then mvn -PTravisNB82 nbm:autoupdate wagon:upload ; fi'
-  - mvn -PTravisNB82 test -B
+  - mvn -PTravisNB100 clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V 
+  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then mvn -PTravisNB100 nbm:autoupdate wagon:upload ; fi'
+  - mvn -PTravisNB100 test -B
 
 addons:
   ssh_known_hosts:

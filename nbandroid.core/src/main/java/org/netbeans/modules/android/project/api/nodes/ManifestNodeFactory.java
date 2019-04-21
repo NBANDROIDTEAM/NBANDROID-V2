@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.android.project.api.nodes;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
@@ -30,6 +31,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -43,35 +47,48 @@ public class ManifestNodeFactory implements NodeFactory {
     @Override
     public Node createNode(Project p) {
         // TODO there can be more manifests
-        AndroidManifestSource ams = p.getLookup().lookup(AndroidManifestSource.class);
-        return new ManifestNode(ams, Nodes.createWaitNode(), p, AndroidConstants.ANDROID_MANIFEST_XML);
+        return new ManifestNode(Nodes.createWaitNode(), p, AndroidConstants.ANDROID_MANIFEST_XML);
 
     }
 
-    private static class ManifestNode extends AndroidResourceNode implements ChangeListener {
+    private static class ManifestNode extends AndroidResourceNode implements ChangeListener, LookupListener {
 
-        private final AndroidManifestSource ams;
+        private final Lookup.Result<AndroidManifestSource> lookupResult;
+        private AndroidManifestSource ams = null;
 
-        public ManifestNode(AndroidManifestSource ams, Node delegate, Project project, String nodeName) {
+        public ManifestNode(Node delegate, Project project, String nodeName) {
             super(delegate, project, nodeName);
-            this.ams = ams;
-            ams.addChangeListener(WeakListeners.change(this, ams));
-            stateChanged(null);
+            lookupResult = project.getLookup().lookupResult(AndroidManifestSource.class);
+            lookupResult.addLookupListener(this);
+            resultChanged(null);
+            Node node = Nodes.createWaitNode();
+            changeOriginal(node, true);
+        }
+
+        @Override
+        public void resultChanged(LookupEvent le) {
+            Collection<? extends AndroidManifestSource> allInstances = lookupResult.allInstances();
+            if (!allInstances.isEmpty() && ams == null) {
+                ams = allInstances.iterator().next();
+                ams.addChangeListener(WeakListeners.change(this, ams));
+                stateChanged(null);
+            }
         }
 
         @Override
         public void stateChanged(ChangeEvent e) {
-            Node node = Nodes.createWaitNode();
-            FileObject manifestFO = ams.get();
-            if (manifestFO != null) {
-                try {
-                    node = DataObject.find(manifestFO).getNodeDelegate();
-                } catch (Exception ex) {
+            if (ams!=null) {
+                Node node = Nodes.createWaitNode();
+                FileObject manifestFO = ams.get();
+                if (manifestFO != null) {
+                    try {
+                        node = DataObject.find(manifestFO).getNodeDelegate();
+                    } catch (Exception ex) {
+                    }
                 }
+                changeOriginal(node, true);
             }
-            changeOriginal(node, true);
         }
-
 
         @Override
         public String getHtmlDisplayName() {
@@ -104,9 +121,6 @@ public class ManifestNodeFactory implements NodeFactory {
             }
             return super.getDisplayName(); //To change body of generated methods, choose Tools | Templates.
         }
-
-
-
 
     }
 }

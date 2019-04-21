@@ -9,6 +9,7 @@
     <artifactId>Gradle-Android-support-ext-libs-android</artifactId>
     <version>01.00-SNAPSHOT</version>
     <packaging>nbm</packaging>
+    <name>NbAndroid-Ext-Libs-Android</name>
     <build>
         <plugins>
             <plugin>
@@ -27,6 +28,12 @@
                 <version>${version.nb.plugin}</version>
                 <extensions>true</extensions>
                 <configuration>
+                    <licenseName>Apache 2.0</licenseName>
+                    <homePageUrl>https://github.com/NBANDROIDTEAM/NBANDROID-V2</homePageUrl>
+                    <licenseFile>../LICENSE.txt</licenseFile>
+                    <installerLicenseFile>../LICENSE.txt</installerLicenseFile>
+                    <author>ArSi</author>
+                    <authorEmail>arsi@arsi.sk</authorEmail>
                     <requiresRestart>true</requiresRestart>
                     <defaultCluster>${cluster}</defaultCluster>
                     <cluster>${cluster}</cluster>
@@ -143,8 +150,14 @@
         <dependency>
             <groupId>com.android.tools</groupId>
             <artifactId>repository</artifactId>
-            <version>${version.android}</version>
+            <version>26.2.1.ANB</version>
             <type>jar</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.xml.bind</groupId>
+                    <artifactId>jaxb-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.android.tools</groupId>
@@ -162,6 +175,51 @@
             <groupId>com.android.tools</groupId>
             <artifactId>dvlib</artifactId>
             <version>${version.android}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-xml-jaxb-api</artifactId>
+            <version>${version.nb}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.jimfs</groupId>
+            <artifactId>jimfs</artifactId>
+            <version>1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.activation</groupId>
+            <artifactId>javax.activation</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.istack</groupId>
+            <artifactId>istack-commons-runtime</artifactId>
+            <version>2.21</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.fastinfoset</groupId>
+            <artifactId>FastInfoset</artifactId>
+            <version>1.2.13</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>2.2.11</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>2.2.11</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>txw2</artifactId>
+            <version>2.2.11</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jvnet.staxex</groupId>
+            <artifactId>stax-ex</artifactId>
+            <version>1.7.7</version>
         </dependency>
     </dependencies>
 </project>

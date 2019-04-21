@@ -9,6 +9,7 @@
     <artifactId>Gradle-Android-support-gradle-tooling</artifactId>
     <version>01.00-SNAPSHOT</version>
     <packaging>jar</packaging>
+    <name>NbAndroid-Gradle-Tooling</name>
     <dependencies>
         <dependency>
             <groupId>org.gradle</groupId>

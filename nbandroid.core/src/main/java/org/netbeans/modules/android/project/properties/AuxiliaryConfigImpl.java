@@ -155,11 +155,8 @@ public class AuxiliaryConfigImpl implements AuxiliaryConfiguration {
                             }
                         }
                         root.insertBefore(root.getOwnerDocument().importNode(fragment, true), ref);
-                        OutputStream os = config.getOutputStream();
-                        try {
+                        try (OutputStream os = config.getOutputStream()) {
                             XMLUtil.write(doc, os, "UTF-8");
-                        } finally {
-                            os.close();
                         }
                     } else {
                         String attrName = AUX_CONFIG_ATTR_BASE + "." + namespace + "#" + elementName;
@@ -205,11 +202,8 @@ public class AuxiliaryConfigImpl implements AuxiliaryConfiguration {
                         if (toRemove != null) {
                             root.removeChild(toRemove);
                             if (root.getElementsByTagName("*").getLength() > 0) {
-                                OutputStream os = config.getOutputStream();
-                                try {
+                                try (OutputStream os = config.getOutputStream()) {
                                     XMLUtil.write(doc, os, "UTF-8");
-                                } finally {
-                                    os.close();
                                 }
                             } else {
                                 config.delete();

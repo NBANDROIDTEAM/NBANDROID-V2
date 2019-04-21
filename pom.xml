@@ -5,6 +5,26 @@
     <artifactId>Gradle-Android-support</artifactId>
     <version>01.00-SNAPSHOT</version>
     <packaging>pom</packaging>
+    <name>NbAndroid</name>
+    <!-- Licenses -->
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            <comments>Apache License 2.0</comments>
+        </license>
+    </licenses>
+    
+    <description>Android support plugin for Apache Netbeans</description>
+    
+    <!-- Developers -->
+    <developers>
+        <developer>
+            <id>Arsi</id>
+            <name>Ivan Friedländer</name>
+            <email>arsi@arsi.sk</email>
+        </developer>
+    </developers>
     <modules>
         <module>nbandroid.gradle.tooling</module>
         <module>nbandroid.gradle.libs</module>
@@ -74,7 +94,7 @@
             </properties>
         </profile>
         <profile>
-            <id>TravisNB81</id>
+            <id>TravisNB100</id>
             <build>
                 <plugins>
                     <plugin>
@@ -85,7 +105,7 @@
                             <fromDir>target/netbeans_site/</fromDir>
                             <includes>*</includes>
                             <url>scp://server.arsi.sk/</url>
-                            <toDir>/var/www/html/nbandroid81</toDir>
+                            <toDir>/update</toDir>
                             <serverId>nbandroid</serverId>
                         </configuration>
                     </plugin>
@@ -98,41 +118,14 @@
                 </plugins>
             </build>
             <properties>
-                <version.nb>RELEASE81</version.nb>
-                <asm.nb>asm-all-4.0</asm.nb>
-            </properties>
-        </profile>
-        <profile>
-            <id>TravisNB82</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>wagon-maven-plugin</artifactId>
-                        <version>1.0</version>
-                        <configuration>
-                            <fromDir>target/netbeans_site/</fromDir>
-                            <includes>*</includes>
-                            <url>scp://server.arsi.sk/</url>
-                            <toDir>/var/www/html/nbandroid82</toDir>
-                            <serverId>nbandroid</serverId>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>nbm-maven-plugin</artifactId>
-                        <version>${version.nb.plugin}</version>
-                        <extensions>true</extensions>
-                    </plugin>
-                </plugins>
-            </build>
-            <properties>
-                <version.nb>RELEASE82</version.nb>
+                <version.nb>RELEASE100</version.nb>
                 <asm.nb>asm-all-5.0.1</asm.nb>
+                <!--<nb.impl>incubator-netbeans-release-380-on-20181217</nb.impl>-->
+                <nb.impl>20181225-62d11a22fd18</nb.impl>
             </properties>
         </profile>
         <profile>
-            <id>Arsi-NB81</id>
+            <id>Arsi-NB11.0</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
@@ -144,39 +137,16 @@
                         <version>${version.nb.plugin}</version>
                         <extensions>true</extensions>
                         <configuration>
-                            <netbeansUserdir>/jetty/netbeans9/user</netbeansUserdir>
-                            <netbeansInstallation>/ssd/nb/netbeans-8.1-e3/</netbeansInstallation>
+                            <netbeansInstallation>/hdd/nb11/</netbeansInstallation>
+                            <netbeansUserdir>/home/arsi/.netbeans/11.0.android</netbeansUserdir>
                         </configuration>
                     </plugin>
                 </plugins>
             </build>
             <properties>
-                <version.nb>RELEASE81</version.nb>
-                <asm.nb>asm-all-4.0</asm.nb>
-            </properties>
-        </profile>
-        <profile>
-            <id>Arsi-NB82</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>nbm-maven-plugin</artifactId>
-                        <version>${version.nb.plugin}</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <netbeansInstallation>/ssd/nb/netbeans-8.2-e3/</netbeansInstallation>
-                            <netbeansUserdir>/jetty/netbeans/user_nb_android</netbeansUserdir>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-            <properties>
-                <version.nb>RELEASE82</version.nb>
+                <version.nb>RELEASE100</version.nb>
                 <asm.nb>asm-all-5.0.1</asm.nb>
+                <nb.impl>incubator-netbeans-release-404-on-20190319</nb.impl>
             </properties>
         </profile>
     </profiles>
@@ -191,6 +161,14 @@
         </pluginRepository>
     </pluginRepositories>
     <repositories>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>Apache Netbeans</id>
+            <name>Apache Netbeans</name>
+            <url>http://repository.apache.org/content/repositories/orgapachenetbeans-1022</url>
+        </repository>
         <repository>
             <snapshots>
                 <enabled>false</enabled>
@@ -227,6 +205,14 @@
             <id>bintray-kelemen-maven</id>
             <name>bintray</name>
             <url>https://dl.bintray.com/kelemen/maven</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>bintray-nbandroidteam-repository</id>
+            <name>bintray</name>
+            <url>https://dl.bintray.com/nbandroidteam/repository</url>
         </repository>
         <repository>
             <snapshots>

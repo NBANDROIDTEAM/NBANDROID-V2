@@ -122,24 +122,18 @@ public class AndroidStyleableStore {
                                 explodedRoot = parent;
                                 parent = parent.getParent();
                             }
-                            if (explodedRoot != null && explodedRoot.isFolder()) {
-                                FileObject attrFo = explodedRoot.getFileObject("res/values/attrs.xml");
-                                if (attrFo == null) {
-                                    attrFo = explodedRoot.getFileObject("res/values/values.xml");
-                                }
-                                if (attrFo != null) {
-                                    AndroidStyleableNamespace cachedNamespace = LIBS_STYLEABLE_NAMESPACES_MAP.get(jarOrAarDir.getPath());
-                                    if (cachedNamespace == null) {
-                                        AndroidStyleableNamespace libNamespace = new AndroidStyleableNamespace(RES_AUTO_NAMESPACE, null);
-                                        StyleableXmlParser.parseAar(libNamespace, platformNamespace, root, attrFo);
-                                        LIBS_STYLEABLE_NAMESPACES_MAP.put(jarOrAarDir.getPath(), libNamespace);
-                                        libNamespace.mergeTo(namespace);
-                                    } else {
-                                        cachedNamespace.mergeTo(namespace);
-                                    }
+                            handleExplodedRoot(explodedRoot, jarOrAarDir, platformNamespace, root, namespace);
+
+                        }else if ("classes.jar".equalsIgnoreCase(jarOrAarDir.getNameExt())){
+                            //handle new exploded aar structure
+                            FileObject explodedRoot = null;
+                            explodedRoot = jarOrAarDir.getParent();
+                            if(explodedRoot!=null){
+                                explodedRoot = explodedRoot.getParent();
+                                if(explodedRoot!=null){
+                                    handleExplodedRoot(explodedRoot, jarOrAarDir, platformNamespace, root, namespace);
                                 }
                             }
-
                         }
                     }
                 }
@@ -208,6 +202,26 @@ public class AndroidStyleableStore {
             return namespaces;
         } finally {
             LOCK.unlock();
+        }
+    }
+
+    private static void handleExplodedRoot(FileObject explodedRoot, FileObject jarOrAarDir, AndroidStyleableNamespace platformNamespace, FileObject root, AndroidStyleableNamespace namespace) {
+        if (explodedRoot != null && explodedRoot.isFolder()) {
+            FileObject attrFo = explodedRoot.getFileObject("res/values/attrs.xml");
+            if (attrFo == null) {
+                attrFo = explodedRoot.getFileObject("res/values/values.xml");
+            }
+            if (attrFo != null) {
+                AndroidStyleableNamespace cachedNamespace = LIBS_STYLEABLE_NAMESPACES_MAP.get(jarOrAarDir.getPath());
+                if (cachedNamespace == null) {
+                    AndroidStyleableNamespace libNamespace = new AndroidStyleableNamespace(RES_AUTO_NAMESPACE, null);
+                    StyleableXmlParser.parseAar(libNamespace, platformNamespace, root, attrFo);
+                    LIBS_STYLEABLE_NAMESPACES_MAP.put(jarOrAarDir.getPath(), libNamespace);
+                    libNamespace.mergeTo(namespace);
+                } else {
+                    cachedNamespace.mergeTo(namespace);
+                }
+            }
         }
     }
 

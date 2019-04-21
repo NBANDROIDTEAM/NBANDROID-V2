@@ -49,7 +49,7 @@ import org.netbeans.modules.android.project.api.NbAndroidProject;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 import org.netbeans.modules.xml.schema.completion.util.CompletionContextImpl;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
-import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.openide.filesystems.FileObject;
@@ -90,9 +90,9 @@ public class LayoutCompletionQuery extends AsyncCompletionQuery {
     @Override
     protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
         resultSet.setWaitText("Loading android Styleables..");
-        XMLSyntaxSupport support = (XMLSyntaxSupport) ((BaseDocument) doc).getSyntaxSupport();
+        XMLSyntaxSupport support = XMLSyntaxSupport.getSyntaxSupport(doc);
         String mimeType = (String) ((BaseDocument) doc).getProperty(BaseDocument.MIME_TYPE_PROP);
-        if (!support.noCompletion(component) && CompletionUtil.canProvideCompletion((BaseDocument) doc) && mimeType != null && !MenuDataObject.SETTINGS_MIME_TYPE.equals(mimeType)) {
+        if (support != null && !CompletionUtil.noCompletion(component) && CompletionUtil.canProvideCompletion((BaseDocument) doc) && mimeType != null && !MenuDataObject.SETTINGS_MIME_TYPE.equals(mimeType)) {
             Project owner = FileOwnerQuery.getOwner(primaryFile);
             if (owner instanceof NbAndroidProject) {
                 AndroidProject androidProject = owner.getLookup().lookup(AndroidProject.class);

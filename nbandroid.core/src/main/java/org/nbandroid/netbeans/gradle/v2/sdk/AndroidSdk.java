@@ -21,12 +21,14 @@ package org.nbandroid.netbeans.gradle.v2.sdk;
 import com.android.repository.api.Channel;
 import com.android.repository.api.LocalPackage;
 import com.android.repository.api.ProgressRunner;
+import com.android.repository.api.RemotePackage;
 import com.android.repository.api.RepoManager;
 import com.android.repository.api.SettingsController;
 import com.android.repository.api.UpdatablePackage;
 import com.android.sdklib.devices.Device;
 import com.android.sdklib.devices.DeviceManager;
 import com.android.sdklib.repository.AndroidSdkHandler;
+import com.android.sdklib.repository.targets.SystemImageManager;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
@@ -76,6 +78,8 @@ public abstract class AndroidSdk {
      * @return RepoManager or null if no SDK location is set
      */
     public abstract RepoManager getRepoManager();
+    
+    public abstract SystemImageManager getSystemImageManager();
 
     public abstract void store();
 
@@ -129,7 +133,9 @@ public abstract class AndroidSdk {
      * @param aPackage UpdatablePackage
      */
     public abstract void installPackage(final UpdatablePackage aPackage);
-
+    
+    public abstract void installPackage(final RemotePackage aPackage);
+    
     public abstract String getSdkPath();
 
     public abstract void addLocalPlatformChangeListener(LocalPlatformChangeListener l);

@@ -8,6 +8,7 @@
     </parent>
     <artifactId>Gradle-Android-support-gradle-impl</artifactId>
     <packaging>nbm</packaging>
+    <name>NbAndroid-Gradle-Impl</name>
     <build>
         <plugins>
             <plugin>
@@ -16,6 +17,12 @@
                 <version>${version.nb.plugin}</version>
                 <extensions>true</extensions>
                 <configuration>
+                    <licenseName>Apache 2.0</licenseName>
+                    <homePageUrl>https://github.com/NBANDROIDTEAM/NBANDROID-V2</homePageUrl>
+                    <licenseFile>../LICENSE.txt</licenseFile>
+                    <installerLicenseFile>../LICENSE.txt</installerLicenseFile>
+                    <author>ArSi</author>
+                    <authorEmail>arsi@arsi.sk</authorEmail>
                     <requiresRestart>true</requiresRestart>
                     <defaultCluster>${cluster}</defaultCluster>
                     <cluster>${cluster}</cluster>
@@ -52,6 +59,21 @@
         </plugins>
     </build>
     <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>5.0.5.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.9.8</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+            <version>2.9.8</version>
+        </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
@@ -143,6 +165,16 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-modules</artifactId>
+            <version>${version.nb}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.25</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-dialogs</artifactId>
             <version>${version.nb}</version>
         </dependency>
     </dependencies>
