@@ -19,11 +19,8 @@
 package org.netbeans.modules.android.avd.manager;
 
 import com.android.prefs.AndroidLocation;
-import com.android.repository.api.LocalPackage;
-import com.android.repository.api.RemotePackage;
 import com.android.repository.api.RepoManager;
 import com.android.repository.api.RepoPackage;
-import com.android.repository.impl.meta.RepositoryPackages;
 import com.android.repository.impl.meta.TypeDetails;
 import com.android.repository.io.FileOp;
 import com.android.repository.io.FileOpUtils;
@@ -41,18 +38,15 @@ import com.android.sdklib.repository.targets.SystemImage;
 import com.android.sdklib.repository.targets.SystemImageManager;
 import com.android.utils.ILogger;
 import com.android.utils.NullLogger;
-import com.google.common.collect.Multimap;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -70,7 +64,6 @@ import org.nbandroid.netbeans.gradle.launch.EmulatorLauncher;
 import org.nbandroid.netbeans.gradle.launch.LaunchConfiguration;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
-import org.netbeans.modules.android.avd.manager.pojo.Devices;
 import org.netbeans.modules.android.avd.manager.ui.CreateAvdWizardIterator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -158,7 +151,6 @@ public class AvdManager extends javax.swing.JPanel {
     private final SystemImageManager systemImageManager;
     private final RepoManager repoManager;
     public static  final RequestProcessor RP = new RequestProcessor("AVD Manager", 1);
-    private Devices deviceDefs;
 
     private EmulatorLauncher getEmulatorLauncher() {
         if (emulatorLauncher == null) {
@@ -178,20 +170,13 @@ public class AvdManager extends javax.swing.JPanel {
         this.deviceManager = deviceManager;
         this.systemImageManager = systemImageManager;
         this.repoManager = repoManager;
+        refreshAvds();
+    }
+
+    private void refreshAvds() {
         AvdInfo[] validAvds = avdManager.getValidAvds();
-        Collection<SystemImage> images = systemImageManager.getImages();
         model = new ExistingDevicesTableModel(validAvds);
         table.setModel(model);
-        Multimap<LocalPackage, SystemImage> imageMap = systemImageManager.getImageMap();
-        RepositoryPackages packages = repoManager.getPackages();
-        Set<RemotePackage> newPkgs = packages.getNewPkgs();
-        for (RemotePackage info : newPkgs) {
-            if (hasSystemImage(info)) {
-                String path = info.getPath();
-                System.out.println("org.netbeans.modules.android.avd.manager.AvdManager.<init>()");
-            }
-        }
-        deviceDefs = AndroidAvdDevicesLocator.getDeviceDefs();
     }
 
     private void initTableActions() {
@@ -551,6 +536,7 @@ public class AvdManager extends javax.swing.JPanel {
         wiz.putProperty(CreateAvdWizardIterator.IMAGE_MANAGER, systemImageManager);
         wiz.putProperty(CreateAvdWizardIterator.REPO_MANAGER, repoManager);
         wiz.putProperty(CreateAvdWizardIterator.ANDROID_SDK, defaultSdk);
+        wiz.putProperty(CreateAvdWizardIterator.AVD_MANAGER, avdManager);
         wiz.setTitle("Create Virtual Device");
         wiz.setTitleFormat(new java.text.MessageFormat("{0}")); // NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(wiz);

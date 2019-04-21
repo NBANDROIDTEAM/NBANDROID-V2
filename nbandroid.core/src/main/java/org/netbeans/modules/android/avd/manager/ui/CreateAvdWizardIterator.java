@@ -18,16 +18,24 @@
  */
 package org.netbeans.modules.android.avd.manager.ui;
 
+import com.android.prefs.AndroidLocation;
+import com.android.sdklib.devices.Device;
+import com.android.sdklib.devices.DeviceManager;
+import com.android.sdklib.internal.avd.AvdManager;
+import com.android.utils.StdLogger;
 import java.awt.Component;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
+import org.openide.util.Exceptions;
 
 // TODO define position attribute
 public final class CreateAvdWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
@@ -42,12 +50,14 @@ public final class CreateAvdWizardIterator implements WizardDescriptor.Instantia
     public static final String DEVICE_SELECTED = "DEVICE_SELECTED";
     public static final String ANDROID_SDK = "ANDROID_SDK";
     public static final String SYSTEM_IMAGE = "SYSTEM_IMAGE";
+    public static final String AVD_MANAGER = "AVD_MANAGER";
 
     private List<WizardDescriptor.Panel<WizardDescriptor>> getPanels() {
         if (panels == null) {
             panels = new ArrayList<>();
             panels.add(new CreateAvdWizardPanel1(wizard));
             panels.add(new CreateAvdWizardPanel2(wizard));
+            panels.add(new CreateAvdWizardPanel3(wizard));
             String[] steps = createSteps();
             for (int i = 0; i < panels.size(); i++) {
                 Component c = panels.get(i).getComponent();
@@ -73,6 +83,18 @@ public final class CreateAvdWizardIterator implements WizardDescriptor.Instantia
     @Override
     public Set<?> instantiate() throws IOException {
         // TODO return set of FileObject (or DataObject) you have created
+        AvdManager avdManager = (AvdManager) wizard.getProperty(AVD_MANAGER);
+        Device selectedDevice = (Device) wizard.getProperty(DEVICE_SELECTED);
+        SystemImageDescription selectedImage = (SystemImageDescription) wizard.getProperty(SYSTEM_IMAGE);
+        File skinFile = selectedDevice.getDefaultHardware().getSkinFile();
+        Map<String, String> hardwareProperties = DeviceManager.getHardwareProperties(selectedDevice);
+        try {
+            avdManager.createAvd(avdManager.getBaseAvdFolder().getAbsoluteFile(), "Test1", selectedImage.getSystemImage(),
+                    null, null, null, hardwareProperties, selectedDevice.getBootProps(), selectedDevice.hasPlayStore(), false, false, true, new StdLogger(StdLogger.Level.INFO));
+        } catch (AndroidLocation.AndroidLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
         return Collections.emptySet();
     }
 
@@ -140,9 +162,9 @@ public final class CreateAvdWizardIterator implements WizardDescriptor.Instantia
     // by NetBeans Wizard API itself rather than needed to be implemented by a
     // client code.
     private String[] createSteps() {
-        String[] res = new String[ panels.size()];
+        String[] res = new String[panels.size()];
         for (int i = 0; i < res.length; i++) {
-                res[i] = panels.get(i ).getComponent().getName();
+            res[i] = panels.get(i).getComponent().getName();
         }
         return res;
     }
