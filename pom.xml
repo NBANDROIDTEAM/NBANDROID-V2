@@ -5,6 +5,26 @@
     <artifactId>Gradle-Android-support</artifactId>
     <version>01.00-SNAPSHOT</version>
     <packaging>pom</packaging>
+    <name>NbAndroid</name>
+    <!-- Licenses -->
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            <comments>Apache License 2.0</comments>
+        </license>
+    </licenses>
+    
+    <description>Android support plugin for Apache Netbeans</description>
+    
+    <!-- Developers -->
+    <developers>
+        <developer>
+            <id>Arsi</id>
+            <name>Ivan Friedländer</name>
+            <email>arsi@arsi.sk</email>
+        </developer>
+    </developers>
     <modules>
         <module>nbandroid.gradle.tooling</module>
         <module>nbandroid.gradle.libs</module>

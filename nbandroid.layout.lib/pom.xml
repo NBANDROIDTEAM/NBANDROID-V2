@@ -9,6 +9,7 @@
     <artifactId>Gradle-Android-support-layout-lib</artifactId>
     <packaging>nbm</packaging>
     <version>01.00-SNAPSHOT</version>
+    <name>NbAndroid-Layout-Libs</name>
     <repositories>
         <repository>
             <snapshots>
@@ -106,6 +107,12 @@
                             </includes>
                         </nbmResource>
                     </nbmResources>
+                    <licenseName>Apache 2.0</licenseName>
+                    <homePageUrl>https://github.com/NBANDROIDTEAM/NBANDROID-V2</homePageUrl>
+                    <licenseFile>../LICENSE.txt</licenseFile>
+                    <installerLicenseFile>../LICENSE.txt</installerLicenseFile>
+                    <author>ArSi</author>
+                    <authorEmail>arsi@arsi.sk</authorEmail>
                     <requiresRestart>true</requiresRestart>
                     <defaultCluster>${cluster}</defaultCluster>
                     <cluster>${cluster}</cluster>

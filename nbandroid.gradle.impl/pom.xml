@@ -8,6 +8,7 @@
     </parent>
     <artifactId>Gradle-Android-support-gradle-impl</artifactId>
     <packaging>nbm</packaging>
+    <name>NbAndroid-Gradle-Impl</name>
     <build>
         <plugins>
             <plugin>
@@ -16,6 +17,12 @@
                 <version>${version.nb.plugin}</version>
                 <extensions>true</extensions>
                 <configuration>
+                    <licenseName>Apache 2.0</licenseName>
+                    <homePageUrl>https://github.com/NBANDROIDTEAM/NBANDROID-V2</homePageUrl>
+                    <licenseFile>../LICENSE.txt</licenseFile>
+                    <installerLicenseFile>../LICENSE.txt</installerLicenseFile>
+                    <author>ArSi</author>
+                    <authorEmail>arsi@arsi.sk</authorEmail>
                     <requiresRestart>true</requiresRestart>
                     <defaultCluster>${cluster}</defaultCluster>
                     <cluster>${cluster}</cluster>

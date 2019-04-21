@@ -1,3 +1,4 @@
 Manifest-Version: 1.0
 OpenIDE-Module-Localizing-Bundle: sk/arsi/netbeans/gradle/android/maven/impl/Bundle.properties
 OpenIDE-Module-Provides: sk.arsi.netbeans.gradle.android.maven.MavenProvider
+OpenIDE-Module-Display-Category: Android
