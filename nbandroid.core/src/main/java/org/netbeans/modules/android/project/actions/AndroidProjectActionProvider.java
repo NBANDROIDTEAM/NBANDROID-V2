@@ -71,8 +71,7 @@ public class AndroidProjectActionProvider implements ActionProvider, LookupListe
 
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
-        if (project.getLookup().lookup(AndroidProject.class) != null) {
-            switch (command) {
+         switch (command) {
                 case ActionProvider.COMMAND_REBUILD:
                     callGradleRebuild();
                     break;
@@ -82,6 +81,9 @@ public class AndroidProjectActionProvider implements ActionProvider, LookupListe
                 case ActionProvider.COMMAND_CLEAN:
                     callGradleClean();
                     break;
+            }
+        if (project.getLookup().lookup(AndroidProject.class) != null) {
+            switch (command) {
                 case AndroidConstants.COMMAND_BUILD_TEST:
                     callAndroidTest();
                     break;
@@ -200,6 +202,9 @@ public class AndroidProjectActionProvider implements ActionProvider, LookupListe
 
     @Override
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
+        if(ActionProvider.COMMAND_REBUILD.equals(command)||ActionProvider.COMMAND_CLEAN.equals(command)|ActionProvider.COMMAND_BUILD.equals(command)){
+            return true;
+        }
         if (project.getLookup().lookup(AndroidProject.class) == null) {
             return false;
         }
