@@ -1,48 +1,51 @@
 [![Build Status](https://travis-ci.org/NBANDROIDTEAM/NBANDROID-V2.svg?branch=master)](https://travis-ci.org/NBANDROIDTEAM/NBANDROID-V2)
+![](http://server.arsi.sk:8080/hit/counter.svg)
 
 # NBANDROID-V2
-NetBeans Android support plugin
+Apache NetBeans Android support plugin
 
 This project aims to stabilize and update the discontinued NetBeans IDE plugin NBANDROID.
-The current version supports NetBeans 8.1 and 8.2
+
+The current version supports Apache NetBeans 10 and 11, CoolBeans
+
+Java 10, 11, 12
 
 **Many thanks to Radim Kubacki, the creator of the first NBANDROID!**</br>
 
 ## How to install NBANDROID-V2
 
-**Gradle Support plugin is no longer needed**
+First you need to install a special plugin. It detects the version of your ANB / CoolBeans and installs the NBANDROID Update Center
 
-The compiled version of the last commit is here:<br>
+http://server.arsi.sk/nbandroid_loader/updates.xml
 
+![](https://user-images.githubusercontent.com/22594510/56475800-cf253800-648d-11e9-8ff9-7912460ecfad.png)
 
-NetBeans 8.1 http://server.arsi.sk/nbandroid81/
+![](https://user-images.githubusercontent.com/22594510/56475807-ed8b3380-648d-11e9-80c7-d40fbfed842a.png)
 
-NetBeans 8.2 http://server.arsi.sk/nbandroid82/
+![](https://user-images.githubusercontent.com/22594510/56475731-bec08d80-648c-11e9-814c-6af46f1d406e.png)
 
-Or add an update center
+You can then install NBANDROID
+![](https://user-images.githubusercontent.com/22594510/56475757-1c54da00-648d-11e9-8eb0-fec1e5505826.png)
 
-NetBeans 8.1 http://server.arsi.sk/nbandroid81/updates.xml
+## Known issues
 
-NetBeans 8.2 http://server.arsi.sk/nbandroid82/updates.xml
+In a fresh ANB installation, the first time you open the Android Project, the project structure is not displayed correctly.
 
-Last plugin version which needs Gradle Support plugin is here:<br>
+solution - close and reopen the project
 
+## AVD Manager
+![](https://user-images.githubusercontent.com/22594510/56445471-b259fa80-62fd-11e9-838e-ee6625081369.png)
 
-NetBeans 8.1 http://server.arsi.sk/nbandroid81_last_ext_gradle/
-
-NetBeans 8.2 http://server.arsi.sk/nbandroid82_last_ext_gradle/
-
-
-![Install](https://user-images.githubusercontent.com/22594510/50820918-2fa0c700-132e-11e9-9cc3-dbdf49bb17b4.png)
-![Install](https://user-images.githubusercontent.com/22594510/50820932-39c2c580-132e-11e9-8450-77c5bd669536.png)
-![Install](https://user-images.githubusercontent.com/22594510/50820950-421b0080-132e-11e9-9b7d-04f681d73f60.png)
+![](https://user-images.githubusercontent.com/22594510/56473325-0f72bf00-646a-11e9-83a2-c755c7f743e2.png)
 
 ## Layout preview support
 ![Layout](https://user-images.githubusercontent.com/22594510/52371231-433a6d00-2a55-11e9-87d6-8ee9246c4168.png)
 
 ## Color preview support
 ![Color preview](https://user-images.githubusercontent.com/22594510/50722224-20224380-10cc-11e9-8a0a-90e2106b3c9d.png)
+
 ![Color preview](https://user-images.githubusercontent.com/22594510/50724036-f9253b00-10e6-11e9-92d0-c092ec9ed1f4.png)
+
 ![Color preview](https://user-images.githubusercontent.com/22594510/50724463-30e3b100-10ee-11e9-8d71-97dd83a3a357.png)
 
 To use Android Color preview support you must first uninstall netbeans-color-codes-preview plugin if you have it installed.
@@ -55,12 +58,6 @@ I'm waiting for PR to accept. Current source codes are here https://github.com/a
 And I added basic support for Java, Color constants and RGB Color values.
 ![Color preview](https://user-images.githubusercontent.com/22594510/50656806-ab98b900-0f94-11e9-9d14-890c3303c7b7.png)
 
-## Checking for external changes - Suspended, high cpu usage<br>
-There is a problem with Gradle, it creates broken links in the tmp directory and Netbeans 8.2 contains a bug with their handling.<br>
-When you run into this problem, you can install this modules with patch for NB82:<br>
-org-netbeans-modules-masterfs-patch-module<br>
-org-netbeans-modules-versioning-masterfs-patch-module<br>
-From this update center:  http://server.arsi.sk/masterfs/updates.xml
 
 ## Current project status:
 ### What Works:
@@ -79,10 +76,10 @@ From this update center:  http://server.arsi.sk/masterfs/updates.xml
 * Android emulator
 * SDK Platform manager
 * SDK Tools manager
+* AVD Manager
 
 ### What Dont works:
 * SDK Manager - Update sites configuration
-* AVD Manager
 * we currently have no Visual Layout Editor 
 * and many other things
 
