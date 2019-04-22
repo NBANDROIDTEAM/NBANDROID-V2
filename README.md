@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/NBANDROIDTEAM/NBANDROID-V2.svg?branch=master)](https://travis-ci.org/NBANDROIDTEAM/NBANDROID-V2)
+![](http://server.arsi.sk:8080/hit/counter.svg)
 
 # NBANDROID-V2
 NetBeans Android support plugin
