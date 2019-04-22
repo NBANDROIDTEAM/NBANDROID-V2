@@ -30,7 +30,6 @@
         <module>nbandroid.gradle.libs</module>
         <module>nbandroid.gradle.spi</module>
         <module>nbandroid.gradle.impl</module>
-        <module>nbandroid.models</module>
         <module>nbandroid.ext.libs</module>
         <module>nbandroid.ext.libs.android</module>
         <module>nbandroid.ext.src</module>
