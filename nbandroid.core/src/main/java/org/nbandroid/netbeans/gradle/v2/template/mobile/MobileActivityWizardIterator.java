@@ -58,8 +58,8 @@ import org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplateW
 import org.nbandroid.netbeans.gradle.v2.project.template.freemarker.ProjectTemplateLoader;
 import org.nbandroid.netbeans.gradle.v2.project.template.parameters.Globals;
 import org.nbandroid.netbeans.gradle.v2.project.template.parameters.TemplateValueInjector;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
+import org.nbandroid.netbeans.gradle.v2.sdk.PlatformDecorator;
 import org.nbandroid.netbeans.gradle.v2.template.ProjectWizardSummaryPanel;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -218,7 +218,7 @@ public final class MobileActivityWizardIterator implements WizardDescriptor.Inst
                     } catch (Exception e) {
                     }
                 }
-                AndroidPlatformInfo projectPlatform = AndroidProjects.projectPlatform(project);
+                PlatformDecorator projectPlatform = new PlatformDecorator(AndroidProjects.projectPlatform(project));
                 if (projectPlatform != null) {
                     AndroidSdk sdk = projectPlatform.getSdk();
                     wizard.putProperty(PROP_PROJECT_SDK, sdk);
