@@ -37,6 +37,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.nbandroid.netbeans.gradle.core.sdk.NbOutputWindowProgressIndicator;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformChangeListener;
+import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerPlatformPackagesRootNode;
 import org.nbandroid.netbeans.gradle.v2.sdk.manager.SdkManagerToolsChangeListener;
 import org.openide.filesystems.FileObject;
 
@@ -60,6 +61,8 @@ public abstract class AndroidSdk {
      * @param l SdkManagerPlatformChangeListener
      */
     public abstract void addSdkPlatformChangeListener(SdkManagerPlatformChangeListener l);
+    
+     public abstract SdkManagerPlatformPackagesRootNode getPlatformPackages();
 
     /**
      * Remove SdkManagerPlatformChangeListener

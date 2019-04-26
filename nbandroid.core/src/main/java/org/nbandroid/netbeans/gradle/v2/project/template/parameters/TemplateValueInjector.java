@@ -28,8 +28,8 @@ import java.util.Stack;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings.PROP_MAX_BUILD_LEVEL;
 import org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_SDK;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
+import org.nbandroid.netbeans.gradle.v2.sdk.PlatformDecorator;
 import static org.nbandroid.netbeans.gradle.v2.template.mobile.MobileActivityWizardIterator.BUILD_TOOL_VERSION;
 import org.openide.WizardDescriptor;
 
@@ -43,7 +43,7 @@ public class TemplateValueInjector {
         AndroidSdk androidSdk = (AndroidSdk) wiz.getProperty(PROP_PROJECT_SDK);
         parameters.put(ATTR_SDK_DIR, androidSdk.getSdkPath());
         int maxBuildLevel = (int) wiz.getProperty(PROP_MAX_BUILD_LEVEL);
-        AndroidPlatformInfo platformInfo = (AndroidPlatformInfo) wiz.getProperty(platformPropertyName);
+        PlatformDecorator platformInfo = (PlatformDecorator) wiz.getProperty(platformPropertyName);
         parameters.put(ATTR_IS_NEW_PROJECT, newProject); // Android Modules are called Gradle Projects
         parameters.put(ATTR_THEME_EXISTS, true); // New modules always have a theme (unless its a library, but it will have no activity)
 

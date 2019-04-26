@@ -48,6 +48,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
@@ -61,6 +62,7 @@ import org.nbandroid.netbeans.gradle.api.AndroidClassPath;
 import org.nbandroid.netbeans.gradle.config.AndroidBuildVariants;
 import org.nbandroid.netbeans.gradle.config.ProductFlavors;
 import org.nbandroid.netbeans.gradle.v2.maven.ArtifactData;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatform;
 import org.nbandroid.netbeans.gradle.v2.sdk.java.platform.AndroidJavaPlatformProvider;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -93,6 +95,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -254,6 +257,16 @@ public class AndroidClassPathProvider implements ClassPathProvider, AndroidClass
                     for (FileObject root : roots) {
                         tmp.add(root.toURL());
                     }
+                }
+            }
+            //Refresh Platforms, workaround to handle new platform downloaded by Gradle
+            if(tmp.isEmpty()){
+                AndroidSdk sdk = project.getLookup().lookup(AndroidSdk.class);
+                if(sdk!=null){
+                    Runnable runnable = () -> {
+                        sdk.updateSdkPlatformPackages();
+                    };
+                    RequestProcessor.getDefault().schedule(runnable, 5, TimeUnit.SECONDS);
                 }
             }
             return tmp.toArray(new URL[tmp.size()]);

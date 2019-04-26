@@ -45,6 +45,7 @@ import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -288,6 +289,12 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
         }
     }
 
+    public SdkManagerPlatformPackagesRootNode getPlatformPackages() {
+        return platformPackages;
+    }
+    
+    
+
     /**
      * Remove SdkManagerPlatformChangeListener
      *
@@ -399,6 +406,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
     @Override
     public void updateSdkPlatformPackages() {
         if (repoManager != null) {
+            repoManager.markInvalid();
             repoManager.load(0, ImmutableList.of(this),
                     ImmutableList.of(this),
                     ImmutableList.of(new DownloadErrorCallback()),
@@ -445,6 +453,14 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
 
     private void loadPackages(RepositoryPackages packages) {
         try {
+            //Reset AndroidTargetManager, we dont create new instance, workarrouns do reload real state
+            try {
+                Field declaredField = AndroidTargetManager.class.getDeclaredField("mTargets");
+                declaredField.setAccessible(true);
+                declaredField.set(androidTargetManager, null);
+            } catch (java.lang.NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             Collection<IAndroidTarget> targets = androidTargetManager.getTargets(new NbOutputWindowProgressIndicator() {
             });
             for (IAndroidTarget target : targets) {

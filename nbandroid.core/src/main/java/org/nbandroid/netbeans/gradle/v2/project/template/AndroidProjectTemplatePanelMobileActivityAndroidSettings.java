@@ -28,8 +28,8 @@ import javax.swing.JPanel;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings.PROP_MAX_BUILD_LEVEL;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_PLATFORM;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_SDK;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
+import org.nbandroid.netbeans.gradle.v2.sdk.PlatformDecorator;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 
@@ -114,8 +114,8 @@ public class AndroidProjectTemplatePanelMobileActivityAndroidSettings extends JP
         activitysPanel.removeAll();
         androidSdk = (AndroidSdk) settings.getProperty(PROP_PROJECT_SDK);
         currentTemplate = (Template) settings.getProperty(PROP_MOBILE_TEMPLATE);
-        if (settings.getProperty(PROP_PHONE_TABLET_PLATFORM) instanceof AndroidPlatformInfo) {
-            AndroidPlatformInfo platformInfo = (AndroidPlatformInfo) settings.getProperty(PROP_PHONE_TABLET_PLATFORM);
+        if (settings.getProperty(PROP_PHONE_TABLET_PLATFORM) instanceof PlatformDecorator) {
+            PlatformDecorator platformInfo = (PlatformDecorator) settings.getProperty(PROP_PHONE_TABLET_PLATFORM);
             int minApiLevel = platformInfo.getAndroidVersion().getFeatureLevel();
             int buildApiLevel = (int) settings.getProperty(PROP_MAX_BUILD_LEVEL);
             List<Template> templates = TemplateManager.findActivityTemplates("Mobile", minApiLevel, buildApiLevel);

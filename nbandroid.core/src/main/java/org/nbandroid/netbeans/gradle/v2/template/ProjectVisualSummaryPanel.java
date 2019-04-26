@@ -29,8 +29,8 @@ import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTe
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualAndroidSettings.PROP_PHONE_TABLET_PLATFORM;
 import org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings;
 import static org.nbandroid.netbeans.gradle.v2.project.template.AndroidProjectTemplatePanelVisualBasicSettings.PROP_PROJECT_SDK;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
+import org.nbandroid.netbeans.gradle.v2.sdk.PlatformDecorator;
 import static org.nbandroid.netbeans.gradle.v2.template.files.FileWizardIterator.PROP_PLATFORM;
 import static org.nbandroid.netbeans.gradle.v2.template.files.FileWizardIterator.PROP_SUB_PROJECT_FOLDER;
 import org.nbandroid.netbeans.gradle.v2.template.mobile.MobileActivityWizardIterator;
@@ -265,7 +265,7 @@ public final class ProjectVisualSummaryPanel extends JPanel {
             default:
                 throw new AssertionError(type.name());
         }
-        if (!(property instanceof AndroidPlatformInfo)) {
+        if (!(property instanceof PlatformDecorator)) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage",
                     "Android Platform was not found.");
             return false;
@@ -336,9 +336,9 @@ public final class ProjectVisualSummaryPanel extends JPanel {
             default:
                 throw new AssertionError(type.name());
         }
-        if (property instanceof AndroidPlatformInfo) {
-            platform.setText(SdkVersionInfo.getCodeName(((AndroidPlatformInfo) property).getAndroidVersion().getApiLevel()) + " " + SdkVersionInfo.getVersionString(((AndroidPlatformInfo) property).getAndroidVersion().getApiLevel()));
-            platform.setToolTipText(((AndroidPlatformInfo) property).getAndroidVersion().getApiString());
+        if (property instanceof PlatformDecorator) {
+            platform.setText(SdkVersionInfo.getCodeName(((PlatformDecorator) property).getAndroidVersion().getApiLevel()) + " " + SdkVersionInfo.getVersionString(((PlatformDecorator) property).getAndroidVersion().getApiLevel()));
+            platform.setToolTipText(((PlatformDecorator) property).getAndroidVersion().getApiString());
         }
         switch (type) {
             case MOBILE:
