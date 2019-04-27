@@ -29,7 +29,7 @@ import org.netbeans.core.startup.MainLookup;
 import org.openide.util.Lookup;
 
 /**
- * A class loader that combines Netbeans SPI and Impl module into one.<br>
+ * A class loader that combines NetBeans SPI and Impl module into one.<br>
  * The Impl classes loaded by this class loader are associated with this class
  * loader, i.e. Class.getClassLoader() points to this class loader.
  *
