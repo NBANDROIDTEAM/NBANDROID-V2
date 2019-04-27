@@ -51,6 +51,7 @@ import org.nbandroid.netbeans.gradle.v2.project.template.parameters.Globals;
 import org.nbandroid.netbeans.gradle.v2.project.template.parameters.TemplateValueInjector;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
+import org.nbandroid.netbeans.gradle.v2.sdk.PlatformDecorator;
 import org.nbandroid.netbeans.gradle.v2.template.ProjectWizardSummaryPanel;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -270,7 +271,7 @@ public final class FileWizardIterator implements WizardDescriptor.InstantiatingI
                 if (projectPlatform != null) {
                     AndroidSdk sdk = projectPlatform.getSdk();
                     wizard.putProperty(PROP_PROJECT_SDK, sdk);
-                    wizard.putProperty(PROP_PLATFORM, projectPlatform);
+                    wizard.putProperty(PROP_PLATFORM, new PlatformDecorator(projectPlatform));
                 }
                 Project rootProject = AndroidProjects.findRootProject(project);
                 if (rootProject != null) {
