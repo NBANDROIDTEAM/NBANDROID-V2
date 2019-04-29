@@ -158,7 +158,14 @@ public class EmulatorLauncher {
     }
 
     private String getEmulatorBinaryPath() {
+        //fix #204 Since March 2017 (v25.3.0), the Android Emulator changed location from${ANDROID_SDK_ROOT}/tools/ to its own top-level directory, ${ANDROID_SDK_ROOT}/emulator/
+        String newEmulatorPath = sdk.getSdkPath() + File.separator
+                + SdkConstants.FD_EMULATOR + File.separator+ SdkConstants.FN_EMULATOR;
+        if(new File(newEmulatorPath).exists()){
+            return newEmulatorPath;
+        }
         return sdk.getSdkPath() + File.separator
                 + SdkConstants.OS_SDK_TOOLS_FOLDER + SdkConstants.FN_EMULATOR;
+
     }
 }
