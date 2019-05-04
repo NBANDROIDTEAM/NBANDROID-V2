@@ -8,7 +8,7 @@
     </parent>
     <artifactId>Gradle-Android-support-layout-lib</artifactId>
     <packaging>nbm</packaging>
-    <version>01.00-SNAPSHOT</version>
+    <version>01.01.01</version>
     <name>NbAndroid-Layout-Libs</name>
     <repositories>
         <repository>

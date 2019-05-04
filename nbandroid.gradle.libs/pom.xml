@@ -9,6 +9,7 @@
     <artifactId>Gradle-Android-support-gradle-libs</artifactId>
     <packaging>nbm</packaging>
     <name>NbAndroid-Gradle-Libs</name>
+    <version>01.01.01</version>
     <build>
         <plugins>
             <plugin>

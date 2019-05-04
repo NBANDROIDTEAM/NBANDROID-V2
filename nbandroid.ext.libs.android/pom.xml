@@ -7,7 +7,7 @@
         <version>01.00-SNAPSHOT</version>
     </parent>
     <artifactId>Gradle-Android-support-ext-libs-android</artifactId>
-    <version>01.00-SNAPSHOT</version>
+    <version>01.01.01</version>
     <packaging>nbm</packaging>
     <name>NbAndroid-Ext-Libs-Android</name>
     <build>
@@ -50,6 +50,15 @@
                     <moduleDependencies>
                         
                     </moduleDependencies>
+                    <nbmResources>
+                        <nbmResource>
+                            <directory>src/main/skins</directory>
+                            <targetPath>modules/ext/skins</targetPath>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                        </nbmResource>
+                    </nbmResources>
                 </configuration>
             </plugin>
             <plugin>
@@ -104,6 +113,12 @@
             <artifactId>sdk-common</artifactId>
             <version>${version.android}</version>
             <type>jar</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.android.tools</groupId>
+                    <artifactId>sdklib</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.android.tools</groupId>
@@ -113,8 +128,8 @@
         </dependency>
         <dependency>
             <groupId>com.android.tools</groupId>
-            <artifactId>sdklib</artifactId>
-            <version>${version.android}</version>
+            <artifactId>sdkLib</artifactId>
+            <version>26.2.1.ANB</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -146,6 +161,12 @@
             <groupId>com.android.tools.build</groupId>
             <artifactId>manifest-merger</artifactId>
             <version>${version.android}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.android.tools</groupId>
+                    <artifactId>sdklib</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.android.tools</groupId>
@@ -220,6 +241,26 @@
             <groupId>org.jvnet.staxex</groupId>
             <artifactId>stax-ex</artifactId>
             <version>1.7.7</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.0</version>
+        </dependency>
+<!--        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.18</version>
+        </dependency>-->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+            <version>4.5.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.4.5</version>
         </dependency>
     </dependencies>
 </project>

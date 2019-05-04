@@ -87,7 +87,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>Gradle-Android-support-gradle-libs</artifactId>
-            <version>01.00-SNAPSHOT</version>
+            <version>01.01.01</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
