@@ -524,7 +524,7 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-extexecution-base</artifactId>
-            <version>RELEASE100</version>
+            <version>${version.nb}</version>
         </dependency>
     </dependencies>
 </project>

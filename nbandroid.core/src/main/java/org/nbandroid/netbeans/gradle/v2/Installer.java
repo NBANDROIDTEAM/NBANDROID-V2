@@ -53,8 +53,7 @@ public class Installer extends ModuleInstall {
         RequestProcessor.getDefault().schedule(new Runnable() {
             @Override
             public void run() {
-               // double version = Double.parseDouble(System.getProperty("java.specification.version"));
-                double version = 1.8d;
+                double version = Double.parseDouble(System.getProperty("java.specification.version"));
                 if (version < 10d) {
                     NotificationDisplayer.getDefault().notify("Unsupported Java Version", loadIcon(),
                             "Apache NetBeans is running Java " + version + " that is not supported by NBANDROID-V2. ", new AbstractAction() {
@@ -66,7 +65,7 @@ public class Installer extends ModuleInstall {
                             text += "Java 10.x <br/>";
                             text += "Java 11.x <br/>";
                             text += "Java 12.x <br/><br/><br/>";
-                            text+="<b>Please update your Java version, otherwise NBANDROID will not work properly!</b><br/>";
+                            text += "<b>Please update your Java version, otherwise NBANDROID will not work properly!</b><br/>";
                             text += "</html>";
                             NotifyDescriptor nd = new NotifyDescriptor.Message(text, NotifyDescriptor.WARNING_MESSAGE);
                             DialogDisplayer.getDefault().notifyLater(nd);
