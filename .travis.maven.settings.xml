@@ -22,6 +22,14 @@
                     <snapshots>
                         <enabled>false</enabled>
                     </snapshots>
+                    <id>bintray-nbandroidteam-sdkLib</id>
+                    <name>bintray</name>
+                    <url>https://dl.bintray.com/nbandroidteam/sdkLib</url>
+                </repository>
+                <repository>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
                     <id>Apache Netbeans</id>
                     <name>Apache Netbeans</name>
                     <url>http://repository.apache.org/content/repositories/orgapachenetbeans-1022</url>

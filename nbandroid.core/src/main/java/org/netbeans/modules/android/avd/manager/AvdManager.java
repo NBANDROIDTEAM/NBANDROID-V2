@@ -36,6 +36,7 @@ import com.android.sdklib.repository.IdDisplay;
 import com.android.sdklib.repository.meta.DetailsTypes;
 import com.android.sdklib.repository.targets.SystemImage;
 import com.android.sdklib.repository.targets.SystemImageManager;
+import com.android.utils.FileUtils;
 import com.android.utils.ILogger;
 import com.android.utils.NullLogger;
 import com.android.utils.StdLogger;
@@ -72,6 +73,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -87,6 +89,7 @@ public class AvdManager extends javax.swing.JPanel implements ChangeListener {
     public static boolean showCustomizer() {
         AndroidSdk defaultSdk = AndroidSdkProvider.getDefaultSdk();
         if (defaultSdk != null) {
+            checkSkinsFolder(defaultSdk);
             final ILogger sdkLog = SdkLogProvider.createLogger(false);
             AndroidSdkHandler androidSdkHandler = null;
             com.android.sdklib.internal.avd.AvdManager avdManager = null;
@@ -143,6 +146,28 @@ public class AvdManager extends javax.swing.JPanel implements ChangeListener {
         }
         return true;
     }
+
+    private static void checkSkinsFolder(AndroidSdk defaultSdk) {
+        String sdkPath = defaultSdk.getSdkPath();
+        File skinsFolder = new File(sdkPath+File.separator+"skins");
+        if(!skinsFolder.exists()){
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation("<html>The skins subdirectory was not found in your default SDK directory. <br/>"
+                    + "To make AVD Manager work properly, you need to install this directory.<br/>"
+                    + "Do you want to automatically create and install the necessary files?</html>", "Creating a skins Directory", NotifyDescriptor.YES_NO_OPTION,NotifyDescriptor.WARNING_MESSAGE);
+            Object notify = DialogDisplayer.getDefault().notify(nd);
+            if(NotifyDescriptor.YES_OPTION.equals(notify)){
+                skinsFolder.mkdirs();
+                final File skinsSourceFolder = InstalledFileLocator.getDefault().locate("modules/ext/skins", "sk-arsi-netbeans-gradle-android-Gradle-Android-support-ext-libs-android", false);
+                if(skinsSourceFolder.exists()){
+                    try {
+                        FileUtils.copyDirectory(skinsSourceFolder, skinsFolder);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+    }
     private final com.android.sdklib.internal.avd.AvdManager avdManager;
     private final DeviceManager deviceManager;
     private final JPopupMenu popupMenu = new JPopupMenu();
@@ -195,6 +220,7 @@ public class AvdManager extends javax.swing.JPanel implements ChangeListener {
         runMenu.setAction(new AbstractAction("Run Emulator") {
             @Override
             public void actionPerformed(ActionEvent e) {
+                System.out.println(".actionPerformed()");
                 int selectedRow = table.getSelectedRow();
                 if (selectedRow != -1) {
                     AvdInfo avdInfo = model.getAvdInfos()[selectedRow];

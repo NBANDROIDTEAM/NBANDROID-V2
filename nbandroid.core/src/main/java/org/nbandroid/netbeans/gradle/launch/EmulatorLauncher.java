@@ -17,10 +17,15 @@ import com.android.SdkConstants;
 import com.android.ddmlib.AndroidDebugBridge;
 import com.android.ddmlib.AndroidDebugBridge.IDeviceChangeListener;
 import com.android.ddmlib.IDevice;
+import com.android.prefs.AndroidLocation;
 import com.android.sdklib.internal.avd.AvdInfo;
+import com.android.sdklib.internal.avd.AvdManager;
+import com.android.utils.NullLogger;
 import com.google.common.base.Splitter;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -30,9 +35,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.progress.ProgressHandle;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
+import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
+import org.netbeans.api.extexecution.base.ProcessBuilder;
+import org.openide.util.Exceptions;
 
 /**
  * Helper to launch Android emulator.
@@ -117,13 +124,30 @@ public class EmulatorLauncher {
         ExecutionDescriptor descriptor = new ExecutionDescriptor()
                 .frontWindow(true);
 
-        ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(getEmulatorBinaryPath())
-                .addArgument(FLAG_AVD).addArgument(avdInfo.getName())
-                .addArgument(FLAG_PROP).addArgument(LAUNCH_COOKIE + "=" + cookie);
-        // TODO support quoting
+        ProcessBuilder processBuilder = ProcessBuilder.getLocal();
+        processBuilder.setExecutable(getEmulatorBinaryPath());
+        List<String> arguments = new ArrayList<>();
+        arguments.add(FLAG_AVD);
+        arguments.add(avdInfo.getName());
+        arguments.add(FLAG_PROP);
+        arguments.add(LAUNCH_COOKIE + "=" + cookie);
         for (String arg : Splitter.on(' ').omitEmptyStrings().split(launchCfg.getEmulatorOptions())) {
-            processBuilder = processBuilder.addArgument(arg);
+            arguments.add(arg);
         }
+        processBuilder.setArguments(arguments);
+        AndroidSdk defaultSdk = AndroidSdkProvider.getDefaultSdk();
+        if(defaultSdk!=null){
+            try {
+                AvdManager avdManager = AvdManager.getInstance(defaultSdk.getAndroidSdkHandler(), new NullLogger());
+                if(avdManager!=null){
+                    File baseAvdFolder = avdManager.getBaseAvdFolder();
+                    processBuilder.getEnvironment().setVariable("ANDROID_AVD_HOME", baseAvdFolder.getAbsolutePath());
+                }
+            } catch (AndroidLocation.AndroidLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
 
         ExecutionService service = ExecutionService.newService(
                 processBuilder, descriptor, "Android emulator");
@@ -160,8 +184,8 @@ public class EmulatorLauncher {
     private String getEmulatorBinaryPath() {
         //fix #204 Since March 2017 (v25.3.0), the Android Emulator changed location from${ANDROID_SDK_ROOT}/tools/ to its own top-level directory, ${ANDROID_SDK_ROOT}/emulator/
         String newEmulatorPath = sdk.getSdkPath() + File.separator
-                + SdkConstants.FD_EMULATOR + File.separator+ SdkConstants.FN_EMULATOR;
-        if(new File(newEmulatorPath).exists()){
+                + SdkConstants.FD_EMULATOR + File.separator + SdkConstants.FN_EMULATOR;
+        if (new File(newEmulatorPath).exists()) {
             return newEmulatorPath;
         }
         return sdk.getSdkPath() + File.separator
