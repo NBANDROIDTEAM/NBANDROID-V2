@@ -41,7 +41,7 @@ public class AndroidJavaPlatformProvider7 extends AndroidJavaPlatformProvider {
 
     @Override
     protected void addToCache(String hash, AndroidJavaPlatform platform) {
-        cache.put(hash, platform);
+    //    cache.put(hash, platform);
     }
 
 }
