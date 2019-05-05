@@ -445,16 +445,18 @@
             <artifactId>Gradle-Android-support-maven</artifactId>
             <version>01.00-SNAPSHOT</version>
         </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>Gradle-Android-support-ext-libs-android</artifactId>
-            <version>01.01.01</version>
-        </dependency>
+<!--        There is problem with NBM plugin, when ext-libs-android added before ext-libs commons-compress is detected as transient module-->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>Gradle-Android-support-ext-libs</artifactId>
             <version>01.01.01</version>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>Gradle-Android-support-ext-libs-android</artifactId>
+            <version>01.01.02</version>
+        </dependency>
+        
         <dependency> 
             <groupId>com.junichi11</groupId> 
             <artifactId>netbeans-color-codes-preview</artifactId> 
