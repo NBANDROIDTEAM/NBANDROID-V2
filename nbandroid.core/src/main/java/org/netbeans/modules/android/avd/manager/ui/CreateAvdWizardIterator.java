@@ -122,7 +122,7 @@ public final class CreateAvdWizardIterator implements WizardDescriptor.Instantia
         //hw.lcd.density => 480 x
         //hw.camera.front => emulated
         //avd.ini.displayname => Nexus 5 API 27
-        //hw.gpu.mode => auto
+        //hw.gpu.mode => auto/host/software
         //hw.device.hash2 => MD5:1c925b9117dd9f33c5128dac289a0d68 x
         //fastboot.forceChosenSnapshotBoot => no
         //fastboot.forceFastBoot => yes

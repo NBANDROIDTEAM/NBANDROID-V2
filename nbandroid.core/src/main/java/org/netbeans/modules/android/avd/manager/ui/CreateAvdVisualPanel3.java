@@ -29,28 +29,47 @@ import com.android.sdklib.devices.Device;
 import com.android.sdklib.devices.Storage;
 import com.android.sdklib.internal.avd.AvdInfo;
 import com.android.sdklib.internal.avd.AvdManager;
+import com.android.sdklib.internal.avd.GpuMode;
 import com.android.utils.NullLogger;
 import com.google.common.collect.Lists;
+import java.awt.Component;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import javax.imageio.stream.FileImageInputStream;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataListener;
+import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import org.jetbrains.annotations.NotNull;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import static org.netbeans.modules.android.avd.manager.ui.CreateAvdWizardIterator.ANDROID_SDK;
 import static org.netbeans.modules.android.avd.manager.ui.CreateAvdWizardIterator.AVD_MANAGER;
 import static org.netbeans.modules.android.avd.manager.ui.CreateAvdWizardIterator.DEVICE_SELECTED;
 import static org.netbeans.modules.android.avd.manager.ui.CreateAvdWizardIterator.SYSTEM_IMAGE;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Exceptions;
+import org.openide.windows.WindowManager;
 
-public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListener {
+public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListener, ItemListener {
+
+    static final int MAX_NUMBER_OF_CORES = Runtime.getRuntime().availableProcessors() / 2;
+    static final int RECOMMENDED_NUMBER_OF_CORES = Integer.min(4, MAX_NUMBER_OF_CORES);
 
     private final WizardDescriptor wiz;
     private final CreateAvdWizardPanel3 panel;
@@ -58,6 +77,7 @@ public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListe
     private SystemImageDescription selectedImage;
     private AvdManager avdManager;
     private AndroidSdk defaultSdk;
+    private String defaultSkinPath;
 
     /**
      * Creates new form CreateAvdVisualPanel2
@@ -66,6 +86,8 @@ public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListe
         initComponents();
         this.panel = panel;
         this.wiz = wiz;
+        sdcardExternal.addItemListener(this);
+        sdcardExternal.addItemListener(this);
 
     }
 
@@ -93,7 +115,6 @@ public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListe
         boolean enable = !isPlayStoreCompatible();
         performanceCores.setEnabled(enable);
         performanceGraphics.setEnabled(enable);
-        performanceMulticore.setEnabled(enable);
         memoryRam.setEnabled(enable);
         memoryHeap.setEnabled(enable);
         sdcardExternal.setEnabled(enable);
@@ -115,8 +136,8 @@ public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListe
 
     private void initMemory() {
         memoryHeap.setValue(calculateInitialVmHeap());
-        memoryRam.setValue((int)selectedDevice.getDefaultHardware().getRam().getSizeAsUnit(Storage.Unit.MiB));
-        memoryStorage.setValue((int)selectedDevice.getDefaultHardware().getInternalStorage().get(0).getSizeAsUnit(Storage.Unit.MiB));
+        memoryRam.setValue((int) selectedDevice.getDefaultHardware().getRam().getSizeAsUnit(Storage.Unit.MiB));
+        memoryStorage.setValue((int) selectedDevice.getDefaultHardware().getInternalStorage().get(0).getSizeAsUnit(Storage.Unit.MiB));
     }
 
     @Override
@@ -161,8 +182,6 @@ public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListe
         jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
         performanceGraphics = new javax.swing.JComboBox<>();
-        performanceMulticore = new javax.swing.JCheckBox();
-        performanceCores = new javax.swing.JComboBox<>();
         jSeparator6 = new javax.swing.JSeparator();
         jLabel13 = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
@@ -190,6 +209,8 @@ public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListe
         jSeparator8 = new javax.swing.JSeparator();
         jLabel24 = new javax.swing.JLabel();
         keyboard = new javax.swing.JCheckBox();
+        performanceCores = new javax.swing.JSpinner();
+        jLabel3 = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CreateAvdVisualPanel3.class, "CreateAvdVisualPanel3.jLabel1.text")); // NOI18N
 
@@ -232,20 +253,8 @@ public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListe
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel12, org.openide.util.NbBundle.getMessage(CreateAvdVisualPanel3.class, "CreateAvdVisualPanel3.jLabel12.text")); // NOI18N
 
-        performanceGraphics.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Automatic", "Hardware - GLES 2.0", "Software - GLES 2.0" }));
-        performanceGraphics.setEnabled(false);
-
-        performanceMulticore.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(performanceMulticore, org.openide.util.NbBundle.getMessage(CreateAvdVisualPanel3.class, "CreateAvdVisualPanel3.performanceMulticore.text")); // NOI18N
-        performanceMulticore.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                performanceMulticoreActionPerformed(evt);
-            }
-        });
-
-        performanceCores.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "1", "2", "3", "4", "5", "6" }));
-        performanceCores.setSelectedIndex(3);
-        performanceCores.setEnabled(false);
+        performanceGraphics.setModel(new DefaultComboBoxModel<GpuMode>(GpuMode.values())
+        );
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel13, org.openide.util.NbBundle.getMessage(CreateAvdVisualPanel3.class, "CreateAvdVisualPanel3.jLabel13.text")); // NOI18N
 
@@ -273,19 +282,23 @@ public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListe
         sdcardManaged.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(sdcardManaged, org.openide.util.NbBundle.getMessage(CreateAvdVisualPanel3.class, "CreateAvdVisualPanel3.sdcardManaged.text")); // NOI18N
 
-        sdcardSize.setModel(new javax.swing.SpinnerNumberModel(512, null, null, 1));
+        sdcardSize.setModel(new javax.swing.SpinnerNumberModel(512, 16, null, 1));
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel22, org.openide.util.NbBundle.getMessage(CreateAvdVisualPanel3.class, "CreateAvdVisualPanel3.jLabel22.text")); // NOI18N
 
         buttonGroup1.add(sdcardExternal);
         org.openide.awt.Mnemonics.setLocalizedText(sdcardExternal, org.openide.util.NbBundle.getMessage(CreateAvdVisualPanel3.class, "CreateAvdVisualPanel3.sdcardExternal.text")); // NOI18N
-        sdcardExternal.setEnabled(false);
 
         sdcardPath.setText(org.openide.util.NbBundle.getMessage(CreateAvdVisualPanel3.class, "CreateAvdVisualPanel3.sdcardPath.text")); // NOI18N
         sdcardPath.setEnabled(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(sdcardSelect, org.openide.util.NbBundle.getMessage(CreateAvdVisualPanel3.class, "CreateAvdVisualPanel3.sdcardSelect.text")); // NOI18N
         sdcardSelect.setEnabled(false);
+        sdcardSelect.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sdcardSelectActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel21, org.openide.util.NbBundle.getMessage(CreateAvdVisualPanel3.class, "CreateAvdVisualPanel3.jLabel21.text")); // NOI18N
 
@@ -294,11 +307,12 @@ public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListe
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel23, org.openide.util.NbBundle.getMessage(CreateAvdVisualPanel3.class, "CreateAvdVisualPanel3.jLabel23.text")); // NOI18N
 
-        skinCombo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        skinCombo.setEnabled(false);
-
         org.openide.awt.Mnemonics.setLocalizedText(skinSelect, org.openide.util.NbBundle.getMessage(CreateAvdVisualPanel3.class, "CreateAvdVisualPanel3.skinSelect.text")); // NOI18N
-        skinSelect.setEnabled(false);
+        skinSelect.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                skinSelectActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel24, org.openide.util.NbBundle.getMessage(CreateAvdVisualPanel3.class, "CreateAvdVisualPanel3.jLabel24.text")); // NOI18N
 
@@ -309,6 +323,10 @@ public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListe
                 keyboardActionPerformed(evt);
             }
         });
+
+        performanceCores.setModel(new javax.swing.SpinnerNumberModel(4, 1, 5, 1));
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CreateAvdVisualPanel3.class, "CreateAvdVisualPanel3.jLabel3.text")); // NOI18N
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -369,15 +387,13 @@ public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListe
                         .addComponent(jLabel11))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(167, 167, 167)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel12))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(performanceMulticore)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(performanceCores, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel12)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(performanceGraphics, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(performanceGraphics, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(performanceCores, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jLabel13))
@@ -433,7 +449,7 @@ public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListe
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jLabel23)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 45, Short.MAX_VALUE)
                                 .addComponent(skinCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 263, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(deviceFrame))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -502,8 +518,8 @@ public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListe
                     .addComponent(jLabel12))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(performanceMulticore)
-                    .addComponent(performanceCores, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(performanceCores, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator6, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -559,6 +575,8 @@ public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListe
 
         jPanel1Layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {skinCombo, skinSelect});
 
+        jPanel1Layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {performanceCores, performanceGraphics});
+
         jScrollPane1.setViewportView(jPanel1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -575,13 +593,56 @@ public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListe
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void performanceMulticoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_performanceMulticoreActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_performanceMulticoreActionPerformed
-
     private void keyboardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyboardActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_keyboardActionPerformed
+
+    private void sdcardSelectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sdcardSelectActionPerformed
+        // TODO add your handling code here:
+        FileChooserBuilder builder = new FileChooserBuilder(CreateAvdVisualPanel3.class);
+        builder.setFilesOnly(true);
+        File sdcardImage = builder.showOpenDialog();
+        if (sdcardImage != null && sdcardImage.exists()) {
+            try (FileImageInputStream fi = new FileImageInputStream(sdcardImage)) {
+                byte[] boot = new byte[3];
+                fi.read(boot);
+                if (boot[0] == ((byte) 0xeb) && boot[1] == ((byte) 0x5a) && boot[2] == ((byte) 0x90)) {
+                    sdcardPath.setText(sdcardImage.getAbsolutePath());
+                } else {
+                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation("<html>"
+                            + "Signature of selected file does not match Android SD Card image.<br/>"
+                            + "Are you sure you want to use the selected file?", "SD Card image problem...",
+                            NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
+                    Object notify = DialogDisplayer.getDefault().notify(nd);
+                    if (NotifyDescriptor.YES_OPTION.equals(notify)) {
+                        sdcardPath.setText(sdcardImage.getAbsolutePath());
+                    }
+                }
+
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+        }
+    }//GEN-LAST:event_sdcardSelectActionPerformed
+
+    private void skinSelectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_skinSelectActionPerformed
+        // TODO add your handling code here:
+        FileChooserBuilder builder = new FileChooserBuilder("ANDROID_SKIN");
+        builder.setDirectoriesOnly(true);
+        builder.setTitle("Select skin directory...");
+        File skinFolder = builder.showOpenDialog();
+        if (skinFolder != null && skinFolder.exists()) {
+            File layout = new File(skinFolder.getAbsolutePath() + File.separator + "layout");
+            if (layout.exists()) {
+                skinCombo.setModel(new SkinsComboboxModel(new File(skinFolder.getParent())));
+                skinCombo.setSelectedItem(skinFolder);
+            } else {
+                NotifyDescriptor nd = new NotifyDescriptor.Message("The selected directory does not contain a skin!", NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(nd);
+            }
+        }
+    }//GEN-LAST:event_skinSelectActionPerformed
 
     boolean valid() {
         return true;
@@ -592,31 +653,34 @@ public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListe
         wiz.putProperty(CreateAvdWizardIterator.AVD_ID_NAME, avdId.getText());
         Map<String, String> hardwareProperties = new HashMap<>();
         hardwareProperties.put("fastboot.chosenSnapshotFile", "");
-        hardwareProperties.put("runtime.network.speed", ((String)networkSpeed.getSelectedItem()).toLowerCase());
-        hardwareProperties.put("vm.heapSize", ""+memoryHeap.getValue());
+        hardwareProperties.put("runtime.network.speed", ((String) networkSpeed.getSelectedItem()).toLowerCase());
+        hardwareProperties.put("vm.heapSize", "" + memoryHeap.getValue());
         hardwareProperties.put("skin.dynamic", "yes");
-        File skinFile = selectedDevice.getDefaultHardware().getSkinFile();
-        String skinPath = defaultSdk.getSdkPath()+File.separator+"skins"+File.separator+skinFile;
-        hardwareProperties.put("skin.path", skinPath);
-        hardwareProperties.put("hw.initialOrientation", ((String)avdOrientation.getSelectedItem()));
-        hardwareProperties.put("showDeviceFrame", deviceFrame.isSelected()?"yes":"no");
-        hardwareProperties.put("hw.camera.back", ((String)cameraBack.getSelectedItem()).toLowerCase());
+        File skinFile = (File) skinCombo.getSelectedItem();
+        hardwareProperties.put("skin.path", skinFile.getAbsolutePath());
+        hardwareProperties.put("hw.initialOrientation", ((String) avdOrientation.getSelectedItem()));
+        hardwareProperties.put("showDeviceFrame", deviceFrame.isSelected() ? "yes" : "no");
+        hardwareProperties.put("hw.camera.back", ((String) cameraBack.getSelectedItem()).toLowerCase());
         hardwareProperties.put("AvdId", avdId.getText());
-        hardwareProperties.put("hw.camera.front", ((String)cameraFront.getSelectedItem()).toLowerCase());
+        hardwareProperties.put("hw.camera.front", ((String) cameraFront.getSelectedItem()).toLowerCase());
         hardwareProperties.put("avd.ini.displayname", avdName.getText());
-        hardwareProperties.put("hw.gpu.mode", "auto");
+        hardwareProperties.put("hw.gpu.mode", ((GpuMode) performanceGraphics.getSelectedItem()).getGpuSetting());
         hardwareProperties.put("fastboot.forceChosenSnapshotBoot", "no");
         hardwareProperties.put("fastboot.forceFastBoot", "yes");
-        hardwareProperties.put("hw.ramSize", ""+memoryRam.getValue());
+        hardwareProperties.put("hw.ramSize", "" + memoryRam.getValue());
         hardwareProperties.put("fastboot.forceColdBoot", "no");
-        hardwareProperties.put("hw.cpu.ncore", "4");
+        hardwareProperties.put("hw.cpu.ncore", "" + ((Number) performanceCores.getValue()).intValue());
         hardwareProperties.put("hw.sdCard", "yes");
-        hardwareProperties.put("runtime.network.latency", ((String)networkLatency.getSelectedItem()).toLowerCase());
-        hardwareProperties.put("hw.keyboard", keyboard.isSelected()?"yes":"no");
+        hardwareProperties.put("runtime.network.latency", ((String) networkLatency.getSelectedItem()).toLowerCase());
+        hardwareProperties.put("hw.keyboard", keyboard.isSelected() ? "yes" : "no");
         hardwareProperties.put("disk.dataPartition.size", "2G");
         hardwareProperties.put("hw.gpu.enabled", "yes");
         wiz.putProperty(CreateAvdWizardIterator.AVD_USER_HW_CONFIG, hardwareProperties);
-        wiz.putProperty(CreateAvdWizardIterator.AVD_SDCARD, ""+sdcardSize.getValue()+"M");
+        if (sdcardManaged.isSelected() || "".equals(sdcardPath.getText()) || !new File(sdcardPath.getText()).exists()) {
+            wiz.putProperty(CreateAvdWizardIterator.AVD_SDCARD, "" + sdcardSize.getValue() + "M");
+        } else {
+            wiz.putProperty(CreateAvdWizardIterator.AVD_SDCARD, sdcardPath.getText());
+        }
     }
 
     void readSettings() {
@@ -626,9 +690,76 @@ public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListe
         selectedImage = (SystemImageDescription) wiz.getProperty(SYSTEM_IMAGE);
         initAvdName();
         updateAvdId();
+        defaultSkinPath = defaultSdk.getSdkPath() + File.separator + "skins";
+        File skinFile = selectedDevice.getDefaultHardware().getSkinFile();
+        String skinPath = defaultSdk.getSdkPath() + File.separator + "skins" + File.separator + skinFile;
+        skinCombo.setModel(new SkinsComboboxModel(new File(defaultSkinPath)));
+        skinCombo.setSelectedItem(new File(skinPath));
+        skinCombo.setRenderer(new BasicComboBoxRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus); //To change body of generated methods, choose Tools | Templates.
+                if ((component instanceof JLabel) && (value instanceof File)) {
+                    ((JLabel) component).setText(((File) value).getName());
+                }
+                return component;
+            }
+
+        });
+        performanceGraphics.setSelectedItem(GpuMode.AUTO);
         avdName.getDocument().addDocumentListener(this);
-     //   initPlaystore();
+        performanceCores.setModel(new javax.swing.SpinnerNumberModel(RECOMMENDED_NUMBER_OF_CORES, 1, MAX_NUMBER_OF_CORES, 1));
+        //   initPlaystore();
         initMemory();
+    }
+
+    private class SkinsComboboxModel implements ComboBoxModel<File> {
+
+        private final List<File> skins = new ArrayList<>();
+        private File selected = null;
+
+        public SkinsComboboxModel(File rootDirectory) {
+            File[] listFiles = rootDirectory.listFiles();
+            for (int i = 0; i < listFiles.length; i++) {
+                File listFile = listFiles[i];
+                if (listFile.isDirectory()) {
+                    File layout = new File(listFile.getAbsolutePath() + File.separator + "layout");
+                    if (layout.exists()) {
+                        skins.add(listFile);
+                    }
+                }
+            }
+            Collections.sort(skins);
+        }
+
+        @Override
+        public void setSelectedItem(Object anItem) {
+            this.selected = (File) anItem;
+        }
+
+        @Override
+        public Object getSelectedItem() {
+            return selected;
+        }
+
+        @Override
+        public int getSize() {
+            return skins.size();
+        }
+
+        @Override
+        public File getElementAt(int index) {
+            return skins.get(index);
+        }
+
+        @Override
+        public void addListDataListener(ListDataListener l) {
+        }
+
+        @Override
+        public void removeListDataListener(ListDataListener l) {
+        }
+
     }
 
 
@@ -659,6 +790,7 @@ public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListe
     private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel23;
     private javax.swing.JLabel jLabel24;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -681,15 +813,14 @@ public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListe
     private javax.swing.JSpinner memoryStorage;
     private javax.swing.JComboBox<String> networkLatency;
     private javax.swing.JComboBox<String> networkSpeed;
-    private javax.swing.JComboBox<String> performanceCores;
-    private javax.swing.JComboBox<String> performanceGraphics;
-    private javax.swing.JCheckBox performanceMulticore;
+    private javax.swing.JSpinner performanceCores;
+    private javax.swing.JComboBox<GpuMode> performanceGraphics;
     private javax.swing.JRadioButton sdcardExternal;
     private javax.swing.JRadioButton sdcardManaged;
     private javax.swing.JTextField sdcardPath;
     private javax.swing.JButton sdcardSelect;
     private javax.swing.JSpinner sdcardSize;
-    private javax.swing.JComboBox<String> skinCombo;
+    private javax.swing.JComboBox<File> skinCombo;
     private javax.swing.JButton skinSelect;
     // End of variables declaration//GEN-END:variables
 
@@ -976,6 +1107,18 @@ public final class CreateAvdVisualPanel3 extends JPanel implements DocumentListe
             }
         }
         return vmHeapSize;
+    }
+
+    @Override
+    public void itemStateChanged(ItemEvent e) {
+        Runnable runnable = new Runnable() {
+            public void run() {
+                sdcardSize.setEnabled(sdcardManaged.isSelected());
+                sdcardPath.setEnabled(!sdcardManaged.isSelected());
+                sdcardSelect.setEnabled(!sdcardManaged.isSelected());
+            }
+        };
+        WindowManager.getDefault().invokeWhenUIReady(runnable);
     }
 
 }
