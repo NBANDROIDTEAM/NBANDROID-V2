@@ -48,7 +48,6 @@ import org.nbandroid.netbeans.gradle.v2.sdk.ui.SdksCustomizer;
 import org.netbeans.api.io.IOProvider;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.android.project.actions.RootProjectActionProvider;
 import org.netbeans.modules.android.project.properties.AndroidProjectPropsImpl;
 import org.netbeans.modules.android.project.properties.AuxiliaryConfigImpl;
 import org.netbeans.spi.project.ActionProvider;
@@ -70,7 +69,6 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ProxyLookup;
@@ -156,7 +154,7 @@ public abstract class NbAndroidProject extends ProjectOpenedHook implements Proj
         localPropertiesChangeTimer.setRepeats(false);
         if (projectSdk != null) {
             ic.add(projectSdk);
-            localPropertiesFo.addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, localPropertiesFo));
+            localPropertiesFo.addFileChangeListener(this);
         }
         gradleCommandExecutor = Lookup.getDefault().lookup(GradleCommandExecutorProvider.class).create(this);
         ic.add(gradleCommandExecutor);
@@ -172,6 +170,9 @@ public abstract class NbAndroidProject extends ProjectOpenedHook implements Proj
 
     @Override
     protected void projectClosed() {
+        if (localPropertiesFo!=null) {
+            localPropertiesFo.removeFileChangeListener(this);
+        }
     }
 
     public abstract ModelRefresh getModelRefresh();
@@ -247,8 +248,8 @@ public abstract class NbAndroidProject extends ProjectOpenedHook implements Proj
     }
 
     private void maybeChangeSdk() {
-        localPropertiesChangeTimer.restart();
-    }
+            localPropertiesChangeTimer.restart();
+        }
 
     private void initSdk(FileObject projectDirectory1) {
         localPropertiesFo = findAndroidLocalProperties(projectDirectory1, this);
