@@ -83,7 +83,7 @@ public class NbAndroidProjectFactory implements ProjectFactory2 {
             if (buildScript != null) {
                 try {
                     return FindAndroidVisitor.visit(FileUtil.toFile(buildScript));
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                 }
             }
         }
