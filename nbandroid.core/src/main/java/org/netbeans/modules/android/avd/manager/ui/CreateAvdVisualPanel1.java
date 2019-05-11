@@ -21,16 +21,20 @@ package org.netbeans.modules.android.avd.manager.ui;
 import com.android.ide.common.rendering.HardwareConfigHelper;
 import com.android.sdklib.devices.Device;
 import com.android.sdklib.devices.DeviceManager;
+import com.android.sdklib.devices.DeviceParser;
+import com.google.common.collect.Table;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -41,10 +45,12 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ImageUtilities;
 
 public final class CreateAvdVisualPanel1 extends JPanel implements ListSelectionListener, MouseListener {
@@ -68,8 +74,9 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
     public static final Icon ICON_TV = new javax.swing.ImageIcon(CreateAvdVisualPanel1.class.getResource("/org/netbeans/modules/android/avd/manager/device-tv_large.png"));
     public static final Icon ICON_WEAR = new javax.swing.ImageIcon(CreateAvdVisualPanel1.class.getResource("/org/netbeans/modules/android/avd/manager/device-wear_large.png"));
     private final JPopupMenu popupMenu = new JPopupMenu();
-    private final JMenuItem unimplementedMenu = new JMenuItem("Run");
+    private final JMenuItem editMenu = new JMenuItem("Edit");
     private final CreateAvdWizardPanel1 wizPanel;
+    private List<Device> userDevices = new ArrayList<>();
 
     /**
      * Creates new form CreateAvdVisualPanel1
@@ -97,6 +104,7 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
 
     private void refreshDevices() {
         List<Device> allDevices = new ArrayList<>(deviceManager.getDevices(EnumSet.of(DeviceManager.DeviceFilter.DEFAULT, DeviceManager.DeviceFilter.USER, DeviceManager.DeviceFilter.VENDOR, DeviceManager.DeviceFilter.SYSTEM_IMAGES)));
+        userDevices = new ArrayList<>(deviceManager.getDevices(EnumSet.of(DeviceManager.DeviceFilter.USER)));
         tvDevices = allDevices.stream().filter((t) -> {
             return isTv(t);
         }).collect(Collectors.toList());
@@ -131,7 +139,7 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
         return d.getDefaultHardware().getScreen().getDiagonalLength() >= PHONE_SIZE_CUTOFF;
     }
 
-    public  static boolean isTv(Device d) {
+    public static boolean isTv(Device d) {
         return HardwareConfigHelper.isTv(d) || d.getDefaultHardware().getScreen().getDiagonalLength() >= TV_SIZE_CUTOFF;
     }
 
@@ -221,11 +229,13 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
     }
 
     private void installPopupMenu() {
-        popupMenu.add(unimplementedMenu);
-        unimplementedMenu.setAction(new AbstractAction("Not yet implemented") {
+        popupMenu.add(editMenu);
+        editMenu.setAction(new AbstractAction("Modify device") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                unimplemented();
+                if (selectedDevice != null && userDevices.contains(selectedDevice)) {
+                    AvdHwProfile.showDeviceProfiler(selectedDevice);
+                }
             }
         });
         tableMobile.addMouseListener(this);
@@ -263,6 +273,7 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
                 JTable table = (JTable) comp;
                 int rowIndex = table.rowAtPoint(e.getPoint());
                 table.setRowSelectionInterval(rowIndex, rowIndex);
+                 editMenu.setEnabled(selectedDevice!=null && userDevices.contains(selectedDevice));
             }
             popupMenu.show(comp, e.getX(), e.getY());
         }
@@ -651,7 +662,22 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
 
     private void importProfileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importProfileButtonActionPerformed
         // TODO add your handling code here:
-        unimplemented();
+        FileChooserBuilder builder = new FileChooserBuilder("android-devices");
+        builder.setFilesOnly(true);
+        builder.setFileFilter(new FileNameExtensionFilter("Android devide definition", "xml", "XML"));
+        File[] files = builder.showMultiOpenDialog();
+        if (files != null) {
+            for (File file : files) {
+                try {
+                    Table<String, String, Device> devices = DeviceParser.parse(file);
+                    Map<String, Map<String, Device>> rowMap = devices.rowMap();
+                    System.out.println("org.netbeans.modules.android.avd.manager.ui.CreateAvdVisualPanel1.importProfileButtonActionPerformed()");
+                } catch (Exception ex) {
+                    NotifyDescriptor nd = new NotifyDescriptor.Message("Error while parsing Android device definition!", NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notifyLater(nd);
+                }
+            }
+        }
     }//GEN-LAST:event_importProfileButtonActionPerformed
 
     private void cloneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cloneButtonActionPerformed
