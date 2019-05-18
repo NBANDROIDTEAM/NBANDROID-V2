@@ -19,21 +19,39 @@
 package org.netbeans.modules.android.avd.manager.ui;
 
 import com.android.ide.common.rendering.HardwareConfigHelper;
+import com.android.resources.Density;
 import com.android.resources.Keyboard;
+import com.android.resources.KeyboardState;
 import com.android.resources.Navigation;
+import com.android.resources.NavigationState;
 import com.android.resources.ScreenOrientation;
+import com.android.resources.ScreenRatio;
+import com.android.resources.ScreenRound;
+import com.android.resources.ScreenSize;
+import com.android.resources.TouchScreen;
+import com.android.sdklib.devices.Abi;
 import com.android.sdklib.devices.ButtonType;
+import com.android.sdklib.devices.Camera;
 import com.android.sdklib.devices.CameraLocation;
 import com.android.sdklib.devices.Device;
+import com.android.sdklib.devices.Hardware;
+import com.android.sdklib.devices.Multitouch;
+import com.android.sdklib.devices.Network;
+import com.android.sdklib.devices.PowerType;
+import com.android.sdklib.devices.Screen;
+import com.android.sdklib.devices.ScreenType;
 import com.android.sdklib.devices.Sensor;
+import com.android.sdklib.devices.Software;
 import com.android.sdklib.devices.State;
 import com.android.sdklib.devices.Storage;
 import com.android.sdklib.repository.targets.SystemImage;
+import com.google.common.collect.Lists;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -41,6 +59,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.event.ListDataListener;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
+import org.jetbrains.annotations.Nullable;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.openide.DialogDescriptor;
@@ -67,7 +86,291 @@ public class AvdHwProfile extends javax.swing.JPanel {
     }
 
     private Device buildDevice() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Device.Builder builder = new Device.Builder();
+        builder.setPlayStore(playstore.isSelected());
+        builder.addAllState(generateStates(buildHardware()));
+        builder.setName(deviceName.getText());
+        builder.setId(deviceName.getText());
+        builder.setManufacturer("User");
+        DeviceType dt = (DeviceType) deviceType.getSelectedItem();
+        switch (dt) {
+            default:
+                builder.setTagId(null);
+                break;
+            case TV:
+                builder.setTagId(DeviceType.TV.id);
+                break;
+            case WEAR:
+                builder.setTagId(DeviceType.WEAR.id);
+                break;
+
+        }
+        Software software = new Software();
+        software.setLiveWallpaperSupport(true);
+        software.setPlayStoreEnabled(playstore.isSelected());
+        software.setGlVersion("2.0");
+        builder.addSoftware(software);
+        return builder.build();
+    }
+
+    private List<State> generateStates(Hardware hardware) {
+        List<State> states = Lists.newArrayListWithExpectedSize(4);
+
+        if (portrait.isSelected()) {
+            states.add(createState(ScreenOrientation.PORTRAIT, hardware, false));
+        }
+
+        if (landscape.isSelected()) {
+            states.add(createState(ScreenOrientation.LANDSCAPE, hardware, false));
+        }
+
+        if (hwKeyb.isSelected()) {
+            if (portrait.isSelected()) {
+                states.add(createState(ScreenOrientation.PORTRAIT, hardware, true));
+            }
+
+            if (landscape.isSelected()) {
+                states.add(createState(ScreenOrientation.LANDSCAPE, hardware, true));
+            }
+        }
+
+        // We've added states in the order of most common to least common, so let's mark the first one as default
+        states.get(0).setDefaultState(true);
+        return states;
+    }
+
+    private static State createState(ScreenOrientation orientation, Hardware hardware, boolean hasHardwareKeyboard) {
+        State state = null;
+        String name = "";
+        String description = "";
+
+        if (orientation == ScreenOrientation.LANDSCAPE) {
+            name = "Landscape";
+            description = "The device in landscape orientation";
+            state = new State();
+        } else if (orientation == ScreenOrientation.PORTRAIT) {
+            name = "Portrait";
+            description = "The device in portrait orientation";
+            state = new State();
+        }
+
+        if (state != null) {
+            if (hasHardwareKeyboard) {
+                name += " with keyboard";
+                description += " with a keyboard open";
+                state.setKeyState(KeyboardState.EXPOSED);
+            } else {
+                if (hardware.getKeyboard() != null && hardware.getKeyboard().equals(Keyboard.NOKEY)) {
+                    state.setKeyState(KeyboardState.SOFT);
+                } else {
+                    state.setKeyState(KeyboardState.HIDDEN);
+                }
+            }
+            state.setName(name);
+            state.setHardware(hardware);
+            state.setOrientation(orientation);
+            state.setDescription(description);
+            state.setNavState(hardware.getNav().equals(Navigation.NONAV) ? NavigationState.HIDDEN : NavigationState.EXPOSED);
+        }
+
+        return state;
+    }
+
+    public Hardware buildHardware() {
+        Hardware hardware = new Hardware();
+
+        hardware.addNetwork(Network.BLUETOOTH);
+        hardware.addNetwork(Network.WIFI);
+        hardware.addNetwork(Network.NFC);
+
+        hardware.addSensor(Sensor.BAROMETER);
+        hardware.addSensor(Sensor.COMPASS);
+        hardware.addSensor(Sensor.LIGHT_SENSOR);
+
+        hardware.setHasMic(true);
+        hardware.addInternalStorage(new Storage(4, Storage.Unit.GiB));
+        hardware.setCpu("Generic CPU");
+        hardware.setGpu("Generic GPU");
+
+        hardware.addAllSupportedAbis(EnumSet.allOf(Abi.class));
+
+        hardware.setChargeType(PowerType.BATTERY);
+
+        if (accelerometer.isSelected()) {
+            hardware.addSensor(Sensor.ACCELEROMETER);
+        }
+
+        if (gyroscope.isSelected()) {
+            hardware.addSensor(Sensor.GYROSCOPE);
+        }
+
+        if (gps.isSelected()) {
+            hardware.addSensor(Sensor.GPS);
+        }
+
+        if (proximity.isSelected()) {
+            hardware.addSensor(Sensor.PROXIMITY_SENSOR);
+        }
+
+        if (cameraBack.isSelected()) {
+            hardware.addCamera(new Camera(CameraLocation.BACK, true, true));
+        }
+
+        if (cameraFront.isSelected()) {
+            hardware.addCamera(new Camera(CameraLocation.FRONT, true, true));
+        }
+
+        if (hwKeyb.isSelected()) {
+            hardware.setKeyboard(Keyboard.QWERTY);
+        } else {
+            hardware.setKeyboard(Keyboard.NOKEY);
+        }
+
+        if (hwButt.isSelected()) {
+            hardware.setButtonType(ButtonType.HARD);
+        } else {
+            hardware.setButtonType(ButtonType.SOFT);
+        }
+
+        switch (navigationStyle.getSelectedIndex()) {
+            default:
+                hardware.setNav(Navigation.NONAV);
+                break;
+            case 1:
+                hardware.setNav(Navigation.DPAD);
+                break;
+            case 2:
+                hardware.setNav(Navigation.TRACKBALL);
+                break;
+            case 3:
+                hardware.setNav(Navigation.WHEEL);
+                break;
+        }
+
+        if (skin.getSelectedItem() != null) {
+            hardware.setSkinFile((File) skin.getSelectedItem());
+        }
+
+        hardware.setRam(new Storage((long) ram.getValue(), Storage.Unit.MiB));
+
+        hardware.setScreen(createScreen());
+
+        return hardware;
+    }
+
+    public Screen createScreen() {
+        Screen screen = new Screen();
+        screen.setMultitouch(Multitouch.JAZZ_HANDS);
+        screen.setMechanism(TouchScreen.FINGER);
+        screen.setScreenType(ScreenType.CAPACITIVE);
+
+        screen.setScreenRound((round.isSelected()) ? ScreenRound.ROUND : ScreenRound.NOTROUND);
+
+        int screenWidth = (int) resolutionX.getValue();
+        int screenHeight = (int) resolutionY.getValue();
+        double screenDiagonal = (double) screenSize.getValue();
+        double effectiveDiagonal = screenDiagonal;
+        if (round.isSelected()) {
+            // For round devices, compute the diagonal of
+            // the enclosing square.
+            effectiveDiagonal *= Math.sqrt(2.0);
+        }
+
+        screen.setDiagonalLength(screenDiagonal);
+        screen.setSize(getScreenSize(effectiveDiagonal));
+        screen.setXDimension(screenWidth);
+        screen.setYDimension(screenHeight);
+
+        screen.setRatio(getScreenRatio(screenWidth, screenHeight));
+
+        Double dpi = calculateDpi(screenWidth, screenHeight, screenDiagonal, round.isSelected());
+
+        dpi = Math.round(dpi * 100) / 100.0d;
+        screen.setYdpi(dpi);
+        screen.setXdpi(dpi);
+        DeviceType dt = (DeviceType) deviceType.getSelectedItem();
+
+        screen.setPixelDensity(getScreenDensity(dt == DeviceType.TV, dpi, screenHeight));
+        return screen;
+    }
+
+    public static Density getScreenDensity(boolean isTv, double dpi, int screenHeight) {
+        Density bucket = Density.MEDIUM;
+
+        if (isTv) {
+            // The 'generalized density' of a TV is based on its
+            // vertical resolution
+            bucket = (screenHeight <= 720) ? Density.TV : Density.XHIGH;
+        } else {
+            // A hand-held device.
+            // Search for the density enum whose value is closest to the density of our device.
+            double minDifference = Double.MAX_VALUE;
+            for (Density d : Density.values()) {
+                if (!d.isValidValueForDevice()) {
+                    continue;
+                }
+                double difference = Math.abs(d.getDpiValue() - dpi);
+                if (difference < minDifference) {
+                    minDifference = difference;
+                    bucket = d;
+                }
+            }
+        }
+        return bucket;
+    }
+
+    public static double calculateDpi(double screenResolutionWidth, double screenResolutionHeight,
+            double diagonalScreenSize, boolean isRound) {
+        double diagonalPixelResolution;
+        if (isRound) {
+            // Round: The "diagonal" is the same as the diameter.
+            // Use the width so we don't have to consider a possible chin.
+            diagonalPixelResolution = screenResolutionWidth;
+        } else {
+            // Calculate diagonal resolution in pixels using the Pythagorean theorem: Dp = (pixelWidth^2 + pixelHeight^2)^1/2
+            diagonalPixelResolution = Math.sqrt(Math.pow(screenResolutionWidth, 2) + Math.pow(screenResolutionHeight, 2));
+        }
+        // Calculate dots per inch: DPI = Dp / diagonalInchSize
+        return diagonalPixelResolution / diagonalScreenSize;
+    }
+
+    public static ScreenRatio getScreenRatio(int width, int height) {
+        int longSide = Math.max(width, height);
+        int shortSide = Math.min(width, height);
+
+        // Above a 5:3 ratio is "long"
+        if (((double) longSide) / shortSide >= 5.0 / 3) {
+            return ScreenRatio.LONG;
+        } else {
+            return ScreenRatio.NOTLONG;
+        }
+    }
+
+    public static ScreenSize getScreenSize(@Nullable Double diagonalSize) {
+        if (diagonalSize == null) {
+            return ScreenSize.NORMAL;
+        }
+
+        /**
+         * Density-independent pixel (dp) : The density-independent pixel is
+         * equivalent to one physical pixel on a 160 dpi screen, which is the
+         * baseline density assumed by the system for a "medium" density screen.
+         *
+         * Taken from
+         * http://developer.android.com/guide/practices/screens_support.html
+         */
+        double diagonalDp = 160.0 * diagonalSize;
+
+        // Set the Screen Size
+        if (diagonalDp >= 1200) {
+            return ScreenSize.XLARGE;
+        } else if (diagonalDp >= 800) {
+            return ScreenSize.LARGE;
+        } else if (diagonalDp >= 568) {
+            return ScreenSize.NORMAL;
+        } else {
+            return ScreenSize.SMALL;
+        }
     }
 
     private enum DeviceType {
@@ -169,7 +472,8 @@ public class AvdHwProfile extends javax.swing.JPanel {
                 skin.setModel(new SkinsComboboxModel(new File(skinPath)));
             }
             skin.setSelectedItem(skinFile);
-        }else{
+            playstore.setSelected(device.hasPlayStore());
+        } else {
             deviceType.setSelectedItem(DeviceType.MOBILE);
             navigationStyle.setSelectedIndex(0);
         }
@@ -290,6 +594,7 @@ public class AvdHwProfile extends javax.swing.JPanel {
         jLabel17 = new javax.swing.JLabel();
         skin = new javax.swing.JComboBox<>();
         skinButton = new javax.swing.JButton();
+        playstore = new javax.swing.JCheckBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(AvdHwProfile.class, "AvdHwProfile.jLabel1.text")); // NOI18N
 
@@ -384,6 +689,8 @@ public class AvdHwProfile extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(playstore, org.openide.util.NbBundle.getMessage(AvdHwProfile.class, "AvdHwProfile.playstore.text")); // NOI18N
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -421,11 +728,6 @@ public class AvdHwProfile extends javax.swing.JPanel {
                             .addComponent(jSeparator6)
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(jPanel1Layout.createSequentialGroup()
-                                        .addGap(6, 6, 6)
-                                        .addComponent(jLabel2)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(deviceType, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(jPanel1Layout.createSequentialGroup()
                                         .addComponent(jLabel3)
                                         .addGap(52, 52, 52)
@@ -473,7 +775,14 @@ public class AvdHwProfile extends javax.swing.JPanel {
                                             .addComponent(proximity)
                                             .addComponent(gps)
                                             .addComponent(gyroscope)
-                                            .addComponent(accelerometer))))
+                                            .addComponent(accelerometer)))
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addGap(6, 6, 6)
+                                        .addComponent(jLabel2)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(playstore)
+                                            .addComponent(deviceType, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE))))
                                 .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
             .addGroup(jPanel1Layout.createSequentialGroup()
@@ -496,7 +805,9 @@ public class AvdHwProfile extends javax.swing.JPanel {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(deviceType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(playstore)
+                .addGap(19, 19, 19)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
@@ -650,6 +961,7 @@ public class AvdHwProfile extends javax.swing.JPanel {
     private javax.swing.JSeparator jSeparator7;
     private javax.swing.JCheckBox landscape;
     private javax.swing.JComboBox<String> navigationStyle;
+    private javax.swing.JCheckBox playstore;
     private javax.swing.JCheckBox portrait;
     private javax.swing.JCheckBox proximity;
     private javax.swing.JSpinner ram;
