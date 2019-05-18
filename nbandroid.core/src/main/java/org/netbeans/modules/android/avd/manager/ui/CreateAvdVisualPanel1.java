@@ -21,16 +21,26 @@ package org.netbeans.modules.android.avd.manager.ui;
 import com.android.ide.common.rendering.HardwareConfigHelper;
 import com.android.sdklib.devices.Device;
 import com.android.sdklib.devices.DeviceManager;
+import com.android.sdklib.devices.DeviceParser;
+import com.android.sdklib.devices.DeviceWriter;
+import com.android.sdklib.devices.Software;
+import com.google.common.collect.Table;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.lang.reflect.Field;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -41,11 +51,18 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileChooserBuilder;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbPreferences;
 
 public final class CreateAvdVisualPanel1 extends JPanel implements ListSelectionListener, MouseListener {
 
@@ -68,8 +85,11 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
     public static final Icon ICON_TV = new javax.swing.ImageIcon(CreateAvdVisualPanel1.class.getResource("/org/netbeans/modules/android/avd/manager/device-tv_large.png"));
     public static final Icon ICON_WEAR = new javax.swing.ImageIcon(CreateAvdVisualPanel1.class.getResource("/org/netbeans/modules/android/avd/manager/device-wear_large.png"));
     private final JPopupMenu popupMenu = new JPopupMenu();
-    private final JMenuItem unimplementedMenu = new JMenuItem("Run");
+    private final JMenuItem editMenu = new JMenuItem("Edit");
+    private final JMenuItem deleteMenu = new JMenuItem("Delete");
+    private final JMenuItem exportMenu = new JMenuItem("Export");
     private final CreateAvdWizardPanel1 wizPanel;
+    private List<Device> userDevices = new ArrayList<>();
 
     /**
      * Creates new form CreateAvdVisualPanel1
@@ -97,6 +117,25 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
 
     private void refreshDevices() {
         List<Device> allDevices = new ArrayList<>(deviceManager.getDevices(EnumSet.of(DeviceManager.DeviceFilter.DEFAULT, DeviceManager.DeviceFilter.USER, DeviceManager.DeviceFilter.VENDOR, DeviceManager.DeviceFilter.SYSTEM_IMAGES)));
+        userDevices = new ArrayList<>(deviceManager.getDevices(EnumSet.of(DeviceManager.DeviceFilter.USER)));
+        for (Device device : userDevices) {
+            boolean playStore = NbPreferences.forModule(CreateAvdVisualPanel1.class).getBoolean(device.getId(), false);
+            if (playStore) {
+                try {
+                    Field declaredField = Device.class.getDeclaredField("mHasPlayStore");
+                    declaredField.setAccessible(true);
+                    declaredField.setBoolean(device, true);
+                } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                List<Software> allSoftware = device.getAllSoftware();
+                for (int i = 0; i < allSoftware.size(); i++) {
+                    Software software = allSoftware.get(i);
+                    software.setPlayStoreEnabled(true);
+                }
+            }
+            device.getId();
+        }
         tvDevices = allDevices.stream().filter((t) -> {
             return isTv(t);
         }).collect(Collectors.toList());
@@ -131,7 +170,7 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
         return d.getDefaultHardware().getScreen().getDiagonalLength() >= PHONE_SIZE_CUTOFF;
     }
 
-    public  static boolean isTv(Device d) {
+    public static boolean isTv(Device d) {
         return HardwareConfigHelper.isTv(d) || d.getDefaultHardware().getScreen().getDiagonalLength() >= TV_SIZE_CUTOFF;
     }
 
@@ -221,11 +260,55 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
     }
 
     private void installPopupMenu() {
-        popupMenu.add(unimplementedMenu);
-        unimplementedMenu.setAction(new AbstractAction("Not yet implemented") {
+        popupMenu.add(editMenu);
+        popupMenu.add(deleteMenu);
+        popupMenu.add(exportMenu);
+        editMenu.setAction(new AbstractAction("Modify device") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                unimplemented();
+                if (selectedDevice != null && userDevices.contains(selectedDevice)) {
+                    Device device = AvdHwProfile.showDeviceProfiler(selectedDevice, deviceManager, true);
+                    if (device != null) {
+                        deviceManager.replaceUserDevice(device);
+                        deviceManager.saveUserDevices();
+                        refreshDevices();
+                    }
+
+                }
+            }
+        });
+        deleteMenu.setAction(new AbstractAction("Delete device") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (selectedDevice != null && userDevices.contains(selectedDevice)) {
+                    deviceManager.removeUserDevice(selectedDevice);
+                    deviceManager.saveUserDevices();
+                    refreshDevices();
+
+                }
+            }
+        });
+        exportMenu.setAction(new AbstractAction("Export device") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (selectedDevice != null) {
+                    FileChooserBuilder builder = new FileChooserBuilder("android-devices-export");
+                    builder.setFilesOnly(true);
+                    builder.setFileFilter(new FileNameExtensionFilter("Android devide definition", "xml", "XML"));
+                    File file = builder.showSaveDialog();
+                    if (file != null) {
+                        if(!file.getName().toLowerCase().endsWith(".xml")){
+                            file = new File(file.getAbsolutePath()+".xml");
+                        }
+                        List<Device> singletonList = Collections.singletonList(selectedDevice);
+                        try {
+                            DeviceWriter.writeToXml(new FileOutputStream(file), singletonList);
+                        } catch (FileNotFoundException | ParserConfigurationException | TransformerFactoryConfigurationError | TransformerException ex) {
+                            NotifyDescriptor nd = new NotifyDescriptor.Message("Error while exporting Android device definition!", NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notifyLater(nd);
+                        }
+                    }
+                }
             }
         });
         tableMobile.addMouseListener(this);
@@ -263,6 +346,8 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
                 JTable table = (JTable) comp;
                 int rowIndex = table.rowAtPoint(e.getPoint());
                 table.setRowSelectionInterval(rowIndex, rowIndex);
+                editMenu.setEnabled(selectedDevice != null && userDevices.contains(selectedDevice));
+                deleteMenu.setEnabled(selectedDevice != null && userDevices.contains(selectedDevice));
             }
             popupMenu.show(comp, e.getX(), e.getY());
         }
@@ -646,17 +731,54 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
 
     private void createProfileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createProfileButtonActionPerformed
         // TODO add your handling code here:
-        unimplemented();
+        Device device = AvdHwProfile.showDeviceProfiler(null, deviceManager, false);
+        if (device != null) {
+            deviceManager.addUserDevice(device);
+            deviceManager.saveUserDevices();
+            refreshDevices();
+        }
     }//GEN-LAST:event_createProfileButtonActionPerformed
 
     private void importProfileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importProfileButtonActionPerformed
         // TODO add your handling code here:
-        unimplemented();
+        FileChooserBuilder builder = new FileChooserBuilder("android-devices");
+        builder.setFilesOnly(true);
+        builder.setFileFilter(new FileNameExtensionFilter("Android devide definition", "xml", "XML"));
+        File[] files = builder.showMultiOpenDialog();
+        if (files != null) {
+            for (File file : files) {
+                try {
+                    Table<String, String, Device> devices = DeviceParser.parse(file);
+                    Map<String, Map<String, Device>> rowMap = devices.rowMap();
+                    rowMap.values().stream().forEach((t) -> {
+                        t.values().stream().forEach((d) -> {
+                            Device device = AvdHwProfile.showDeviceProfiler(d, deviceManager, false);
+                            if (device != null) {
+                                deviceManager.addUserDevice(d);
+                            }
+                        });
+                    });
+                } catch (Exception ex) {
+                    NotifyDescriptor nd = new NotifyDescriptor.Message("Error while parsing Android device definition!", NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notifyLater(nd);
+                }
+            }
+            deviceManager.saveUserDevices();
+            refreshDevices();
+        }
     }//GEN-LAST:event_importProfileButtonActionPerformed
 
     private void cloneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cloneButtonActionPerformed
         // TODO add your handling code here:
-        unimplemented();
+        if (selectedDevice != null) {
+            Device device = AvdHwProfile.showDeviceProfiler(selectedDevice, deviceManager, false);
+            if (device != null) {
+                deviceManager.addUserDevice(device);
+                deviceManager.saveUserDevices();
+                refreshDevices();
+            }
+
+        }
     }//GEN-LAST:event_cloneButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
