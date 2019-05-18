@@ -22,6 +22,7 @@ import com.android.ide.common.rendering.HardwareConfigHelper;
 import com.android.sdklib.devices.Device;
 import com.android.sdklib.devices.DeviceManager;
 import com.android.sdklib.devices.DeviceParser;
+import com.android.sdklib.devices.Software;
 import com.google.common.collect.Table;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -29,6 +30,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
+import java.lang.reflect.Field;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -51,7 +53,9 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbPreferences;
 
 public final class CreateAvdVisualPanel1 extends JPanel implements ListSelectionListener, MouseListener {
 
@@ -105,6 +109,24 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
     private void refreshDevices() {
         List<Device> allDevices = new ArrayList<>(deviceManager.getDevices(EnumSet.of(DeviceManager.DeviceFilter.DEFAULT, DeviceManager.DeviceFilter.USER, DeviceManager.DeviceFilter.VENDOR, DeviceManager.DeviceFilter.SYSTEM_IMAGES)));
         userDevices = new ArrayList<>(deviceManager.getDevices(EnumSet.of(DeviceManager.DeviceFilter.USER)));
+        for (Device device : userDevices) {
+            boolean playStore = NbPreferences.forModule(CreateAvdVisualPanel1.class).getBoolean(device.getId(), false);
+            if(playStore){
+                try {
+                    Field declaredField = Device.class.getDeclaredField("mHasPlayStore");
+                    declaredField.setAccessible(true);
+                    declaredField.setBoolean(device, true);
+                } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                List<Software> allSoftware = device.getAllSoftware();
+                for (int i = 0; i < allSoftware.size(); i++) {
+                    Software software = allSoftware.get(i);
+                    software.setPlayStoreEnabled(true);
+                }
+            }
+            device.getId();
+        }
         tvDevices = allDevices.stream().filter((t) -> {
             return isTv(t);
         }).collect(Collectors.toList());
@@ -234,7 +256,13 @@ public final class CreateAvdVisualPanel1 extends JPanel implements ListSelection
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (selectedDevice != null && userDevices.contains(selectedDevice)) {
-                    AvdHwProfile.showDeviceProfiler(selectedDevice);
+                    Device device = AvdHwProfile.showDeviceProfiler(selectedDevice,deviceManager,true);
+                    if(device!=null){
+                        deviceManager.replaceUserDevice(device);
+                        deviceManager.saveUserDevices();
+                        refreshDevices();
+                    }
+                    
                 }
             }
         });

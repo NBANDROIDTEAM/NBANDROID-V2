@@ -34,6 +34,7 @@ import com.android.sdklib.devices.ButtonType;
 import com.android.sdklib.devices.Camera;
 import com.android.sdklib.devices.CameraLocation;
 import com.android.sdklib.devices.Device;
+import com.android.sdklib.devices.DeviceManager;
 import com.android.sdklib.devices.Hardware;
 import com.android.sdklib.devices.Multitouch;
 import com.android.sdklib.devices.Network;
@@ -50,9 +51,12 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
@@ -66,6 +70,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -74,9 +79,12 @@ import org.openide.filesystems.FileChooserBuilder;
 public class AvdHwProfile extends javax.swing.JPanel {
 
     private static final Device.Builder deviceBuilder = new Device.Builder();
+    private final DeviceManager deviceManager;
+    private final Device.Builder builder = new Device.Builder();
+    private final boolean edit;
 
-    public static Device showDeviceProfiler(Device device) {
-        final AvdHwProfile hwProfile = new AvdHwProfile(device);
+    public static Device showDeviceProfiler(Device device, DeviceManager deviceManager,boolean edit) {
+        final AvdHwProfile hwProfile = new AvdHwProfile(device, deviceManager,edit);
         DialogDescriptor dd = new DialogDescriptor(hwProfile, "Device profile editor", true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.CANCEL_OPTION, null);
         Object notify = DialogDisplayer.getDefault().notify(dd);
         if (DialogDescriptor.OK_OPTION.equals(notify)) {
@@ -84,13 +92,42 @@ public class AvdHwProfile extends javax.swing.JPanel {
         }
         return null;
     }
+    
+    private void initBootProperties( Device device) {
+    for (Map.Entry<String, String> entry : device.getBootProps().entrySet()) {
+      builder.addBootProp(entry.getKey(), entry.getValue());
+    }
+  }
+
+    public String getUniqueId( String id) {
+        String baseId = id == null ? "New Device" : id;
+        Collection<Device> devices = deviceManager.getDevices(DeviceManager.DeviceFilter.USER);
+        String candidate = baseId;
+        int i = 0;
+        while (anyIdMatches(candidate, devices)) {
+            candidate = String.format(Locale.getDefault(), "%s %d", baseId, ++i);
+        }
+        return candidate;
+    }
+
+    private static boolean anyIdMatches( String id,  Collection<Device> devices) {
+        for (Device d : devices) {
+            if (id.equalsIgnoreCase(d.getId())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private Device buildDevice() {
-        Device.Builder builder = new Device.Builder();
         builder.setPlayStore(playstore.isSelected());
         builder.addAllState(generateStates(buildHardware()));
         builder.setName(deviceName.getText());
-        builder.setId(deviceName.getText());
+        if (edit) {
+            builder.setId(deviceName.getText());
+        }else{
+            builder.setId(getUniqueId(deviceName.getText()));
+        }
         builder.setManufacturer("User");
         DeviceType dt = (DeviceType) deviceType.getSelectedItem();
         switch (dt) {
@@ -110,7 +147,9 @@ public class AvdHwProfile extends javax.swing.JPanel {
         software.setPlayStoreEnabled(playstore.isSelected());
         software.setGlVersion("2.0");
         builder.addSoftware(software);
-        return builder.build();
+        Device device = builder.build();
+        NbPreferences.forModule(CreateAvdVisualPanel1.class).putBoolean(device.getId(), device.hasPlayStore());
+        return device;
     }
 
     private List<State> generateStates(Hardware hardware) {
@@ -306,7 +345,7 @@ public class AvdHwProfile extends javax.swing.JPanel {
             // Search for the density enum whose value is closest to the density of our device.
             double minDifference = Double.MAX_VALUE;
             for (Density d : Density.values()) {
-                if (!d.isValidValueForDevice()) {
+                if (!d.isValidValueForDevice() || !isRecommended(d)) {
                     continue;
                 }
                 double difference = Math.abs(d.getDpiValue() - dpi);
@@ -317,6 +356,23 @@ public class AvdHwProfile extends javax.swing.JPanel {
             }
         }
         return bucket;
+    }
+    
+    public static boolean isRecommended(Density d) {
+        switch (d.getDpiValue()) {
+            case 213:
+            case 260:
+            case 280:
+            case 300:
+            case 340:
+            case 360:
+            case 400:
+            case 420:
+            case 560:
+                return false;
+            default:
+                return true;
+        }
     }
 
     public static double calculateDpi(double screenResolutionWidth, double screenResolutionHeight,
@@ -403,11 +459,14 @@ public class AvdHwProfile extends javax.swing.JPanel {
     /**
      * Creates new form AvdHwProfile
      */
-    public AvdHwProfile(Device device) {
+    public AvdHwProfile(Device device, DeviceManager deviceManager,boolean edit) {
+        this.deviceManager = deviceManager;
+        this.edit=edit;
         initComponents();
         deviceType.setModel(new DefaultComboBoxModel<>(DeviceType.values()));
         if (device != null) {
-            String tagId = device.getTagId();
+             String tagId = device.getTagId();
+            initBootProperties(device);
             if (tagId == null) {
                 deviceType.setSelectedItem(DeviceType.MOBILE);
             } else if (DeviceType.TV.id.equals(tagId)) {
@@ -415,9 +474,12 @@ public class AvdHwProfile extends javax.swing.JPanel {
             } else if (DeviceType.WEAR.id.equals(tagId)) {
                 deviceType.setSelectedItem(DeviceType.WEAR);
             }
-        }
-        if (device != null) {
-            deviceName.setText(device.getDisplayName());
+            if (edit) {
+                deviceName.setText(device.getDisplayName());
+                deviceName.setEditable(false);
+            }else{
+                deviceName.setText(String.format("%s (Edited)", device.getDisplayName()));
+            }
             if (CreateAvdVisualPanel1.isTv(device)) {
                 deviceType.setSelectedItem(DeviceType.TV);
             } else if (HardwareConfigHelper.isWear(device)) {
@@ -476,6 +538,7 @@ public class AvdHwProfile extends javax.swing.JPanel {
         } else {
             deviceType.setSelectedItem(DeviceType.MOBILE);
             navigationStyle.setSelectedIndex(0);
+            deviceName.setText(getUniqueId(null));
         }
         skin.setRenderer(new BasicComboBoxRenderer() {
             @Override
