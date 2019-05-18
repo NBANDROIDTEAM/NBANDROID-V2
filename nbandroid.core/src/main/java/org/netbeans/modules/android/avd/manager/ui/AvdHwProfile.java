@@ -88,7 +88,9 @@ public class AvdHwProfile extends javax.swing.JPanel {
         DialogDescriptor dd = new DialogDescriptor(hwProfile, "Device profile editor", true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.CANCEL_OPTION, null);
         Object notify = DialogDisplayer.getDefault().notify(dd);
         if (DialogDescriptor.OK_OPTION.equals(notify)) {
-            return hwProfile.buildDevice();
+            Device buildDevice = hwProfile.buildDevice();
+            NbPreferences.forModule(CreateAvdVisualPanel1.class).putBoolean(buildDevice.getId(), buildDevice.hasPlayStore());
+            return buildDevice;
         }
         return null;
     }
@@ -147,9 +149,7 @@ public class AvdHwProfile extends javax.swing.JPanel {
         software.setPlayStoreEnabled(playstore.isSelected());
         software.setGlVersion("2.0");
         builder.addSoftware(software);
-        Device device = builder.build();
-        NbPreferences.forModule(CreateAvdVisualPanel1.class).putBoolean(device.getId(), device.hasPlayStore());
-        return device;
+        return builder.build();
     }
 
     private List<State> generateStates(Hardware hardware) {
