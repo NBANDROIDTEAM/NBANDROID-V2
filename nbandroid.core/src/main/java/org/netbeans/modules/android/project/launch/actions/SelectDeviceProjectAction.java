@@ -29,140 +29,54 @@ import com.android.utils.NullLogger;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
-import java.util.Collection;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JPopupMenu;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
-import org.netbeans.api.annotations.common.StaticResource;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.android.project.api.NbAndroidProjectImpl;
 import org.netbeans.spi.project.AuxiliaryProperties;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionReferences;
-import org.openide.awt.ActionRegistration;
-import org.openide.awt.DropDownButtonFactory;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
 import org.openide.xml.XMLUtil;
 
-@ActionID(
-        category = "Run",
-        id = "org.netbeans.modules.android.project.launch.actions.SelectDeviceAction"
-)
-@ActionRegistration(
-        displayName = "Select device", lazy = false
-)
-@ActionReferences({
-    @ActionReference(path = "Toolbars/Build", position = 375)
-})
 /**
  *
  * @author arsi
  */
-public class SelectDeviceAction extends AbstractAction implements Presenter.Toolbar, LookupListener, PropertyChangeListener, AndroidDebugBridge.IDeviceChangeListener {
+public class SelectDeviceProjectAction extends AbstractAction implements Presenter.Menu, Presenter.Popup {
 
-    private final Lookup.Result<Node> lookupResultNode;
-    private final Lookup.Result<DataObject> lookupResultDob;
-    public static final JPopupMenu menu = new JPopupMenu();
+    private final JMenu menu = new JMenu("Device");
+    private final NbAndroidProjectImpl project;
     ButtonGroup group = new ButtonGroup();
-    public static final String ADB_SELECTED_DEVICE = "ADB_SELECTED_DEVICE";
-    public static final String ADB_LAST_SELECTED_AVD = "ADB_LAST_SELECTED_AVD";
 
-    @StaticResource
-    private static final String PHONE_ICON_RES = "org/netbeans/modules/android/project/resources/phone32.png";
-    public static final ImageIcon PHONE_ICON = new ImageIcon(ImageUtilities.loadImage(PHONE_ICON_RES));
+    public SelectDeviceProjectAction(NbAndroidProjectImpl project) {
+        this.project = project;
+    }
 
-    private static final String PHONE_CENTER_ICON_RES = "org/netbeans/modules/android/project/resources/phone24_center.png";
-    public static final ImageIcon PHONE_CENTER_ICON = new ImageIcon(ImageUtilities.loadImage(PHONE_CENTER_ICON_RES));
+    @Override
+    public JMenuItem getMenuPresenter() {
+        refresh();
+        return menu;
+    }
 
-    private static final String EMULATOR_ICON_RES = "org/netbeans/modules/android/project/resources/emulator32.png";
-    public static final ImageIcon EMULATOR_ICON = new ImageIcon(ImageUtilities.loadImage(EMULATOR_ICON_RES));
-
-    private static final String BROKEN_ICON_RES = "org/netbeans/modules/android/project/resources/broken_adb.png";
-    public static final ImageIcon BROKEN_ICON = new ImageIcon(ImageUtilities.loadImage(BROKEN_ICON_RES));
-    private AndroidDebugBridge debugBridge;
-    private final JButton toolbarButton = DropDownButtonFactory.createDropDownButton(BROKEN_ICON, menu);
+    @Override
+    public JMenuItem getPopupPresenter() {
+        refresh();
+        return menu;
+    }
     
-    private static SelectDeviceAction INSTANCE=null;
-    
-    public static final SelectDeviceAction getDefault(){
-        return INSTANCE;
-    }
-
-    public SelectDeviceAction() {
-        INSTANCE = this;
-        lookupResultNode = Utilities.actionsGlobalContext().lookupResult(Node.class);
-        lookupResultNode.addLookupListener(this);
-        lookupResultDob = Utilities.actionsGlobalContext().lookupResult(DataObject.class);
-        lookupResultDob.addLookupListener(this);
-        AndroidSdkProvider sdkProvider = AndroidSdkProvider.getDefault();
-        sdkProvider.addPropertyChangeListener(this);
-        debugBridge = AndroidSdkProvider.getAdb();
-        AndroidDebugBridge.addDeviceChangeListener(this);
-        resultChanged(null);
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-    }
-
-    @Override
-    public Component getToolbarPresenter() {
-        return toolbarButton;
-    }
-
-    @Override
-    public void resultChanged(LookupEvent le) {
-        Collection<? extends Node> allInstances = lookupResultNode.allInstances();
-        if (!allInstances.isEmpty()) {
-            Node abstractNode = allInstances.iterator().next();
-            while (abstractNode != null) {
-                NbAndroidProjectImpl project = abstractNode.getLookup().lookup(NbAndroidProjectImpl.class);
-                if (project != null) {
-                    updateMenu(project);
-                    return;
-                }
-                abstractNode = abstractNode.getParentNode();
-            }
-        }
-        Collection<? extends DataObject> allInstancesDob = lookupResultDob.allInstances();
-        if (!allInstancesDob.isEmpty()) {
-            Project owner = FileOwnerQuery.getOwner(allInstancesDob.iterator().next().getPrimaryFile());
-            if (owner instanceof NbAndroidProjectImpl) {
-                updateMenu((NbAndroidProjectImpl) owner);
-                return;
-            }
-        }
-
-        toolbarButton.setVisible(false);
-    }
-
-    public void updateMenu(NbAndroidProjectImpl project) {
-        toolbarButton.setVisible(true);
+    private void refresh(){
+        menu.removeAll();
         AuxiliaryProperties auxiliaryProperties = project.getLookup().lookup(AuxiliaryProperties.class);
-        String lastSelectedDevice = auxiliaryProperties.get(ADB_SELECTED_DEVICE, false);
-        String lastSelectedAvd = auxiliaryProperties.get(ADB_LAST_SELECTED_AVD, false);
+        String lastSelectedDevice = auxiliaryProperties.get(SelectDeviceAction.ADB_SELECTED_DEVICE, false);
+        String lastSelectedAvd = auxiliaryProperties.get(SelectDeviceAction.ADB_LAST_SELECTED_AVD, false);
+        AndroidDebugBridge debugBridge = AndroidSdkProvider.getAdb();
         if (debugBridge == null) {
-            toolbarButton.setToolTipText("Broken ADB!");
-            toolbarButton.setIcon(BROKEN_ICON);
+            menu.add(new JMenuItem("Broken ADB"));
         } else {
-            menu.removeAll();
             for (IDevice device : debugBridge.getDevices()) {
                 if (!device.isEmulator()) {
                     JRadioButtonMenuItemWithDevice item = new JRadioButtonMenuItemWithDevice(device, project);
@@ -187,7 +101,7 @@ public class SelectDeviceAction extends AbstractAction implements Presenter.Tool
                     }
                 }
             }
-            Component[] components = menu.getComponents();
+            Component[] components = menu.getPopupMenu().getComponents();
             if (lastSelectedDevice != null) {
                 boolean ok = false;
                 for (Component component : components) {
@@ -272,24 +186,7 @@ public class SelectDeviceAction extends AbstractAction implements Presenter.Tool
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent event) {
-        debugBridge = AndroidSdkProvider.getAdb();
-        resultChanged(null);
-    }
-
-    @Override
-    public void deviceConnected(IDevice id) {
-        resultChanged(null);
-    }
-
-    @Override
-    public void deviceDisconnected(IDevice id) {
-        resultChanged(null);
-    }
-
-    @Override
-    public void deviceChanged(IDevice id, int i) {
-        resultChanged(null);
+    public void actionPerformed(ActionEvent e) {
     }
 
     private class JRadioButtonMenuItemWithDevice extends JRadioButtonMenuItem implements ActionListener {
@@ -301,7 +198,7 @@ public class SelectDeviceAction extends AbstractAction implements Presenter.Tool
             this.device = device;
             this.project = project;
             setText(getHtmlDisplayName());
-            setIcon(PHONE_CENTER_ICON);
+            setIcon(SelectDeviceAction.PHONE_CENTER_ICON);
             addActionListener(this);
         }
 
@@ -315,10 +212,12 @@ public class SelectDeviceAction extends AbstractAction implements Presenter.Tool
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            toolbarButton.setToolTipText(getHtmlDisplayName());
-            toolbarButton.setIcon(PHONE_CENTER_ICON);
             AuxiliaryProperties auxiliaryProperties = project.getLookup().lookup(AuxiliaryProperties.class);
-            auxiliaryProperties.put(ADB_SELECTED_DEVICE, "DEVICE." + device.getSerialNumber(), false);
+            auxiliaryProperties.put(SelectDeviceAction.ADB_SELECTED_DEVICE, "DEVICE." + device.getSerialNumber(), false);
+            SelectDeviceAction selectDeviceAction = SelectDeviceAction.getDefault();
+            if (selectDeviceAction != null) {
+                selectDeviceAction.resultChanged(null);
+            }
         }
 
         private String getHtmlDisplayName() {
@@ -368,7 +267,7 @@ public class SelectDeviceAction extends AbstractAction implements Presenter.Tool
             this.project = project;
             setText(getHtmlDisplayName());
             addActionListener(this);
-            setIcon(EMULATOR_ICON);
+            setIcon(SelectDeviceAction.EMULATOR_ICON);
         }
 
         public AvdInfo getDevice() {
@@ -381,11 +280,13 @@ public class SelectDeviceAction extends AbstractAction implements Presenter.Tool
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            toolbarButton.setToolTipText(getHtmlDisplayName());
-            toolbarButton.setIcon(EMULATOR_ICON);
             AuxiliaryProperties auxiliaryProperties = project.getLookup().lookup(AuxiliaryProperties.class);
-            auxiliaryProperties.put(ADB_SELECTED_DEVICE, "AVD." + device.getDeviceName(), false);
-            auxiliaryProperties.put(ADB_LAST_SELECTED_AVD, device.getDeviceName(), false);
+            auxiliaryProperties.put(SelectDeviceAction.ADB_SELECTED_DEVICE, "AVD." + device.getDeviceName(), false);
+            auxiliaryProperties.put(SelectDeviceAction.ADB_LAST_SELECTED_AVD, device.getDeviceName(), false);
+            SelectDeviceAction selectDeviceAction = SelectDeviceAction.getDefault();
+            if (selectDeviceAction != null) {
+                selectDeviceAction.resultChanged(null);
+            }
         }
 
         private String getHtmlDisplayName() {

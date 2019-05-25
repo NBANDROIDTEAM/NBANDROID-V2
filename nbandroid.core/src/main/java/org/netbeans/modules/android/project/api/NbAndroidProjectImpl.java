@@ -49,6 +49,7 @@ import org.netbeans.modules.android.project.build.BuildVariant;
 import org.netbeans.modules.android.project.debug.GradleDebugInfo;
 import org.netbeans.modules.android.project.keystore.KeystoreConfiguration;
 import org.netbeans.modules.android.project.launch.GradleLaunchExecutor;
+import org.netbeans.modules.android.project.launch.actions.SelectDeviceProjectAction;
 import org.netbeans.modules.android.project.properties.AndroidCustomizerProvider;
 import org.netbeans.modules.android.project.query.AndroidClassPathProvider;
 import org.netbeans.modules.android.project.query.AutoAndroidJavadocForBinaryQuery;
@@ -96,6 +97,7 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
     protected static final AutoAndroidSourceForBinaryQuery SOURCE_FOR_BINARY_QUERY = Lookup.getDefault().lookup(AutoAndroidSourceForBinaryQuery.class);
     protected static final AutoAndroidJavadocForBinaryQuery JAVADOC_FOR_BINARY_QUERY = Lookup.getDefault().lookup(AutoAndroidJavadocForBinaryQuery.class);
     protected final GradleLaunchExecutor launchExecutor = new GradleLaunchExecutor(this);
+    private final SelectDeviceProjectAction selectDeviceProjectAction = new SelectDeviceProjectAction(this);
 
     public NbAndroidProjectImpl(FileObject projectDirectory, ProjectState ps) {
         super(projectDirectory, ps);
@@ -205,6 +207,7 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
             projectActions.add(null);
             projectActions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, "Run", null));
             projectActions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, "Debug", null));
+            projectActions.add(selectDeviceProjectAction);
             projectActions.add(null);
             List<? extends Action> actionsForPath = Utilities.actionsForPath("Android/Projects/Project");
             projectActions.addAll(actionsForPath);
