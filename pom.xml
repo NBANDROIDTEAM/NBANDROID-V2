@@ -136,8 +136,8 @@
                         <version>${version.nb.plugin}</version>
                         <extensions>true</extensions>
                         <configuration>
-                            <netbeansInstallation>/hdd/nb11/</netbeansInstallation>
-                            <netbeansUserdir>/home/arsi/.netbeans/11.0.android</netbeansUserdir>
+                            <netbeansInstallation>/hdd/nb11_android/</netbeansInstallation>
+                            <netbeansUserdir>/home/arsi/.netbeans/11.0.android.1</netbeansUserdir>
                         </configuration>
                     </plugin>
                 </plugins>

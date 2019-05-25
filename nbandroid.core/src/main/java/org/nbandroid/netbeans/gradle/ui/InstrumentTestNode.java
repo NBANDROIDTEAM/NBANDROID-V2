@@ -16,13 +16,14 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.lookup.Lookups;
 
 public class InstrumentTestNode extends AbstractNode {
 
     private final Project p;
 
     public InstrumentTestNode(String name, Project p) {
-        super(new InstrumentTestChildren(p));
+        super(new InstrumentTestChildren(p),Lookups.fixed(p));
         setName(name);
         setDisplayName(name);
         this.p = p;

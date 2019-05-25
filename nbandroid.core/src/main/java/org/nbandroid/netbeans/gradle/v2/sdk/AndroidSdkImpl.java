@@ -494,7 +494,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
 
             List<AndroidVersionNode> tmpPackages = new ArrayList<>();
             Map<AndroidVersion, AndroidVersionNode> tmp = new HashMap<>();
-            toolsPackages = new ArrayList<>();
+            List<UpdatablePackage> toolsPackagesTmp = new ArrayList<>();
             Vector<UpdatablePackage> platformsTmp = new Vector<>();
             for (UpdatablePackage info : packages.getConsolidatedPkgs().values()) {
                 RepoPackage p = info.getRepresentative();
@@ -534,11 +534,11 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
                         tmpPackages.add(avd);
                     }
                 } else {
-                    toolsPackages.add(info);
+                    toolsPackagesTmp.add(info);
                 }
             }
             List<UpdatablePackage> buildTools = new ArrayList<>();
-            for (UpdatablePackage toolsPackage : toolsPackages) {
+            for (UpdatablePackage toolsPackage : toolsPackagesTmp) {
                 if (toolsPackage.getRepresentative().getPath().startsWith("build-tools")) {
                     if (!toolsPackage.getRepresentative().getVersion().isPreview()) {
                         buildTools.add(toolsPackage);
@@ -576,7 +576,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
             Map<String, SdkManagerToolsMultiPackageNode> tmpMultiSupport = new HashMap<>();
             toolRoot = new SdkManagerToolsRootNode();
             SdkManagerToolsSupportNode supportNode = new SdkManagerToolsSupportNode(toolRoot);
-            for (UpdatablePackage p : toolsPackages) {
+            for (UpdatablePackage p : toolsPackagesTmp) {
                 String prefix = p.getRepresentative().getPath();
                 int lastSegmentIndex = prefix.lastIndexOf(';');
                 boolean found = false;
@@ -618,7 +618,7 @@ public class AndroidSdkImpl extends AndroidSdk implements Serializable, RepoMana
                 }
             }
             toolRoot.addNode(supportNode);
-
+            toolsPackages = toolsPackagesTmp;
             for (SdkManagerToolsChangeListener toolsListener : toolsListeners) {
                 try {
                     toolsListener.packageListChanged(toolRoot);
