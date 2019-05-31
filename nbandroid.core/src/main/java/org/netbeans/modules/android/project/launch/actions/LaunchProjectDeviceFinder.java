@@ -114,7 +114,7 @@ public class LaunchProjectDeviceFinder {
                 if (device == null && !devicesReal.isEmpty()) {
                     //try to find first real device
                     device = devicesReal.iterator().next();
-                } else if (!devicesAvd.isEmpty()) {
+                } else if (device == null && !devicesAvd.isEmpty()) {
                     //try to find first AVD device
                     device = devicesAvd.iterator().next();
                 }

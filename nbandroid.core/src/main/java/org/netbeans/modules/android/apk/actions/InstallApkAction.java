@@ -28,12 +28,6 @@ import java.awt.event.ActionListener;
 import java.io.CharConversionException;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import org.nbandroid.netbeans.gradle.avd.AvdSelector;
-import org.nbandroid.netbeans.gradle.configs.ConfigBuilder;
-import org.nbandroid.netbeans.gradle.launch.AndroidLauncher;
-import org.nbandroid.netbeans.gradle.launch.AndroidLauncherImpl;
-import org.nbandroid.netbeans.gradle.launch.LaunchConfiguration;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.netbeans.modules.android.project.launch.actions.SelectDeviceAction;
 import org.openide.DialogDisplayer;
@@ -126,18 +120,9 @@ public class InstallApkAction extends NodeAction implements Presenter.Menu, Pres
             Runnable runnable = new Runnable() {
                 public void run() {
                     FileObject fo = node.getLookup().lookup(FileObject.class);
-                    AndroidSdk sdk = AndroidSdkProvider.getDefaultSdk();
-                    if (fo != null && sdk != null) {
-                        AndroidLauncher launcher = new AndroidLauncherImpl();
-                        LaunchConfiguration cfg = ConfigBuilder.builder()
-                                .withName("dummy").withTargetMode(LaunchConfiguration.TargetMode.AUTO).config().getLaunchConfiguration();
-                        AvdSelector.LaunchData launchData = launcher.configAvd(
-                                sdk.getAndroidSdkHandler(), sdk, null, cfg);
-                        if (launchData == null || launchData.getDevice() == null) {
-                            return;
-                        }
+                    if (fo != null ) {
                         try {
-                            launchData.getDevice().installPackage(fo.getPath(), true);
+                            device.installPackage(fo.getPath(), true);
                         } catch (InstallException ex) {
                             String message = ex.getMessage();
                             NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE);

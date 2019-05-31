@@ -44,6 +44,8 @@ import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.netbeans.api.io.InputOutput;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.android.project.api.NbAndroidProjectImpl;
+import org.netbeans.modules.android.project.launch.actions.LaunchProjectDeviceFinder;
 import org.netbeans.modules.android.spi.MainActivityConfiguration;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -72,6 +74,7 @@ public class AndroidLauncherImpl implements AndroidLauncher {
         Project project = Preconditions.checkNotNull(context.lookup(Project.class));
         io = project.getLookup().lookup(InputOutput.class);
         AndroidSdk sdk = Preconditions.checkNotNull(project.getLookup().lookup(AndroidSdk.class));
+        LaunchProjectDeviceFinder.LaunchData selectedDevice = LaunchProjectDeviceFinder.getSelectedDevice((NbAndroidProjectImpl) project);
         if (launchData == null) {
             if (platform != null) {
                 launchData = configAvd(platform.getSdk().getAndroidSdkHandler(), sdk, platform.getAndroidTarget(), launchCfg);
