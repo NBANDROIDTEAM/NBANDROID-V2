@@ -104,7 +104,7 @@ public class SelectDeviceAction extends AbstractAction implements Presenter.Tool
     public static final SelectDeviceAction getDefault(){
         return INSTANCE;
     }
-
+    
     public SelectDeviceAction() {
         INSTANCE = this;
         lookupResultNode = Utilities.actionsGlobalContext().lookupResult(Node.class);
@@ -156,6 +156,10 @@ public class SelectDeviceAction extends AbstractAction implements Presenter.Tool
     public void updateMenu(NbAndroidProjectImpl project) {
         toolbarButton.setVisible(true);
         AuxiliaryProperties auxiliaryProperties = project.getLookup().lookup(AuxiliaryProperties.class);
+        if(auxiliaryProperties==null){
+            menu.removeAll();
+            return;
+        }
         String lastSelectedDevice = auxiliaryProperties.get(ADB_SELECTED_DEVICE, false);
         String lastSelectedAvd = auxiliaryProperties.get(ADB_LAST_SELECTED_AVD, false);
         if (debugBridge == null) {
