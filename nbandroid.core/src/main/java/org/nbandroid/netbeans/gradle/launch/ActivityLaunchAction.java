@@ -45,6 +45,7 @@ class ActivityLaunchAction implements LaunchAction {
     @Override
     public boolean doLaunch(LaunchInfo launchInfo, IDevice device, Project project, MainActivityConfiguration mainActivityConfiguration) {
         io = project.getLookup().lookup(InputOutput.class);
+        io.getOut().println("\r\n");
         io.getOut().println("============================ RUN ===================================\r\n");
 
         String activity = null;

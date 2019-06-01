@@ -32,6 +32,7 @@ import java.awt.event.ActionListener;
 import java.io.CharConversionException;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
@@ -39,6 +40,7 @@ import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.netbeans.modules.android.project.api.NbAndroidProjectImpl;
 import org.netbeans.spi.project.AuxiliaryProperties;
+import org.openide.util.NbPreferences;
 import org.openide.util.actions.Presenter;
 import org.openide.xml.XMLUtil;
 
@@ -182,6 +184,16 @@ public class SelectDeviceProjectAction extends AbstractAction implements Present
                     }
                 }
             }
+            final JCheckBoxMenuItem wipeData = new JCheckBoxMenuItem("Wipe data before Start Emulator");
+            wipeData.setSelected(SelectDeviceAction.wipeData.isSelected());
+            wipeData.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    SelectDeviceAction.wipeData.setSelected(wipeData.isSelected());
+                    NbPreferences.forModule(SelectDeviceAction.class).putBoolean("WIPE-DATA", wipeData.isSelected());
+                }
+            });
+            menu.add(wipeData);
         }
     }
 

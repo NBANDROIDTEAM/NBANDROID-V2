@@ -37,6 +37,7 @@ import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
@@ -57,6 +58,8 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
 import org.openide.xml.XMLUtil;
@@ -80,6 +83,16 @@ public class SelectDeviceAction extends AbstractAction implements Presenter.Tool
     private final Lookup.Result<Node> lookupResultNode;
     private final Lookup.Result<DataObject> lookupResultDob;
     public static final JPopupMenu menu = new JPopupMenu();
+    public static final JCheckBoxMenuItem wipeData = new JCheckBoxMenuItem("Wipe data before Start Emulator");
+    static {
+        wipeData.setSelected(NbPreferences.forModule(SelectDeviceAction.class).getBoolean("WIPE-DATA", true));
+        wipeData.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                NbPreferences.forModule(SelectDeviceAction.class).putBoolean("WIPE-DATA", wipeData.isSelected());
+            }
+        });
+    }
     ButtonGroup group = new ButtonGroup();
     public static final String ADB_SELECTED_DEVICE = "ADB_SELECTED_DEVICE";
     public static final String ADB_LAST_SELECTED_AVD = "ADB_LAST_SELECTED_AVD";
@@ -98,13 +111,15 @@ public class SelectDeviceAction extends AbstractAction implements Presenter.Tool
     public static final ImageIcon BROKEN_ICON = new ImageIcon(ImageUtilities.loadImage(BROKEN_ICON_RES));
     private AndroidDebugBridge debugBridge;
     private final JButton toolbarButton = DropDownButtonFactory.createDropDownButton(BROKEN_ICON, menu);
-    
-    private static SelectDeviceAction INSTANCE=null;
-    
-    public static final SelectDeviceAction getDefault(){
+
+    private static SelectDeviceAction INSTANCE = null;
+
+    private static final RequestProcessor RP = new RequestProcessor("ADB-Device-list-Refresh", 1);
+
+    public static final SelectDeviceAction getDefault() {
         return INSTANCE;
     }
-    
+
     public SelectDeviceAction() {
         INSTANCE = this;
         lookupResultNode = Utilities.actionsGlobalContext().lookupResult(Node.class);
@@ -154,125 +169,131 @@ public class SelectDeviceAction extends AbstractAction implements Presenter.Tool
     }
 
     public void updateMenu(NbAndroidProjectImpl project) {
-        toolbarButton.setVisible(true);
-        AuxiliaryProperties auxiliaryProperties = project.getLookup().lookup(AuxiliaryProperties.class);
-        if(auxiliaryProperties==null){
-            menu.removeAll();
-            return;
-        }
-        String lastSelectedDevice = auxiliaryProperties.get(ADB_SELECTED_DEVICE, false);
-        String lastSelectedAvd = auxiliaryProperties.get(ADB_LAST_SELECTED_AVD, false);
-        if (debugBridge == null) {
-            toolbarButton.setToolTipText("Broken ADB!");
-            toolbarButton.setIcon(BROKEN_ICON);
-        } else {
-            menu.removeAll();
-            for (IDevice device : debugBridge.getDevices()) {
-                if (!device.isEmulator()) {
-                    JRadioButtonMenuItemWithDevice item = new JRadioButtonMenuItemWithDevice(device, project);
-                    group.add(item);
-                    menu.add(item);
+        Runnable runnable = new Runnable() {
+            public void run() {
+                toolbarButton.setVisible(true);
+                AuxiliaryProperties auxiliaryProperties = project.getLookup().lookup(AuxiliaryProperties.class);
+                if (auxiliaryProperties == null) {
+                    menu.removeAll();
+                    return;
                 }
-            }
-            AndroidSdk defaultSdk = AndroidSdkProvider.getDefaultSdk();
-            if (defaultSdk != null) {
-                AndroidSdkHandler androidSdkHandler = defaultSdk.getAndroidSdkHandler();
-                if (androidSdkHandler != null) {
-                    try {
-                        AvdManager avdManager = com.android.sdklib.internal.avd.AvdManager.getInstance(androidSdkHandler, new NullLogger());
-                        AvdInfo[] validAvds = avdManager.getValidAvds();
-                        for (int i = 0; i < validAvds.length; i++) {
-                            AvdInfo validAvd = validAvds[i];
-                            JRadioButtonMenuItemWithEmulatorDevice item = new JRadioButtonMenuItemWithEmulatorDevice(validAvd, project);
+                String lastSelectedDevice = auxiliaryProperties.get(ADB_SELECTED_DEVICE, false);
+                String lastSelectedAvd = auxiliaryProperties.get(ADB_LAST_SELECTED_AVD, false);
+                if (debugBridge == null) {
+                    toolbarButton.setToolTipText("Broken ADB!");
+                    toolbarButton.setIcon(BROKEN_ICON);
+                } else {
+                    menu.removeAll();
+                    for (IDevice device : debugBridge.getDevices()) {
+                        if (!device.isEmulator()) {
+                            JRadioButtonMenuItemWithDevice item = new JRadioButtonMenuItemWithDevice(device, project);
                             group.add(item);
                             menu.add(item);
                         }
-                    } catch (AndroidLocation.AndroidLocationException ex) {
                     }
-                }
-            }
-            Component[] components = menu.getComponents();
-            if (lastSelectedDevice != null) {
-                boolean ok = false;
-                for (Component component : components) {
-                    if (component instanceof JRadioButtonMenuItemWithDevice) {
-                        String serialNumber = ((JRadioButtonMenuItemWithDevice) component).getDevice().getSerialNumber();
-                        serialNumber = "DEVICE." + serialNumber;
-                        if (lastSelectedDevice.equals(serialNumber)) {
-                            ok = true;
-                            ((JRadioButtonMenuItemWithDevice) component).setSelected(true);
-                            ((JRadioButtonMenuItemWithDevice) component).actionPerformed(null);
-                            break;
-                        }
-                    } else if (component instanceof JRadioButtonMenuItemWithEmulatorDevice) {
-                        String deviceName = ((JRadioButtonMenuItemWithEmulatorDevice) component).getDevice().getDeviceName();
-                        deviceName = "AVD." + deviceName;
-                        if (lastSelectedDevice.equals(deviceName)) {
-                            ok = true;
-                            ((JRadioButtonMenuItemWithEmulatorDevice) component).setSelected(true);
-                            ((JRadioButtonMenuItemWithEmulatorDevice) component).actionPerformed(null);
-                            break;
+                    AndroidSdk defaultSdk = AndroidSdkProvider.getDefaultSdk();
+                    if (defaultSdk != null) {
+                        AndroidSdkHandler androidSdkHandler = defaultSdk.getAndroidSdkHandler();
+                        if (androidSdkHandler != null) {
+                            try {
+                                AvdManager avdManager = com.android.sdklib.internal.avd.AvdManager.getInstance(androidSdkHandler, new NullLogger());
+                                AvdInfo[] validAvds = avdManager.getValidAvds();
+                                for (int i = 0; i < validAvds.length; i++) {
+                                    AvdInfo validAvd = validAvds[i];
+                                    JRadioButtonMenuItemWithEmulatorDevice item = new JRadioButtonMenuItemWithEmulatorDevice(validAvd, project);
+                                    group.add(item);
+                                    menu.add(item);
+                                }
+                            } catch (AndroidLocation.AndroidLocationException ex) {
+                            }
                         }
                     }
-                }
-                if (!ok && lastSelectedAvd != null) {
-                    //try to find last AVD device
-                    for (Component component : components) {
-                        if (component instanceof JRadioButtonMenuItemWithEmulatorDevice) {
-                            String deviceName = ((JRadioButtonMenuItemWithEmulatorDevice) component).getDevice().getDeviceName();
-                            if (lastSelectedAvd.equals(deviceName)) {
+                     menu.add(wipeData);
+                    Component[] components = menu.getComponents();
+                    if (lastSelectedDevice != null) {
+                        boolean ok = false;
+                        for (Component component : components) {
+                            if (component instanceof JRadioButtonMenuItemWithDevice) {
+                                String serialNumber = ((JRadioButtonMenuItemWithDevice) component).getDevice().getSerialNumber();
+                                serialNumber = "DEVICE." + serialNumber;
+                                if (lastSelectedDevice.equals(serialNumber)) {
+                                    ok = true;
+                                    ((JRadioButtonMenuItemWithDevice) component).setSelected(true);
+                                    ((JRadioButtonMenuItemWithDevice) component).actionPerformed(null);
+                                    break;
+                                }
+                            } else if (component instanceof JRadioButtonMenuItemWithEmulatorDevice) {
+                                String deviceName = ((JRadioButtonMenuItemWithEmulatorDevice) component).getDevice().getDeviceName();
+                                deviceName = "AVD." + deviceName;
+                                if (lastSelectedDevice.equals(deviceName)) {
+                                    ok = true;
+                                    ((JRadioButtonMenuItemWithEmulatorDevice) component).setSelected(true);
+                                    ((JRadioButtonMenuItemWithEmulatorDevice) component).actionPerformed(null);
+                                    break;
+                                }
+                            }
+                        }
+                        if (!ok && lastSelectedAvd != null) {
+                            //try to find last AVD device
+                            for (Component component : components) {
+                                if (component instanceof JRadioButtonMenuItemWithEmulatorDevice) {
+                                    String deviceName = ((JRadioButtonMenuItemWithEmulatorDevice) component).getDevice().getDeviceName();
+                                    if (lastSelectedAvd.equals(deviceName)) {
+                                        ok = true;
+                                        ((JRadioButtonMenuItemWithEmulatorDevice) component).setSelected(true);
+                                        ((JRadioButtonMenuItemWithEmulatorDevice) component).actionPerformed(null);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (!ok) {
+                            //try to find first real device
+                            for (Component component : components) {
+                                if (component instanceof JRadioButtonMenuItemWithDevice) {
+                                    ok = true;
+                                    ((JRadioButtonMenuItemWithDevice) component).setSelected(true);
+                                    ((JRadioButtonMenuItemWithDevice) component).actionPerformed(null);
+                                    break;
+                                }
+                            }
+                        }
+                        if (!ok) {
+                            //try to find first AVD device
+                            for (Component component : components) {
+                                if (component instanceof JRadioButtonMenuItemWithEmulatorDevice) {
+                                    ((JRadioButtonMenuItemWithEmulatorDevice) component).setSelected(true);
+                                    ((JRadioButtonMenuItemWithEmulatorDevice) component).actionPerformed(null);
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        boolean ok = false;
+                        //try to find first real device
+                        for (Component component : components) {
+                            if (component instanceof JRadioButtonMenuItemWithDevice) {
                                 ok = true;
-                                ((JRadioButtonMenuItemWithEmulatorDevice) component).setSelected(true);
-                                ((JRadioButtonMenuItemWithEmulatorDevice) component).actionPerformed(null);
+                                ((JRadioButtonMenuItemWithDevice) component).setSelected(true);
+                                ((JRadioButtonMenuItemWithDevice) component).actionPerformed(null);
                                 break;
+                            }
+                        }
+                        if (!ok) {
+                            //try to find first AVD device
+                            for (Component component : components) {
+                                if (component instanceof JRadioButtonMenuItemWithEmulatorDevice) {
+                                    ((JRadioButtonMenuItemWithEmulatorDevice) component).setSelected(true);
+                                    ((JRadioButtonMenuItemWithEmulatorDevice) component).actionPerformed(null);
+                                    break;
+                                }
                             }
                         }
                     }
                 }
-                if (!ok) {
-                    //try to find first real device
-                    for (Component component : components) {
-                        if (component instanceof JRadioButtonMenuItemWithDevice) {
-                            ok = true;
-                            ((JRadioButtonMenuItemWithDevice) component).setSelected(true);
-                            ((JRadioButtonMenuItemWithDevice) component).actionPerformed(null);
-                            break;
-                        }
-                    }
-                }
-                if (!ok) {
-                    //try to find first AVD device
-                    for (Component component : components) {
-                        if (component instanceof JRadioButtonMenuItemWithEmulatorDevice) {
-                            ((JRadioButtonMenuItemWithEmulatorDevice) component).setSelected(true);
-                            ((JRadioButtonMenuItemWithEmulatorDevice) component).actionPerformed(null);
-                            break;
-                        }
-                    }
-                }
-            } else {
-                boolean ok = false;
-                //try to find first real device
-                for (Component component : components) {
-                    if (component instanceof JRadioButtonMenuItemWithDevice) {
-                        ok = true;
-                        ((JRadioButtonMenuItemWithDevice) component).setSelected(true);
-                        ((JRadioButtonMenuItemWithDevice) component).actionPerformed(null);
-                        break;
-                    }
-                }
-                if (!ok) {
-                    //try to find first AVD device
-                    for (Component component : components) {
-                        if (component instanceof JRadioButtonMenuItemWithEmulatorDevice) {
-                            ((JRadioButtonMenuItemWithEmulatorDevice) component).setSelected(true);
-                            ((JRadioButtonMenuItemWithEmulatorDevice) component).actionPerformed(null);
-                            break;
-                        }
-                    }
-                }
             }
-        }
+        };
+        RP.execute(runnable);
     }
 
     @Override

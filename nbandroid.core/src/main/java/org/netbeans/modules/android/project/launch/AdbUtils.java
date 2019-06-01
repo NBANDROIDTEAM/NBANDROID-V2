@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.netbeans.modules.android.project.launch.actions;
+package org.netbeans.modules.android.project.launch;
 
 import com.android.ddmlib.AndroidDebugBridge;
 import com.android.ddmlib.IDevice;
@@ -32,13 +32,14 @@ import java.util.Map;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.netbeans.modules.android.project.api.NbAndroidProjectImpl;
+import org.netbeans.modules.android.project.launch.actions.SelectDeviceAction;
 import org.netbeans.spi.project.AuxiliaryProperties;
 
 /**
  *
  * @author arsi
  */
-public class LaunchProjectDeviceFinder {
+public class AdbUtils {
 
     public static final class LaunchData {
 
@@ -67,6 +68,20 @@ public class LaunchProjectDeviceFinder {
             return "LaunchData{" + "avdInfo=" + avdInfo + ", device=" + device + '}';
         }
     }
+    
+    public static Map<String,IDevice> getRunningEmulators(){
+        Map<String,IDevice> tmp = new HashMap<>();
+        AndroidDebugBridge debugBridge = AndroidSdkProvider.getAdb();
+        if(debugBridge!=null){
+            for (IDevice device : debugBridge.getDevices()) {
+                if(device.isEmulator() && device.isOnline()){
+                    tmp.put(device.getAvdName(), device);
+                }
+            }
+        }
+        return tmp;
+    }
+    
 
     public static final LaunchData getSelectedDevice(NbAndroidProjectImpl project) {
         AuxiliaryProperties auxiliaryProperties = project.getLookup().lookup(AuxiliaryProperties.class);

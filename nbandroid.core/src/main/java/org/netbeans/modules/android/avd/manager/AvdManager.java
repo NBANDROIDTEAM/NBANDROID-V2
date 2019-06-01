@@ -289,16 +289,8 @@ public class AvdManager extends javax.swing.JPanel implements ChangeListener {
                         int rowAtPoint = table.rowAtPoint(SwingUtilities.convertPoint(popupMenu, new Point(0, 0), table));
                         if (rowAtPoint > -1) {
                             table.setRowSelectionInterval(rowAtPoint, rowAtPoint);
-                            //Only one instance can run
-                            boolean running = false;
-                            for (int i = 0; i < model.avdInfos.length; i++) {
-                                boolean avdRunning = avdManager.isAvdRunning(model.avdInfos[i], new NullLogger());
-                                if (avdRunning) {
-                                    running = true;
-                                }
-                            }
-                            runMenu.setEnabled(!running);
                             boolean avdRunning = avdManager.isAvdRunning(model.avdInfos[rowAtPoint], new NullLogger());
+                            runMenu.setEnabled(!avdRunning);
                             stopMenu.setEnabled(avdRunning);
                             wipeMenu.setEnabled(!avdRunning);
                             removeMenu.setEnabled(!avdRunning);

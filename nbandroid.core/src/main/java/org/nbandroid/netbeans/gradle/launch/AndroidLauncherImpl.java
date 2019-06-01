@@ -14,16 +14,15 @@
 package org.nbandroid.netbeans.gradle.launch;
 
 import com.android.ddmlib.*;
-import com.android.prefs.AndroidLocation.AndroidLocationException;
-import com.android.sdklib.IAndroidTarget;
-import com.android.sdklib.internal.avd.AvdInfo;
+import com.android.prefs.AndroidLocation;
 import com.android.sdklib.internal.avd.AvdManager;
 import com.android.sdklib.repository.AndroidSdkHandler;
-import com.android.utils.ILogger;
+import com.android.utils.StdLogger;
 import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -36,21 +35,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.nbandroid.netbeans.gradle.avd.AvdSelector;
-import org.nbandroid.netbeans.gradle.core.sdk.SdkLogProvider;
-import org.nbandroid.netbeans.gradle.core.ui.DeviceChooserImpl;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.netbeans.api.io.InputOutput;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.android.project.api.NbAndroidProjectImpl;
-import org.netbeans.modules.android.project.launch.actions.LaunchProjectDeviceFinder;
+import org.netbeans.modules.android.project.launch.AdbUtils;
 import org.netbeans.modules.android.spi.MainActivityConfiguration;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.xml.sax.SAXParseException;
 
 /**
  *
@@ -67,21 +61,20 @@ public class AndroidLauncherImpl implements AndroidLauncher {
     }
 
     @Override
-    public Future<Client> launch(AndroidPlatformInfo platform, Lookup context, String mode) {
-        
+    public Future<Client> launch(Lookup context, String mode) {
+
         LaunchConfiguration launchCfg = context.lookup(LaunchConfiguration.class);
-        AvdSelector.LaunchData launchData = context.lookup(AvdSelector.LaunchData.class);
         Project project = Preconditions.checkNotNull(context.lookup(Project.class));
         io = project.getLookup().lookup(InputOutput.class);
-        AndroidSdk sdk = Preconditions.checkNotNull(project.getLookup().lookup(AndroidSdk.class));
-        LaunchProjectDeviceFinder.LaunchData selectedDevice = LaunchProjectDeviceFinder.getSelectedDevice((NbAndroidProjectImpl) project);
-        if (launchData == null) {
-            if (platform != null) {
-                launchData = configAvd(platform.getSdk().getAndroidSdkHandler(), sdk, platform.getAndroidTarget(), launchCfg);
-            } else {
-                LOG.log(Level.INFO, "No target platform for launch. Canelling.");
-            }
+        AndroidSdk sdk = AndroidSdkProvider.getDefaultSdk();
+        AndroidSdkHandler androidSdkHandler = sdk.getAndroidSdkHandler();
+        AvdManager avdManager = null;
+        try {
+            avdManager = AvdManager.getInstance(androidSdkHandler, new StdLogger(StdLogger.Level.INFO));
+        } catch (AndroidLocation.AndroidLocationException ex) {
+            Exceptions.printStackTrace(ex);
         }
+        AdbUtils.LaunchData launchData = AdbUtils.getSelectedDevice((NbAndroidProjectImpl) project);
         if (launchData == null) {
             LOG.log(Level.INFO, "No target AVD selected or found. Cancelling launch");
             return null;
@@ -91,15 +84,21 @@ public class AndroidLauncherImpl implements AndroidLauncher {
         if (launchData.getDevice() == null) {
             LOG.log(Level.INFO, "Device not running. Launch emulator");
             // TODO det Future<int> and stop launch asynchronously(?) if the command fails
-
-            Future<IDevice> toBeDevice = new EmulatorLauncher(sdk)
-                    .launchEmulator(launchData.getAvdInfo(), launchCfg);
-            try {
-                launchData = new AvdSelector.LaunchData(launchData.getAvdInfo(), toBeDevice.get());
-            } catch (InterruptedException | ExecutionException ex) {
-                LOG.log(Level.INFO, null, ex);
-                return null;
+            Map<String, IDevice> runningEmulators = AdbUtils.getRunningEmulators();
+            IDevice device = runningEmulators.get(launchData.getAvdInfo().getName());
+            if (device == null) {
+                Future<IDevice> toBeDevice = new EmulatorLauncher(sdk)
+                        .launchEmulator(launchData.getAvdInfo(), launchCfg);
+                try {
+                    launchData = new AdbUtils.LaunchData(launchData.getAvdInfo(), toBeDevice.get());
+                } catch (InterruptedException | ExecutionException ex) {
+                    LOG.log(Level.INFO, null, ex);
+                    return null;
+                }
+            } else {
+                launchData = new AdbUtils.LaunchData(launchData.getAvdInfo(), device);
             }
+
         }
         LaunchInfo info = context.lookup(LaunchInfo.class);
         if (!simpleLaunch(info, launchData.getDevice())) {
@@ -113,94 +112,6 @@ public class AndroidLauncherImpl implements AndroidLauncher {
         final RunnableFuture<Client> futureClient = new ClientFuture(launchData.getDevice(), info);
         RP.execute(futureClient);
         return futureClient;
-    }
-
-    /**
-     * Evaluates target settings to find what AVD should be used and makes sure
-     * that {@link AndroidProjectProperties.PROP_TARGET_PREFFERED_AVD is set for
-     * Ant execution.
-     *
-     * @return device or emulator description or {@code null}
-     */
-    @Override
-    public AvdSelector.LaunchData configAvd(
-            AndroidSdkHandler sdkManager, AndroidSdk sdk, IAndroidTarget target, LaunchConfiguration launchCfg) {
-        try {
-            LaunchConfiguration.TargetMode mode = launchCfg.getTargetMode();
-            String targetAvd = null;
-            // targetAvd = this.project.evaluator().getProperty(AndroidProjectProperties.PROP_TARGET_PREFFERED_AVD);
-
-            final ILogger sdkLog = SdkLogProvider.createLogger(false);
-            final AvdManager avdMgr = AvdManager.getInstance(sdkManager, sdkLog);
-            AvdSelector.AvdManagerMock avdMgrMock = new AvdSelector.AvdManagerMock() {
-
-                @Override
-                public void reloadAvds() throws AndroidLocationException, SAXParseException {
-                    try {
-                        avdMgr.reloadAvds(sdkLog);
-                    } catch (Exception exception) {
-                    }
-                }
-
-                @Override
-                public AvdInfo getAvd(String name, boolean validAvdOnly) {
-                    return avdMgr.getAvd(name, validAvdOnly);
-                }
-
-                @Override
-                public AvdInfo[] getValidAvds() {
-                    return avdMgr.getValidAvds();
-                }
-
-                @Override
-                public AvdManager getAvdManager() {
-                    return avdMgr;
-                }
-            };
-            AndroidDebugBridge adb = AndroidSdkProvider.getAdb();
-            if (adb == null) {
-                LOG.log(Level.WARNING, "Android Debug Bridge is not configured. Cannot launch.");
-                return null;
-            }
-            int cnt = 0;
-            while (!adb.hasInitialDeviceList()) { //wait for adb
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ex) {
-                }
-                if (cnt++ > 100) { //10s no response from adb, continue to selector
-                    break;
-                }
-            }
-            AvdSelector selector = new AvdSelector(
-                    mode,
-                    targetAvd,
-                    avdMgrMock,
-                    target,
-                    adb.getDevices());
-            AvdSelector.LaunchData launch = selector.selectDevice(new DeviceChooserImpl());
-            if (launch == null) {
-                LOG.log(Level.INFO, "Launch cancelled");
-                return null;
-            }
-            // TODO check if we need to start emulator
-            if (launch.getDevice() == null) {
-                LOG.log(Level.INFO, "Device not running. Launch emulator");
-                // TODO det Future<int> and stop launch asynchronously(?) if the command fails
-                Future<IDevice> toBeDevice = new EmulatorLauncher(sdk)
-                        .launchEmulator(launch.getAvdInfo(), launchCfg);
-                try {
-                    launch = new AvdSelector.LaunchData(launch.getAvdInfo(), toBeDevice.get());
-                } catch (InterruptedException | ExecutionException ex) {
-                    LOG.log(Level.INFO, null, ex);
-                    return null;
-                }
-            }
-            return launch;
-        } catch (AndroidLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
     }
 
     @Override
@@ -271,6 +182,10 @@ public class AndroidLauncherImpl implements AndroidLauncher {
                 + " on device " + (device != null ? device.getSerialNumber() : "<no device>"),
                 e);
     }
+    
+    public static final String BLACK = "\033[0;30m";   // BLACK
+    public static final String BLUE = "\033[0;34m";    // BLUE
+    public static final String RED = "\033[0;31m";    // BLUE
 
     boolean installPackage(LaunchInfo launchInfo, String remotePackagePath, IDevice device) {
         try {
@@ -284,11 +199,13 @@ public class AndroidLauncherImpl implements AndroidLauncher {
                     device.installRemotePackage(remotePackagePath, false);
                     io.getOut().println("Package " + launchInfo.packageFile.getNameExt() + " deployed");
                 } catch (InstallException ex1) {
-                    io.getOut().println("Package deployment failed with: ");
-                    ex.printStackTrace(io.getOut());
+                    io.show();
+                    io.getOut().print("\n\r");
+                    io.getOut().print(RED+"Package deployment failed with:\n\r");
+                    io.getOut().println(ex.getMessage()+BLACK);
+                    io.getOut().print("\n\r");
                 }
             }
-            Exceptions.printStackTrace(ex);
             return false;
         }
     }
@@ -305,6 +222,7 @@ public class AndroidLauncherImpl implements AndroidLauncher {
         private final LaunchInfo launchInfo;
         private final IDevice device;
         private final InputOutput io;
+
         /**
          * Basic constructor.
          *
@@ -312,10 +230,10 @@ public class AndroidLauncherImpl implements AndroidLauncher {
          * am process.
          * @param device the Android device on which the launch is done.
          */
-        public AMReceiver(LaunchInfo launchInfo, IDevice device,InputOutput io) {
+        public AMReceiver(LaunchInfo launchInfo, IDevice device, InputOutput io) {
             this.launchInfo = launchInfo;
             this.device = device;
-            this.io=io;
+            this.io = io;
         }
 
         /**
