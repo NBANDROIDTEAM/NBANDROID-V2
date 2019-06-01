@@ -41,7 +41,7 @@ public class Installer extends ModuleInstall {
     @Override
     public void restored() {
 
-        NbOptionalDependencySpiLoader.installServiceProvider("com.junichi11.netbeans.modules.color.codes.preview.colors.model.ColorCodesProvider", "org.nbandroid.netbeans.gradle.v2.color.preview.AndroidColorCodesProvider", Installer.class);
+        NbOptionalDependencySpiLoader.installServiceProvider("com.junichi11.netbeans.modules.color.codes.preview.spi.ColorCodesProvider","com.junichi11.netbeans.modules.color.codes.preview", "org.nbandroid.netbeans.gradle.v2.color.preview.AndroidColorCodesProvider", Installer.class);
         AndroidSdkProvider.getDefault(); //init SDK subsystem
         Runnable runnable = new Runnable() {
             public void run() {

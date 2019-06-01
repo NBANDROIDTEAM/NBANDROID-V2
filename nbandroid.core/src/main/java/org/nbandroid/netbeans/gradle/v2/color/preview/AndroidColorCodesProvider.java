@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -18,9 +18,13 @@
  */
 package org.nbandroid.netbeans.gradle.v2.color.preview;
 
-import com.junichi11.netbeans.modules.color.codes.preview.colors.model.ColorCodesProvider;
-import com.junichi11.netbeans.modules.color.codes.preview.colors.model.ColorValue;
+import com.junichi11.netbeans.modules.color.codes.preview.api.OffsetRange;
+import com.junichi11.netbeans.modules.color.codes.preview.spi.ColorCodeGeneratorItem;
+import com.junichi11.netbeans.modules.color.codes.preview.spi.ColorCodesPreviewOptionsPanel;
+import com.junichi11.netbeans.modules.color.codes.preview.spi.ColorCodesProvider;
+import com.junichi11.netbeans.modules.color.codes.preview.spi.ColorValue;
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -29,13 +33,13 @@ import javax.swing.text.Document;
 import org.nbandroid.netbeans.gradle.v2.layout.parsers.AndroidResValuesProvider;
 import org.nbandroid.netbeans.gradle.v2.layout.values.ColorsDataObject;
 import org.nbandroid.netbeans.gradle.v2.layout.values.completion.AndroidValueType;
-import org.nbandroid.netbeans.gradle.v2.layout.values.completion.BasicColorValuesCompletionItem;
 import static org.nbandroid.netbeans.gradle.v2.layout.values.completion.BasicColorValuesCompletionItem.decodeAlfa;
 import org.nbandroid.netbeans.gradle.v2.layout.values.completion.BasicValuesCompletionItem;
 import org.nbandroid.netbeans.gradle.v2.layout.values.completion.ColorValuesCompletionItem;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -46,11 +50,70 @@ import org.openide.util.Lookup;
 public class AndroidColorCodesProvider implements ColorCodesProvider {
 
     @Override
-    public boolean isMimeTypeSupported(Document document, String mimeType) {
-        if ("text/x-android-styles+xml".equals(mimeType) || "text/plain+xml".equals(mimeType) || "text/x-java".equals(mimeType) || ColorsDataObject.SETTINGS_MIME_TYPE.equals(mimeType)) {
-            return true;
+    public String getId() {
+        return "android";
+    }
+
+    @Override
+    public String getDisplayName() {
+        return "Android";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Android hex colors preview,support for Java and xml code.";
+    }
+
+    @Override
+    public boolean isProviderEnabled(Document document) {
+        String mimeType = NbEditorUtilities.getMimeType(document);
+        return "text/x-android-layout+xml".equals(mimeType) || "text/x-android-styles+xml".equals(mimeType) || "text/plain+xml".equals(mimeType) || "text/x-java".equals(mimeType) || ColorsDataObject.SETTINGS_MIME_TYPE.equals(mimeType);
+    }
+
+    @Override
+    public List<ColorValue> getColorValues(Document document, String line, int lineNumber, Map<String, List<ColorValue>> variableColorValues) {
+        List<ColorValue> colorValues = new ArrayList<>();
+        String mimeType = NbEditorUtilities.getMimeType(document);
+        if ("text/x-android-layout+xml".equals(mimeType) || "text/x-android-styles+xml".equals(mimeType) || "text/plain+xml".equals(mimeType) || "text/x-java".equals(mimeType) || ColorsDataObject.SETTINGS_MIME_TYPE.equals(mimeType)) {
+            FileObject primaryFile = getPrimaryFile(document);
+            if (primaryFile != null) {
+                Project project = FileOwnerQuery.getOwner(primaryFile);
+                if (project != null && "text/plain+xml".equals(mimeType)) {
+                    parseColorVariables(project, line, colorValues, lineNumber);
+                } else if (project != null && ColorsDataObject.SETTINGS_MIME_TYPE.equals(mimeType) || "text/x-android-styles+xml".equals(mimeType)) {
+                    parseColorVariables(project, line, colorValues, lineNumber);
+                    getHexColorCodes(this, line, lineNumber, colorValues);
+
+                } else if (project != null && "text/x-android-layout+xml".equals(mimeType)) {
+                    parseLayoutColorVariables(project, line, colorValues, lineNumber);
+                    getHexColorCodes(this, line, lineNumber, colorValues);
+
+                } else if (project != null && "text/x-java".equals(mimeType)) {
+                    parseJavaCode(project, line, colorValues, lineNumber);
+                }
+            }
         }
+        return colorValues;
+    }
+
+    @Override
+    public int getStartIndex(Document document, int currentIndex) {
+        return 0;
+    }
+
+    @Override
+    public ColorCodesPreviewOptionsPanel getOptionsPanel() {
+        return null;
+    }
+
+    @Override
+    public boolean canGenerateColorCode() {
         return false;
+    }
+
+    @Override
+    public List<ColorCodeGeneratorItem> getColorCodeGeneratorItems(String mimeType) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     public static FileObject getPrimaryFile(Document doc) {
@@ -62,51 +125,6 @@ public class AndroidColorCodesProvider implements ColorCodesProvider {
             return ((Lookup.Provider) o).getLookup().lookup(FileObject.class);
         } else {
             return null;
-        }
-    }
-
-    @Override
-    public boolean isColorEditable(ColorValue colorValue) {
-        if (colorValue instanceof XmlColorValue) {
-            return true;
-        }
-        if (colorValue instanceof AndroidJavaColorValue) {
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean isProviderEnabled() {
-        return true;
-    }
-
-    @Override
-    public boolean isResolveVariablesSupported(Document document, String mimeType) {
-        return false;
-    }
-
-    @Override
-    public void checkVariables(Document document, String mimeType, String line, Map<String, List<ColorValue>> variables, List<ColorValue> colorValues) {
-
-    }
-
-    @Override
-    public void addAllColorValues(Document document, String mimeType, String line, int lineNumber, List<ColorValue> colorValues) {
-        if ("text/x-android-styles+xml".equals(mimeType) || "text/plain+xml".equals(mimeType) || "text/x-java".equals(mimeType) || ColorsDataObject.SETTINGS_MIME_TYPE.equals(mimeType)) {
-            FileObject primaryFile = getPrimaryFile(document);
-            if (primaryFile != null) {
-                Project project = FileOwnerQuery.getOwner(primaryFile);
-                if (project != null && "text/plain+xml".equals(mimeType)) {
-                    parseColorVariables(project, line, colorValues, lineNumber);
-                } else if (project != null && ColorsDataObject.SETTINGS_MIME_TYPE.equals(mimeType) || "text/x-android-styles+xml".equals(mimeType)) {
-                    parseColorVariables(project, line, colorValues, lineNumber);
-                    getHexColorCodes(this, line, lineNumber, colorValues);
-
-                } else if (project != null && "text/x-java".equals(mimeType)) {
-                    parseJavaCode(project, line, colorValues, lineNumber);
-                }
-            }
         }
     }
 
@@ -131,7 +149,7 @@ public class AndroidColorCodesProvider implements ColorCodesProvider {
                     color = decodeAlfa(colorCode.replace("#", "#FF"));
                 }
                 if (color != null) {
-                    ColorValue colorValue = new AndroidJavaColorValue(this, color, colorCode, matcher.start(4), matcher.end(4), lineNumber); // NOI18N
+                    ColorValue colorValue = new AndroidJavaColorValue(color, colorCode, new OffsetRange(matcher.start(4), matcher.end(4)), lineNumber);
                     colorValues.add(colorValue);
                 }
             }
@@ -153,7 +171,7 @@ public class AndroidColorCodesProvider implements ColorCodesProvider {
                 color = decodeAlfa(colorCode.replace("#", "#FF"));
             }
             if (color != null) {
-                ColorValue colorValue = new XmlColorValue(colorCodesProvider, color, colorCode, matcher.start(1), matcher.end(1), lineNumber); // NOI18N
+                ColorValue colorValue = new XmlColorValue(color, colorCode, new OffsetRange(matcher.start(1), matcher.end(1)), lineNumber);
                 colorValues.add(colorValue);
             }
 
@@ -180,14 +198,23 @@ public class AndroidColorCodesProvider implements ColorCodesProvider {
         }
     }
 
-    @Override
-    public String toFormattedString(Color newColor, ColorValue originalColor) {
-        if (originalColor instanceof XmlColorValue) {
-            return BasicColorValuesCompletionItem.getHTMLColorString(newColor);
-        } else if (originalColor instanceof AndroidJavaColorValue) {
-            return BasicColorValuesCompletionItem.getHTMLColorString(newColor);
+    private void parseLayoutColorVariables(Project project, String line, List<ColorValue> colorValues, int lineNumber) {
+        AndroidResValuesProvider provider = project.getLookup().lookup(AndroidResValuesProvider.class);
+        if (provider != null) {
+            List<BasicValuesCompletionItem> colors = provider.forType(AndroidValueType.COLOR);
+            for (int i = 0; i < colors.size(); i++) {
+                BasicValuesCompletionItem basicValuesCompletionItem = colors.get(i);
+                if (basicValuesCompletionItem instanceof ColorValuesCompletionItem) {
+                    Color color = ((ColorValuesCompletionItem) basicValuesCompletionItem).getColor();
+                    String completionText = basicValuesCompletionItem.getCompletionText();
+                    if (color != null && completionText != null && line.contains("\"" + completionText + "\"")) {
+                        colorValues.add(new ReadOnlyColorValue(this, color, completionText, 0, 0, lineNumber));
+                    }
+                    if (color != null && completionText != null && line.contains(">" + completionText + "<")) {
+                        colorValues.add(new ReadOnlyColorValue(this, color, completionText, 0, 0, lineNumber));
+                    }
+                }
+            }
         }
-        return originalColor.getValue();
     }
-
 }

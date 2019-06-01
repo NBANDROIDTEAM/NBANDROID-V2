@@ -18,8 +18,9 @@
  */
 package org.nbandroid.netbeans.gradle.v2.color.preview;
 
-import com.junichi11.netbeans.modules.color.codes.preview.colors.model.ColorCodesProvider;
-import com.junichi11.netbeans.modules.color.codes.preview.colors.model.ColorValue;
+import com.junichi11.netbeans.modules.color.codes.preview.spi.ColorCodeFormatter;
+import com.junichi11.netbeans.modules.color.codes.preview.spi.ColorCodesProvider;
+import com.junichi11.netbeans.modules.color.codes.preview.spi.ColorValue;
 import java.awt.Color;
 import org.netbeans.api.annotations.common.NonNull;
 
@@ -70,13 +71,14 @@ public class ReadOnlyColorValue implements ColorValue {
         return color;
     }
 
+
     @Override
-    public AndroidType getType() {
-        return AndroidType.READ_ONLY;
+    public boolean isEditable() {
+        return false;
     }
 
     @Override
-    public ColorCodesProvider getColorCodesProvider() {
-        return codesProvider;
+    public ColorCodeFormatter getFormatter() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
