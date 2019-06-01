@@ -79,7 +79,7 @@ And I added basic support for Java, Color constants and RGB Color values.
 * SDK Tools manager
 * AVD Manager
 
-### What Dont works:
+### What Does not work yet:
 * SDK Manager - Update sites configuration
 * we currently have no Visual Layout Editor 
 * and many other things
