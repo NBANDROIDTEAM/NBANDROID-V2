@@ -19,31 +19,43 @@
 
 package org.nbandroid.netbeans.gradle.v2.color.preview;
 
-import com.junichi11.netbeans.modules.color.codes.preview.colors.model.AbstractColorValue;
-import com.junichi11.netbeans.modules.color.codes.preview.colors.model.ColorCodesProvider;
+import com.junichi11.netbeans.modules.color.codes.preview.api.OffsetRange;
+import com.junichi11.netbeans.modules.color.codes.preview.spi.AbstractColorValue;
+import com.junichi11.netbeans.modules.color.codes.preview.spi.ColorCodeFormatter;
 import java.awt.Color;
-import org.netbeans.api.annotations.common.NonNull;
+import org.nbandroid.netbeans.gradle.v2.layout.values.completion.BasicColorValuesCompletionItem;
 
 /**
  *
  * @author arsi
  */
-public class AndroidJavaColorValue extends AbstractColorValue {
+public class AndroidJavaColorValue extends AbstractColorValue implements ColorCodeFormatter{
 
     private final Color color;
 
-    public AndroidJavaColorValue(@NonNull ColorCodesProvider colorCodesProvider, Color color, String value, int startOffset, int endOffset, int line) {
-        super(colorCodesProvider, value, startOffset, endOffset, line);
+    public AndroidJavaColorValue(Color color, String value, OffsetRange offsetRange, int line) {
+        super(value, offsetRange, line);
         this.color = color;
     }
-
+    
     @Override
     public Color getColor() {
         return color;
     }
 
     @Override
-    public AndroidType getType() {
-        return AndroidType.JAVA;
+    public boolean isEditable() {
+        return true;
     }
+
+    @Override
+    public ColorCodeFormatter getFormatter() {
+        return this;
+    }
+
+    @Override
+    public String format(Color color) {
+        return BasicColorValuesCompletionItem.getHTMLColorString(color);
+    }
+
 }

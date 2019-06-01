@@ -52,14 +52,14 @@ public class NbOptionalDependencySpiLoader extends ClassLoader {
      * Classloader
      * @return true if SPI is created
      */
-    public static final boolean installServiceProvider(String spiFullClassName, String implFullClassName, Class<?> classToExtractImplClassLoader) {
+    public static final boolean installServiceProvider(String spiFullClassName,String spiPackageName, String implFullClassName, Class<?> classToExtractImplClassLoader) {
         ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
         try {
             Class<?> colorCodesProvider = classLoader.loadClass(spiFullClassName);
             if (colorCodesProvider != null) {
                 ClassLoader previewClassLoader = colorCodesProvider.getClassLoader();
                 ClassLoader androidClassLoader = classToExtractImplClassLoader.getClassLoader();
-                NbOptionalDependencySpiLoader proxyClassLoader = new NbOptionalDependencySpiLoader(androidClassLoader, implFullClassName.substring(0, implFullClassName.lastIndexOf('.')), previewClassLoader, spiFullClassName.substring(0, spiFullClassName.lastIndexOf('.')));
+                NbOptionalDependencySpiLoader proxyClassLoader = new NbOptionalDependencySpiLoader(androidClassLoader, implFullClassName.substring(0, implFullClassName.lastIndexOf('.')), previewClassLoader, spiPackageName);
                 Class<?> androidColorCodesProvider = proxyClassLoader.findClass(implFullClassName);
                 Object newInstance = androidColorCodesProvider.newInstance();
                 MainLookup.register(colorCodesProvider.cast(newInstance));
@@ -146,7 +146,7 @@ public class NbOptionalDependencySpiLoader extends ClassLoader {
         }
         return resource;
     }
-
+    
     @Override
     protected Enumeration<URL> findResources(String name) throws IOException {
         Vector<URL> vector = new Vector<>();

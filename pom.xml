@@ -40,6 +40,7 @@
         <module>nbandroid.layout.impl</module>
         <module>nbandroid.core</module>
         <module>nbandroid.proguard</module>
+        <module>netbeans-color-codes-preview-spi</module>
     </modules>
     <build>
         <extensions>

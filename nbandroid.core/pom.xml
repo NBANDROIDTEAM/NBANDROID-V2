@@ -459,8 +459,8 @@
         
         <dependency> 
             <groupId>com.junichi11</groupId> 
-            <artifactId>netbeans-color-codes-preview</artifactId> 
-            <version>0.8.1-NBA</version> 
+            <artifactId>netbeans-color-codes-preview-spi</artifactId> 
+            <version>01.00-SNAPSHOT</version> 
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -526,6 +526,11 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-extexecution-base</artifactId>
+            <version>${version.nb}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-editor</artifactId>
             <version>${version.nb}</version>
         </dependency>
     </dependencies>
