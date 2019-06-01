@@ -7,13 +7,13 @@ Apache NetBeans Android support plugin
 
 This project aims to stabilize and update the discontinued NetBeans IDE plugin NBANDROID.
 
-The current version supports Apache NetBeans 10 and 11, CoolBeans
+The current version supports Apache NetBeans 10 and 11, and CoolBeans.
 
-Java 10, 11, 12
+Requirement: Java 10, 11, or 12.
 
 **Many thanks to Radim Kubacki, the creator of the first NBANDROID!**</br>
 
-## How to install NBANDROID-V2
+## How to Install NBANDROID-V2
 
 First you need to install a special plugin. It detects the version of your ANB / CoolBeans and installs the NBANDROID Update Center
 
@@ -28,7 +28,7 @@ http://server.arsi.sk/nbandroid_loader/updates.xml
 You can then install NBANDROID
 ![](https://user-images.githubusercontent.com/22594510/56475757-1c54da00-648d-11e9-8eb0-fec1e5505826.png)
 
-## Known issues
+## Known Issues
 
 In a fresh ANB installation, the first time you open the Android Project, the project structure is not displayed correctly.
 
@@ -39,10 +39,10 @@ solution - close and reopen the project
 
 ![](https://user-images.githubusercontent.com/22594510/56473325-0f72bf00-646a-11e9-83a2-c755c7f743e2.png)
 
-## Layout preview support
+## Layout Preview Support
 ![Layout](https://user-images.githubusercontent.com/22594510/52371231-433a6d00-2a55-11e9-87d6-8ee9246c4168.png)
 
-## Color preview support
+## Color Preview Support
 ![Color preview](https://user-images.githubusercontent.com/22594510/50722224-20224380-10cc-11e9-8a0a-90e2106b3c9d.png)
 
 ![Color preview](https://user-images.githubusercontent.com/22594510/50724036-f9253b00-10e6-11e9-92d0-c092ec9ed1f4.png)
