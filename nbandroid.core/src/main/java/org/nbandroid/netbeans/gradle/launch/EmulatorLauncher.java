@@ -14,8 +14,6 @@
 package org.nbandroid.netbeans.gradle.launch;
 
 import com.android.SdkConstants;
-import com.android.ddmlib.AndroidDebugBridge;
-import com.android.ddmlib.AndroidDebugBridge.IDeviceChangeListener;
 import com.android.ddmlib.IDevice;
 import com.android.prefs.AndroidLocation;
 import com.android.sdklib.internal.avd.AvdInfo;
@@ -24,13 +22,14 @@ import com.android.utils.NullLogger;
 import com.google.common.base.Splitter;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -39,6 +38,9 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
 import org.netbeans.api.extexecution.base.ProcessBuilder;
+import org.netbeans.modules.android.project.launch.AdbUtils;
+import org.netbeans.modules.android.project.launch.actions.SelectDeviceAction;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 
 /**
@@ -67,62 +69,23 @@ public class EmulatorLauncher {
     private static final String FLAG_NO_BOOT_ANIM = "-no-boot-anim";
 
     private final AndroidSdk sdk;
-    private final AdbListener listener;
-    private final Object connectLock = new Object();
-    // @GuardedBy(connectLock)
-    private final Set<IDevice> connectedDevices = new HashSet<IDevice>();
+    private final Semaphore semaphore = new Semaphore(1, true);
+    private volatile boolean cancel = false;
 
     public EmulatorLauncher(AndroidSdk sdk) {
         this.sdk = sdk;
-        listener = new AdbListener();
-//    AndroidDebugBridge.addDebugBridgeChangeListener(listener);
-        AndroidDebugBridge.addDeviceChangeListener(listener);
-//    AndroidDebugBridge.addClientChangeListener(listener);
-    }
-
-    private class AdbListener implements /* IDebugBridgeChangeListener, */
-            IDeviceChangeListener /*, IClientChangeListener */ {
-
-        @Override
-        public void deviceConnected(IDevice device) {
-            LOG.log(Level.FINE, "device connected: {0}", device);
-            synchronized (connectLock) {
-                connectedDevices.add(device);
-                connectLock.notifyAll();
-            }
-        }
-
-        @Override
-        public void deviceDisconnected(IDevice device) {
-            LOG.log(Level.FINE, "device disconnected: {0}", device);
-            synchronized (connectLock) {
-                connectedDevices.remove(device);
-                connectLock.notifyAll();
-            }
-        }
-
-        @Override
-        public void deviceChanged(IDevice device, int i) {
-            LOG.log(Level.FINE, "device {1} changed: {0}", new Object[]{device, i});
-            synchronized (connectLock) {
-                connectLock.notifyAll();
-            }
-        }
-
-//    @Override
-//    public void clientChanged(Client client, int i) {
-//      throw new UnsupportedOperationException("Not supported yet.");
-//    }
-//    @Override
-//    public void bridgeChanged(AndroidDebugBridge adb) {
-//      throw new UnsupportedOperationException("Not supported yet.");
-//    }
     }
 
     public Future<IDevice> launchEmulator(AvdInfo avdInfo, LaunchConfiguration launchCfg) {
         final String cookie = Long.toString(System.currentTimeMillis());
         ExecutionDescriptor descriptor = new ExecutionDescriptor()
-                .frontWindow(true);
+                .frontWindow(true).postExecution(new Runnable() {
+            @Override
+            public void run() {
+                cancel = true;
+                semaphore.release();
+            }
+        });
 
         ProcessBuilder processBuilder = ProcessBuilder.getLocal();
         processBuilder.setExecutable(getEmulatorBinaryPath());
@@ -131,15 +94,18 @@ public class EmulatorLauncher {
         arguments.add(avdInfo.getName());
         arguments.add(FLAG_PROP);
         arguments.add(LAUNCH_COOKIE + "=" + cookie);
+        if(SelectDeviceAction.wipeData.isSelected()){
+            arguments.add(FLAG_WIPE_DATA);
+        }
         for (String arg : Splitter.on(' ').omitEmptyStrings().split(launchCfg.getEmulatorOptions())) {
             arguments.add(arg);
         }
         processBuilder.setArguments(arguments);
         AndroidSdk defaultSdk = AndroidSdkProvider.getDefaultSdk();
-        if(defaultSdk!=null){
+        if (defaultSdk != null) {
             try {
                 AvdManager avdManager = AvdManager.getInstance(defaultSdk.getAndroidSdkHandler(), new NullLogger());
-                if(avdManager!=null){
+                if (avdManager != null) {
                     File baseAvdFolder = avdManager.getBaseAvdFolder();
                     processBuilder.getEnvironment().setVariable("ANDROID_AVD_HOME", baseAvdFolder.getAbsolutePath());
                 }
@@ -147,34 +113,37 @@ public class EmulatorLauncher {
                 Exceptions.printStackTrace(ex);
             }
         }
-        
 
         ExecutionService service = ExecutionService.newService(
                 processBuilder, descriptor, "Android emulator");
-        Future<Integer> taskStatus = service.run();
+        final Future<Integer> taskStatus = service.run();
         return EXECUTOR.submit(new Callable<IDevice>() {
 
             @Override
             public IDevice call() throws Exception {
-                synchronized (connectLock) {
-                    while (true) {
-                        for (IDevice device : connectedDevices) {
-                            if (device.isOnline()) {
-                                ProgressHandle handle = ProgressHandle.createHandle("Emulator starting");
-                                handle.start();
-                                while (true) {
-                                    String property = device.getSystemProperty("sys.boot_completed").get();
-                                    if (property != null) {
-                                        break;
-                                    }
-                                }
-                                handle.finish();
-                                LOG.log(Level.INFO, "Started emulator device connected.");
-                                return device;
-                            }
-                        }
-                        connectLock.wait();
+
+                ProgressHandle handle = ProgressHandle.createHandle("Emulator starting", new Cancellable() {
+                    @Override
+                    public boolean cancel() {
+                        cancel = true;
+                        semaphore.release();
+                        return true;
                     }
+                });
+                handle.start();
+                while (true) {
+                    Map<String, IDevice> runningEmulators = AdbUtils.getRunningEmulators();
+                    IDevice device = runningEmulators.get(avdInfo.getName());
+                    if (device != null && device.isOnline()) {
+                        handle.finish();
+                        LOG.log(Level.INFO, "Started emulator device connected.");
+                        return device;
+                    } else if (cancel) {
+                        handle.finish();
+                        LOG.log(Level.INFO, "Emulator start canceled");
+                        return null;
+                    }
+                    semaphore.tryAcquire(2, TimeUnit.SECONDS);
                 }
             }
 

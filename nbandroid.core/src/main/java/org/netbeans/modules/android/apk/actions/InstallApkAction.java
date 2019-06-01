@@ -18,54 +18,38 @@
  */
 package org.netbeans.modules.android.apk.actions;
 
+import com.android.ddmlib.AndroidDebugBridge;
+import com.android.ddmlib.IDevice;
 import com.android.ddmlib.InstallException;
-import org.nbandroid.netbeans.gradle.avd.AvdSelector;
-import org.nbandroid.netbeans.gradle.configs.ConfigBuilder;
-import org.nbandroid.netbeans.gradle.launch.AndroidLauncher;
-import org.nbandroid.netbeans.gradle.launch.AndroidLauncherImpl;
-import org.nbandroid.netbeans.gradle.launch.LaunchConfiguration;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdk;
+import com.android.sdklib.SdkVersionInfo;
+import java.awt.HeadlessException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.CharConversionException;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import org.nbandroid.netbeans.gradle.v2.sdk.AndroidSdkProvider;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
+import org.netbeans.modules.android.project.launch.actions.SelectDeviceAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
+import org.openide.util.actions.Presenter;
+import org.openide.xml.XMLUtil;
 
 /**
  *
  * @author arsi
  */
-public class InstallApkAction extends NodeAction {
+public class InstallApkAction extends NodeAction implements Presenter.Menu, Presenter.Popup{
 
+    private final JMenu menu = new JMenu("Install..");
+    
     @Override
     protected void performAction(Node[] activatedNodes) {
-        Node node = activatedNodes[0];
-        FileObject fo = node.getLookup().lookup(FileObject.class);
-        Project owner = FileOwnerQuery.getOwner(fo);
-        if (owner != null) {
-            AndroidSdk sdk = owner.getLookup().lookup(AndroidSdk.class);
-            if (sdk != null) {
-                AndroidLauncher launcher = new AndroidLauncherImpl();
-                LaunchConfiguration cfg = ConfigBuilder.builder()
-                        .withName("dummy").withTargetMode(LaunchConfiguration.TargetMode.AUTO).config().getLaunchConfiguration();
-                AvdSelector.LaunchData launchData = launcher.configAvd(
-                        sdk.getAndroidSdkHandler(), AndroidSdkProvider.getDefaultSdk(), null, cfg);
-                if (launchData == null || launchData.getDevice() == null) {
-                    return;
-                }
-                try {
-                    launchData.getDevice().installPackage(fo.getPath(), true);
-                } catch (InstallException ex) {
-                    String message = ex.getMessage();
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE);
-                    DialogDisplayer.getDefault().notifyLater(nd);
-                }
-            }
-        }
     }
 
     @Override
@@ -78,6 +62,7 @@ public class InstallApkAction extends NodeAction {
         if (fo == null || !"apk".equalsIgnoreCase(fo.getExt())) {
             return false;
         }
+        refresh(activatedNodes);
         return true;
     }
 
@@ -90,5 +75,105 @@ public class InstallApkAction extends NodeAction {
     public HelpCtx getHelpCtx() {
         return null;
     }
+     @Override
+    public JMenuItem getMenuPresenter() {
+        return menu;
+    }
+
+    @Override
+    public JMenuItem getPopupPresenter() {
+        return menu;
+    }
+
+    private void refresh(Node[] activatedNodes) {
+        menu.removeAll();
+        AndroidDebugBridge debugBridge = AndroidSdkProvider.getAdb();
+        if(debugBridge!=null){
+            for (IDevice device : debugBridge.getDevices()) {
+                if (device.isOnline()) {
+                    menu.add(new MenuItemWithDevice(device,activatedNodes[0]));
+                }
+            }
+        }
+    }
+    
+     private class MenuItemWithDevice extends JMenuItem implements ActionListener {
+
+         private final IDevice device;
+         private final Node node;
+
+        public MenuItemWithDevice(IDevice device,Node node) throws HeadlessException {
+            this.device = device;
+            this.node=node;
+            setText(getHtmlDisplayName());
+            if (!device.isEmulator()) {
+                setIcon(SelectDeviceAction.PHONE_CENTER_ICON);
+            }else{
+                setIcon(SelectDeviceAction.EMULATOR_ICON);
+            }
+            addActionListener(this);
+        }
+         
+         
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    FileObject fo = node.getLookup().lookup(FileObject.class);
+                    if (fo != null ) {
+                        try {
+                            device.installPackage(fo.getPath(), true);
+                        } catch (InstallException ex) {
+                            String message = ex.getMessage();
+                            NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notifyLater(nd);
+                        }
+                    }
+                }
+            };
+            RequestProcessor.getDefault().execute(runnable);
+        }
+        
+        private String getHtmlDisplayName() {
+            String devName = null;
+            if (device.isEmulator()) {
+                devName = device.getAvdName().replace("_", " ");
+            } else {
+                devName = device.getProperty("ro.product.display");
+            }
+            if (devName == null) {
+                devName = device.getProperty("ro.product.name");
+            }
+            try {
+                devName = XMLUtil.toElementContent(devName);
+            } catch (CharConversionException ex) {
+            }
+            String androidVersion = SdkVersionInfo.getVersionWithCodename(device.getVersion());
+            try {
+                androidVersion = XMLUtil.toElementContent(androidVersion);
+            } catch (CharConversionException ex) {
+            }
+            String serialNumber = device.getSerialNumber();
+            try {
+                serialNumber = XMLUtil.toElementContent(serialNumber);
+            } catch (CharConversionException ex) {
+            }
+
+            return "<html>"
+                    + "<b>"
+                    + serialNumber
+                    + "  "
+                    + "<font color=\"#0B610B\">"
+                    + devName
+                    + "</font>"
+                    + "</b>"
+                    + "  "
+                    + "<i>"
+                    + androidVersion
+                    + "</i>"
+                    + "</html>";
+        }
+         
+     }
 
 }

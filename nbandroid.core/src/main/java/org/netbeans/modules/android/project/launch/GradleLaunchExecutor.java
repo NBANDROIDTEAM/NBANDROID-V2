@@ -17,7 +17,6 @@ import java.util.logging.Logger;
 import org.nbandroid.netbeans.gradle.api.AndroidProjects;
 import org.nbandroid.netbeans.gradle.configs.ConfigBuilder;
 import org.nbandroid.netbeans.gradle.launch.*;
-import org.nbandroid.netbeans.gradle.v2.sdk.AndroidPlatformInfo;
 import org.netbeans.api.debugger.jpda.DebuggerStartException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -53,20 +52,19 @@ public class GradleLaunchExecutor {
         final LaunchConfiguration launchConfig = launchConfig();
         // project.getLookup().lookup(AndroidConfigProvider.class).getActiveConfiguration().getLaunchConfiguration();
 
-        final AndroidPlatformInfo platform = AndroidProjects.projectPlatform(project);
         final AndroidLauncher launcher = Preconditions.checkNotNull(
                 project.getLookup().lookup(AndroidLauncher.class));
         final LaunchInfo launchInfo = createLaunchInfo(manifestFile, output, command, launchConfig);
         final LaunchAction launchAction = findLaunchAction(command);
         if (!Launches.isDebugCommand(command)) {
-            launcher.launch(platform,
+            launcher.launch(
                     Lookups.fixed(launchInfo,
                             launchAction,
                             launchConfig,
                             project, Launches.getActivityConfiguration(command, project)),
                     command);
         } else {
-            final Future<Client> future = launcher.launch(platform,
+            final Future<Client> future = launcher.launch(
                     Lookups.fixed(launchInfo,
                             launchAction,
                             launchConfig,
