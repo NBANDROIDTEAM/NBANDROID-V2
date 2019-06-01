@@ -60,8 +60,8 @@ And I added basic support for Java, Color constants and RGB Color values.
 ![Color preview](https://user-images.githubusercontent.com/22594510/50656806-ab98b900-0f94-11e9-9d14-890c3303c7b7.png)
 
 
-## Current project status:
-### What Works:
+## Current Project Status
+### What works:
 * Layout preview
 * Code Assistance
 * Android XML Code Completion support
@@ -79,7 +79,7 @@ And I added basic support for Java, Color constants and RGB Color values.
 * SDK Tools manager
 * AVD Manager
 
-### What Does not work yet:
+### What does not work yet:
 * SDK Manager - Update sites configuration
 * we currently have no Visual Layout Editor 
 * and many other things
