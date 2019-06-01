@@ -7,7 +7,7 @@ Apache NetBeans Android support plugin
 
 This project aims to stabilize and update the discontinued NetBeans IDE plugin NBANDROID.
 
-The current version supports Apache NetBeans 10 and 11, and CoolBeans.
+The current version supports Apache NetBeans (ANB) 10 and 11, and CoolBeans.
 
 Requirement: Java 10, 11, or 12.
 
@@ -15,7 +15,7 @@ Requirement: Java 10, 11, or 12.
 
 ## How to Install NBANDROID-V2
 
-First you need to install a special plugin. It detects the version of your ANB / CoolBeans and installs the NBANDROID Update Center
+First, you need to install a special plugin. The plugin detects the version of your ANB / CoolBeans and installs the NBANDROID Update Center.
 
 http://server.arsi.sk/nbandroid_loader/updates.xml
 
