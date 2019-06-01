@@ -49,15 +49,12 @@ solution - close and reopen the project
 
 ![Color preview](https://user-images.githubusercontent.com/22594510/50724463-30e3b100-10ee-11e9-8d71-97dd83a3a357.png)
 
-To use Android Color preview support you must first uninstall netbeans-color-codes-preview plugin if you have it installed.
+To use Android Color preview support you must install latest version of [netbeans-color-codes-preview](https://github.com/junichi11/netbeans-color-codes-preview) plugin.
 
-And install the modified version of netbeans-color-codes-preview plugin from http://server.arsi.sk/ascp/ or add an update center 
-http://server.arsi.sk/ascp/updates.xml. 
 
-I'm waiting for PR to accept. Current source codes are here https://github.com/arsi-apli/netbeans-color-codes-preview. 
+After installing the [netbeans-color-codes-preview](https://github.com/junichi11/netbeans-color-codes-preview) plugin, you need to restart the IDE to enable Android Color preview support.
 
-And I added basic support for Java, Color constants and RGB Color values.
-![Color preview](https://user-images.githubusercontent.com/22594510/50656806-ab98b900-0f94-11e9-9d14-890c3303c7b7.png)
+_To make this project not dependent on the [netbeans-color-codes-preview](https://github.com/junichi11/netbeans-color-codes-preview) plugin, we use a special ClassLoader and it is activated on IDE start._
 
 
 ## Current Project Status
