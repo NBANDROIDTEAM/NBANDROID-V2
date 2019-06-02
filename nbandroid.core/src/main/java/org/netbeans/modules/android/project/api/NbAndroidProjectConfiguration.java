@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.netbeans.modules.android.project.api;
 
 import java.util.Objects;
+import org.gradle.internal.impldep.org.apache.commons.lang.StringEscapeUtils;
 import org.netbeans.spi.project.ProjectConfiguration;
 
 /**
@@ -29,19 +29,39 @@ import org.netbeans.spi.project.ProjectConfiguration;
 public class NbAndroidProjectConfiguration implements ProjectConfiguration {
 
     private String displayName;
+    private final NbAndroidProjectConfigurationProvider provider;
+    public static final String DEFAULT_TEXT = "<default config>";
 
-    public NbAndroidProjectConfiguration(String displayName) {
+    public NbAndroidProjectConfiguration(String displayName, NbAndroidProjectConfigurationProvider provider) {
         this.displayName = displayName;
+        this.provider = provider;
     }
-
 
     @Override
     public String getDisplayName() {
         return displayName;
     }
+    
+     public boolean isDefault(){
+        return DEFAULT_TEXT.equals(displayName);
+    }
+    
+    public String getHtmlDisplayName() {
+        if (!provider.getActiveConfiguration().equals(this)) {
+            return "<html>"+StringEscapeUtils.escapeXml(displayName)+"</html>";
+        }else{
+            return "<html><b>"+StringEscapeUtils.escapeXml(displayName)+"</b></html>";
+        }
+    }
+
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    @Override
+    public String toString() {
+        return getDisplayName();
     }
 
     @Override
