@@ -51,6 +51,7 @@ import org.netbeans.modules.android.project.keystore.KeystoreConfiguration;
 import org.netbeans.modules.android.project.launch.GradleLaunchExecutor;
 import org.netbeans.modules.android.project.launch.actions.SelectDeviceProjectAction;
 import org.netbeans.modules.android.project.properties.AndroidCustomizerProvider;
+import org.netbeans.modules.android.project.properties.actions.ConfigurationsProjectAction;
 import org.netbeans.modules.android.project.query.AndroidClassPathProvider;
 import org.netbeans.modules.android.project.query.AutoAndroidJavadocForBinaryQuery;
 import org.netbeans.modules.android.project.query.AutoAndroidSourceForBinaryQuery;
@@ -98,10 +99,12 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
     protected static final AutoAndroidJavadocForBinaryQuery JAVADOC_FOR_BINARY_QUERY = Lookup.getDefault().lookup(AutoAndroidJavadocForBinaryQuery.class);
     protected final GradleLaunchExecutor launchExecutor = new GradleLaunchExecutor(this);
     private final SelectDeviceProjectAction selectDeviceProjectAction = new SelectDeviceProjectAction(this);
+    private final ConfigurationsProjectAction configurationsProjectAction ;
 
     public NbAndroidProjectImpl(FileObject projectDirectory, ProjectState ps) {
         super(projectDirectory, ps);
         ic.add(new Info());
+        configurationsProjectAction = new ConfigurationsProjectAction(this);
     }
 
     @Override
@@ -208,6 +211,7 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
             projectActions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, "Run", null));
             projectActions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, "Debug", null));
             projectActions.add(selectDeviceProjectAction);
+            projectActions.add(configurationsProjectAction);
             projectActions.add(null);
             List<? extends Action> actionsForPath = Utilities.actionsForPath("Android/Projects/Project");
             projectActions.addAll(actionsForPath);

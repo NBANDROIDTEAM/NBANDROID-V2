@@ -41,6 +41,7 @@ import org.netbeans.modules.android.project.api.nodes.MultiNodeFactory;
 import org.netbeans.modules.android.project.api.nodes.MultiNodeFactoryProvider;
 import org.netbeans.modules.android.project.api.nodes.NodeFactory;
 import org.netbeans.modules.android.project.properties.AndroidRootCustomizerProvider;
+import org.netbeans.modules.android.project.properties.actions.ConfigurationsProjectAction;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -67,10 +68,12 @@ public class NbAndroidRootProjectImpl extends NbAndroidProject {
 
     @StaticResource()
     public static final String PROJECT_ICON = "org/netbeans/modules/android/api/root_project.png";
+     private final ConfigurationsProjectAction configurationsProjectAction ;
 
     public NbAndroidRootProjectImpl(FileObject projectDirectory, ProjectState ps) {
         super(projectDirectory, ps);
         ic.add((ProjectInformation) new Info());
+        configurationsProjectAction = new ConfigurationsProjectAction(this);
     }
 
     @Override
@@ -161,6 +164,7 @@ public class NbAndroidRootProjectImpl extends NbAndroidProject {
                 ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, "Clean and Build", null),
                 ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, "Clean", null),
                 ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, "Buld", null),
+                configurationsProjectAction,
                 CommonProjectActions.setAsMainProjectAction(),
                 CommonProjectActions.customizeProjectAction(),
                 CommonProjectActions.closeProjectAction()
