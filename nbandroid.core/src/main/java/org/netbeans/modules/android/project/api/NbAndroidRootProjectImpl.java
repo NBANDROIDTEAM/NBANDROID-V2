@@ -56,7 +56,6 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -76,7 +75,7 @@ public class NbAndroidRootProjectImpl extends NbAndroidProject {
 
     @Override
     protected void registerLookup() {
-        ic.add(new NbAndroidProjectConfigurationProvider());
+        ic.add(new NbAndroidProjectConfigurationProvider(auxiliaryProperties));
         ic.add(new AndroidRootCustomizerProvider(this));
     }
 

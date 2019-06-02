@@ -120,7 +120,7 @@ public class NbAndroidProjectImpl extends NbAndroidProject {
         ic.add(new RunActivityConfiguration(this));
         ic.add(new DebugActivityConfiguration(this));
         ic.add(new KeystoreConfiguration(this));
-        ic.add(new NbAndroidProjectConfigurationProvider());
+        ic.add(new NbAndroidProjectConfigurationProvider(auxiliaryProperties));
         ic.add(new AndroidCustomizerProvider(this));
         ic.add(new SourceLevelQueryImpl(this));
         ic.add(new AndroidTestRunConfiguration(this));
