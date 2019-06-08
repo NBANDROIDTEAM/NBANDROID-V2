@@ -76,6 +76,10 @@ final class ShowJavadocAction extends NodeAction {
         return jd.hasJavadoc();
     }
 
+    @NbBundle.Messages({
+        "CTL_ShowJavadoc=Show Javadoc",
+        "TXT_NoJavadoc=Javadoc for {0} not found.",})
+
     @Override
     public final String getName() {
         return NbBundle.getMessage(ShowJavadocAction.class, "CTL_ShowJavadoc");
