@@ -91,6 +91,7 @@
             <properties>
                 <version.nb>RELEASE100</version.nb>
                 <asm.nb>asm-all-5.0.1</asm.nb>
+                <nb.impl>incubator-netbeans-release-404-on-20190319</nb.impl>
             </properties>
         </profile>
         <profile>
@@ -173,14 +174,6 @@
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
-            <id>Apache Netbeans</id>
-            <name>Apache Netbeans</name>
-            <url>http://repository.apache.org/content/repositories/orgapachenetbeans-1022</url>
-        </repository>
-        <repository>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
             <id>bintray-nbandroidteam-netbeans-color-codes-preview</id>
             <name>bintray</name>
             <url>https://dl.bintray.com/nbandroidteam/netbeans-color-codes-preview</url>
@@ -192,11 +185,6 @@
             <id>bintray-nbandroidteam-layoutlib</id>
             <name>bintray</name>
             <url>https://dl.bintray.com/nbandroidteam/layoutlib</url>
-        </repository>
-        <repository>
-            <id>netbeans</id>
-            <name>NetBeans</name>
-            <url>http://bits.netbeans.org/nexus/content/groups/netbeans/</url>
         </repository>
         <repository>
             <snapshots>
